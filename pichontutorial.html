@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>PichonTutorial</title>
+    <style>
+        :root {
+            --bg: #121212;
+            --bg-alt: #1a1a1a;
+            --white: #ffffff;
+            --gray: #9a9a9a;
+            --accent: #2a2a2a;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            min-height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 16px);
+        }
+
+        /* ---------- HEADER FIJO ---------- */
+        header {
+            position: fixed;
+            top: env(safe-area-inset-top, 0px);
+            left: env(safe-area-inset-left, 0px);
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 18px 20px;
+            background-color: var(--bg);
+            z-index: 10;
+            width: 100%;
+        }
+
+        #app-title {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            color: var(--white);
+            font-size: clamp(22px, 4vw, 36px);
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        #app-subtitle {
+            font-family: Georgia, "Times New Roman", serif;
+            font-style: italic;
+            font-weight: normal;
+            color: var(--gray);
+            font-size: clamp(12px, 1.8vw, 16px);
+            white-space: nowrap;
+        }
+
+        /* ---------- CONTENIDO ---------- */
+        main {
+            margin-top: clamp(90px, 14vw, 110px);
+            padding-bottom: 60px;
+            max-width: 900px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #description {
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: bold;
+            color: var(--white);
+            font-size: clamp(15px, 2.2vw, 19px);
+            margin: 0 0 30px 0;
+            line-height: 1.5;
+        }
+
+        /* ---------- LISTA DE TUTORIALES ---------- */
+        ul#tutorial-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        ul#tutorial-list li {
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--white);
+            font-size: clamp(16px, 2.4vw, 20px);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        ul#tutorial-list li:hover,
+        ul#tutorial-list li:focus-visible {
+            background-color: var(--accent);
+        }
+
+        ul#tutorial-list li::before {
+            content: "\00B7";
+            /* el · más grande */
+            font-size: clamp(28px, 4vw, 40px);
+            line-height: 0;
+            color: var(--white);
+        }
+
+        ul#tutorial-list li b {
+            font-weight: bold;
+        }
+
+        /* ---------- TEXTO DE CADA TUTORIAL ---------- */
+        .tutorial-content {
+            display: none;
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: bold;
+            color: var(--white);
+            font-size: clamp(16px, 2.4vw, 19px);
+            line-height: 1.6;
+            background-color: var(--bg-alt);
+            border-radius: 10px;
+            padding: 22px;
+            margin-top: 25px;
+            white-space: pre-line;
+        }
+        .tutorial-content a {
+            color: #4db8ff;
+            text-decoration: underline;
+        }
+        .tutorial-content.active {
+            display: block;
+        }
+
+        /* ---------- RESPONSIVE: TABLET / TV / MOBILE ---------- */
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 2px;
+                padding: 14px 16px;
+            }
+
+            main {
+                margin-top: clamp(85px, 26vw, 120px);
+            }
+        }
+
+        @media (min-width: 1600px) {
+            main {
+                max-width: 1200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1 id="app-title">PichonTutorial</h1>
+        <span id="app-subtitle">- By Pichisoft -</span>
+    </header>
+
+    <main>
+        <p id="description">Descubre cómo funciona cada una de nuestras apps y de qué tratan.</p>
+
+        <ul id="tutorial-list">
+            <li data-app="PichonCalc">Tutorial <b>de PichonCalc</b></li>
+            <li data-app="PichonCalendar">Tutorial <b>de PichonCalendar</b></li>
+            <li data-app="PichonDestiny">Tutorial <b>de PichonDestiny</b></li>
+            <li data-app="PichonDocs">Tutorial <b>de PichonDocs</b></li>
+            <li data-app="PichonList">Tutorial <b>de PichonList</b></li>
+            <li data-app="PichonPass">Tutorial <b>de PichonPass</b></li>
+            <li data-app="PichonSnake">Tutorial <b>de PichonSnake</b></li>
+            <li data-app="PichonWatch">Tutorial <b>de PichonWatch</b></li>
+            <li data-app="PichonTutorial">Tutorial <b>de PichonTutorial</b></li>
+        </ul>
+
+        <!-- Texto del tutorial: PichonCalc -->
+        <div class="tutorial-content" id="content-PichonCalc">
+           PichonCalc es una aplicación de calculadora que tiene las siguientes funciones:
+           
+           _Sumar (con el símbolo " + ", o la tecla " + " del dispositivo).
+           _Restar (con el símbolo " - ", o la tecla " - " del dispositivo).
+           _Multiplicar (con el símbolo " * ", o la tecla " * " del dispositivo.)
+           _Dividir (con el símbolo " / ", o la tecla " / " del dispositivo).
+           _Hacer cálculos combinados (con el símbolo " ( ) ", o la tecla " ( ) " del dispositivo junto con los símbolos de Suma, Resta, Multiplicación y División ).
+           _Hacer cálculos con números decimales (con el símbolo " . ", o la tecla " . " del dispositivo).
+           _Borrar el cálculo que hiciste (con la opción " C ").
+           _Borrar un símbolo del cálculo que hiciste (con la opción " DEL ", o la tecla " ← " (DELETE) del dispositivo).
+           _Ver el resultado del cálculo que hiciste (con el símbolo " = ", o la tecla " = " del dispositivo).
+
+           Esta aplicación utiliza LocalStorage, .css, .js y .html y es adaptada para todos los dispositivos.
+
+           Link de la aplicación: <a href="https://pichisoft.github.io/web/pichoncalc.html" target="_blank">https://pichisoft.github.io/web/pichoncalc.html</a>
+
+           Creador de la aplicación: Pichisoft.
+       
+        </div>
+
+        <!-- Texto del tutorial: PichonCalendar -->
+        <div class="tutorial-content" id="content-PichonCalendar">
+           PichonCalendar es una aplicación de calendario que te muestra la fecha actual (hasta ahora solo disponible en la Argentina), te permite añadir eventos con una fecha límite de hasta 10 años (es decir, puedes añadir un evento para 2036 si lo deseas) e incluso, ¡Tiene fondo de pantalla de un paisaje!
+
+        Para ver la fecha actual, al abrir la aplicación, automáticamente le llevará al mes y año actuales, y el día estará marcado en color Azul. Si quieres ver la fecha actual incluso si te fuiste a otra pestaña de la aplicación, vaya a la pestaña del año y mes actual, y ahí volverá a encontrar al día actual marcado en color Azul.
+        
+        Para añadir eventos, debe ir a la pestaña "Eventos", ponerle un nombre en el campo de texto "Nombre del evento" (por ejemplo: "Ir a la plaza"), a continuación le debes poner la fecha del evento en el campo de texto "Fecha (DD/MM/AAAA)" (cambia "DD" por el día, "MM" por el mes y "AAAA" por el año), luego le tienes que poner una descripción en el campo de texto "Descripción" y por último dale a "Agregar", el evento se añadira automáticamente y lo podrás ver en la pestaña "Eventos".
+        
+        En esta aplicación, estamos teniendo en cuenta algunos errores/funciones que se podrían quitar/cambiar/agregar, por ejemplo:
+        _La fecha del evento se guarda mal, con el año primero, el mes segundo y el día tercero.
+        _Permite añadir eventos sin un nombre del mismo e incluso con fechas imposibles como "34/14/22222".
+        _Añadiremos la opción de poder poner más fondos de pantalla e incluso poder sacar el mismo.
+        _La fecha actual será la correspondiente para cada zona horaria.
+
+        Esta aplicación utiliza LocalStorage, .css, .js y .html y es adaptada para todos los dispositivos.
+
+        Link de la aplicación: <a href="https://pichisoft.github.io/web/pichoncalendar.html" target="_blank">https://pichisoft.github.io/web/pichoncalendar.html</a>
+
+        Creador de la aplicación: Pichisoft.
+        </div>
+
+        <!-- Texto del tutorial: PichonDestiny -->
+        <div class="tutorial-content" id="content-PichonDestiny">
+           PichonDestiny es una aplicación divertida sin mucho sentido, que trata de decir una pregunta cerrada (por ejemplo: "¿Mañana habrá feriado?"), tocas la pantalla y te aparece una respuesta aleatoria, por ejemplo: "Sí", o incluso respuestas divertidas como "Preguntame de nuevo en 40 días".
+
+           Estamos trabajando para añadir más respuestas por categoría, por ejemplo "Preguntas sobre el trabajo".
+
+           Esta aplicación utiliza LocalStorage, .css, .js y .html y es adaptada para todos los dispositivos.
+
+           Link de la aplicación: <a href="https://pichisoft.github.io/web/pichondestiny.html" target="_blank">https://pichisoft.github.io/web/pichondestiny.html</a>
+
+           Creador de la aplicación: Pichisoft.
+        </div>
+
+        <!-- Texto del tutorial: PichonDocs -->
+        <div class="tutorial-content" id="content-PichonDocs">
+           PichonDocs es una aplicación que te permite crear, guardar y editar notas que funcionan con autoguardado. Puedes usar distintos tipos de fuente como "Times New Roman", tamaños, colores, etc.
+
+           Para añadir notas, tienes que apretar la opción "Nueva nota", ubicada arriba a la izquierda, ponerle un título, y escribir la nota. Si quieres ponerle un tipo de fuente, color, tamaño, etc., aprete en la opción "Formato", hasta ahora tenemos los siguientes tipos:
+
+           Fuentes: Arial, Times New Roman, Georgia, Courier New, Verdana, Trebuchet MS, Comic Sans MS, Brush Script MT (cursiva) e Impact.
+           
+           Tamaños: Pequeño, Normal, Grande y Enorme.
+
+           Estilos: Negrita, Cursiva y/o Subrayado.
+
+           Colores: Gris, Blanco, Violeta, Azul, Verde, Amarillo y Rojo.
+
+
+           Para buscar notas, aprete en el campo de texto "Buscar notas...", ahí escriba el título de la nota, no tiene que ser exacto, tiene que coincidir al menos un carácter. Para buscar textos dentro de la nota, aprete en el campo de texto "Buscar dentro de la nota...", ahí debe escribir al menos un carácter que coincida con algo escrito en la nota, cuando lo busque, le aparecerán los resultados subrayados en color Violeta.
+           Para borrar notas, aprete el botón "Eliminar", si lo apretó por accidente, ¡No se preocupe!, la aplicación le preguntará si de verdad quiere eliminarla, ahí debe apretar "No" si no la quiere eliminar, si la quiere eliminar, aprete "Sí".
+           Nuestra aplicación también tiene opción para pasar la nota a formato txt, para eso, aprete el botón "TXT".
+           
+           No debe apretar ningún botón para guardar las notas, la aplicación tiene sistema de autoguardado.
+
+
+           Estamos trabajando para poner más colores para las notas y arreglar algunos tipos de fuentes que no funcionan.
+
+           Esta aplicación utiliza LocalStorage, .css, .js y .html y es adaptada para todos los dispositivos.
+
+           Link de la aplicación: <a href="https://pichisoft.github.io/web/pichondocs.html" target="_blank">https://pichisoft.github.io/web/pichondocs.html</a>
+
+           Creador de la aplicación: Pichisoft.
+       
+        </div>
+
+        <!-- Texto del tutorial: PichonList -->
+        <div class="tutorial-content" id="content-PichonList">
+          PichonList es una aplicación útil para crear listas y tareas. Puedes dividir las listas por tema (por ejemplo, listas de compras) y hacer listas desorganizadas sin ningún tema.
+          Para crear una lista sin tema, aprete el botón "+Añadir lista", ponele un nombre (por ejemplo, "Lista de hoy"), y apretá el botón "Crear lista". 
+          Para crear una lista con tema, es necesario crear un tema, o, en caso de que ya tengas uno, seleccionarlo. Para ello, apreta el botón "+Añadir tema", ponele un nombre (por ejemplo: "Compras", o "Trabajo") y dale al botón "Crear tema", allí ya puedes crear una lista con el botón "Añadir lista" del campo de tu tema, ponle un nombre, y agregale elementos con "Añadir elemento", y ponle un nombre, por ejemplo "Leche", "Huevos", "Fiambre", "Frutas", etc.
+          Cuando hayas hecho una tarea (es decir, terminado el elemento de la lista), al lado del elemento hay un cuadrito; aprétalo, y el elemento se verá tachado, también lo puedes apretar de nuevo para que se vea normal.
+
+          Estamos trabajando para poder añadir imágenes a las listas.
+
+          Esta aplicación utiliza LocalStorage, .css, .js y .html y es adaptada para todos los dispositivos.
+
+          Link de la aplicación: <a href="https://pichisoft.github.io/web/pichonlist.html" target="_blank">https://pichisoft.github.io/web/pichonlist.html</a>
+
+          Creador de la aplicación: Pichisoft.
+        
+        </div>
+
+        <!-- Texto del tutorial: PichonPass -->
+        <div class="tutorial-content" id="content-PichonPass">
+           ATENCIÓN: ESTA APLICACIÓN ES INSEGURA SI SE UTILIZA CON DATOS IMPORTANTES: POR FAVOR, AL USAR ESTA APLICACIÓN DE GUARDAR CONTRASEÑAS, AÑADA CONTRASEÑAS QUE NO EXISTAN EN TUS DATOS O QUE NO SEAN IMPORTANTES, YA QUE ES HACKEABLE.
+
+           PichonPass es una aplicación que sirve para guardar y crear contraseñas, para ello, tienes antes, que crearte un nombre de usuario y una contraseña principal segura.
+           Para añadir una contraseña, aprete el botón "Nuevo registro". Póngale un título, el usuario y la contraseña. 
+           Esta aplicación permite crear contraseñas aleatorias seguras,  con infinitos símbolos, para ello, aprete el botón "Generar contraseña", y elija además la cantidad de dígitos, por predeterminado le aparecerá "20".
+           Además, PichonPass califica su contraseña como "Fácil", "Intermedia" o "Difícil", dependiendo de la dificultad para adivinar la contraseña. Este sistema se basa en la cantidad de dígitos: si la contraseña tiene entre 1 y 5 dígitos es fácil, si tiene entre 6 y 8 dígitos es intermedia y si tiene 9 o más dígitos es difícil.
+
+           Esta aplicación también tiene modo oscuro, actívelo/desactívelo apretando el botón con imagen de Sol/Luna, respectivamente.
+
+           Esta aplicación utiliza LocalStorage, .css, .js y .html y es adaptada para todos los dispositivos.
+
+           Link de la aplicación: <a href="https://pichisoft.github.io/web/pichonpass.html" target="_blank">https://pichisoft.github.io/web/pichonpass.html</a>
+
+           Creador de la aplicación: Pichisoft.
+
+        </div>
+
+        <!-- Texto del tutorial: PichonSnake -->
+        <div class="tutorial-content" id="content-PichonSnake">
+           PichonSnake es el único de nuestros juegos que tuvo un gran éxito, los demás fueron quitados de nuestro repositorio, debido a que este tiene distintas interfaces (disponible para todos los dispositivos), es competitivo, y se puede jugar de a dos, ¡En el mismo dispositivo! El juego se trata sobre serpientes.
+
+           Para jugar solo, aprete el botón "Juego Solitario", y dale a "Empezar", muévete con las flechitas hacia adelante, abajo, izquierda y derecha. Para ganar puntos, coma los puntitos rojos (comidas) que están en el mapa, cada comida equivale a 1 punto, es decir, si has comido 20 comidas, tienes 20 puntos, abajo del título "PichonSnake" le aparece un texto con tu record actual y tu mejor record.
+           Para jugar 1v1, aprete el botón "Modo 1v1", ubicado a la derecha de "Juego Solitario". Tienes los mismos controles, y también puedes disparar con "ESPACIO" en computadora y con el botón del medio de las flechitas digitales en móvil / tablet, y disparas hacia donde te mueves. En este modo el objetivo es comer y a la vez lograr que el rival choque con tu serpiente.
+           Para ver cómo se juega, aprete el botón "¿Cómo se juega?", y verá mejor detallados todos los controles del juego y cómo funciona.
+           Para cambiar tus ajustes, aprete el botón "Ajustes", y puede cambiar las siguientes opciones: 
+           _La dificultad (puede ser fácil, es decir, la serpiente se mueve lentamente, puede ser intermedia, es decir, se mueve normal, puede ser difícil, es decir, se mueve rápidamente o progresivo, es decir, del principio hasta el fin de la partida la serpiente se irá moviendo de lento a rápido). (Esta opción solo está disponible en el modo Juego Solitario).
+           _Emblema: ¡Elija el color/estilo de su serpiente! Estos son todos los emblemas: Gaming Fever (predeterminado,) Rojo, Rosa, Amarillo, Negro, Marrón, Blanco, Naranja, Morado, Azul, Celeste, Turquesa, Verde, Verde Lima, Amarillo Limón y Bordó.
+           _La cuenta regresiva (se puede activar o desactivar), solo disponible en el modo Juego Solitario.
+
+           Esta aplicación utiliza LocalStorage, .css, .js y .html y es adaptada para todos los dispositivos.
+
+           Link de la aplicación: <a href="https://pichisoft.github.io/web/pichonsnake.html" target="_blank">https://pichisoft.github.io/web/pichonsnake.html</a>
+
+           Creadores de la aplicación: Pichisoft & Gaming Fever.
+
+        </div>
+
+        <!-- Texto del tutorial: PichonWatch -->
+        <div class="tutorial-content" id="content-PichonWatch">
+            PichonWatch es una aplicación que sirve para ver la hora actual (de momento solo disponible en la Argentina) en un reloj analógico, donde se muestra una habitación con un piso, cuadros, platos, muebles, una puerta, y arriba el reloj analógico.
+            Para editar la hora, aprete en el botón "Editar", ubicado debajo del título "PichonWatch", o también puede apretar en el reloj.
+            Para ver de cerca los demás objetos en la habitación, aprete en el objeto que quiera ver.
+
+            Estamos trabajando para que la hora se vea según su zona horaria.
+
+            Esta aplicación utiliza LocalStorage, .css, .js y .html y es adaptada para todos los dispositivos. 
+
+            Link de la aplicación: <a href="https://pichisoft.github.io/web/pichonwatch.html" target="_blank">https://pichisoft.github.io/web/pichonwatch.html</a>
+
+            Creador de la aplicación: Pichisoft.
+
+        </div>
+
+            <!-- Texto del tutorial: PichonTutorial -->
+        <div class="tutorial-content" id="content-PichonTutorial">
+            PichonTutorial es esta misma aplicación donde puedes ver los tutoriales de cada una de nuestras aplicaciones, para ello, ve a cada opción de los tutoriales ("Tutorial de PichonCalc", "Tutorial de PichonCalendar", "Tutorial de PichonDocs", "Tutorial de PichonPass", etc).
+            En cada tutorial se muestra la ayuda de cada una de nuestras aplicaciones y de cómo funcionan, y además, se muestra el link de cada aplicación al final de cada tutorial.
+         
+            Esta aplicación utiliza LocalStorage, .css, .js y .html y es adaptada para todos los dispositivos.
+
+            Link de la aplicación: <a href="https://pichisoft.github.io/web/pichontutorial.html" target="_blank">https://pichisoft.github.io/web/pichontutorial.html</a>
+
+            Creador de la aplicación: Pichisoft.
+
+        </div>
+
+
+        </div>
+    </main>
+
+    <script>
+        const title = document.getElementById('app-title');
+        const items = document.querySelectorAll('#tutorial-list li');
+        const contents = document.querySelectorAll('.tutorial-content');
+        const originalTitle = 'PichonTutorial';
+
+        items.forEach(item => {
+            const appName = item.getAttribute('data-app');
+
+            item.addEventListener('mouseenter', () => {
+                title.textContent = appName + ' - Tutorial';
+            });
+
+            item.addEventListener('mouseleave', () => {
+                title.textContent = originalTitle;
+            });
+
+            // Soporte para teclado / mobile (focus)
+            item.addEventListener('focus', () => {
+                title.textContent = appName + ' - Tutorial';
+            });
+            item.addEventListener('blur', () => {
+                title.textContent = originalTitle;
+            });
+
+            // Click para mostrar el tutorial correspondiente
+            item.setAttribute('tabindex', '0');
+            item.addEventListener('click', () => {
+                contents.forEach(c => c.classList.remove('active'));
+                const target = document.getElementById('content-' + appName);
+                if (target) {
+                    target.classList.add('active');
+                    target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
