@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>PichonRamdom</title>
+    <style>
+        :root {
+            --bg: #121212;
+            --card: #1e1e1e;
+            --text: #f2f2f2;
+            --accent: #2d6cdf;
+            --border: #333;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: var(--text);
+            width: 100%;
+            min-height: 100%;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            background: var(--bg);
+            padding: 14px 16px calc(10px + env(safe-area-inset-top, 0px));
+            padding-top: calc(14px + env(safe-area-inset-top, 0px));
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .brand-title {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            color: #fff;
+            font-size: clamp(20px, 4vw, 32px);
+        }
+
+        .brand-sub {
+            font-style: italic;
+            color: #999;
+            font-size: clamp(11px, 2vw, 14px);
+            font-family: Arial, sans-serif;
+        }
+
+        .pichisoft-link {
+            font-family: "Times New Roman", Times, serif;
+            color: var(--accent);
+            text-decoration: underline;
+            font-weight: bold;
+            font-size: clamp(14px, 2.5vw, 18px);
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px 16px 60px;
+            min-height: calc(100vh - 100px);
+        }
+
+        .subtitle {
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            font-size: clamp(20px, 4vw, 30px);
+            text-align: center;
+            margin: 10px 0 30px;
+        }
+
+        .menu {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .menu-item {
+            flex: 1 1 180px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform .15s, background .15s;
+        }
+
+        .menu-item:hover {
+            background: #262626;
+            transform: translateY(-3px);
+        }
+
+        .menu-item h3 {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            font-size: clamp(18px, 3vw, 24px);
+            margin: 0;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .back-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            background: #262626;
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .field input[type="text"],
+        .field input[type="number"],
+        .field select {
+            width: 100%;
+            max-width: 320px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #0f0f0f;
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .radio-group label {
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .generate-btn {
+            display: block;
+            margin: 26px auto 0;
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            font-size: clamp(18px, 3vw, 24px);
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 14px 36px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .generate-btn:hover {
+            background: #2358b8;
+        }
+
+        .results {
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .result-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 20px;
+            font-size: clamp(18px, 3vw, 26px);
+            font-weight: bold;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* Dado */
+        .dice-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .dice {
+            width: min(40vw, 150px);
+            height: min(40vw, 150px);
+            background: #fff;
+            border-radius: 18px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .4);
+            transform-style: preserve-3d;
+        }
+
+        .dice.rolling {
+            animation: roll .6s ease-in-out;
+        }
+
+        @keyframes roll {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+
+            20% {
+                transform: rotate(-25deg) scale(1.05);
+            }
+
+            40% {
+                transform: rotate(20deg) scale(1.1);
+            }
+
+            60% {
+                transform: rotate(-15deg) scale(1.08);
+            }
+
+            80% {
+                transform: rotate(10deg) scale(1.03);
+            }
+
+            100% {
+                transform: rotate(0deg) scale(1);
+            }
+        }
+
+        .dot {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dot::after {
+            content: "";
+            width: 60%;
+            height: 60%;
+            background: #111;
+            border-radius: 50%;
+            display: none;
+            transition: transform .15s;
+        }
+
+        .dot.on::after {
+            display: block;
+        }
+
+        .generate-btn.dado-btn {
+            margin-top: 0;
+        }
+
+        @media (max-width:480px) {
+            .menu {
+                flex-direction: column;
+            }
+
+            header {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <span class="brand-title">PichonRamdom</span>
+            <span class="brand-sub">- By Pichisoft -</span>
+        </div>
+        <button class="pichisoft-link"
+            onclick="window.open('https://pichisoft.github.io/web/','_blank')">Pichisoft</button>
+    </header>
+
+    <main>
+        <!-- MENU -->
+        <div id="view-menu" class="view active">
+            <div class="subtitle">Elije un modo</div>
+            <div class="menu">
+                <div class="menu-item" onclick="showView('numero')">
+                    <h3>Número aleatorio</h3>
+                </div>
+                <div class="menu-item" onclick="showView('dado')">
+                    <h3>Dado</h3>
+                </div>
+                <div class="menu-item" onclick="showView('letra')">
+                    <h3>Letra</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- NUMERO -->
+        <div id="view-numero" class="view">
+            <button class="back-btn" onclick="showView('menu')">&larr; Volver</button>
+            <div class="subtitle">Número aleatorio</div>
+            <div class="field">
+                <label for="cifras">Cantidad de cifras:</label>
+                <input type="text" id="cifras" inputmode="numeric" placeholder="Ej: 3" value="1">
+            </div>
+            <div class="field">
+                <label for="cantidad">Cantidad de números aleatorios (máx 15):</label>
+                <input type="number" id="cantidad" min="1" max="15" value="1" oninput="validarCantidad()">
+                <div id="error-cantidad" style="color:#ff4d4d;font-size:14px;margin-top:6px;display:none;">No puede
+                    elegir más de 15 números aleatorios</div>
+            </div>
+            <div class="field">
+                <label>Tipo de número:</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="tipoNum" value="par"> Par</label>
+                    <label><input type="radio" name="tipoNum" value="impar"> Impar</label>
+                    <label><input type="radio" name="tipoNum" value="ambos" checked> Ambos</label>
+                </div>
+            </div>
+            <button class="generate-btn" onclick="generarNumeros()">Generar</button>
+            <div class="results" id="resultados-numero"></div>
+        </div>
+
+        <!-- DADO -->
+        <div id="view-dado" class="view">
+            <button class="back-btn" onclick="showView('menu')">&larr; Volver</button>
+            <div class="subtitle">Dado</div>
+            <div class="dice-wrap">
+                <div class="dice" id="dado">
+                    <div class="dot" id="d1"></div>
+                    <div class="dot" id="d2"></div>
+                    <div class="dot" id="d3"></div>
+                    <div class="dot" id="d4"></div>
+                    <div class="dot on" id="d5"></div>
+                    <div class="dot" id="d6"></div>
+                    <div class="dot" id="d7"></div>
+                    <div class="dot" id="d8"></div>
+                    <div class="dot" id="d9"></div>
+                </div>
+                <button class="generate-btn dado-btn" onclick="tirarDado()">Tirar</button>
+            </div>
+        </div>
+
+        <!-- LETRA -->
+        <div id="view-letra" class="view">
+            <button class="back-btn" onclick="showView('menu')">&larr; Volver</button>
+            <div class="subtitle">Letra</div>
+            <div class="field">
+                <label>Tipo de letra:</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="tipoLetra" value="consonante"> Consonante</label>
+                    <label><input type="radio" name="tipoLetra" value="vocal"> Vocal</label>
+                    <label><input type="radio" name="tipoLetra" value="ambas" checked> Ambas</label>
+                </div>
+            </div>
+            <button class="generate-btn" onclick="generarLetra()">Generar</button>
+            <div class="results" id="resultado-letra"></div>
+        </div>
+    </main>
+
+    <script>
+        function showView(name) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + name).classList.add('active');
+        }
+
+        function validarCantidad() {
+            const input = document.getElementById('cantidad');
+            const error = document.getElementById('error-cantidad');
+            const valor = parseInt(input.value);
+            if (valor > 15) {
+                error.style.display = 'block';
+                return false;
+            } else {
+                error.style.display = 'none';
+                return true;
+            }
+        }
+
+        function generarNumeros() {
+            if (!validarCantidad()) return;
+            const cifras = parseInt(document.getElementById('cifras').value) || 1;
+            let cantidad = parseInt(document.getElementById('cantidad').value) || 1;
+            cantidad = Math.min(Math.max(cantidad, 1), 15);
+            const tipo = document.querySelector('input[name="tipoNum"]:checked').value;
+
+            const min = cifras <= 1 ? 0 : Math.pow(10, cifras - 1);
+            const max = Math.pow(10, cifras) - 1;
+
+            const cont = document.getElementById('resultados-numero');
+            cont.innerHTML = '';
+
+            for (let i = 0; i < cantidad; i++) {
+                let num;
+                let intentos = 0;
+                do {
+                    num = Math.floor(Math.random() * (max - min + 1)) + min;
+                    intentos++;
+                } while (
+                    intentos < 5000 &&
+                    ((tipo === 'par' && num % 2 !== 0) || (tipo === 'impar' && num % 2 === 0))
+                );
+                const box = document.createElement('div');
+                box.className = 'result-box';
+                box.textContent = num;
+                cont.appendChild(box);
+            }
+        }
+
+        const caras = {
+            1: [5],
+            2: [1, 9],
+            3: [1, 5, 9],
+            4: [1, 3, 7, 9],
+            5: [1, 3, 5, 7, 9],
+            6: [1, 3, 4, 6, 7, 9]
+        };
+        let rolling = false;
+        function pintarCara(valor) {
+            for (let i = 1; i <= 9; i++) { document.getElementById('d' + i).classList.remove('on'); }
+            caras[valor].forEach(n => document.getElementById('d' + n).classList.add('on'));
+        }
+        function tirarDado() {
+            if (rolling) return;
+            rolling = true;
+            const dado = document.getElementById('dado');
+            dado.classList.remove('rolling');
+            void dado.offsetWidth; // reinicia animación
+            dado.classList.add('rolling');
+
+            let vueltas = 0;
+            const maxVueltas = 8;
+            const interval = setInterval(() => {
+                pintarCara(Math.floor(Math.random() * 6) + 1);
+                vueltas++;
+                if (vueltas >= maxVueltas) {
+                    clearInterval(interval);
+                    const valorFinal = Math.floor(Math.random() * 6) + 1;
+                    pintarCara(valorFinal);
+                    rolling = false;
+                }
+            }, 70);
+        }
+
+        function generarLetra() {
+            const vocales = ['A', 'E', 'I', 'O', 'U'];
+            const consonantes = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'Ñ', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z'];
+            const tipo = document.querySelector('input[name="tipoLetra"]:checked').value;
+            let pool = [];
+            if (tipo === 'vocal') pool = vocales;
+            else if (tipo === 'consonante') pool = consonantes;
+            else pool = vocales.concat(consonantes);
+            const letra = pool[Math.floor(Math.random() * pool.length)];
+            document.getElementById('resultado-letra').innerHTML = '<div class="result-box">' + letra + '</div>';
+        }
+    </script>
+</body>
+
+</html>
