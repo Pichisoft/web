@@ -11,7 +11,8 @@
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             margin: 0;
             height: 100%;
         }
@@ -466,8 +467,13 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .modal.show {
@@ -534,7 +540,7 @@
                 gap: 8px;
             }
 
-            .toolbar > button {
+            .toolbar>button {
                 flex: 1;
                 min-width: 80px;
             }
@@ -581,7 +587,7 @@
                 align-items: stretch;
             }
 
-            .toolbar > * {
+            .toolbar>* {
                 width: 100%;
             }
 
@@ -643,16 +649,22 @@
                         <label>Fuente</label>
                         <div class="customSelect">
                             <button type="button" class="customSelectBtn" id="fontSelectBtn"
-                                onmousedown="event.preventDefault()" onclick="toggleDropdown('fontDropdown')">Arial ▾</button>
+                                onmousedown="event.preventDefault()" onclick="toggleDropdown('fontDropdown')">Arial
+                                ▾</button>
                             <div class="customDropdown" id="fontDropdown">
                                 <div onmousedown="event.preventDefault()" onclick="chooseFont('Arial')">Arial</div>
-                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Times New Roman')">Times New Roman</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Times New Roman')">Times
+                                    New Roman</div>
                                 <div onmousedown="event.preventDefault()" onclick="chooseFont('Georgia')">Georgia</div>
-                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Courier New')">Courier New</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Courier New')">Courier
+                                    New</div>
                                 <div onmousedown="event.preventDefault()" onclick="chooseFont('Verdana')">Verdana</div>
-                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Trebuchet MS')">Trebuchet MS</div>
-                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Comic Sans MS')">Comic Sans MS</div>
-                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Brush Script MT')" style="font-family:'Brush Script MT', cursive;">Brush Script MT (cursiva)</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Trebuchet MS')">Trebuchet
+                                    MS</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Comic Sans MS')">Comic
+                                    Sans MS</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Brush Script MT')"
+                                    style="font-family:'Brush Script MT', cursive;">Brush Script MT (cursiva)</div>
                                 <div onmousedown="event.preventDefault()" onclick="chooseFont('Impact')">Impact</div>
                             </div>
                         </div>
@@ -662,12 +674,17 @@
                         <label>Tamaño</label>
                         <div class="customSelect">
                             <button type="button" class="customSelectBtn" id="sizeSelectBtn"
-                                onmousedown="event.preventDefault()" onclick="toggleDropdown('sizeDropdown')">Normal ▾</button>
+                                onmousedown="event.preventDefault()" onclick="toggleDropdown('sizeDropdown')">Normal
+                                ▾</button>
                             <div class="customDropdown" id="sizeDropdown">
-                                <div onmousedown="event.preventDefault()" onclick="chooseSize('13px','Pequeño')">Pequeño</div>
-                                <div onmousedown="event.preventDefault()" onclick="chooseSize('16px','Normal')">Normal</div>
-                                <div onmousedown="event.preventDefault()" onclick="chooseSize('22px','Grande')">Grande</div>
-                                <div onmousedown="event.preventDefault()" onclick="chooseSize('30px','Enorme')">Enorme</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseSize('13px','Pequeño')">Pequeño
+                                </div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseSize('16px','Normal')">Normal
+                                </div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseSize('22px','Grande')">Grande
+                                </div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseSize('30px','Enorme')">Enorme
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -675,9 +692,12 @@
                     <div class="formatRow">
                         <label>Estilo</label>
                         <div class="styleBtns">
-                            <button id="boldBtn" onmousedown="event.preventDefault()" onclick="toggleStyle('fontWeight','bold','normal')">B</button>
-                            <button id="italicBtn" onmousedown="event.preventDefault()" onclick="toggleStyle('fontStyle','italic','normal')">I</button>
-                            <button id="underlineBtn" onmousedown="event.preventDefault()" onclick="toggleStyle('textDecorationLine','underline','none')">U</button>
+                            <button id="boldBtn" onmousedown="event.preventDefault()"
+                                onclick="toggleStyle('fontWeight','bold','normal')">B</button>
+                            <button id="italicBtn" onmousedown="event.preventDefault()"
+                                onclick="toggleStyle('fontStyle','italic','normal')">I</button>
+                            <button id="underlineBtn" onmousedown="event.preventDefault()"
+                                onclick="toggleStyle('textDecorationLine','underline','none')">U</button>
                         </div>
                     </div>
 
@@ -700,7 +720,8 @@
 
             <div class="searchBox">
                 <input id="globalSearch" placeholder="Buscar notas..." oninput="onGlobalSearchInput()" />
-                <button class="clearBtn" id="globalClearBtn" onclick="clearGlobalSearch()" title="Limpiar búsqueda">✕</button>
+                <button class="clearBtn" id="globalClearBtn" onclick="clearGlobalSearch()"
+                    title="Limpiar búsqueda">✕</button>
             </div>
             <div class="searchNav" id="globalSearchNav">
                 <button onmousedown="event.preventDefault()" onclick="navGlobal(-1)">▲</button>
@@ -720,7 +741,8 @@
                         <input id="noteSearch" placeholder="Buscar dentro de la nota... (Enter)"
                             oninput="onNoteSearchInput()"
                             onkeydown="if(event.key==='Enter'){event.preventDefault(); searchInNote();}" />
-                        <button class="clearBtn" id="noteClearBtn" onclick="exitSearch()" title="Cerrar búsqueda">✕</button>
+                        <button class="clearBtn" id="noteClearBtn" onclick="exitSearch()"
+                            title="Cerrar búsqueda">✕</button>
                     </div>
                     <div class="searchNav" id="noteSearchNav">
                         <button onmousedown="event.preventDefault()" onclick="navMatch(-1)">▲</button>
@@ -734,7 +756,8 @@
 
                 <button onclick="downloadTXT()">⬇ TXT</button>
                 <button onclick="document.getElementById('importInput').click()">⬆ Importar</button>
-                <input type="file" id="importInput" accept=".txt" style="display:none" onchange="handleImportFile(event)">
+                <input type="file" id="importInput" accept=".txt" style="display:none"
+                    onchange="handleImportFile(event)">
                 <button onclick="deleteNote()">🗑️ Eliminar</button>
             </div>
 
@@ -754,7 +777,8 @@
     <div class="modal" id="deleteModal">
         <div class="box">
             <h3>Eliminar nota</h3>
-            <p>¿Querés eliminar <span class="noteName" id="deleteNoteName"></span>? Esta acción no se puede deshacer.</p>
+            <p>¿Querés eliminar <span class="noteName" id="deleteNoteName"></span>? Esta acción no se puede deshacer.
+            </p>
             <div class="modalBtns">
                 <button onclick="cancelDelete()">Cancelar</button>
                 <button class="danger" onclick="confirmDelete()">Eliminar</button>
@@ -1405,4 +1429,5 @@
 
     </script>
 </body>
+
 </html>
