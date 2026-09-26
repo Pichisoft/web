@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>PichonDocs</title>
 
     <style>
@@ -11,8 +11,12 @@
             box-sizing: border-box;
         }
 
-        body {
+        html, body {
             margin: 0;
+            height: 100%;
+        }
+
+        body {
             display: flex;
             flex-direction: column;
             height: 100vh;
@@ -24,15 +28,24 @@
         /* ===== HEADER ===== */
         .appHeader {
             display: flex;
-            align-items: baseline;
-            gap: 10px;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
             padding: 12px 18px;
             background: #1b1b1b;
             border-bottom: 1px solid #333;
             flex-shrink: 0;
+            flex-wrap: wrap;
         }
 
-        .appHeader .brand {
+        .brandGroup {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .brandGroup .brand {
             font-family: "Times New Roman", Times, serif;
             font-weight: bold;
             font-size: 26px;
@@ -40,11 +53,27 @@
             letter-spacing: 0.5px;
         }
 
-        .appHeader .tagline {
+        .brandGroup .tagline {
             font-family: Arial, sans-serif;
             font-style: italic;
             font-size: 14px;
             color: #999;
+        }
+
+        .headerRight {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .pichisoftLink {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            color: #4db8ff;
+            text-decoration: underline;
+            font-size: 16px;
+            white-space: nowrap;
         }
 
         /* ===== BODY WRAPPER ===== */
@@ -63,16 +92,17 @@
             border-right: 1px solid #333;
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
         }
 
         .searchBox {
             position: relative;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
 
         .searchBox input {
             width: 100%;
-            padding: 9px 10px;
+            padding: 9px 32px 9px 10px;
         }
 
         .newNoteBtn {
@@ -89,7 +119,7 @@
             border-radius: 8px;
             cursor: pointer;
             border-left: 4px solid transparent;
-            transition: background 0.15s ease, transform 0.1s ease;
+            transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
         }
 
         .note:hover {
@@ -100,6 +130,11 @@
         .note.active {
             background: #333;
             border-left: 4px solid #a855f7;
+        }
+
+        .note.current-match {
+            outline: 2px solid #f97316;
+            outline-offset: -2px;
         }
 
         .note .noteSnippet {
@@ -116,6 +151,62 @@
             font-size: 13px;
             text-align: center;
             padding: 20px 5px;
+        }
+
+        /* CLEAR (X) BUTTON */
+        .clearBtn {
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            border: none;
+            background: none;
+            color: #999;
+            font-size: 15px;
+            line-height: 1;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .clearBtn.show {
+            display: flex;
+        }
+
+        .clearBtn:hover {
+            background: #3a3a3a;
+            color: #fff;
+        }
+
+        /* SEARCH NAV (flechas + contador) */
+        .searchNav {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #bbb;
+            margin-bottom: 8px;
+        }
+
+        .searchNav.show {
+            display: flex;
+        }
+
+        .searchNav button {
+            padding: 3px 9px;
+            font-size: 12px;
+            line-height: 1;
+        }
+
+        .searchNav .count {
+            min-width: 40px;
+            text-align: center;
         }
 
         /* MAIN */
@@ -136,15 +227,24 @@
             flex-wrap: wrap;
         }
 
-        .toolbar .noteSearchWrap {
+        .noteSearchWrap {
             display: flex;
             gap: 6px;
             flex: 1;
-            min-width: 180px;
+            min-width: 200px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
-        .toolbar .noteSearchWrap input {
+        .searchInputWrap {
+            position: relative;
             flex: 1;
+            min-width: 160px;
+        }
+
+        .searchInputWrap input {
+            width: 100%;
+            padding-right: 32px;
         }
 
         .spacer {
@@ -178,7 +278,7 @@
             color: #111;
         }
 
-        /* ===== FORMAT MENU (estilo Google Keep, propio) ===== */
+        /* ===== FORMAT MENU ===== */
         .formatMenuWrap {
             position: relative;
         }
@@ -186,13 +286,14 @@
         .formatPanel {
             display: none;
             position: absolute;
-            top: 110%;
-            left: 0;
+            top: 130%;
+            right: 0;
             background: #1e1e1e;
             border: 1px solid #3a3a3a;
             border-radius: 10px;
             padding: 14px;
             width: 300px;
+            max-width: 90vw;
             z-index: 500;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
@@ -256,7 +357,7 @@
             border: 2px solid #fff;
         }
 
-        /* ===== DROPDOWN PROPIO (no le saca el foco al editor) ===== */
+        /* ===== DROPDOWN PROPIO ===== */
         .customSelect {
             position: relative;
             flex: 1;
@@ -340,6 +441,10 @@
             padding: 0 1px;
         }
 
+        mark.pichon-hl.current {
+            background: #f97316;
+        }
+
         .autosaveTag {
             font-size: 11px;
             color: #666;
@@ -357,16 +462,12 @@
             justify-content: center;
             z-index: 9999;
             animation: fadeIn 0.15s ease;
+            padding: 16px;
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal.show {
@@ -378,8 +479,13 @@
             padding: 22px;
             border-radius: 12px;
             width: 320px;
+            max-width: 100%;
             text-align: center;
             border: 1px solid #333;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
 
         .box h3 {
@@ -411,7 +517,7 @@
             background: #d32323;
         }
 
-        @media (max-width:900px) {
+        @media (max-width: 900px) {
 
             .bodyWrap {
                 flex-direction: column;
@@ -428,13 +534,9 @@
                 gap: 8px;
             }
 
-            .toolbar button {
+            .toolbar > button {
                 flex: 1;
-                min-width: 90px;
-            }
-
-            .noteSearchWrap {
-                width: 100%;
+                min-width: 80px;
             }
 
             .titleWrap {
@@ -447,31 +549,43 @@
             }
 
             .appHeader {
-                justify-content: center;
-                flex-wrap: wrap;
-                text-align: center;
-            }
-
-            .formatPanel {
-                width: 95vw;
-                left: 50%;
-                transform: translateX(-50%);
+                justify-content: space-between;
             }
 
             .customDropdown {
                 max-height: 180px;
             }
-
         }
 
-        @media (max-width:600px) {
+        @media (max-width: 560px) {
+
+            .appHeader {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .brandGroup,
+            .headerRight {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .formatPanel {
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+            }
 
             .toolbar {
                 flex-direction: column;
                 align-items: stretch;
             }
 
-            .toolbar>* {
+            .toolbar > * {
+                width: 100%;
+            }
+
+            .noteSearchWrap {
                 width: 100%;
             }
 
@@ -489,6 +603,16 @@
                 padding: 10px;
             }
 
+            .clearBtn {
+                width: 30px;
+                height: 30px;
+            }
+
+            .searchNav button {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+
             .titleText {
                 font-size: 24px;
             }
@@ -497,14 +621,7 @@
                 font-size: 18px;
                 line-height: 1.8;
             }
-
         }
-        .credit {
-  font-family: Verdana, sans-serif;
-  font-size: 18px;
-  font-style: italic;
-  color: #bbb;
-}
     </style>
 </head>
 
@@ -512,8 +629,67 @@
 
     <!-- HEADER -->
     <div class="appHeader">
-        <div class="brand">PichonDocs</div>
-        <div class="tagline">- By Pichisoft -</div>
+        <div class="brandGroup">
+            <div class="brand">PichonDocs</div>
+            <div class="tagline">- By Pichisoft -</div>
+        </div>
+
+        <div class="headerRight">
+            <div class="formatMenuWrap">
+                <button onmousedown="event.preventDefault()" onclick="toggleFormatPanel()">🎨 Formato</button>
+
+                <div class="formatPanel" id="formatPanel">
+                    <div class="formatRow">
+                        <label>Fuente</label>
+                        <div class="customSelect">
+                            <button type="button" class="customSelectBtn" id="fontSelectBtn"
+                                onmousedown="event.preventDefault()" onclick="toggleDropdown('fontDropdown')">Arial ▾</button>
+                            <div class="customDropdown" id="fontDropdown">
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Arial')">Arial</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Times New Roman')">Times New Roman</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Georgia')">Georgia</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Courier New')">Courier New</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Verdana')">Verdana</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Trebuchet MS')">Trebuchet MS</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Comic Sans MS')">Comic Sans MS</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Brush Script MT')" style="font-family:'Brush Script MT', cursive;">Brush Script MT (cursiva)</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Impact')">Impact</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="formatRow">
+                        <label>Tamaño</label>
+                        <div class="customSelect">
+                            <button type="button" class="customSelectBtn" id="sizeSelectBtn"
+                                onmousedown="event.preventDefault()" onclick="toggleDropdown('sizeDropdown')">Normal ▾</button>
+                            <div class="customDropdown" id="sizeDropdown">
+                                <div onmousedown="event.preventDefault()" onclick="chooseSize('13px','Pequeño')">Pequeño</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseSize('16px','Normal')">Normal</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseSize('22px','Grande')">Grande</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseSize('30px','Enorme')">Enorme</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="formatRow">
+                        <label>Estilo</label>
+                        <div class="styleBtns">
+                            <button id="boldBtn" onmousedown="event.preventDefault()" onclick="toggleStyle('fontWeight','bold','normal')">B</button>
+                            <button id="italicBtn" onmousedown="event.preventDefault()" onclick="toggleStyle('fontStyle','italic','normal')">I</button>
+                            <button id="underlineBtn" onmousedown="event.preventDefault()" onclick="toggleStyle('textDecorationLine','underline','none')">U</button>
+                        </div>
+                    </div>
+
+                    <div class="formatRow">
+                        <label>Color</label>
+                        <div class="paletteGrid" id="palette"></div>
+                    </div>
+                </div>
+            </div>
+
+            <a class="pichisoftLink" href="https://pichisoft.github.io/web/" target="_blank">Pichisoft</a>
+        </div>
     </div>
 
     <div class="bodyWrap">
@@ -523,7 +699,13 @@
             <button class="newNoteBtn" onclick="newNote()">+ Nueva nota</button>
 
             <div class="searchBox">
-                <input id="globalSearch" placeholder="Buscar notas..." oninput="render()" />
+                <input id="globalSearch" placeholder="Buscar notas..." oninput="onGlobalSearchInput()" />
+                <button class="clearBtn" id="globalClearBtn" onclick="clearGlobalSearch()" title="Limpiar búsqueda">✕</button>
+            </div>
+            <div class="searchNav" id="globalSearchNav">
+                <button onmousedown="event.preventDefault()" onclick="navGlobal(-1)">▲</button>
+                <span class="count" id="globalSearchCount">1/1</span>
+                <button onmousedown="event.preventDefault()" onclick="navGlobal(1)">▼</button>
             </div>
 
             <div id="list"></div>
@@ -533,86 +715,26 @@
         <div class="main">
 
             <div class="toolbar">
-                <div class="formatMenuWrap">
-                    <button onmousedown="event.preventDefault()" onclick="toggleFormatPanel()">🎨 Formato</button>
-
-                    <div class="formatPanel" id="formatPanel">
-                        <div class="formatRow">
-                            <label>Fuente</label>
-                            <div class="customSelect">
-                                <button type="button" class="customSelectBtn" id="fontSelectBtn"
-                                    onmousedown="event.preventDefault()" onclick="toggleDropdown('fontDropdown')">Arial
-                                    ▾</button>
-                                <div class="customDropdown" id="fontDropdown">
-                                    <div onmousedown="event.preventDefault()" onclick="chooseFont('Arial')">Arial</div>
-                                    <div onmousedown="event.preventDefault()" onclick="chooseFont('Times New Roman')">
-                                        Times New Roman</div>
-                                    <div onmousedown="event.preventDefault()" onclick="chooseFont('Georgia')">Georgia
-                                    </div>
-                                    <div onmousedown="event.preventDefault()" onclick="chooseFont('Courier New')">
-                                        Courier New</div>
-                                    <div onmousedown="event.preventDefault()" onclick="chooseFont('Verdana')">Verdana
-                                    </div>
-                                    <div onmousedown="event.preventDefault()" onclick="chooseFont('Trebuchet MS')">
-                                        Trebuchet MS</div>
-                                    <div onmousedown="event.preventDefault()" onclick="chooseFont('Comic Sans MS')">
-                                        Comic Sans MS</div>
-                                    <div onmousedown="event.preventDefault()" onclick="chooseFont('Brush Script MT')"
-                                        style="font-family:'Brush Script MT', cursive;">Brush Script MT (cursiva)</div>
-                                    <div onmousedown="event.preventDefault()" onclick="chooseFont('Impact')">Impact
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="formatRow">
-                            <label>Tamaño</label>
-                            <div class="customSelect">
-                                <button type="button" class="customSelectBtn" id="sizeSelectBtn"
-                                    onmousedown="event.preventDefault()" onclick="toggleDropdown('sizeDropdown')">Normal
-                                    ▾</button>
-                                <div class="customDropdown" id="sizeDropdown">
-                                    <div onmousedown="event.preventDefault()" onclick="chooseSize('13px','Pequeño')">
-                                        Pequeño</div>
-                                    <div onmousedown="event.preventDefault()" onclick="chooseSize('16px','Normal')">
-                                        Normal</div>
-                                    <div onmousedown="event.preventDefault()" onclick="chooseSize('22px','Grande')">
-                                        Grande</div>
-                                    <div onmousedown="event.preventDefault()" onclick="chooseSize('30px','Enorme')">
-                                        Enorme</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="formatRow">
-                            <label>Estilo</label>
-                            <div class="styleBtns">
-                                <button id="boldBtn" onmousedown="event.preventDefault()"
-                                    onclick="toggleStyle('fontWeight','bold','normal')">B</button>
-                                <button id="italicBtn" onmousedown="event.preventDefault()"
-                                    onclick="toggleStyle('fontStyle','italic','normal')">I</button>
-                                <button id="underlineBtn" onmousedown="event.preventDefault()"
-                                    onclick="toggleStyle('textDecorationLine','underline','none')">U</button>
-                            </div>
-                        </div>
-
-                        <div class="formatRow">
-                            <label>Color</label>
-                            <div class="paletteGrid" id="palette"></div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="noteSearchWrap">
-                    <input id="noteSearch"
-                        placeholder="Buscar dentro de la nota... (Enter). Click derecho para dejar de buscar."
-                        oncontextmenu="exitSearch(event)" onkeydown="if(event.key==='Enter') searchInNote()" />
+                    <div class="searchInputWrap">
+                        <input id="noteSearch" placeholder="Buscar dentro de la nota... (Enter)"
+                            oninput="onNoteSearchInput()"
+                            onkeydown="if(event.key==='Enter'){event.preventDefault(); searchInNote();}" />
+                        <button class="clearBtn" id="noteClearBtn" onclick="exitSearch()" title="Cerrar búsqueda">✕</button>
+                    </div>
+                    <div class="searchNav" id="noteSearchNav">
+                        <button onmousedown="event.preventDefault()" onclick="navMatch(-1)">▲</button>
+                        <span class="count" id="noteSearchCount">1/1</span>
+                        <button onmousedown="event.preventDefault()" onclick="navMatch(1)">▼</button>
+                    </div>
                     <button onclick="searchInNote()">🔍</button>
                 </div>
 
                 <div class="spacer"></div>
 
                 <button onclick="downloadTXT()">⬇ TXT</button>
+                <button onclick="document.getElementById('importInput').click()">⬆ Importar</button>
+                <input type="file" id="importInput" accept=".txt" style="display:none" onchange="handleImportFile(event)">
                 <button onclick="deleteNote()">🗑️ Eliminar</button>
             </div>
 
@@ -632,8 +754,7 @@
     <div class="modal" id="deleteModal">
         <div class="box">
             <h3>Eliminar nota</h3>
-            <p>¿Querés eliminar <span class="noteName" id="deleteNoteName"></span>? Esta acción no se puede deshacer.
-            </p>
+            <p>¿Querés eliminar <span class="noteName" id="deleteNoteName"></span>? Esta acción no se puede deshacer.</p>
             <div class="modalBtns">
                 <button onclick="cancelDelete()">Cancelar</button>
                 <button class="danger" onclick="confirmDelete()">Eliminar</button>
@@ -649,6 +770,12 @@
         let savedRange = null;
         let pendingDeleteId = null;
         let saveTimeout = null;
+
+        let currentFilteredNotes = [];
+        let globalMatchIndex = 0;
+
+        let matchElements = [];
+        let currentMatchIndex = 0;
 
         const STORAGE_KEY = "pichon_notes_v2";
 
@@ -734,6 +861,7 @@
 
             selectedColor = n.color || colors[0];
 
+            exitSearch();
             renderPalette();
             render();
         }
@@ -755,7 +883,6 @@
             }, 500);
         }
 
-        // Fuerza el guardado inmediato si hay un autoguardado pendiente
         function flushSave() {
             if (saveTimeout) {
                 clearTimeout(saveTimeout);
@@ -826,6 +953,8 @@
             const query = normalize(document.getElementById("globalSearch") ? globalSearch.value.trim() : "");
             const words = query.split(/\s+/).filter(Boolean);
 
+            document.getElementById("globalClearBtn").classList.toggle("show", query.length > 0);
+
             list.innerHTML = "";
 
             let filtered = notes.filter(n => {
@@ -834,17 +963,23 @@
                 return words.every(w => combined.includes(w));
             });
 
+            currentFilteredNotes = filtered;
+
             if (!filtered.length) {
                 let div = document.createElement("div");
                 div.className = "noResults";
-                div.innerText = "No se encontraron notas.";
-                list.appendChild(div);
+                div.innerText = query ? "No se encontraron notas." : "";
+                if (query) list.appendChild(div);
+                updateGlobalSearchNav(query, 0);
                 return;
             }
 
-            filtered.forEach(n => {
+            if (globalMatchIndex >= filtered.length) globalMatchIndex = 0;
+
+            filtered.forEach((n, idx) => {
                 let div = document.createElement("div");
                 div.className = "note" + (n.id === currentId ? " active" : "");
+                if (query && idx === globalMatchIndex) div.classList.add("current-match");
 
                 let titleText = plainText(n.title) || "Sin título";
                 let snippetText = plainText(n.content);
@@ -864,6 +999,39 @@
                 div.onclick = () => loadNote(n.id);
                 list.appendChild(div);
             });
+
+            updateGlobalSearchNav(query, filtered.length);
+        }
+
+        function updateGlobalSearchNav(query, total) {
+            const nav = document.getElementById("globalSearchNav");
+            if (!query || total === 0) {
+                nav.classList.remove("show");
+                return;
+            }
+            nav.classList.add("show");
+            document.getElementById("globalSearchCount").textContent = (globalMatchIndex + 1) + "/" + total;
+        }
+
+        function navGlobal(delta) {
+            const total = currentFilteredNotes.length;
+            if (!total) return;
+            globalMatchIndex = (globalMatchIndex + delta + total) % total;
+            render();
+            const el = list.children[globalMatchIndex];
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        function onGlobalSearchInput() {
+            globalMatchIndex = 0;
+            render();
+        }
+
+        function clearGlobalSearch() {
+            document.getElementById("globalSearch").value = "";
+            globalMatchIndex = 0;
+            render();
+            document.getElementById("globalSearch").focus();
         }
 
         /* ================= FORMAT MENU ================= */
@@ -872,6 +1040,10 @@
             const panel = document.getElementById("formatPanel");
             panel.classList.toggle("open");
             if (!panel.classList.contains("open")) flushSave();
+        }
+
+        function closeFormatPanel() {
+            document.getElementById("formatPanel").classList.remove("open");
         }
 
         function toggleDropdown(id) {
@@ -885,12 +1057,14 @@
             document.getElementById("fontSelectBtn").textContent = name + " ▾";
             document.getElementById("fontDropdown").classList.remove("open");
             applyStyle({ fontFamily: name });
+            closeFormatPanel();
         }
 
         function chooseSize(px, label) {
             document.getElementById("sizeSelectBtn").textContent = label + " ▾";
             document.getElementById("sizeDropdown").classList.remove("open");
             applyStyle({ fontSize: px });
+            closeFormatPanel();
         }
 
         function trackSelection(el) {
@@ -903,7 +1077,6 @@
             });
         }
 
-        // Rastrea la selección en todo momento, sin depender de un solo evento
         document.addEventListener("selectionchange", () => {
             const sel = window.getSelection();
             if (!sel || sel.rangeCount === 0) return;
@@ -933,7 +1106,6 @@
             }
         }
 
-        // Lee el estilo efectivo (computado) donde está parada la selección guardada
         function getStyleAtSelection(prop) {
             if (!savedRange) return "";
             let node = savedRange.startContainer;
@@ -942,35 +1114,59 @@
             return window.getComputedStyle(el)[prop] || "";
         }
 
-        // Aplica estilos CSS directamente sobre la selección real (funciona con texto
-        // ya escrito y seleccionado, y también con el cursor solo para lo que se escriba después)
         function applyStyle(styles) {
             restoreSelection();
             const sel = window.getSelection();
             if (!sel || sel.rangeCount === 0) return;
             let range = sel.getRangeAt(0);
 
-            const span = document.createElement("span");
-            Object.keys(styles).forEach(k => { span.style[k] = styles[k]; });
-
             if (range.collapsed) {
-                // Sin texto seleccionado: preparamos el estilo para lo próximo que se escriba
-                const zwsp = document.createTextNode("\u200B");
-                span.appendChild(zwsp);
-                range.insertNode(span);
-                range.setStart(zwsp, 1);
-                range.setEnd(zwsp, 1);
-                sel.removeAllRanges();
-                sel.addRange(range);
-            } else {
-                const frag = range.extractContents();
-                span.appendChild(frag);
-                range.insertNode(span);
+                let container = range.startContainer;
+                let parentSpan = container.nodeType === 3 ? container.parentElement : container;
 
-                const newRange = document.createRange();
-                newRange.selectNodeContents(span);
-                sel.removeAllRanges();
-                sel.addRange(newRange);
+                if (parentSpan && parentSpan.tagName === "SPAN" && parentSpan.dataset.pichonStyle === "1" && parentSpan.textContent === "\u200B") {
+                    Object.keys(styles).forEach(k => { parentSpan.style[k] = styles[k]; });
+                    const zwsp = parentSpan.firstChild;
+                    const newRange = document.createRange();
+                    newRange.setStart(zwsp, 1);
+                    newRange.setEnd(zwsp, 1);
+                    sel.removeAllRanges();
+                    sel.addRange(newRange);
+                } else {
+                    const span = document.createElement("span");
+                    span.dataset.pichonStyle = "1";
+                    Object.keys(styles).forEach(k => { span.style[k] = styles[k]; });
+                    const zwsp = document.createTextNode("\u200B");
+                    span.appendChild(zwsp);
+                    range.insertNode(span);
+                    range.setStart(zwsp, 1);
+                    range.setEnd(zwsp, 1);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            } else {
+                let ancestor = range.commonAncestorContainer;
+                let candidate = ancestor.nodeType === 3 ? ancestor.parentElement : ancestor;
+
+                if (candidate && candidate.tagName === "SPAN" && candidate.dataset.pichonStyle === "1" && range.toString() === candidate.textContent) {
+                    Object.keys(styles).forEach(k => { candidate.style[k] = styles[k]; });
+                    const newRange = document.createRange();
+                    newRange.selectNodeContents(candidate);
+                    sel.removeAllRanges();
+                    sel.addRange(newRange);
+                } else {
+                    const span = document.createElement("span");
+                    span.dataset.pichonStyle = "1";
+                    Object.keys(styles).forEach(k => { span.style[k] = styles[k]; });
+                    const frag = range.extractContents();
+                    span.appendChild(frag);
+                    range.insertNode(span);
+
+                    const newRange = document.createRange();
+                    newRange.selectNodeContents(span);
+                    sel.removeAllRanges();
+                    sel.addRange(newRange);
+                }
             }
 
             savedRange = sel.getRangeAt(0).cloneRange();
@@ -978,7 +1174,6 @@
             updateStyleButtons();
         }
 
-        // Prende/apaga una propiedad (negrita, cursiva, subrayado) según el estado actual
         function toggleStyle(prop, onValue, offValue) {
             const current = getStyleAtSelection(prop);
             let isOn;
@@ -1019,6 +1214,7 @@
                     selectedColor = c;
                     applyStyle({ color: c });
                     renderPalette();
+                    closeFormatPanel();
                 };
 
                 palette.appendChild(b);
@@ -1039,14 +1235,50 @@
                 parent.normalize();
             });
         }
-        function exitSearch(e) {
-            e.preventDefault();
 
+        function exitSearch() {
             document.getElementById("noteSearch").value = "";
+            document.getElementById("noteClearBtn").classList.remove("show");
+            document.getElementById("noteSearchNav").classList.remove("show");
 
             clearHighlights();
+            matchElements = [];
+            currentMatchIndex = 0;
+        }
 
-            content.focus();
+        function onNoteSearchInput() {
+            const val = document.getElementById("noteSearch").value;
+            document.getElementById("noteClearBtn").classList.toggle("show", val.length > 0);
+            if (!val.trim()) {
+                clearHighlights();
+                matchElements = [];
+                document.getElementById("noteSearchNav").classList.remove("show");
+            }
+        }
+
+        function updateNoteSearchNav() {
+            const nav = document.getElementById("noteSearchNav");
+            if (!matchElements.length) {
+                nav.classList.remove("show");
+                return;
+            }
+            nav.classList.add("show");
+            document.getElementById("noteSearchCount").textContent = (currentMatchIndex + 1) + "/" + matchElements.length;
+        }
+
+        function setCurrentMatch(idx, scroll = true) {
+            matchElements.forEach(m => m.classList.remove("current"));
+            if (!matchElements.length) return;
+            currentMatchIndex = (idx + matchElements.length) % matchElements.length;
+            const el = matchElements[currentMatchIndex];
+            el.classList.add("current");
+            if (scroll) el.scrollIntoView({ behavior: "smooth", block: "center" });
+            updateNoteSearchNav();
+        }
+
+        function navMatch(delta) {
+            if (!matchElements.length) return;
+            setCurrentMatch(currentMatchIndex + delta);
         }
 
         function searchInNote() {
@@ -1058,14 +1290,11 @@
 
             clearHighlights();
 
-
             const regex = new RegExp("(" + words.join("|") + ")", "gi");
 
             const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
             let node, nodes = [];
             while ((node = walker.nextNode())) nodes.push(node);
-
-            let firstMark = null;
 
             nodes.forEach(textNode => {
                 const text = textNode.nodeValue;
@@ -1085,7 +1314,6 @@
                     mark.className = "pichon-hl";
                     mark.textContent = m[0];
                     frag.appendChild(mark);
-                    if (!firstMark) firstMark = mark;
                     lastIndex = m.index + m[0].length;
 
                     if (m.index === regex.lastIndex) regex.lastIndex++;
@@ -1098,13 +1326,59 @@
                 textNode.parentNode.replaceChild(frag, textNode);
             });
 
-            if (firstMark) {
-                firstMark.scrollIntoView({ behavior: "smooth", block: "center" });
-            }
+            matchElements = Array.from(content.querySelectorAll("mark.pichon-hl"));
 
+            if (matchElements.length) {
+                setCurrentMatch(0);
+            } else {
+                document.getElementById("noteSearchNav").classList.remove("show");
+            }
         }
 
         /* ================= EXPORTAR ================= */
+
+        function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const raw = e.target.result.replace(/\r\n/g, "\n");
+                const lines = raw.split("\n");
+
+                let title, bodyLines;
+                if (lines.length >= 3 && lines[1].trim() === "") {
+                    title = lines[0].trim();
+                    bodyLines = lines.slice(2);
+                } else {
+                    title = file.name.replace(/\.txt$/i, "");
+                    bodyLines = lines;
+                }
+
+                const bodyHtml = bodyLines
+                    .map(l => l.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"))
+                    .join("<br>");
+
+                flushSave();
+
+                let n = {
+                    id: Date.now(),
+                    title: title.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
+                    content: bodyHtml,
+                    color: selectedColor
+                };
+
+                notes.unshift(n);
+                currentId = n.id;
+
+                saveStorage();
+                render();
+                loadNote(n.id);
+
+                event.target.value = "";
+            };
+            reader.readAsText(file);
+        }
 
         function downloadTXT() {
             let n = getCurrentNote();
@@ -1130,6 +1404,5 @@
         start();
 
     </script>
-<p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999;"><a href="https://pichisoft.github.io/web/" target="_blank" style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
 </body>
 </html>
