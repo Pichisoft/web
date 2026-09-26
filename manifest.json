@@ -1,0 +1,13 @@
+{
+  "background_color": "#076a6b",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "PichonApps",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "PichonApps",
+  "start_url": "/",
+  "theme_color": "#5a3838",
+  "description": "Directorio de apps de Pichisoft.",
+  "id": "https://pichisoft.github.io/web/"
+}
