@@ -602,9 +602,18 @@
             });
 
             html += `</div>`;
-            html += `<button onclick="removeBackground()" style="margin-top:15px;">Quitar fondo</button>`;
+            html += `<button onclick="setDefaultBackground()" style="margin-top:15px;">Fondo predeterminado</button>`;
+            html += `<button onclick="removeBackground()" style="margin-top:10px;">Quitar fondo</button>`;
 
             app.innerHTML = html;
+        }
+
+        function setDefaultBackground() {
+            document.body.style.backgroundImage = DEFAULT_BG_IMAGE;
+            document.body.style.backgroundColor = "#111";
+
+            localStorage.setItem("bgType", "default");
+            localStorage.removeItem("bgColor");
         }
 
         function setSolidBackground(color) {
@@ -632,6 +641,9 @@
                 document.body.style.backgroundColor = color;
             } else if (type === "none") {
                 document.body.style.backgroundImage = "none";
+                document.body.style.backgroundColor = "#111";
+            } else if (type === "default") {
+                document.body.style.backgroundImage = DEFAULT_BG_IMAGE;
                 document.body.style.backgroundColor = "#111";
             }
             /* si no hay preferencia guardada, se deja la imagen por defecto del CSS */
