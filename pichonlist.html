@@ -523,11 +523,11 @@
     .list-add-btn {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       padding: 8px 12px;
       background: transparent;
       border: none;
-      border-top: 1px dashed var(--border);
       color: var(--accent);
       font-family: 'Outfit', sans-serif;
       font-size: 0.8rem;
@@ -541,6 +541,109 @@
 
     .list-add-btn:hover {
       background: var(--surface3);
+    }
+
+    .list-add-row {
+      display: flex;
+      border-top: 1px dashed var(--border);
+    }
+
+    .list-add-row .list-add-btn:first-child {
+      flex: 1;
+      justify-content: flex-start;
+    }
+
+    .list-add-row .list-add-btn.image-btn {
+      flex: 0 0 auto;
+      border-left: 1px dashed var(--border);
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+
+    /* ── IMAGES ── */
+    .list-images {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 4px 12px 10px;
+    }
+
+    .list-image-thumb {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .list-image-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .list-image-thumb .del-img-btn {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: rgba(0, 0, 0, 0.65);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      width: 16px;
+      height: 16px;
+      font-size: 10px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .list-image-thumb:hover .del-img-btn {
+      opacity: 1;
+    }
+
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+    }
+
+    .lightbox-overlay.open {
+      display: flex;
+    }
+
+    .lightbox-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+    }
+
+    .lightbox-content img {
+      max-width: 90vw;
+      max-height: 80vh;
+      border-radius: 10px;
+      display: block;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .lightbox-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 14px;
     }
 
     /* ── FREE LISTS (sin tema) ── */
@@ -631,6 +734,9 @@
   <main id="app">
     <!-- rendered by JS -->
   </main>
+
+  <!-- hidden file input for image uploads -->
+  <input type="file" id="file-input-image" accept="image/*" style="display:none" onchange="handleImageFileSelected(event)">
 
   <!-- ══════════ MODALS ══════════ -->
 
@@ -748,11 +854,22 @@
     </div>
   </div>
 
+  <!-- Lightbox (view image) -->
+  <div class="lightbox-overlay" id="modal-lightbox" onclick="closeLightboxIfBg(event)">
+    <div class="lightbox-content">
+      <img id="lightbox-img" src="" alt="Imagen adjunta">
+      <div class="lightbox-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-lightbox')">Cerrar</button>
+        <button class="btn btn-red" onclick="deleteLightboxImage()">🗑️ Eliminar imagen</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ══════════ DATA ══════════
     let data = {
       topics: [],   // { id, name, collapsed }
-      lists: [],    // { id, name, topicId|null }
+      lists: [],    // { id, name, topicId|null, images: [{id, dataUrl}] }
       items: []     // { id, listId, text, done }
     };
 
@@ -764,7 +881,13 @@
     }
 
     function save() {
-      localStorage.setItem('pichonlist-v1', JSON.stringify(data));
+      try {
+        localStorage.setItem('pichonlist-v1', JSON.stringify(data));
+        return true;
+      } catch (e) {
+        console.error('Error guardando en localStorage:', e);
+        return false;
+      }
     }
 
     function uid() {
@@ -840,6 +963,7 @@
 
     function renderListCard(list) {
       const items = data.items.filter(i => i.listId === list.id);
+      const images = list.images || [];
       let html = `<div class="list-card" id="list-${list.id}">`;
       html += `<div class="list-card-header">`;
       html += `<span class="list-card-title">${esc(list.name)}</span>`;
@@ -868,7 +992,21 @@
       }
       html += `</div>`;
 
+      if (images.length > 0) {
+        html += `<div class="list-images">`;
+        for (const img of images) {
+          html += `<div class="list-image-thumb" onclick="openLightbox('${img.id}')">`;
+          html += `<img src="${img.dataUrl}" alt="Imagen adjunta">`;
+          html += `<button class="del-img-btn" title="Eliminar imagen" onclick="deleteImageDirect('${list.id}','${img.id}',event)">✕</button>`;
+          html += `</div>`;
+        }
+        html += `</div>`;
+      }
+
+      html += `<div class="list-add-row">`;
       html += `<button class="list-add-btn" onclick="openNewItemModal('${list.id}')">＋ Añadir elemento</button>`;
+      html += `<button class="list-add-btn image-btn" title="Adjuntar imagen (ej: ticket de compra)" onclick="openImagePicker('${list.id}')">📷</button>`;
+      html += `</div>`;
       html += `</div>`;
       return html;
     }
@@ -953,7 +1091,7 @@
       if (!name) return;
       const sel = document.getElementById('select-list-topic');
       const topicId = sel.value || null;
-      data.lists.push({ id: uid(), name, topicId });
+      data.lists.push({ id: uid(), name, topicId, images: [] });
       save(); render();
       closeModal('modal-new-list');
     }
@@ -1075,7 +1213,7 @@
       const itemCount = data.items.filter(i => i.listId === id).length;
       openConfirmDelete(
         `¿Eliminar la lista <strong>"${esc(list.name)}"</strong>?<br>
-    Se eliminarán sus <strong>${itemCount} elemento${itemCount !== 1 ? 's' : ''}</strong>.`,
+    Se eliminarán sus <strong>${itemCount} elemento${itemCount !== 1 ? 's' : ''}</strong> y sus imágenes.`,
         () => {
           data.items = data.items.filter(i => i.listId !== id);
           data.lists = data.lists.filter(l => l.id !== id);
@@ -1093,6 +1231,106 @@
           save(); render();
         }
       );
+    }
+
+    // ══════════ IMÁGENES ══════════
+    let _imageTargetListId = null;
+    let _lightboxImageId = null;
+    const MAX_IMAGE_DIM = 1400; // px, para achicar fotos grandes antes de guardarlas
+
+    function openImagePicker(listId) {
+      _imageTargetListId = listId;
+      const input = document.getElementById('file-input-image');
+      input.value = '';
+      input.click();
+    }
+
+    function handleImageFileSelected(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor elegí un archivo de imagen.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        const img = new Image();
+        img.onload = function () {
+          let w = img.width, h = img.height;
+          if (w > MAX_IMAGE_DIM || h > MAX_IMAGE_DIM) {
+            if (w > h) { h = Math.round(h * MAX_IMAGE_DIM / w); w = MAX_IMAGE_DIM; }
+            else { w = Math.round(w * MAX_IMAGE_DIM / h); h = MAX_IMAGE_DIM; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+
+          const list = data.lists.find(l => l.id === _imageTargetListId);
+          if (!list) return;
+          if (!list.images) list.images = [];
+          list.images.push({ id: uid(), dataUrl });
+
+          const ok = save();
+          if (!ok) {
+            list.images.pop();
+            alert('No se pudo guardar la imagen: no hay suficiente espacio de almacenamiento en el navegador. Probá con una imagen más chica o eliminá alguna imagen existente.');
+          }
+          render();
+        };
+        img.onerror = function () {
+          alert('No se pudo leer la imagen.');
+        };
+        img.src = ev.target.result;
+      };
+      reader.onerror = function () {
+        alert('No se pudo leer el archivo.');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function findImageById(imageId) {
+      for (const list of data.lists) {
+        const img = (list.images || []).find(i => i.id === imageId);
+        if (img) return { list, img };
+      }
+      return null;
+    }
+
+    function openLightbox(imageId) {
+      const found = findImageById(imageId);
+      if (!found) return;
+      _lightboxImageId = imageId;
+      document.getElementById('lightbox-img').src = found.img.dataUrl;
+      openModal('modal-lightbox');
+    }
+
+    function closeLightboxIfBg(e) {
+      if (e.target.id === 'modal-lightbox') closeModal('modal-lightbox');
+    }
+
+    function deleteLightboxImage() {
+      if (!_lightboxImageId) return;
+      const found = findImageById(_lightboxImageId);
+      if (!found) { closeModal('modal-lightbox'); return; }
+      if (!confirm('¿Eliminar esta imagen?')) return;
+      found.list.images = found.list.images.filter(i => i.id !== _lightboxImageId);
+      save(); render();
+      closeModal('modal-lightbox');
+      _lightboxImageId = null;
+    }
+
+    function deleteImageDirect(listId, imageId, event) {
+      if (event) event.stopPropagation();
+      if (!confirm('¿Eliminar esta imagen?')) return;
+      const list = data.lists.find(l => l.id === listId);
+      if (list) {
+        list.images = (list.images || []).filter(i => i.id !== imageId);
+        save(); render();
+      }
     }
 
     // ══════════ INIT ══════════
