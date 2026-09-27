@@ -147,6 +147,23 @@
             padding: 5px;
         }
 
+        /* ===================== FONDOS ===================== */
+
+        .bgSwatch {
+            height: 50px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .bgSwatch:hover {
+            border: 2px solid white;
+        }
+
+        .bgGrid {
+            grid-template-columns: repeat(5, 1fr);
+        }
+
         /* ===================== RESPONSIVE ===================== */
 
         @media (max-width: 900px) {
@@ -221,6 +238,10 @@
                 grid-template-columns: repeat(2, 1fr);
             }
 
+            .bgGrid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
             .days {
                 gap: 5px;
             }
@@ -254,6 +275,7 @@
             <div class="tab" onclick="showMonths()">Meses</div>
             <div class="tab" onclick="showDays()">Días</div>
             <div class="tab" onclick="showEvents()">Eventos</div>
+            <div class="tab" onclick="showBackground()">Fondo</div>
         </div>
 
         <div class="main">
@@ -265,13 +287,12 @@
     <script>
         const app = document.getElementById("app");
 
-        /* FECHA ARGENTINA */
-        function getArgentinaDate() {
-            const now = new Date();
-            return new Date(now.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
+        /* FECHA LOCAL (según la zona horaria de cada dispositivo) */
+        function getLocalDate() {
+            return new Date();
         }
 
-        let today = getArgentinaDate();
+        let today = getLocalDate();
 
         let baseYear = today.getFullYear();
 
@@ -282,7 +303,7 @@
         const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const weekdays = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"];
 
-        /* STORAGE */
+        /* STORAGE EVENTOS */
         function getEvents() {
             return JSON.parse(localStorage.getItem("events") || "{}");
         }
@@ -290,10 +311,26 @@
             localStorage.setItem("events", JSON.stringify(e));
         }
 
+        /* UTILIDADES */
+        function pad(n) {
+            return n.toString().padStart(2, "0");
+        }
+
+        function formatKeyAsDate(key) {
+            const [y, m, d] = key.split("-").map(Number);
+            return `${pad(d)}/${pad(m + 1)}/${y}`;
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.innerText = str || "";
+            return div.innerHTML;
+        }
+
         /* ===================== VISTAS ===================== */
 
         function showYears() {
-            baseYear = getArgentinaDate().getFullYear();
+            baseYear = getLocalDate().getFullYear();
 
             let html = "<div class='grid years'>";
 
@@ -333,7 +370,7 @@
             let total = daysInMonth(year, month);
             let start = firstDay(year, month);
 
-            let today = getArgentinaDate();
+            let today = getLocalDate();
 
             let html = `<h2>${months[month]} ${year}</h2>`;
             html += `<div class="weekdays">${weekdays.map(d => `<div>${d}</div>`).join("")}</div>`;
@@ -367,21 +404,26 @@
             app.innerHTML = `
         <h2>${day} ${months[currentMonth]} ${currentYear}</h2>
 
-        <input id="title" placeholder="Nombre del evento" value="${ev.title}">
-        <textarea id="text">${ev.text}</textarea>
+        <input id="title" placeholder="Nombre del evento" value="${escapeHtml(ev.title)}">
+        <textarea id="text">${ev.text || ""}</textarea>
 
         <button onclick="saveEvent()">Guardar</button>
     `;
         }
 
         function saveEvent() {
+            const title = document.getElementById("title").value.trim();
+            const text = document.getElementById("text").value;
+
+            if (!title) {
+                alert("Ingresá un nombre para el evento");
+                return;
+            }
+
             const events = getEvents();
             const key = `${currentYear}-${currentMonth}-${currentDay}`;
 
-            events[key] = {
-                title: document.getElementById("title").value,
-                text: document.getElementById("text").value
-            };
+            events[key] = { title, text };
 
             saveEvents(events);
             alert("Guardado");
@@ -408,20 +450,26 @@
 
             let i = 0;
 
-            for (let key in events) {
+            const sortedKeys = Object.keys(events).sort((a, b) => {
+                const [ay, am, ad] = a.split("-").map(Number);
+                const [by, bm, bd] = b.split("-").map(Number);
+                return new Date(ay, am, ad) - new Date(by, bm, bd);
+            });
+
+            for (const key of sortedKeys) {
                 const ev = events[key];
                 const id = "ev" + i;
 
                 html += `
         <div class="event">
-            <b>${ev.title || "(Sin nombre)"}</b><br>
-            ${key}
+            <b>${escapeHtml(ev.title) || "(Sin nombre)"}</b><br>
+            ${formatKeyAsDate(key)}
 
             <button onclick="toggleEvent('${id}')">Ver/Ocultar</button>
             <button onclick="editEvent('${key}')">Editar</button>
             <button onclick="deleteEvent('${key}')">Eliminar</button>
 
-            <div id="${id}" class="event-text">${ev.text}</div>
+            <div id="${id}" class="event-text">${escapeHtml(ev.text)}</div>
         </div>
         `;
                 i++;
@@ -434,19 +482,47 @@
             const el = document.getElementById(id);
             el.style.display = el.style.display === "block" ? "none" : "block";
         }
+
+        /* Valida que la fecha sea real (día, mes y año dentro de rango, y que el
+           día exista para ese mes/año, contemplando años bisiestos, etc.) */
+        function isValidDate(d, m, y) {
+            if (![d, m, y].every(Number.isInteger)) return false;
+            if (m < 1 || m > 12) return false;
+            if (y < 1 || y > 9999) return false;
+
+            const maxDay = daysInMonth(y, m - 1);
+            if (d < 1 || d > maxDay) return false;
+
+            return true;
+        }
+
         function addEvent() {
-            const title = document.getElementById("evTitle").value;
-            const date = document.getElementById("evDate").value;
+            const title = document.getElementById("evTitle").value.trim();
+            const date = document.getElementById("evDate").value.trim();
             const text = document.getElementById("evText").value;
+
+            if (!title) {
+                alert("Ingresá un nombre para el evento");
+                return;
+            }
 
             const parts = date.split("/");
 
-            if (parts.length !== 3) {
+            if (parts.length !== 3 || parts.some(p => !/^\d{1,4}$/.test(p.trim()))) {
                 alert("Usá formato DD/MM/AAAA");
                 return;
             }
 
-            const key = `${parts[2]}-${parseInt(parts[1]) - 1}-${parseInt(parts[0])}`;
+            const d = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10);
+            const y = parseInt(parts[2], 10);
+
+            if (!isValidDate(d, m, y)) {
+                alert("La fecha ingresada no es válida");
+                return;
+            }
+
+            const key = `${y}-${m - 1}-${d}`;
 
             const events = getEvents();
             events[key] = { title, text };
@@ -457,33 +533,38 @@
         function editEvent(key) {
             const events = getEvents();
             const ev = events[key];
-            const [y, m, d] = key.split("-");
+            const [y, m, d] = key.split("-").map(Number);
 
-            currentYear = parseInt(y);
-            currentMonth = parseInt(m);
-            currentDay = parseInt(d);
+            currentYear = y;
+            currentMonth = m;
+            currentDay = d;
 
             app.innerHTML = `
         <h2>Editar evento</h2>
 
-        <input id="title" value="${ev.title}">
-        <textarea id="text">${ev.text}</textarea>
+        <input id="title" value="${escapeHtml(ev.title)}">
+        <textarea id="text">${ev.text || ""}</textarea>
 
         <button onclick="saveEditedEvent('${key}')">Guardar cambios</button>
     `;
         }
 
         function saveEditedEvent(oldKey) {
+            const title = document.getElementById("title").value.trim();
+            const text = document.getElementById("text").value;
+
+            if (!title) {
+                alert("Ingresá un nombre para el evento");
+                return;
+            }
+
             const events = getEvents();
 
             delete events[oldKey];
 
             const newKey = `${currentYear}-${currentMonth}-${currentDay}`;
 
-            events[newKey] = {
-                title: document.getElementById("title").value,
-                text: document.getElementById("text").value
-            };
+            events[newKey] = { title, text };
 
             saveEvents(events);
             showEvents();
@@ -499,8 +580,66 @@
 
             showEvents();
         }
+
+        /* ===================== FONDO DE PANTALLA ===================== */
+
+        const DEFAULT_BG_IMAGE = "url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80')";
+
+        const bgColors = [
+            "#000000", "#111111", "#1e1e1e", "#0f172a", "#1e293b",
+            "#312e81", "#7c3aed", "#2563eb", "#0891b2", "#16a34a",
+            "#65a30d", "#ca8a04", "#f59e0b", "#ea580c", "#dc2626",
+            "#be123c", "#ffffff"
+        ];
+
+        function showBackground() {
+            let html = `<h2>Fondo de pantalla</h2>`;
+            html += `<p>Elegí un color sólido de fondo, o quitá el fondo actual.</p>`;
+            html += `<div class="grid bgGrid">`;
+
+            bgColors.forEach(c => {
+                html += `<div class="bgSwatch" style="background:${c};" title="${c}" onclick="setSolidBackground('${c}')"></div>`;
+            });
+
+            html += `</div>`;
+            html += `<button onclick="removeBackground()" style="margin-top:15px;">Quitar fondo</button>`;
+
+            app.innerHTML = html;
+        }
+
+        function setSolidBackground(color) {
+            document.body.style.backgroundImage = "none";
+            document.body.style.backgroundColor = color;
+
+            localStorage.setItem("bgType", "color");
+            localStorage.setItem("bgColor", color);
+        }
+
+        function removeBackground() {
+            document.body.style.backgroundImage = "none";
+            document.body.style.backgroundColor = "#111";
+
+            localStorage.setItem("bgType", "none");
+            localStorage.removeItem("bgColor");
+        }
+
+        function applySavedBackground() {
+            const type = localStorage.getItem("bgType");
+
+            if (type === "color") {
+                const color = localStorage.getItem("bgColor") || "#111";
+                document.body.style.backgroundImage = "none";
+                document.body.style.backgroundColor = color;
+            } else if (type === "none") {
+                document.body.style.backgroundImage = "none";
+                document.body.style.backgroundColor = "#111";
+            }
+            /* si no hay preferencia guardada, se deja la imagen por defecto del CSS */
+        }
+
         /* ===================== INICIO ===================== */
 
+        applySavedBackground();
         showDays(currentYear, currentMonth);
     </script>
 <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff; background: rgba(0,0,0,0.55); padding: 8px 14px; border-radius: 8px; text-shadow: 0 1px 3px rgba(0,0,0,0.8);"><a href="https://pichisoft.github.io/web/" target="_blank" style="color:#4db8ff;  text-decoration: underline;">Pichisoft</a></p>
