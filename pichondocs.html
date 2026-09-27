@@ -279,6 +279,19 @@
             color: #111;
         }
 
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        button:disabled:hover {
+            background: #222;
+        }
+
+        button:disabled:active {
+            transform: none;
+        }
+
         /* ===== FORMAT MENU ===== */
         .formatMenuWrap {
             position: relative;
@@ -641,6 +654,9 @@
         </div>
 
         <div class="headerRight">
+            <button id="undoBtn" onmousedown="event.preventDefault()" onclick="undoAction()" disabled title="Deshacer">↶ Deshacer</button>
+            <button id="redoBtn" onmousedown="event.preventDefault()" onclick="redoAction()" disabled title="Rehacer">↷ Rehacer</button>
+
             <div class="formatMenuWrap">
                 <button onmousedown="event.preventDefault()" onclick="toggleFormatPanel()">🎨 Formato</button>
 
@@ -801,6 +817,9 @@
         let matchElements = [];
         let currentMatchIndex = 0;
 
+        let undoStack = [];
+        let redoStack = [];
+
         const STORAGE_KEY = "pichon_notes_v2";
 
         const colors = [
@@ -820,12 +839,76 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
         }
 
+        /* ================= DESHACER / REHACER ================= */
+
+        function cloneState() {
+            return { notes: JSON.parse(JSON.stringify(notes)), currentId };
+        }
+
+        function pushUndoSnapshot() {
+            undoStack.push(cloneState());
+            redoStack = [];
+            updateUndoRedoButtons();
+        }
+
+        function updateUndoRedoButtons() {
+            const undoBtn = document.getElementById("undoBtn");
+            const redoBtn = document.getElementById("redoBtn");
+            if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+            if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+        }
+
+        function restoreState(state) {
+            notes = JSON.parse(JSON.stringify(state.notes));
+            currentId = state.currentId;
+            saveStorage();
+
+            let n = getCurrentNote();
+            if (n) {
+                titleView.innerHTML = n.title || "";
+                content.innerHTML = n.content || "";
+                selectedColor = n.color || colors[0];
+            } else {
+                titleView.innerHTML = "";
+                content.innerHTML = "";
+            }
+
+            exitSearch();
+            renderPalette();
+            render();
+        }
+
+        function undoAction() {
+            if (!undoStack.length) return;
+
+            clearTimeout(saveTimeout);
+            saveTimeout = null;
+
+            redoStack.push(cloneState());
+            const prev = undoStack.pop();
+            restoreState(prev);
+            updateUndoRedoButtons();
+        }
+
+        function redoAction() {
+            if (!redoStack.length) return;
+
+            clearTimeout(saveTimeout);
+            saveTimeout = null;
+
+            undoStack.push(cloneState());
+            const next = redoStack.pop();
+            restoreState(next);
+            updateUndoRedoButtons();
+        }
+
         /* ================= INIT ================= */
 
         function start() {
             loadStorage();
             renderPalette();
             render();
+            updateUndoRedoButtons();
 
             if (notes.length) {
                 loadNote(notes[0].id);
@@ -855,6 +938,7 @@
 
         function newNote() {
             flushSave();
+            pushUndoSnapshot();
 
             let n = {
                 id: Date.now(),
@@ -920,9 +1004,17 @@
             let n = getCurrentNote();
             if (!n) return;
 
-            n.title = titleView.innerHTML;
-            n.content = content.innerHTML;
-            n.color = selectedColor;
+            const newTitle = titleView.innerHTML;
+            const newContent = content.innerHTML;
+            const newColor = selectedColor;
+
+            if (n.title !== newTitle || n.content !== newContent || n.color !== newColor) {
+                pushUndoSnapshot();
+            }
+
+            n.title = newTitle;
+            n.content = newContent;
+            n.color = newColor;
 
             saveStorage();
             render();
@@ -944,6 +1036,8 @@
 
         function confirmDelete() {
             if (pendingDeleteId == null) return;
+
+            pushUndoSnapshot();
 
             notes = notes.filter(x => x.id !== pendingDeleteId);
             saveStorage();
@@ -1384,6 +1478,7 @@
                     .join("<br>");
 
                 flushSave();
+                pushUndoSnapshot();
 
                 let n = {
                     id: Date.now(),
