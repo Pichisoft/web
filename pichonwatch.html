@@ -163,18 +163,41 @@
         window.addEventListener('resize', resize);
         window.addEventListener('orientationchange', () => setTimeout(resize, 200));
 
-        // ─── CLOCK STATE — now driven by the REAL device time ─────────────────────────
-        // The face reads the system clock every frame. `offsetSec` is an optional
-        // calibration nudge (seconds, within a 12h cycle) that you set by dragging
-        // the hands in "Editar" mode, saved in localStorage, and simply added on
-        // top of the real time — so it keeps walking in sync instead of drifting.
+        // ─── CLOCK STATE — driven by the REAL time of the device's own timezone ───────
+        // La zona horaria se detecta sola (Intl.DateTimeFormat) y el reloj siempre
+        // muestra la hora correcta de esa zona, con el ajuste de horario de verano
+        // resuelto automáticamente por el navegador. `offsetSec` es sólo una
+        // calibración opcional (segundos, dentro de un ciclo de 12h) que se setea
+        // arrastrando las agujas en modo "Editar", guardada en localStorage, y que
+        // simplemente se suma sobre la hora real — así el reloj sigue caminando en
+        // sincro en vez de desviarse.
         const HALF_DAY = 12 * 3600;
         let offsetSec = parseFloat(localStorage.getItem('pw_offset') || '0');
         let hHour = 0, hMin = 0, hSec = 0; // recomputed every frame — see applyRealTime()
 
+        function deviceTimeZone() {
+            try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; }
+            catch (e) { return 'UTC'; }
+        }
+
         function realSecondsIn12h() {
+            // Usamos Intl con la zona horaria del dispositivo (en vez de
+            // Date#getHours crudo) para que el horario de verano y cualquier
+            // particularidad de la zona local se resuelvan siempre bien.
             const d = new Date();
-            return (d.getHours() % 12) * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000;
+            const parts = new Intl.DateTimeFormat('en-US', {
+                timeZone: deviceTimeZone(),
+                hourCycle: 'h23',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }).formatToParts(d);
+            const map = {};
+            for (const p of parts) map[p.type] = p.value;
+            const hh = parseInt(map.hour, 10) % 24;
+            const mm = parseInt(map.minute, 10);
+            const ss = parseInt(map.second, 10);
+            return (hh % 12) * 3600 + mm * 60 + ss + d.getMilliseconds() / 1000;
         }
 
         function applyRealTime() {
