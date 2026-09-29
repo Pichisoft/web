@@ -59,12 +59,13 @@
             border-radius: 6px;
         }
 .eliminadas::after {
-  content: "ÚLTIMAS 2 SEMANAS";
+  content: "ÚLTIMOS 10 DÍAS";
   background-color: rgb(167, 165, 28);
   padding: 4px;
   font-size: 0.7em;
   border-radius: 6px;
 }
+
 .proximo::after {
   content: "PRÓXIMAMENTE";
   background-color: rgb(28, 65, 167);
@@ -72,6 +73,46 @@
   font-size: 0.7em;
   border-radius: 6px;
 }
+
+.etiqueta {
+  padding: 4px;
+  font-size: 0.7em;
+  border-radius: 6px;
+  margin-left: 6px;
+}
+
+.et-nuevo {
+  background-color: rgb(167, 28, 28);
+}
+
+.et-actualizado {
+  background-color: rgb(44, 167, 28);
+}
+
+/* .et-nuevo ya está arriba, no lo repitas */
+
+.et-beta {
+  background-color: rgb(193, 35, 207); /* <- pon aquí el rgb de tu color para BETA */
+}
+
+.et-cancelado {
+  background-color: rgb(92, 15, 15); /* <- pon aquí el rgb de tu color para CANCELADO */
+}
+
+.et-ultimos {
+  background-color: rgb(167, 165, 28); /* el mismo amarillo de "eliminadas" */
+}
+
+.et-act-cancelada {
+  background-color: rgb(92, 15, 15); /* <- pon aquí el rgb de tu color para ACTUALIZACIÓN CANCELADA */
+}
+
+/* .et-ultimos ya está del bloque anterior, no lo repitas */
+
+.et-mantenimiento {
+  background-color: rgb(20, 187, 216); /* <- pon aquí el rgb de tu color celeste para MANTENIMIENTO */
+}
+        
 
 
     </style>
@@ -88,10 +129,13 @@
             <a target="_blank" rel="noopener noreferrer"
                 href="https://pichisoft.github.io/web/pichontutorial.html">PichonTutorial</a>
         </li>
-    <li class="nuevo">
-            <a target="_blank" rel="noopener noreferrer"
-                href="https://pichisoft.github.io/web/pichonalarm.html">PichonAlarm</a>
-        </li>
+   <li>
+  <a target="_blank" rel="noopener noreferrer"
+      href="https://pichisoft.github.io/web/pichonalarm.html">PichonAlarm</a>
+  <span class="etiqueta et-nuevo">NUEVO</span>
+  <span class="etiqueta et-beta">VERSIÓN BETA</span>
+</li>
+
         <li>
             <a target="_blank" rel="noopener noreferrer"
                 href="https://pichisoft.github.io/web/pichoncalc.html">PichonCalc</a>
