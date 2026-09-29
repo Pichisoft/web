@@ -75,11 +75,14 @@
 }
 
 .etiqueta {
+  display: inline-block; /* 1. Corrige el borde raro y respeta el padding */
+  user-select: none;     /* 2. Evita que el usuario pueda seleccionar el texto */
   padding: 4px;
   font-size: 0.7em;
   border-radius: 6px;
   margin-left: 6px;
 }
+
 
 .et-nuevo {
   background-color: rgb(167, 28, 28);
