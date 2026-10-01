@@ -7,6 +7,54 @@
     <title>PichonCalc</title>
 
     <style>
+        /* ===== ESTADO DE SESIÓN PICHISOFT ===== */
+
+        #pichisoft-session-status {
+            position: fixed;
+            top: 55px;
+            right: 20px;
+
+            padding: 7px 14px;
+
+            background: #000;
+            color: #20a84b;
+
+            border: 1px solid rgba(32, 168, 75, 0.35);
+            border-radius: 20px;
+
+            font-family: Georgia, serif;
+            font-size: 14px;
+
+            z-index: 9999;
+
+            opacity: 1;
+            transform: translateY(0);
+
+            transition:
+                opacity 0.5s ease,
+                transform 0.5s ease;
+        }
+
+        #pichisoft-session-status.hidden {
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+        }
+
+        #pichisoft-session-status.success {
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+
+            #pichisoft-session-status {
+                top: 55px;
+                right: 10px;
+                font-size: 13px;
+            }
+
+        }
+
         body {
             margin: 0;
             background: #111;
@@ -125,166 +173,6 @@
             font-style: italic;
             color: #bbb;
         }
-
-        /* ---------- ESTADO DE SESIÓN PICHISOFT ---------- */
-
-        #pichisoft-session-status {
-            position: fixed;
-            top: 75px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: min(420px, calc(100% - 32px));
-            padding: 14px 18px;
-
-            background: #000;
-            border: 1px solid rgba(34, 197, 94, 0.25);
-            border-radius: 14px;
-
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
-
-            color: #20a84b;
-            font-family: Georgia, serif;
-            font-size: 16px;
-            text-align: center;
-
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-
-            transition:
-                opacity 0.6s ease,
-                transform 0.6s ease;
-
-            z-index: 9998;
-        }
-
-        #pichisoft-session-status.hidden {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-15px);
-            pointer-events: none;
-        }
-
-        #pichisoft-session-status .session-check {
-            height: 0;
-            overflow: hidden;
-
-            font-size: 42px;
-            font-weight: bold;
-            line-height: 42px;
-
-            opacity: 0;
-            transform: scale(0.2);
-        }
-
-        #pichisoft-session-status.success .session-check {
-            height: 45px;
-            margin-bottom: 4px;
-
-            animation:
-                pichisoftCheck 0.8s cubic-bezier(.17, .89, .32, 1.49) forwards;
-        }
-
-        @keyframes pichisoftCheck {
-
-            0% {
-                opacity: 0;
-                transform: scale(0.2) rotate(-25deg);
-            }
-
-            60% {
-                opacity: 1;
-                transform: scale(1.25) rotate(8deg);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1) rotate(0deg);
-            }
-        }
-
-        #pichisoft-session-profile {
-            position: fixed;
-            top: 75px;
-            right: 20px;
-
-            display: flex;
-            align-items: center;
-            gap: 10px;
-
-            padding: 7px 14px 7px 7px;
-
-            background: #000;
-            border: 1px solid rgba(34, 197, 94, 0.25);
-            border-radius: 30px;
-
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
-
-            font-family: Georgia, serif;
-
-            opacity: 0;
-            transform: translateY(-15px) scale(0.9);
-
-            transition:
-                opacity 0.7s ease,
-                transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
-
-            pointer-events: none;
-
-            z-index: 9998;
-        }
-
-        #pichisoft-session-profile.visible {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
-        #pichisoft-profile-picture img,
-        #pichisoft-profile-picture .profile-placeholder {
-            width: 38px;
-            height: 38px;
-
-            border-radius: 50%;
-            object-fit: cover;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #pichisoft-profile-picture .profile-placeholder {
-            background: #20a84b;
-            color: white;
-
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        #pichisoft-session-profile .profile-name {
-            color: #fff;
-
-            font-size: 16px;
-            font-weight: bold;
-
-            max-width: 160px;
-
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        @media (max-width: 600px) {
-
-            #pichisoft-session-status {
-                top: 70px;
-                width: calc(100% - 20px);
-                font-size: 14px;
-            }
-
-            #pichisoft-session-profile {
-                top: 70px;
-                right: 10px;
-                max-width: calc(100% - 20px);
-            }
-        }
     </style>
 </head>
 
@@ -293,26 +181,6 @@
     <div class="header">
         <span class="title">PichonCalc</span>
         <span class="credit">- By Pichisoft -</span>
-        <!-- Pichisoft - Estado de sesión -->
-
-        <div id="pichisoft-session-status">
-
-            <div class="session-check">✓</div>
-
-            <div class="session-text">
-                Iniciando sesión en tu cuenta de Pichisoft...
-            </div>
-
-        </div>
-
-        <div id="pichisoft-session-profile">
-
-            <div id="pichisoft-profile-picture"></div>
-
-            <div class="profile-name" id="pichisoft-profile-name">
-            </div>
-
-        </div>
     </div>
 
     <div class="calculator" id="calc">
@@ -443,33 +311,45 @@
             }
         });
     </script>
+    <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
+            href="https://pichisoft.github.io/web/" target="_blank"
+            style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
+    <div id="pichisoft-session-status">
+        Iniciando sesión en tu cuenta de Pichisoft...
+    </div>
     <script>
 
         const sessionStatus =
             document.getElementById('pichisoft-session-status');
 
-        const sessionProfile =
-            document.getElementById('pichisoft-session-profile');
 
-        const profilePicture =
-            document.getElementById('pichisoft-profile-picture');
+        window.addEventListener(
+            'pichisoft-auth-ready',
+            evento => {
 
-        const profileName =
-            document.getElementById('pichisoft-profile-name');
+                const usuario = evento.detail;
 
 
-        async function iniciarEstadoSesion() {
+                if (!usuario) {
 
-            const usuario =
-                window.PichisoftFirebase?.currentUser;
+                    sessionStatus.textContent =
+                        'No tenés una sesión iniciada en Pichisoft';
+
+                    setTimeout(() => {
+
+                        sessionStatus.classList.add('hidden');
+
+                    }, 5000);
+
+                    return;
+                }
 
 
-            if (!usuario) {
+                sessionStatus.classList.add('success');
 
-                sessionStatus.classList.remove('success');
+                sessionStatus.innerHTML =
+                    '✓ Sesión iniciada';
 
-                sessionStatus.querySelector('.session-text').textContent =
-                    'No tenés una sesión iniciada en Pichisoft';
 
                 setTimeout(() => {
 
@@ -477,117 +357,10 @@
 
                 }, 6000);
 
-                return;
             }
-
-
-            const firebase =
-                window.PichisoftFirebase;
-
-
-            let perfil = {};
-
-
-            try {
-
-                const perfilSnap =
-                    await firebase.getDoc(
-                        firebase.doc(
-                            firebase.db,
-                            'users',
-                            usuario.uid
-                        )
-                    );
-
-
-                if (perfilSnap.exists()) {
-
-                    perfil = perfilSnap.data();
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    'Error cargando perfil de Pichisoft:',
-                    error
-                );
-
-            }
-
-
-            sessionStatus.classList.add('success');
-
-            sessionStatus.querySelector('.session-text').textContent =
-                'Sesión iniciada';
-
-
-            setTimeout(() => {
-
-                sessionStatus.classList.add('hidden');
-
-
-                profileName.textContent =
-                    perfil.username ||
-                    usuario.email ||
-                    'Usuario';
-
-
-                if (perfil.photo) {
-
-                    const img =
-                        document.createElement('img');
-
-                    img.src = perfil.photo;
-                    img.alt = 'Foto de perfil';
-
-                    profilePicture.replaceChildren(img);
-
-                } else {
-
-                    const placeholder =
-                        document.createElement('div');
-
-                    placeholder.className =
-                        'profile-placeholder';
-
-                    placeholder.textContent =
-                        (
-                            perfil.username ||
-                            usuario.email ||
-                            'U'
-                        )
-                            .charAt(0)
-                            .toUpperCase();
-
-                    profilePicture.replaceChildren(
-                        placeholder
-                    );
-
-                }
-
-
-                setTimeout(() => {
-
-                    sessionProfile.classList.add('visible');
-
-                }, 450);
-
-            }, 6000);
-
-        }
-
-
-        setTimeout(() => {
-
-            iniciarEstadoSesion();
-
-        }, 12000);
+        );
 
     </script>
-    <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
-            href="https://pichisoft.github.io/web/" target="_blank"
-            style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 
@@ -595,12 +368,6 @@
             getAuth,
             onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-
-        import {
-            getFirestore,
-            doc,
-            getDoc
-        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCf_P8qp9bBUnsVe3qsTAtZJjZHOktKf-8",
@@ -614,13 +381,9 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
 
         window.PichisoftFirebase = {
             auth,
-            db,
-            doc,
-            getDoc,
             currentUser: null
         };
 
@@ -628,640 +391,11 @@
 
             window.PichisoftFirebase.currentUser = usuario;
 
-        });
-
-    </script>
-</body>
-
-</html><!DOCTYPE html>
-<html lang="es">
-
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PichonCalc</title>
-
-    <style>
-        body {
-            margin: 0;
-            background: #111;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
-        }
-
-        .calculator {
-            width: 360px;
-            background: #1e1e1e;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header {
-            position: fixed;
-            top: 15px;
-            left: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 10;
-        }
-
-        .header .title {
-            font-family: "Times New Roman", Times, serif;
-            font-weight: bold;
-            font-size: 40px;
-            color: #fff;
-        }
-
-        .header .credit {
-            font-family: Arial, sans-serif;
-            font-style: italic;
-            font-weight: normal;
-            font-size: 18px;
-            color: #aaa;
-            position: relative;
-            top: 6px;
-        }
-
-        #display {
-            width: 100%;
-            height: 60px;
-            font-size: 22px;
-            text-align: right;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            background: #000;
-            color: #0f0;
-            outline: none;
-        }
-
-        .buttons {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-
-        button {
-            padding: 12px;
-            font-size: 13px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background: #333;
-            color: white;
-        }
-
-        button:hover {
-            background: #555;
-        }
-
-        .eq {
-            background: #28a745;
-            grid-column: span 4;
-        }
-
-        .clear {
-            background: #dc3545;
-        }
-
-        /* partículas */
-        .particle {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            pointer-events: none;
-            animation: fly 600ms linear forwards;
-        }
-
-        @keyframes fly {
-            from {
-                transform: translate(0, 0);
-                opacity: 1;
-            }
-
-            to {
-                transform: translate(var(--x), var(--y));
-                opacity: 0;
-            }
-        }
-
-        .credit {
-            font-family: Verdana, sans-serif;
-            font-size: 18px;
-            font-style: italic;
-            color: #bbb;
-        }
-
-        /* ---------- ESTADO DE SESIÓN PICHISOFT ---------- */
-
-        #pichisoft-session-status {
-            position: fixed;
-            top: 75px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: min(420px, calc(100% - 32px));
-            padding: 14px 18px;
-
-            background: #000;
-            border: 1px solid rgba(34, 197, 94, 0.25);
-            border-radius: 14px;
-
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
-
-            color: #20a84b;
-            font-family: Georgia, serif;
-            font-size: 16px;
-            text-align: center;
-
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-
-            transition:
-                opacity 0.6s ease,
-                transform 0.6s ease;
-
-            z-index: 9998;
-        }
-
-        #pichisoft-session-status.hidden {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-15px);
-            pointer-events: none;
-        }
-
-        #pichisoft-session-status .session-check {
-            height: 0;
-            overflow: hidden;
-
-            font-size: 42px;
-            font-weight: bold;
-            line-height: 42px;
-
-            opacity: 0;
-            transform: scale(0.2);
-        }
-
-        #pichisoft-session-status.success .session-check {
-            height: 45px;
-            margin-bottom: 4px;
-
-            animation:
-                pichisoftCheck 0.8s cubic-bezier(.17, .89, .32, 1.49) forwards;
-        }
-
-        @keyframes pichisoftCheck {
-
-            0% {
-                opacity: 0;
-                transform: scale(0.2) rotate(-25deg);
-            }
-
-            60% {
-                opacity: 1;
-                transform: scale(1.25) rotate(8deg);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1) rotate(0deg);
-            }
-        }
-
-        #pichisoft-session-profile {
-            position: fixed;
-            top: 75px;
-            right: 20px;
-
-            display: flex;
-            align-items: center;
-            gap: 10px;
-
-            padding: 7px 14px 7px 7px;
-
-            background: #000;
-            border: 1px solid rgba(34, 197, 94, 0.25);
-            border-radius: 30px;
-
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
-
-            font-family: Georgia, serif;
-
-            opacity: 0;
-            transform: translateY(-15px) scale(0.9);
-
-            transition:
-                opacity 0.7s ease,
-                transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
-
-            pointer-events: none;
-
-            z-index: 9998;
-        }
-
-        #pichisoft-session-profile.visible {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
-        #pichisoft-profile-picture img,
-        #pichisoft-profile-picture .profile-placeholder {
-            width: 38px;
-            height: 38px;
-
-            border-radius: 50%;
-            object-fit: cover;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #pichisoft-profile-picture .profile-placeholder {
-            background: #20a84b;
-            color: white;
-
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        #pichisoft-session-profile .profile-name {
-            color: #fff;
-
-            font-size: 16px;
-            font-weight: bold;
-
-            max-width: 160px;
-
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        @media (max-width: 600px) {
-
-            #pichisoft-session-status {
-                top: 70px;
-                width: calc(100% - 20px);
-                font-size: 14px;
-            }
-
-            #pichisoft-session-profile {
-                top: 70px;
-                right: 10px;
-                max-width: calc(100% - 20px);
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="header">
-        <span class="title">PichonCalc</span>
-        <span class="credit">- By Pichisoft -</span>
-        <!-- Pichisoft - Estado de sesión -->
-
-        <div id="pichisoft-session-status">
-
-            <div class="session-check">✓</div>
-
-            <div class="session-text">
-                Iniciando sesión en tu cuenta de Pichisoft...
-            </div>
-
-        </div>
-
-        <div id="pichisoft-session-profile">
-
-            <div id="pichisoft-profile-picture"></div>
-
-            <div class="profile-name" id="pichisoft-profile-name">
-            </div>
-
-        </div>
-    </div>
-
-    <div class="calculator" id="calc">
-
-        <input id="display" type="text" autofocus />
-
-        <div class="buttons">
-
-            <button onclick="append('(')">(</button>
-            <button onclick="append(')')">)</button>
-            <button onclick="clearDisplay()" class="clear">C</button>
-            <button onclick="del()">DEL</button>
-
-            <button onclick="append('7')">7</button>
-            <button onclick="append('8')">8</button>
-            <button onclick="append('9')">9</button>
-            <button onclick="append('/')">/</button>
-
-            <button onclick="append('4')">4</button>
-            <button onclick="append('5')">5</button>
-            <button onclick="append('6')">6</button>
-            <button onclick="append('*')">*</button>
-
-            <button onclick="append('1')">1</button>
-            <button onclick="append('2')">2</button>
-            <button onclick="append('3')">3</button>
-            <button onclick="append('-')">-</button>
-
-            <button onclick="append('0')">0</button>
-            <button onclick="append('.')">.</button>
-            <button onclick="append('+')">+</button>
-
-            <button class="eq" onclick="calculate(event)">=</button>
-
-        </div>
-    </div>
-
-    <script>
-        const display = document.getElementById("display");
-        const calc = document.getElementById("calc");
-
-        let lastExpression = "";
-
-        /* ===== VARIABLES ===== */
-        let vars = { a: 10, b: 5, c: 0, d: 2 };
-
-        /* ===== UTIL ===== */
-        function sanitize(expr) {
-            return expr.replace(/Math\./g, "");
-        }
-
-        function replaceLetters(expr) {
-            return expr.replace(/[a-z]/gi, m => vars[m] ?? m);
-        }
-
-        /* ===== INPUT ===== */
-        function append(v) {
-            display.value += v;
-        }
-
-        function clearDisplay() { display.value = ""; }
-        function del() { display.value = display.value.slice(0, -1); }
-
-        /* ===== PARTICULAS ===== */
-        function spawnParticles(x, y) {
-            for (let i = 0; i < 20; i++) {
-                let p = document.createElement("div");
-                p.className = "particle";
-
-                p.style.left = x + "px";
-                p.style.top = y + "px";
-
-                let angle = Math.random() * Math.PI * 2;
-                let dist = Math.random() * 80;
-
-                p.style.setProperty("--x", Math.cos(angle) * dist + "px");
-                p.style.setProperty("--y", Math.sin(angle) * dist + "px");
-
-                p.style.background = `hsl(${Math.random() * 360},100%,60%)`;
-
-                calc.appendChild(p);
-                setTimeout(() => p.remove(), 600);
-            }
-        }
-
-        /* ===== CALCULAR ===== */
-        function calculate(e) {
-            try {
-                let expr = display.value;
-
-                if (expr.trim() === "" && lastExpression) {
-                    expr = lastExpression;
-                }
-
-                expr = sanitize(expr);
-                expr = replaceLetters(expr);
-
-                let result = eval(expr);
-
-                display.value = result;
-                lastExpression = expr;
-
-                let rect = e.target.getBoundingClientRect();
-                spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
-
-            } catch {
-                display.value = "Error";
-            }
-        }
-
-        /* ===== TECLADO ===== */
-        document.addEventListener("keydown", (e) => {
-            const key = e.key.toLowerCase();
-            const allowed = "0123456789+-*/().abcdefghijklmnopqrstuvwxyz";
-
-            if (allowed.includes(key)) {
-                e.preventDefault();
-                append(key);
-            } else if (key === "enter") {
-                e.preventDefault();
-                calculate({ target: document.querySelector(".eq") });
-            } else if (key === "backspace") {
-                e.preventDefault();
-                del();
-            } else if (key === "escape") {
-                e.preventDefault();
-                clearDisplay();
-            }
-        });
-    </script>
-    <script>
-
-        const sessionStatus =
-            document.getElementById('pichisoft-session-status');
-
-        const sessionProfile =
-            document.getElementById('pichisoft-session-profile');
-
-        const profilePicture =
-            document.getElementById('pichisoft-profile-picture');
-
-        const profileName =
-            document.getElementById('pichisoft-profile-name');
-
-
-        async function iniciarEstadoSesion() {
-
-            const usuario =
-                window.PichisoftFirebase?.currentUser;
-
-
-            if (!usuario) {
-
-                sessionStatus.classList.remove('success');
-
-                sessionStatus.querySelector('.session-text').textContent =
-                    'No tenés una sesión iniciada en Pichisoft';
-
-                setTimeout(() => {
-
-                    sessionStatus.classList.add('hidden');
-
-                }, 6000);
-
-                return;
-            }
-
-
-            const firebase =
-                window.PichisoftFirebase;
-
-
-            let perfil = {};
-
-
-            try {
-
-                const perfilSnap =
-                    await firebase.getDoc(
-                        firebase.doc(
-                            firebase.db,
-                            'users',
-                            usuario.uid
-                        )
-                    );
-
-
-                if (perfilSnap.exists()) {
-
-                    perfil = perfilSnap.data();
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    'Error cargando perfil de Pichisoft:',
-                    error
-                );
-
-            }
-
-
-            sessionStatus.classList.add('success');
-
-            sessionStatus.querySelector('.session-text').textContent =
-                'Sesión iniciada';
-
-
-            setTimeout(() => {
-
-                sessionStatus.classList.add('hidden');
-
-
-                profileName.textContent =
-                    perfil.username ||
-                    usuario.email ||
-                    'Usuario';
-
-
-                if (perfil.photo) {
-
-                    const img =
-                        document.createElement('img');
-
-                    img.src = perfil.photo;
-                    img.alt = 'Foto de perfil';
-
-                    profilePicture.replaceChildren(img);
-
-                } else {
-
-                    const placeholder =
-                        document.createElement('div');
-
-                    placeholder.className =
-                        'profile-placeholder';
-
-                    placeholder.textContent =
-                        (
-                            perfil.username ||
-                            usuario.email ||
-                            'U'
-                        )
-                            .charAt(0)
-                            .toUpperCase();
-
-                    profilePicture.replaceChildren(
-                        placeholder
-                    );
-
-                }
-
-
-                setTimeout(() => {
-
-                    sessionProfile.classList.add('visible');
-
-                }, 450);
-
-            }, 6000);
-
-        }
-
-
-        setTimeout(() => {
-
-            iniciarEstadoSesion();
-
-        }, 12000);
-
-    </script>
-    <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
-            href="https://pichisoft.github.io/web/" target="_blank"
-            style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-
-        import {
-            getAuth,
-            onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-
-        import {
-            getFirestore,
-            doc,
-            getDoc
-        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCf_P8qp9bBUnsVe3qsTAtZJjZHOktKf-8",
-            authDomain: "pichisoft.firebaseapp.com",
-            projectId: "pichisoft",
-            storageBucket: "pichisoft.firebasestorage.app",
-            messagingSenderId: "690032082295",
-            appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
-            measurementId: "G-K7HRKR8BJ1"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        window.PichisoftFirebase = {
-            auth,
-            db,
-            doc,
-            getDoc,
-            currentUser: null
-        };
-
-        onAuthStateChanged(auth, usuario => {
-
-            window.PichisoftFirebase.currentUser = usuario;
+            window.dispatchEvent(
+                new CustomEvent('pichisoft-auth-ready', {
+                    detail: usuario
+                })
+            );
 
         });
 
