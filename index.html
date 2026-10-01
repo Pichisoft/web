@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.emailjs.com ws://127.0.0.1:5500; base-uri 'self'; form-action 'self'">
+    <title>PichonApps</title>
+    <style>
+        html {
+            background-color: #222;
+            color: whitesmoke;
+            font-family: Verdana, "Open Sans", "Helvetica Neue", sans-serif;
+            font-size: 18px
+        }
+
+        a,
+        a:visited {
+            color: whitesmoke;
+            text-decoration: none;
+            padding: 4px
+        }
+
+        a:hover {
+            background-color: whitesmoke;
+            color: #222
+        }
+
+        li {
+            margin-bottom: 10px
+        }
+
+        .titulo {
+            font-family: "Times New Roman", Times, serif
+        }
+
+        .by {
+            font-family: Verdana, "Open Sans", "Helvetica Neue", sans-serif;
+            font-size: 18px;
+            font-weight: normal;
+            font-style: italic;
+            color: #bbb
+        }
+
+        .nuevo::after {
+            content: "NUEVO";
+            background-color: rgb(167, 28, 28);
+            padding: 4px;
+            font-size: .7em;
+            border-radius: 6px
+        }
+
+        .actualizado::after {
+            content: "ACTUALIZADO";
+            background-color: rgb(44, 167, 28);
+            padding: 4px;
+            font-size: .7em;
+            border-radius: 6px
+        }
+
+        .eliminadas::after {
+            content: "ÚLTIMOS 10 DÍAS PARA USARLA";
+            background-color: rgb(167, 165, 28);
+            padding: 4px;
+            font-size: .7em;
+            border-radius: 6px
+        }
+
+        .proximo::after {
+            content: "PRÓXIMAMENTE";
+            background-color: rgb(28, 65, 167);
+            padding: 4px;
+            font-size: .7em;
+            border-radius: 6px
+        }
+
+        .etiqueta {
+            display: inline-block;
+            user-select: none;
+            padding: 4px;
+            font-size: .7em;
+            border-radius: 6px;
+            margin-left: 6px
+        }
+
+        .et-nuevo {
+            background-color: rgb(167, 28, 28)
+        }
+
+        .et-actualizado {
+            background-color: rgb(44, 167, 28)
+        }
+
+        .et-beta {
+            background-color: rgb(193, 35, 207)
+        }
+
+        .et-cancelado {
+            background-color: rgb(92, 15, 15)
+        }
+
+        .et-ultimos {
+            background-color: rgb(167, 165, 28)
+        }
+
+        .et-act-cancelada {
+            background-color: rgb(92, 15, 15)
+        }
+
+        .et-mantenimiento {
+            background-color: rgb(36, 150, 170)
+        }
+
+        /* ===== Pichisoft cuenta ===== */
+        #cuenta {
+            position: fixed;
+            top: 14px;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 50
+        }
+
+        #cuenta .nom {
+            font-size: .9em
+        }
+
+        #cuenta small {
+            display: block;
+            color: #888;
+            font-size: .65em;
+            cursor: pointer;
+            text-align: right
+        }
+
+        #cuenta small:hover {
+            color: #ccc
+        }
+
+        .avwrap {
+            position: relative;
+            width: 44px;
+            height: 44px
+        }
+
+        .av {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #444;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+            overflow: hidden
+        }
+
+        .av img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .lapiz {
+            position: absolute;
+            right: -9px;
+            bottom: -7px;
+            background: none;
+            border: 0;
+            color: #ddd;
+            cursor: pointer;
+            font-size: 15px;
+            padding: 0;
+            line-height: 1
+        }
+
+        .lapiz:hover {
+            color: #fff
+        }
+
+        .ov {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            padding: 16px;
+            box-sizing: border-box
+        }
+
+        .ov.sem {
+            background: rgba(0, 0, 0, .85);
+            z-index: 110
+        }
+
+        .ov.sem2 {
+            z-index: 120
+        }
+
+        .box {
+            max-width: 560px;
+            width: 100%;
+            margin: auto;
+            color: whitesmoke;
+            background: #000
+        }
+
+        .ov.sem .box,
+        .ov.sem2 .box {
+            background: #111;
+            padding: 22px;
+            border-radius: 12px;
+            border: 1px solid #333
+        }
+
+        .t {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            font-size: 1.7em;
+            margin: 0 0 12px
+        }
+
+        .g {
+            font-family: Georgia, serif
+        }
+
+        .peq {
+            font-size: .72em;
+            color: #999;
+            line-height: 1.5
+        }
+
+        .opt {
+            display: block;
+            width: 100%;
+            background: none;
+            border: 0;
+            color: whitesmoke;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1.5em;
+            text-align: left;
+            padding: 10px 4px;
+            cursor: pointer;
+            margin-top: 4px
+        }
+
+        .opt:hover {
+            background: whitesmoke;
+            color: #222
+        }
+
+        .box label {
+            display: block;
+            margin: 14px 0 4px;
+            font-size: .85em
+        }
+
+        .box input[type=text],
+        .box input[type=password] {
+            width: 100%;
+            box-sizing: border-box;
+            background: #222;
+            border: 1px solid #555;
+            color: whitesmoke;
+            padding: 9px;
+            font-size: .9em;
+            border-radius: 6px;
+            font-family: inherit
+        }
+
+        .btn {
+            background: #333;
+            color: whitesmoke;
+            border: 1px solid #666;
+            border-radius: 6px;
+            padding: 9px 14px;
+            font-size: .85em;
+            cursor: pointer;
+            margin: 12px 8px 0 0;
+            font-family: inherit
+        }
+
+        .btn:hover {
+            background: whitesmoke;
+            color: #222
+        }
+
+        .lnk {
+            color: #999;
+            font-size: .75em;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: 14px;
+            display: inline-block
+        }
+
+        .err {
+            color: #ff7b7b;
+            font-size: .8em;
+            min-height: 1.2em;
+            margin-top: 10px
+        }
+
+        .circ {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            border: 2px dashed #666;
+            margin: 8px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: none;
+            color: whitesmoke;
+            font-size: 2.4em;
+            cursor: pointer;
+            padding: 0
+        }
+
+        .circ img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .codigo {
+            font-size: 2.4em;
+            letter-spacing: .3em;
+            text-align: center;
+            font-family: monospace;
+            margin: 14px 0;
+            user-select: all
+        }
+
+        .cropw {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 10px auto;
+            overflow: hidden;
+            touch-action: none;
+            cursor: grab;
+            background: #222
+        }
+
+        .cropw canvas {
+            display: block
+        }
+
+        .cropw .mask {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            box-shadow: 0 0 0 999px rgba(0, 0, 0, .65);
+            pointer-events: none
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 6px;
+            margin-top: 12px;
+            max-height: 45vh;
+            overflow: auto
+        }
+
+        .grid img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 6px
+        }
+
+        .grid img:hover {
+            outline: 2px solid #fff
+        }
+
+        .c {
+            text-align: center
+        }
+    </style>
+</head>
+
+<body>
+    <div id="cuenta"></div>
+
+    <h1 class="titulo">PichonApps <span class="by">- By Pichisoft -</span></h1>
+    <h3>Directorio de apps</h3>
+    <ul>
+        <li class="nuevo"><a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichontutorial.html">PichonTutorial</a></li>
+        <li>
+            <a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichonalarm.html">PichonAlarm</a>
+            <span class="etiqueta et-nuevo">NUEVO</span>
+            <span class="etiqueta et-beta">VERSIÓN BETA</span>
+        </li>
+        <li class="proximo"><a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/#.html">PichonBirthday</a></li>
+        <li><a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichoncalc.html">PichonCalc</a></li>
+        <li class="actualizado"><a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichoncalendar.html">PichonCalendar</a></li>
+        <li><a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichondestiny.html">PichonDestiny</a></li>
+        <li class="actualizado"><a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichondocs.html">PichonDocs</a></li>
+        <li class="actualizado"><a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichonlist.html">PichonList</a></li>
+        <li><a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichonpass.html">PichonPass</a></li>
+        <li class="nuevo"><a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichonramdom.html">PichonRamdom</a></li>
+        <li><a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichonsnake.html">PichonSnake</a></li>
+        <li class="actualizado"><a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichonwatch.html">PichonWatch</a></li>
+    </ul>
+
+    <script>
+        /* =====================================================================
+           PICHISOFT CUENTAS
+           La capa "API" es lo único que habla con el almacenamiento. Hoy usa
+           localStorage (las cuentas viven en ESTE navegador). Para que funcione
+           entre dispositivos hay que reemplazar los métodos de API por llamadas
+           a un servidor (Firebase, Supabase, etc.). El resto de la interfaz no cambia.
+           ===================================================================== */
+        const LS = {
+            get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } },
+            set(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+        };
+
+        const enc = new TextEncoder();
+        const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+        const rand = n => hex(crypto.getRandomValues(new Uint8Array(n)));
+        const sha = async t => hex(await crypto.subtle.digest('SHA-256', enc.encode(t)));
+        async function pbkdf2(pass, saltHex) {
+            const salt = Uint8Array.from(saltHex.match(/../g).map(h => parseInt(h, 16)));
+            const key = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveBits']);
+            return hex(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 310000, hash: 'SHA-256' }, key, 256));
+        }
+        function iguales(a, b) { // comparación en tiempo constante
+            a = String(a); b = String(b);
+            if (a.length !== b.length) return false;
+            let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+            return r === 0;
+        }
+        const okFoto = f => (typeof f === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(f)) ? f : '';
+
+        /* ---------- Restablecer contraseña: cifrado para el equipo Pichisoft ----------
+           Esta es la clave PÚBLICA del equipo (puede verla cualquiera). La privada la tenés solo vos. */
+        const EQUIPO_PUB = { "kty": "EC", "crv": "P-256", "x": "zcIrDLZTuprDPAkRlyElRKgww1sYvR2urv0W6n_O5Us", "y": "ayPuqKOM2KShz_gFvnaq3SJAMyn0WvEk4OSG9VceWUM" };
+        const B64 = {
+            enc: b => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''),
+            dec: s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0))
+        };
+        async function cifrarParaEquipo(code) {
+            const ec = { name: 'ECDH', namedCurve: 'P-256' };
+            const pub = await crypto.subtle.importKey('jwk', { ...EQUIPO_PUB, ext: true }, ec, false, []);
+            const eph = await crypto.subtle.generateKey(ec, true, ['deriveKey']);
+            const aes = await crypto.subtle.deriveKey({ name: 'ECDH', public: pub }, eph.privateKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aes, enc.encode(code)));
+            const ep = new Uint8Array(await crypto.subtle.exportKey('raw', eph.publicKey));
+            const out = new Uint8Array(65 + 12 + ct.length); out.set(ep, 0); out.set(iv, 65); out.set(ct, 77);
+            return B64.enc(out);
+        }
+
+        const API = {
+            users() { return LS.get('ps_users', {}); },
+            validar(name, pass) {
+                if (!/^[A-Za-z0-9_.-]{3,20}$/.test(name)) throw new Error('El usuario debe tener de 3 a 20 caracteres: letras, números, _ . -');
+                if (pass.length < 8) throw new Error('La contraseña debe tener al menos 8 caracteres.');
+                if (pass.toLowerCase() === name.toLowerCase()) throw new Error('La contraseña no puede ser igual al usuario.');
+            },
+            async register(name, pass, photo) {
+                this.validar(name, pass);
+                const u = this.users(), k = name.toLowerCase();
+                if (u[k]) throw new Error('Ese nombre de usuario ya existe.');
+                const salt = rand(16);
+                u[k] = { name, salt, hash: await pbkdf2(pass, salt), photo: okFoto(photo), data: {} };
+                LS.set('ps_users', u);
+                return k;
+            },
+            bloqueo(k) { const f = LS.get('ps_fails', {})[k]; return f && f.hasta > Date.now() ? Math.ceil((f.hasta - Date.now()) / 1000) : 0; },
+            fallo(k) {
+                const all = LS.get('ps_fails', {}), f = all[k] || { n: 0, hasta: 0 };
+                f.n++; if (f.n >= 5) f.hasta = Date.now() + Math.min(900000, 60000 * 2 ** (f.n - 5));
+                all[k] = f; LS.set('ps_fails', all);
+            },
+            async checkLogin(name, pass) {
+                const k = name.toLowerCase(), w = this.bloqueo(k);
+                if (w) throw new Error('Demasiados intentos. Esperá ' + w + ' segundos.');
+                const users = this.users(), u = users[k];
+                let ok = false;
+                if (u && u.salt) ok = iguales(await pbkdf2(pass, u.salt), u.hash);
+                else if (u) { // cuenta vieja (hash simple): se verifica y se actualiza
+                    ok = iguales(await sha('pichisoft:' + pass), u.hash);
+                    if (ok) { u.salt = rand(16); u.hash = await pbkdf2(pass, u.salt); LS.set('ps_users', users); }
+                } else await pbkdf2(pass, rand(16)); // mismo tiempo si el usuario no existe
+                if (!ok) { this.fallo(k); throw new Error('Usuario o contraseña incorrectos.'); }
+                const f = LS.get('ps_fails', {}); delete f[k]; LS.set('ps_fails', f);
+                return k;
+            },
+            async setPass(k, pass) {
+                const u = this.users(); this.validar(u[k].name, pass);
+                u[k].salt = rand(16); u[k].hash = await pbkdf2(pass, u[k].salt); delete u[k].tok;
+                LS.set('ps_users', u);
+                const f = LS.get('ps_fails', {}); delete f[k]; LS.set('ps_fails', f);
+            },
+            setPhoto(k, photo) { const u = this.users(); if (u[k]) { u[k].photo = okFoto(photo); LS.set('ps_users', u); } },
+            crearSesion(k) {
+                const u = this.users(), t = rand(32);
+                u[k].tok = t; LS.set('ps_users', u);
+                LS.set('ps_session', { k, t, exp: Date.now() + 30 * 864e5 });
+            },
+            cerrarSesion() {
+                const k = sesionK();
+                if (k) { const u = this.users(); delete u[k].tok; LS.set('ps_users', u); }
+                localStorage.removeItem('ps_session');
+            },
+            // Códigos de 6 dígitos (aleatorio criptográfico), guardados solo como hash, de un solo uso, vencen a los 10 min
+            async newCode() {
+                const now = Date.now(), codes = LS.get('ps_codes', {});
+                for (const h in codes) if (codes[h] < now) delete codes[h];
+                let c, h;
+                do { c = String(100000 + crypto.getRandomValues(new Uint32Array(1))[0] % 900000); h = await sha('code:' + c); } while (codes[h]);
+                codes[h] = now + 600000; LS.set('ps_codes', codes);
+                return c;
+            },
+            async useCode(c) {
+                const codes = LS.get('ps_codes', {}), h = await sha('code:' + c);
+                if (!codes[h] || codes[h] < Date.now()) return false;
+                delete codes[h]; LS.set('ps_codes', codes); return true;
+            }
+        };
+
+        function sesionK() {
+            const s = LS.get('ps_session', null);
+            if (!s || !s.k || s.exp < Date.now()) return null;
+            const u = API.users()[s.k];
+            return (u && u.tok && iguales(u.tok, s.t)) ? s.k : null;
+        }
+
+        /* ---------- Datos de las apps (para usar luego desde cada app) ----------
+           Pichisoft.setData('PichonDocs','nota1', {...}) / Pichisoft.getData('PichonDocs','nota1')
+           Con sesión iniciada se guarda en la cuenta; sin cuenta, en localStorage normal. */
+        window.Pichisoft = {
+            get user() { const k = sesionK(); return k ? API.users()[k] : null; },
+            getData(app, key, def) {
+                const k = sesionK();
+                if (k) { const v = API.users()[k].data[app + ':' + key]; return v === undefined ? def : v; }
+                return LS.get(app + ':' + key, def);
+            },
+            setData(app, key, val) {
+                const k = sesionK();
+                if (k) { const u = API.users(); u[k].data[app + ':' + key] = val; LS.set('ps_users', u); }
+                else LS.set(app + ':' + key, val);
+            }
+        };
+
+        /* ---------- Utilidades de UI ---------- */
+        function modal(html, cls = '') {
+            const o = document.createElement('div');
+            o.className = 'ov ' + cls;
+            o.innerHTML = '<div class="box">' + html + '</div>';
+            document.body.appendChild(o);
+            o.close = () => o.remove();
+            return o;
+        }
+        const q = (o, s) => o.querySelector(s);
+
+        /* ---------- Recorte circular ---------- */
+        function cropper(src, cb) {
+            const m = modal(`<h2 class="t g c">Recortar foto</h2>
+    <div class="cropw" id="cw"><canvas width="300" height="300"></canvas><div class="mask"></div></div>
+    <div class="c"><input type="range" id="zm" min="1" max="3" step="0.01" value="1" style="width:260px"></div>
+    <div class="c"><button class="btn" id="ok">Usar esta foto</button><button class="btn" id="no">Cancelar</button></div>`, 'sem sem2');
+            const cv = q(m, 'canvas'), ctx = cv.getContext('2d'), img = new Image();
+            img.crossOrigin = 'anonymous';
+            let z = 1, cx, cy;
+            const base = () => 300 / Math.min(img.width, img.height);
+            function draw(c = ctx, k = 1) {
+                const s = base() * z;
+                cx = Math.min(Math.max(cx, 150 / s), img.width - 150 / s);
+                cy = Math.min(Math.max(cy, 150 / s), img.height - 150 / s);
+                c.save(); c.scale(k, k); c.fillStyle = '#222'; c.fillRect(0, 0, 300, 300);
+                c.drawImage(img, 150 - cx * s, 150 - cy * s, img.width * s, img.height * s); c.restore();
+            }
+            img.onload = () => { cx = img.width / 2; cy = img.height / 2; draw(); };
+            img.onerror = () => { m.close(); alert('No se pudo cargar esa imagen.'); };
+            img.src = src;
+            q(m, '#zm').oninput = e => { z = +e.target.value; draw(); };
+            let d = null;
+            const w = q(m, '#cw');
+            w.onpointerdown = e => { d = [e.clientX, e.clientY]; w.setPointerCapture(e.pointerId); };
+            w.onpointermove = e => { if (!d) return; const s = base() * z; cx -= (e.clientX - d[0]) / s; cy -= (e.clientY - d[1]) / s; d = [e.clientX, e.clientY]; draw(); };
+            w.onpointerup = () => d = null;
+            q(m, '#no').onclick = () => m.close();
+            q(m, '#ok').onclick = () => {
+                const out = document.createElement('canvas'); out.width = out.height = 256;
+                draw(out.getContext('2d'), 256 / 300);
+                try { cb(out.toDataURL('image/jpeg', .85)); m.close(); }
+                catch { alert('Esa imagen no se puede usar (protegida). Probá con otra.'); }
+            };
+        }
+
+        /* ---------- Elegir foto (galería / navegador) ---------- */
+        function elegirFoto(cb, titulo) {
+            const m = modal((titulo ? `<h2 class="t g c" style="font-family:Georgia,serif">${titulo}</h2>` : '') +
+                `<button class="opt c" id="gal" style="font-size:1.1em;text-align:center">Seleccionar foto de la galería</button>
+     <input type="file" accept="image/*" id="fi" hidden>
+     <div class="c"><button class="btn" id="no">Cancelar</button></div>`, 'sem');
+            q(m, '#no').onclick = () => m.close();
+            q(m, '#gal').onclick = () => q(m, '#fi').click();
+            q(m, '#fi').onchange = e => {
+                const f = e.target.files[0]; if (!f) return;
+                const r = new FileReader();
+                r.onload = () => cropper(r.result, x => { cb(x); m.close(); });
+                r.readAsDataURL(f);
+            };
+        }
+
+        /* ---------- Código de verificación por email ----------
+           El mail sale de pichisoft.github@gmail.com usando EmailJS (gratis).
+           Completá estos 3 datos desde tu panel de EmailJS. Mientras estén vacíos,
+           funciona en MODO PRUEBA (el código se muestra en pantalla). */
+        const EMAILJS = { serviceId: 'service_o197lmp', templateId: 'template_s6to7yf', publicKey: 'vYU9JrTL_IMVwjCaz' };
+
+        function explicarErrorEmail(st, t) {
+            const x = String(t).toLowerCase();
+            if (x.includes('public key')) return 'La Public Key de EmailJS es inválida. Copiala de EmailJS > Account > General.';
+            if (x.includes('service id')) return 'El Service ID no existe. Revisalo en EmailJS > Email Services.';
+            if (x.includes('template id')) return 'El Template ID no existe. Revisalo en EmailJS > Email Templates.';
+            if (x.includes('recipients address is empty')) return 'El template no tiene destinatario: en EmailJS > Email Templates > Settings, poné {{to_email}} en el campo "To Email".';
+            if (st === 412 || x.includes('insufficient authentication scopes')) return 'Gmail no dio permiso para enviar. En EmailJS > Email Services, reconectá el Gmail y aceptá el permiso de enviar mails.';
+            if (st === 403) return 'EmailJS bloqueó el pedido (403). Revisá EmailJS > Account > Security (dominios permitidos / clave privada).';
+            if (st === 429) return 'Demasiados pedidos a EmailJS. Esperá un momento e intentá de nuevo.';
+            return 'EmailJS (' + st + '): ' + t;
+        }
+
+        async function enviarCodigo(email, code) {
+            if (!EMAILJS.serviceId || !EMAILJS.templateId || !EMAILJS.publicKey) return false;
+            let r;
+            try {
+                r = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        service_id: EMAILJS.serviceId, template_id: EMAILJS.templateId, user_id: EMAILJS.publicKey,
+                        template_params: {
+                            to_email: email, email: email, user_email: email, reply_to: email, code: code,
+                            message: 'Este es tu código de verificación de Pichisoft:\n' + code
+                        }
+                    })
+                });
+            } catch { throw new Error('No se pudo conectar con EmailJS. Revisá tu internet o desactivá el bloqueador de anuncios en esta página.'); }
+            const t = await r.text();
+            if (!r.ok) { console.error('EmailJS', r.status, t); throw new Error(explicarErrorEmail(r.status, t)); }
+            return true;
+        }
+
+        function verificar(onOk) {
+            const m = modal(`<h2 class="t">Código de verificación</h2>
+    <div class="peq">Te enviaremos un código de 6 dígitos desde pichisoft.github@gmail.com. No guardamos tu email.</div>
+    <label>Email donde recibirás el código:</label><input type="text" id="em" inputmode="email">
+    <div class="err" id="er"></div>
+    <button class="btn" id="ok">Enviar código</button><button class="btn" id="no">Cancelar</button>`, 'sem sem2');
+            q(m, '#no').onclick = () => m.close();
+            q(m, '#ok').onclick = async e => {
+                const em = q(m, '#em').value.trim();
+                if (!/^\S+@\S+\.\S+$/.test(em)) { q(m, '#er').textContent = 'Escribí un email válido.'; return; }
+                e.target.disabled = true; q(m, '#er').textContent = 'Enviando...';
+                try { const code = await API.newCode(); const enviado = await enviarCodigo(em, code); m.close(); pasoCodigo(code, em, enviado, onOk); }
+                catch (x) { q(m, '#er').textContent = x.message; e.target.disabled = false; }
+            };
+        }
+
+        function pasoCodigo(code, email, enviado, onOk) {
+            const m = modal(`<h2 class="t">Código de verificación</h2>
+    <div class="peq" id="inf"></div>
+    <label>Escribí el código de 6 dígitos:</label><input type="text" id="cd" inputmode="numeric" maxlength="6">
+    <div class="err" id="er"></div>
+    <button class="btn" id="ok">Verificar</button><button class="btn" id="no">Cancelar</button>`, 'sem sem2');
+            q(m, '#inf').textContent = enviado
+                ? 'Te enviamos un código a ' + email + '. Si no lo ves, revisá spam.'
+                : 'MODO PRUEBA (envío de mails sin configurar). Tu código es: ' + code;
+            q(m, '#no').onclick = () => m.close();
+            let intentos = 0;
+            q(m, '#ok').onclick = async () => {
+                const v = q(m, '#cd').value.trim();
+                if (iguales(v, code) && await API.useCode(code)) { m.close(); onOk(); return; }
+                if (++intentos >= 5) { await API.useCode(code); m.close(); alert('Demasiados intentos fallidos. Pedí un código nuevo.'); return; }
+                q(m, '#er').textContent = 'Código incorrecto. Te quedan ' + (5 - intentos) + ' intentos.';
+            };
+        }
+
+        /* ---------- Pantallas ---------- */
+        function iniciarSesionUI(k) {
+            API.crearSesion(k); LS.set('ps_seen', 1);
+            document.querySelectorAll('.ov').forEach(o => o.remove());
+            renderCuenta();
+        }
+
+        function pantallaBienvenida() {
+            const m = modal(`<h1 class="t">Regístrate en Pichisoft*</h1>
+    <div class="peq">*No es obligatorio crearse una cuenta en Pichisoft, pero, si lo hace, podría tener los siguientes beneficios:<br><br>
+    <b>·Podrías conservar los datos de tus aplicaciones (por ejemplo, una nota de PichonDocs) y poder tenerlo en cualquier dispositivo en el que hayas iniciado sesión. De lo contrario, seguirá usando LocalStorage y tus datos se guardarán solo en el propio dispositivo.<br>
+    ·Podrías usar funciones avanzadas para distintas aplicaciones, que sin tener una cuenta de Pichisoft tendrías funciones normales.<br>
+    ·Solo se te pide un Nombre de Usuario y una Contraseña: no tienes que poner tu email ni número de teléfono.<br>
+    ·Crearse una cuenta de Pichisoft es totalmente gratuito, y además usarías automáticamente la misma cuenta para cada una de nuestras aplicaciones.</b></div>
+    <div style="margin-top:22px">
+    <button class="opt" id="reg">Crearse una cuenta de Pichisoft</button>
+    <button class="opt" id="log">Iniciar sesión en mi cuenta de Pichisoft</button>
+    <button class="opt" id="sin">Usar Pichisoft sin ninguna cuenta</button></div>`);
+            q(m, '#reg').onclick = () => { m.close(); pantallaRegistro(); };
+            q(m, '#log').onclick = () => { m.close(); pantallaLogin(); };
+            q(m, '#sin').onclick = () => { LS.set('ps_seen', 1); m.close(); renderCuenta(); };
+        }
+
+        function pantallaRegistro() {
+            let foto = '';
+            const m = modal(`<h2 class="t">Crearse una cuenta de Pichisoft</h2>
+    <label>Nombre de usuario (obligatorio):</label><input type="text" id="u" autocomplete="username" maxlength="20">
+    <label>Contraseña (obligatorio, mínimo 8 caracteres):</label><input type="password" id="p" autocomplete="new-password">
+    <label>Repetir contraseña:</label><input type="password" id="p2" autocomplete="new-password">
+    <div class="peq" style="margin-top:8px">Si la olvidás, podés restablecerla pidiendo un código por email al equipo Pichisoft.</div>
+    <label>Foto de perfil (opcional):</label>
+    <div class="c"><button class="circ" id="ph">+</button></div>
+    <div class="err" id="er"></div>
+    <button class="btn" id="ok">Crear cuenta</button><button class="btn" id="vol">Volver</button>`);
+            q(m, '#ph').onclick = () => elegirFoto(f => {
+                foto = f; const i = document.createElement('img'); i.src = f; q(m, '#ph').textContent = ''; q(m, '#ph').appendChild(i);
+            });
+            q(m, '#vol').onclick = () => { m.close(); pantallaBienvenida(); };
+            q(m, '#ok').onclick = async () => {
+                const u = q(m, '#u').value.trim(), p = q(m, '#p').value;
+                if (!u || !p) { q(m, '#er').textContent = 'Completá nombre de usuario y contraseña.'; return; }
+                if (p !== q(m, '#p2').value) { q(m, '#er').textContent = 'Las contraseñas no coinciden.'; return; }
+                try { iniciarSesionUI(await API.register(u, p, foto)); }
+                catch (e) { q(m, '#er').textContent = e.message; }
+            };
+        }
+
+        function pantallaLogin() {
+            const m = modal(`<h2 class="t">Iniciar sesión en mi cuenta de Pichisoft</h2>
+    <label>Nombre de usuario:</label><input type="text" id="u" autocomplete="username" maxlength="20">
+    <label>Contraseña:</label><input type="password" id="p" autocomplete="current-password">
+    <div class="err" id="er"></div>
+    <button class="btn" id="ok">Continuar</button><button class="btn" id="vol">Volver</button><br>
+    <span class="lnk" id="olv">Olvidé mi contraseña</span>`);
+            q(m, '#vol').onclick = () => { m.close(); pantallaBienvenida(); };
+            q(m, '#olv').onclick = () => { m.close(); pantallaReset(); };
+            q(m, '#ok').onclick = async e => {
+                e.target.disabled = true; q(m, '#er').textContent = '';
+                try {
+                    const k = await API.checkLogin(q(m, '#u').value.trim(), q(m, '#p').value);
+                    verificar(() => iniciarSesionUI(k));
+                } catch (x) { q(m, '#er').textContent = x.message; }
+                e.target.disabled = false;
+            };
+        }
+
+        /* ---------- Restablecer contraseña (código enviado a mano por el equipo) ---------- */
+        const MAIL = 'pichisoft.github@gmail.com';
+        const MSG = 'Hola, Pichisoft. Solicito por favor el código de verificación para restablecer mi contraseña de Pichisoft.';
+        const ASUNTO = 'Restablecer contraseña de Pichisoft';
+
+        function pantallaReset() {
+            const m = modal(`<h2 class="t">Restablecer contraseña</h2>
+    <div class="peq">Se abrirá tu app de mails con un mensaje listo para enviar a ${MAIL}. El equipo Pichisoft te responderá con un código de 6 dígitos.</div>
+    <label>Nombre de usuario:</label><input type="text" id="u" maxlength="20">
+    <div class="err" id="er"></div>
+    <button class="btn" id="ok">Solicitar código</button><button class="btn" id="vol">Volver</button><br>
+    <span class="lnk" id="ya">Ya tengo un código</span>`);
+            q(m, '#vol').onclick = () => { m.close(); pantallaLogin(); };
+            q(m, '#ya').onclick = () => { m.close(); pantallaResetCodigo(false); };
+            q(m, '#ok').onclick = async e => {
+                const k = q(m, '#u').value.trim().toLowerCase();
+                if (!API.users()[k]) { q(m, '#er').textContent = 'Ese usuario no existe en este dispositivo.'; return; }
+                e.target.disabled = true;
+                try {
+                    const c = String(100000 + crypto.getRandomValues(new Uint32Array(1))[0] % 900000);
+                    const blob = await cifrarParaEquipo(c);
+                    LS.set('ps_reset', { k, h: await sha('reset:' + k + ':' + c), exp: Date.now() + 48 * 36e5, n: 0, blob });
+                    m.close(); pantallaResetCodigo(true);
+                } catch { q(m, '#er').textContent = 'No se pudo generar la solicitud.'; e.target.disabled = false; }
+            };
+        }
+
+        function pantallaResetCodigo(enviar) {
+            const r = LS.get('ps_reset', null), vigente = r && r.exp > Date.now();
+            const cuerpo = vigente ? MSG + '\n\nCódigo de solicitud (no lo borres):\n' + r.blob : '';
+            const mailto = 'mailto:' + MAIL + '?subject=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(cuerpo);
+            const gmail = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + MAIL + '&su=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(cuerpo);
+            const m = modal(`<h2 class="t">Restablecer contraseña</h2>` +
+                (enviar && vigente ? `<div class="peq">1) Enviá el mail que se abrió (si no se abrió, usá uno de estos botones).<br>2) Cuando el equipo Pichisoft te responda con el código de 6 dígitos, escribilo abajo.</div>
+      <div><button class="btn" id="mt">Abrir mi app de mails</button><button class="btn" id="gm">Abrir Gmail</button><button class="btn" id="cp">Copiar mensaje</button></div>`
+                    : `<div class="peq">Escribí el código de 6 dígitos que te envió el equipo Pichisoft.</div>`) +
+                `<label>Código de 6 dígitos:</label><input type="text" id="cd" inputmode="numeric" maxlength="6">
+    <label>Nueva contraseña (mínimo 8 caracteres):</label><input type="password" id="p" autocomplete="new-password">
+    <label>Repetir contraseña:</label><input type="password" id="p2" autocomplete="new-password">
+    <div class="err" id="er"></div>
+    <button class="btn" id="ok">Restablecer</button><button class="btn" id="vol">Volver</button>`);
+            if (enviar && vigente) {
+                q(m, '#mt').onclick = () => { location.href = mailto; };
+                q(m, '#gm').onclick = () => { window.open(gmail, '_blank', 'noopener'); };
+                q(m, '#cp').onclick = async e => { try { await navigator.clipboard.writeText(cuerpo); e.target.textContent = '¡Copiado!'; } catch { e.target.textContent = 'No se pudo copiar'; } };
+                setTimeout(() => { location.href = mailto; }, 250);
+            }
+            q(m, '#vol').onclick = () => { m.close(); pantallaLogin(); };
+            q(m, '#ok').onclick = async () => {
+                const err = t => q(m, '#er').textContent = t;
+                const r = LS.get('ps_reset', null);
+                if (!r || r.exp < Date.now() || !API.users()[r.k]) { err('No hay una solicitud vigente. Pedí un código nuevo.'); return; }
+                const c = q(m, '#cd').value.trim(), p = q(m, '#p').value;
+                if (p !== q(m, '#p2').value) { err('Las contraseñas no coinciden.'); return; }
+                try { API.validar(API.users()[r.k].name, p); } catch (x) { err(x.message); return; }
+                if (!iguales(await sha('reset:' + r.k + ':' + c), r.h)) {
+                    if (++r.n >= 5) { localStorage.removeItem('ps_reset'); m.close(); alert('Demasiados intentos fallidos. Pedí un código nuevo.'); pantallaReset(); return; }
+                    LS.set('ps_reset', r); err('Código incorrecto. Te quedan ' + (5 - r.n) + ' intentos.'); return;
+                }
+                try { await API.setPass(r.k, p); } catch (x) { err(x.message); return; }
+                localStorage.removeItem('ps_reset'); m.close();
+                alert('Contraseña restablecida. Ahora iniciá sesión.'); pantallaLogin();
+            };
+        }
+
+        /* ---------- Cabecera (arriba a la derecha) ---------- */
+        function renderCuenta() {
+            const box = document.getElementById('cuenta'), u = Pichisoft.user;
+            box.innerHTML = '';
+            if (!u) {
+                const b = document.createElement('button');
+                b.className = 'btn'; b.style.margin = 0; b.textContent = 'Registrarse';
+                b.onclick = pantallaBienvenida; box.appendChild(b); return;
+            }
+            const t = document.createElement('div'); t.style.textAlign = 'right';
+            const n = document.createElement('div'); n.className = 'nom'; n.textContent = u.name;
+            const s = document.createElement('small'); s.textContent = 'Cerrar sesión';
+            s.onclick = () => { API.cerrarSesion(); renderCuenta(); };
+            t.append(n, s);
+            const w = document.createElement('div'); w.className = 'avwrap';
+            const a = document.createElement('div'); a.className = 'av';
+            if (okFoto(u.photo)) { const i = document.createElement('img'); i.src = u.photo; a.appendChild(i); }
+            else a.textContent = u.name[0].toUpperCase();
+            const l = document.createElement('button'); l.className = 'lapiz'; l.textContent = '✎'; l.title = 'Cambiar foto';
+            l.onclick = () => elegirFoto(f => { API.setPhoto(sesionK(), f); renderCuenta(); }, 'Cambiar foto de perfil');
+            w.append(a, l);
+            box.append(t, w);
+        }
+
+        /* ---------- Inicio ---------- */
+        renderCuenta();
+        if (!Pichisoft.user && !LS.get('ps_seen', 0)) pantallaBienvenida();
+    </script>
+</body>
+
+</html>
