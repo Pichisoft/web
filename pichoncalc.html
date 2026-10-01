@@ -173,6 +173,85 @@
             font-style: italic;
             color: #bbb;
         }
+
+        #pichisoft-session-profile {
+            position: fixed;
+            top: 55px;
+            right: 20px;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            padding: 5px 12px 5px 5px;
+
+            background: #000;
+            color: #fff;
+
+            border: 1px solid rgba(32, 168, 75, 0.35);
+            border-radius: 25px;
+
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+
+            font-family: Georgia, serif;
+
+            opacity: 0;
+            transform: translateY(-10px) scale(0.9);
+
+            transition:
+                opacity 0.6s ease,
+                transform 0.6s ease;
+
+            pointer-events: none;
+
+            z-index: 9998;
+        }
+
+        #pichisoft-session-profile.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        #pichisoft-profile-picture img,
+        #pichisoft-profile-picture .profile-placeholder {
+            width: 32px;
+            height: 32px;
+
+            border-radius: 50%;
+            object-fit: cover;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pichisoft-profile-picture .profile-placeholder {
+            background: #20a84b;
+            color: #fff;
+
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #pichisoft-profile-name {
+            font-size: 14px;
+            font-weight: bold;
+
+            max-width: 140px;
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 600px) {
+
+            #pichisoft-session-profile {
+                top: 55px;
+                right: 10px;
+            }
+
+        }
     </style>
 </head>
 
@@ -317,97 +396,367 @@
     <div id="pichisoft-session-status">
         Iniciando sesión en tu cuenta de Pichisoft...
     </div>
-    <script>
+    <div id="pichisoft-session-profile">
 
-        const sessionStatus =
-            document.getElementById('pichisoft-session-status');
+        <div id="pichisoft-profile-picture"></div>
 
+        <span id="pichisoft-profile-name"></span>
 
-        window.addEventListener(
-            'pichisoft-auth-ready',
-            evento => {
-
-                const usuario = evento.detail;
-
-
-                // Dejamos visible "Iniciando sesión..."
-                // durante al menos 1 segundo.
-                setTimeout(() => {
-
-
-                    if (!usuario) {
-
-                        sessionStatus.textContent =
-                            'No tenés una sesión iniciada en Pichisoft';
-
-
-                        setTimeout(() => {
-
-                            sessionStatus.classList.add('hidden');
-
-                        }, 6000);
-
-
-                        return;
-                    }
-
-
-                    sessionStatus.classList.add('success');
-
-                    sessionStatus.innerHTML =
-                        '✓ Sesión iniciada';
-
-
-                    setTimeout(() => {
-
-                        sessionStatus.classList.add('hidden');
-
-                    }, 6000);
-
-
-                }, 1000);
-
-            }
-        );
-
-    </script>
-
-    </script>
+    </div>
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+
+        import {
+            initializeApp
+        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 
         import {
             getAuth,
             onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
+        import {
+            getFirestore,
+            doc,
+            getDoc
+        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+
         const firebaseConfig = {
+
             apiKey: "AIzaSyCf_P8qp9bBUnsVe3qsTAtZJjZHOktKf-8",
+
             authDomain: "pichisoft.firebaseapp.com",
+
             projectId: "pichisoft",
+
             storageBucket: "pichisoft.firebasestorage.app",
+
             messagingSenderId: "690032082295",
+
             appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+
             measurementId: "G-K7HRKR8BJ1"
+
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+
+        const app =
+            initializeApp(firebaseConfig);
+
+
+        const auth =
+            getAuth(app);
+
+
+        const db =
+            getFirestore(app);
+
 
         window.PichisoftFirebase = {
+
             auth,
-            currentUser: null
+            db,
+            doc,
+            getDoc,
+
+            currentUser: null,
+
+            authReady: false
+
         };
+
 
         onAuthStateChanged(auth, usuario => {
 
-            window.PichisoftFirebase.currentUser = usuario;
+            window.PichisoftFirebase.currentUser =
+                usuario;
+
+            window.PichisoftFirebase.authReady =
+                true;
 
             window.dispatchEvent(
-                new CustomEvent('pichisoft-auth-ready', {
-                    detail: usuario
-                })
+                new CustomEvent(
+                    'pichisoft-auth-ready'
+                )
             );
+
+        });
+
+    </script>
+    <script>
+
+        const sessionStatus =
+            document.getElementById(
+                'pichisoft-session-status'
+            );
+
+
+        const sessionProfile =
+            document.getElementById(
+                'pichisoft-session-profile'
+            );
+
+
+        const profilePicture =
+            document.getElementById(
+                'pichisoft-profile-picture'
+            );
+
+
+        const profileName =
+            document.getElementById(
+                'pichisoft-profile-name'
+            );
+
+
+        /*
+         * Esperamos a que Firebase termine
+         * de comprobar la sesión.
+         */
+
+        function esperarFirebase() {
+
+            return new Promise(resolve => {
+
+                const firebase =
+                    window.PichisoftFirebase;
+
+
+                if (
+                    firebase &&
+                    firebase.authReady
+                ) {
+
+                    resolve(
+                        firebase.currentUser
+                    );
+
+                    return;
+                }
+
+
+                window.addEventListener(
+                    'pichisoft-auth-ready',
+                    () => {
+
+                        resolve(
+                            window.PichisoftFirebase
+                                .currentUser
+                        );
+
+                    },
+                    {
+                        once: true
+                    }
+                );
+
+            });
+
+        }
+
+
+        /*
+         * El sistema visual empieza inmediatamente.
+         *
+         * 0 - 12 segundos:
+         * Iniciando sesión...
+         */
+
+        const inicio =
+            Date.now();
+
+
+        esperarFirebase().then(async usuario => {
+
+
+            /*
+             * Esperamos exactamente hasta
+             * completar los 12 segundos.
+             */
+
+            const transcurrido =
+                Date.now() - inicio;
+
+
+            const faltan =
+                Math.max(
+                    0,
+                    12000 - transcurrido
+                );
+
+
+            setTimeout(async () => {
+
+
+                /*
+                 * ==========================
+                 * SIN SESIÓN
+                 * ==========================
+                 */
+
+                if (!usuario) {
+
+                    sessionStatus.textContent =
+                        'No tenés una sesión iniciada en Pichisoft';
+
+
+                    setTimeout(() => {
+
+                        sessionStatus.classList.add(
+                            'hidden'
+                        );
+
+                    }, 6000);
+
+
+                    return;
+                }
+
+
+                /*
+                 * ==========================
+                 * SESIÓN INICIADA
+                 * ==========================
+                 */
+
+                sessionStatus.classList.add(
+                    'success'
+                );
+
+
+                sessionStatus.textContent =
+                    '✓ Sesión iniciada';
+
+
+                /*
+                 * Esperamos los 6 segundos.
+                 */
+
+                setTimeout(async () => {
+
+
+                    sessionStatus.classList.add(
+                        'hidden'
+                    );
+
+
+                    /*
+                     * ==========================
+                     * CARGAR PERFIL
+                     * ==========================
+                     */
+
+
+                    const firebase =
+                        window.PichisoftFirebase;
+
+
+                    let perfil = {};
+
+
+                    try {
+
+                        const snapshot =
+                            await firebase.getDoc(
+
+                                firebase.doc(
+                                    firebase.db,
+                                    'users',
+                                    usuario.uid
+                                )
+
+                            );
+
+
+                        if (snapshot.exists()) {
+
+                            perfil =
+                                snapshot.data();
+
+                        }
+
+                    } catch (error) {
+
+                        console.error(
+                            'Error cargando perfil de Pichisoft:',
+                            error
+                        );
+
+                    }
+
+
+                    const nombre =
+                        perfil.username ||
+                        usuario.email ||
+                        'Usuario';
+
+
+                    profileName.textContent =
+                        nombre;
+
+
+                    /*
+                     * ==========================
+                     * FOTO
+                     * ==========================
+                     */
+
+                    if (perfil.photo) {
+
+                        const img =
+                            document.createElement(
+                                'img'
+                            );
+
+                        img.src =
+                            perfil.photo;
+
+                        img.alt =
+                            'Foto de perfil';
+
+                        profilePicture.replaceChildren(
+                            img
+                        );
+
+                    } else {
+
+                        const placeholder =
+                            document.createElement(
+                                'div'
+                            );
+
+                        placeholder.className =
+                            'profile-placeholder';
+
+                        placeholder.textContent =
+                            nombre
+                                .charAt(0)
+                                .toUpperCase();
+
+                        profilePicture.replaceChildren(
+                            placeholder
+                        );
+
+                    }
+
+
+                    /*
+                     * Mostramos el perfil.
+                     */
+
+                    setTimeout(() => {
+
+                        sessionProfile.classList.add(
+                            'visible'
+                        );
+
+                    }, 400);
+
+
+                }, 6000);
+
+
+            }, faltan);
 
         });
 
