@@ -363,6 +363,47 @@
         }
     </style>
     </style>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+
+        import {
+            getAuth,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+        import {
+            getFirestore,
+            doc,
+            getDoc
+        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+            authDomain: "pichisoft.firebaseapp.com",
+            projectId: "pichisoft",
+            storageBucket: "pichisoft.firebasestorage.app",
+            messagingSenderId: "690032082295",
+            appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+            measurementId: "G-K7HRKR8BJ1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.PichisoftFirebase = {
+            auth,
+            db,
+            doc,
+            getDoc,
+            currentUser: null
+        };
+
+        onAuthStateChanged(auth, usuario => {
+            window.PichisoftFirebase.currentUser = usuario;
+        });
+    </script>
+    </script>
 </head>
 
 <body>
@@ -726,7 +767,7 @@
         const profileName = document.getElementById('pichisoft-profile-name');
         function iniciarEstadoSesion() {
 
-            const usuario = window.Pichisoft?.user;
+            const usuario = window.PichisoftFirebase?.currentUser;
 
             if (!usuario) {
 
