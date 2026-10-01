@@ -765,7 +765,7 @@
         const profile = document.getElementById('pichisoft-session-profile');
         const profilePicture = document.getElementById('pichisoft-profile-picture');
         const profileName = document.getElementById('pichisoft-profile-name');
-        function iniciarEstadoSesion() {
+        async function iniciarEstadoSesion() {
 
             const usuario = window.PichisoftFirebase?.currentUser;
 
@@ -785,7 +785,17 @@
 
                 return;
             }
+            const firebase = window.PichisoftFirebase;
 
+            const perfilSnap = await firebase.getDoc(
+                firebase.doc(firebase.db, 'users', usuario.uid)
+            );
+
+            let perfil = {};
+
+            if (perfilSnap.exists()) {
+                perfil = perfilSnap.data();
+            }
             status.classList.remove('checking');
 
             status.classList.add('success');
@@ -798,13 +808,12 @@
                 status.classList.add('hidden');
 
                 profileName.textContent =
-                    usuario.name || 'Usuario';
-
-                if (usuario.photo) {
+                    perfil.username || 'Usuario';
+                if (perfil.photo) {
 
                     const img = document.createElement('img');
 
-                    img.src = usuario.photo;
+                    img.src = perfil.photo;
                     img.alt = 'Foto de perfil';
 
                     profilePicture.replaceChildren(img);
@@ -818,7 +827,7 @@
                         'profile-placeholder';
 
                     placeholder.textContent =
-                        (usuario.name || 'U')
+                        (perfil.username || 'U')
                             .charAt(0)
                             .toUpperCase();
 
