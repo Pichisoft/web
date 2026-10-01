@@ -457,23 +457,23 @@
             db,
             doc,
             getDoc,
-            currentUser: null
+            currentUser: null,
+            authReady: false
         };
 
         onAuthStateChanged(auth, usuario => {
+            window.PichisoftFirebase.currentUser = usuario;
+            window.PichisoftFirebase.authReady = true;
 
-            window.PichisoftFirebase.currentUser =
-                usuario;
-
-            window.PichisoftFirebase.authReady =
-                true;
-
-            window.dispatchEvent(
-                new CustomEvent(
-                    'pichisoft-auth-ready'
-                )
+            console.log(
+                'PichonCalc - Estado de Firebase:',
+                usuario ? 'Sesión iniciada' : 'Sin sesión',
+                usuario
             );
 
+            window.dispatchEvent(
+                new CustomEvent('pichisoft-auth-ready')
+            );
         });
 
     </script>
