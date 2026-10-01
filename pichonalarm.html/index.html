@@ -375,6 +375,146 @@
                 font-size: 80px
             }
         }
+
+        /* ---------- ESTADO DE SESIÓN PICHISOFT ---------- */
+
+        #pichisoft-session-status {
+            position: relative;
+            width: calc(100% - 32px);
+            max-width: 700px;
+            margin: 10px auto 0;
+            padding: 12px 18px;
+            background: #000;
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 14px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            color: #20a84b;
+            font-family: Georgia, serif;
+            font-size: 16px;
+            text-align: center;
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            z-index: 40;
+        }
+
+        #pichisoft-session-status.hidden {
+            opacity: 0;
+            transform: translateY(-15px);
+            pointer-events: none;
+        }
+
+        #pichisoft-session-status .session-check {
+            height: 0;
+            overflow: hidden;
+            font-size: 42px;
+            font-weight: bold;
+            line-height: 42px;
+            opacity: 0;
+            transform: scale(0.2);
+        }
+
+        #pichisoft-session-status.success .session-check {
+            height: 45px;
+            margin-bottom: 4px;
+            animation: pichisoftCheck 0.8s cubic-bezier(.17, .89, .32, 1.49) forwards;
+        }
+
+        @keyframes pichisoftCheck {
+            0% {
+                opacity: 0;
+                transform: scale(0.2) rotate(-25deg);
+            }
+
+            60% {
+                opacity: 1;
+                transform: scale(1.25) rotate(8deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        #pichisoft-session-profile {
+            position: relative;
+            width: fit-content;
+            max-width: calc(100% - 32px);
+            margin: 10px 16px 0 auto;
+            z-index: 40;
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 7px 14px 7px 7px;
+
+            background: #000;
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 30px;
+
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+            font-family: Georgia, serif;
+
+            opacity: 0;
+            transform: translateY(-15px) scale(0.9);
+
+            transition:
+                opacity 0.7s ease,
+                transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
+
+            pointer-events: none;
+        }
+
+        #pichisoft-session-profile.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        #pichisoft-profile-picture img,
+        #pichisoft-profile-picture .profile-placeholder {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pichisoft-profile-picture .profile-placeholder {
+            background: #20a84b;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #pichisoft-session-profile .profile-name {
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 600px) {
+
+            #pichisoft-session-status {
+                width: calc(100% - 20px);
+                margin-top: 8px;
+                font-size: 14px;
+            }
+
+            #pichisoft-session-profile {
+                max-width: calc(100% - 20px);
+                margin-right: 10px;
+            }
+        }
     </style>
 </head>
 
@@ -385,6 +525,24 @@
         <button class="pichisoft-link"
             onclick="window.open('https://pichisoft.github.io/web/','_blank')">Pichisoft</button>
     </header>
+    <!-- Pichisoft - Estado de sesión -->
+
+    <div id="pichisoft-session-status">
+        <div class="session-check">✓</div>
+
+        <div class="session-text">
+            Iniciando sesión en tu cuenta de Pichisoft...
+        </div>
+    </div>
+
+    <div id="pichisoft-session-profile">
+
+        <div id="pichisoft-profile-picture"></div>
+
+        <div class="profile-name" id="pichisoft-profile-name">
+        </div>
+
+    </div>
     <nav>
         <button class="active" onclick="showTab('alarma',this)">⏰ Alarma</button>
         <button onclick="showTab('crono',this)">⏱ Cronómetro</button>
@@ -496,8 +654,124 @@
             temp: { endAt: null, rest: 0, h: 0, m: 5, s: 0, tono: 'clasico' },
             ring: null
         };
+        async function cargarDatosPichonAlarm() {
+
+            // Esperamos a que Firebase esté disponible.
+            if (!window.PichisoftFirebase) return;
+
+            const firebase = window.PichisoftFirebase;
+            const usuario = firebase.currentUser;
+
+            // Sin cuenta → usamos LocalStorage como siempre.
+            if (!usuario) return;
+
+            try {
+
+                const snapshot = await firebase.getDoc(
+                    firebase.doc(
+                        firebase.db,
+                        'users',
+                        usuario.uid
+                    )
+                );
+
+                if (!snapshot.exists()) return;
+
+                const datos = snapshot.data();
+
+                if (
+                    datos.data &&
+                    datos.data.pichonalarm
+                ) {
+
+                    // Firebase tiene datos de PichonAlarm.
+                    S = Object.assign(
+                        S,
+                        datos.data.pichonalarm
+                    );
+
+                    // También actualizamos LocalStorage.
+                    // Así queda una copia local disponible.
+                    try {
+                        localStorage.setItem(
+                            K,
+                            JSON.stringify(S)
+                        );
+                    } catch (e) {
+                        console.error(
+                            'Error actualizando LocalStorage:',
+                            e
+                        );
+                    }
+
+                    // Actualizamos la interfaz.
+                    render();
+
+                    // Reprogramamos alarmas/temporizador.
+                    programar();
+                }
+
+            } catch (error) {
+
+                console.error(
+                    'Error cargando PichonAlarm desde Firebase:',
+                    error
+                );
+
+            }
+        }
         try { const r = JSON.parse(localStorage.getItem(K)); if (r) S = Object.assign(S, r); } catch (e) { }
-        function save() { try { localStorage.setItem(K, JSON.stringify(S)); } catch (e) { } }
+        async function save() {
+
+            // SIEMPRE guardamos en LocalStorage.
+            // Esto mantiene funcionando PichonAlarm sin cuenta.
+            try {
+                localStorage.setItem(K, JSON.stringify(S));
+            } catch (e) {
+                console.error('Error guardando en LocalStorage:', e);
+            }
+
+
+            // Si no hay Firebase, terminamos acá.
+            if (!window.PichisoftFirebase) return;
+
+
+            const firebase = window.PichisoftFirebase;
+            const usuario = firebase.currentUser;
+
+
+            // Sin cuenta → solamente LocalStorage.
+            if (!usuario) return;
+
+
+            // Con cuenta → también guardamos en Firebase.
+            try {
+
+                await firebase.setDoc(
+                    firebase.doc(
+                        firebase.db,
+                        'users',
+                        usuario.uid
+                    ),
+                    {
+                        data: {
+                            pichonalarm: S
+                        }
+                    },
+                    {
+                        merge: true
+                    }
+                );
+
+            } catch (error) {
+
+                console.error(
+                    'Error sincronizando PichonAlarm con Firebase:',
+                    error
+                );
+
+            }
+        }
         function cambio() { save(); programar(); }
         const $ = id => document.getElementById(id);
 
@@ -779,6 +1053,190 @@
             document.head.appendChild(l);
         } catch (e) { }
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(programar).catch(() => { });
+    </script>
+    <script>
+        const sessionStatus =
+            document.getElementById('pichisoft-session-status');
+
+        const sessionProfile =
+            document.getElementById('pichisoft-session-profile');
+
+        const profilePicture =
+            document.getElementById('pichisoft-profile-picture');
+
+        const profileName =
+            document.getElementById('pichisoft-profile-name');
+
+
+        async function iniciarEstadoSesion() {
+
+            const usuario =
+                window.PichisoftFirebase?.currentUser;
+
+
+            if (!usuario) {
+
+                sessionStatus.classList.remove('success');
+
+                sessionStatus.querySelector('.session-text').textContent =
+                    'No tenés una sesión iniciada en Pichisoft';
+
+                setTimeout(() => {
+
+                    sessionStatus.classList.add('hidden');
+
+                }, 6000);
+
+                return;
+            }
+
+
+            const firebase =
+                window.PichisoftFirebase;
+
+
+            let perfil = {};
+
+
+            try {
+
+                const perfilSnap =
+                    await firebase.getDoc(
+                        firebase.doc(
+                            firebase.db,
+                            'users',
+                            usuario.uid
+                        )
+                    );
+
+
+                if (perfilSnap.exists()) {
+                    perfil = perfilSnap.data();
+                }
+
+            } catch (error) {
+
+                console.error(
+                    'Error cargando perfil de Pichisoft:',
+                    error
+                );
+
+            }
+
+
+            sessionStatus.classList.add('success');
+
+            sessionStatus.querySelector('.session-text').textContent =
+                'Sesión iniciada';
+
+
+            setTimeout(() => {
+
+                sessionStatus.classList.add('hidden');
+
+
+                profileName.textContent =
+                    perfil.username ||
+                    usuario.email ||
+                    'Usuario';
+
+
+                if (perfil.photo) {
+
+                    const img =
+                        document.createElement('img');
+
+                    img.src = perfil.photo;
+                    img.alt = 'Foto de perfil';
+
+                    profilePicture.replaceChildren(img);
+
+                } else {
+
+                    const placeholder =
+                        document.createElement('div');
+
+                    placeholder.className =
+                        'profile-placeholder';
+
+                    placeholder.textContent =
+                        (
+                            perfil.username ||
+                            usuario.email ||
+                            'U'
+                        )
+                            .charAt(0)
+                            .toUpperCase();
+
+                    profilePicture.replaceChildren(
+                        placeholder
+                    );
+                }
+
+
+                setTimeout(() => {
+
+                    sessionProfile.classList.add('visible');
+
+                }, 450);
+
+            }, 6000);
+        }
+
+
+        setTimeout(() => {
+
+            iniciarEstadoSesion();
+
+        }, 12000);
+    </script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+
+        import {
+            getAuth,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+        import {
+            getFirestore,
+            doc,
+            getDoc
+        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+            authDomain: "pichisoft.firebaseapp.com",
+            projectId: "pichisoft",
+            storageBucket: "pichisoft.firebasestorage.app",
+            messagingSenderId: "690032082295",
+            appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+            measurementId: "G-K7HRKR8BJ1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.PichisoftFirebase = {
+            auth,
+            db,
+            doc,
+            getDoc,
+            currentUser: null
+        };
+
+        onAuthStateChanged(auth, usuario => {
+
+            window.PichisoftFirebase.currentUser = usuario;
+
+            // Cuando Firebase termina de comprobar la sesión,
+            // cargamos los datos de PichonAlarm si corresponde.
+            if (usuario) {
+                cargarDatosPichonAlarm();
+            }
+
+        });
     </script>
 </body>
 
