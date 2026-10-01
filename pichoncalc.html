@@ -453,18 +453,12 @@
 
 
         window.PichisoftFirebase = {
-
             auth,
             db,
             doc,
             getDoc,
-
-            currentUser: null,
-
-            authReady: false
-
+            currentUser: null
         };
-
 
         onAuthStateChanged(auth, usuario => {
 
@@ -515,43 +509,18 @@
          */
 
         function esperarFirebase() {
-
             return new Promise(resolve => {
+                const firebase = window.PichisoftFirebase;
 
-                const firebase =
-                    window.PichisoftFirebase;
-
-
-                if (
-                    firebase &&
-                    firebase.authReady
-                ) {
-
-                    resolve(
-                        firebase.currentUser
-                    );
-
+                if (firebase && firebase.authReady) {
+                    resolve(firebase.currentUser);
                     return;
                 }
 
-
-                window.addEventListener(
-                    'pichisoft-auth-ready',
-                    () => {
-
-                        resolve(
-                            window.PichisoftFirebase
-                                .currentUser
-                        );
-
-                    },
-                    {
-                        once: true
-                    }
-                );
-
+                window.addEventListener('pichisoft-auth-ready', () => {
+                    resolve(window.PichisoftFirebase.currentUser);
+                }, { once: true });
             });
-
         }
 
 
