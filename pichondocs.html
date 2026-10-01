@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>PichonDocs</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #eee;
+        }
+
+        /* ===== HEADER ===== */
+        .appHeader {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 18px;
+            background: #1b1b1b;
+            border-bottom: 1px solid #333;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .brandGroup {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .brandGroup .brand {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            font-size: 26px;
+            color: #eee;
+            letter-spacing: 0.5px;
+        }
+
+        .brandGroup .tagline {
+            font-family: Arial, sans-serif;
+            font-style: italic;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .headerRight {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .pichisoftLink {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            color: #4db8ff;
+            text-decoration: underline;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        /* ===== BODY WRAPPER ===== */
+        .bodyWrap {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background: #1b1b1b;
+            padding: 10px;
+            overflow-y: auto;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .searchBox {
+            position: relative;
+            margin-bottom: 6px;
+        }
+
+        .searchBox input {
+            width: 100%;
+            padding: 9px 32px 9px 10px;
+        }
+
+        .newNoteBtn {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 9px;
+            font-weight: bold;
+        }
+
+        .note {
+            padding: 10px;
+            margin: 6px 0;
+            background: #2a2a2a;
+            border-radius: 8px;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+        }
+
+        .note:hover {
+            background: #333;
+            transform: translateX(2px);
+        }
+
+        .note.active {
+            background: #333;
+            border-left: 4px solid #a855f7;
+        }
+
+        .note.current-match {
+            outline: 2px solid #f97316;
+            outline-offset: -2px;
+        }
+
+        .note .noteSnippet {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .noResults {
+            color: #777;
+            font-size: 13px;
+            text-align: center;
+            padding: 20px 5px;
+        }
+
+        /* CLEAR (X) BUTTON */
+        .clearBtn {
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            border: none;
+            background: none;
+            color: #999;
+            font-size: 15px;
+            line-height: 1;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .clearBtn.show {
+            display: flex;
+        }
+
+        .clearBtn:hover {
+            background: #3a3a3a;
+            color: #fff;
+        }
+
+        /* SEARCH NAV (flechas + contador) */
+        .searchNav {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #bbb;
+            margin-bottom: 8px;
+        }
+
+        .searchNav.show {
+            display: flex;
+        }
+
+        .searchNav button {
+            padding: 3px 9px;
+            font-size: 12px;
+            line-height: 1;
+        }
+
+        .searchNav .count {
+            min-width: 40px;
+            text-align: center;
+        }
+
+        /* MAIN */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background: #1b1b1b;
+            border-bottom: 1px solid #333;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .noteSearchWrap {
+            display: flex;
+            gap: 6px;
+            flex: 1;
+            min-width: 200px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .searchInputWrap {
+            position: relative;
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .searchInputWrap input {
+            width: 100%;
+            padding-right: 32px;
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        button,
+        input,
+        select {
+            background: #222;
+            color: #eee;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 7px 10px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+        }
+
+        button:hover {
+            background: #2c2c2c;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        button.toggled {
+            background: #a855f7;
+            border-color: #a855f7;
+            color: #111;
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        button:disabled:hover {
+            background: #222;
+        }
+
+        button:disabled:active {
+            transform: none;
+        }
+
+        /* ===== FORMAT MENU ===== */
+        .formatMenuWrap {
+            position: relative;
+        }
+
+        .formatPanel {
+            display: none;
+            position: absolute;
+            top: 130%;
+            right: 0;
+            background: #1e1e1e;
+            border: 1px solid #3a3a3a;
+            border-radius: 10px;
+            padding: 14px;
+            width: 300px;
+            max-width: 90vw;
+            z-index: 500;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .formatPanel.open {
+            display: block;
+        }
+
+        .formatRow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .formatRow label {
+            font-size: 11px;
+            color: #999;
+            width: 60px;
+            flex-shrink: 0;
+        }
+
+        .formatRow select {
+            flex: 1;
+        }
+
+        .styleBtns {
+            display: flex;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .styleBtns button {
+            flex: 1;
+            font-weight: bold;
+        }
+
+        .styleBtns button:nth-child(2) {
+            font-style: italic;
+        }
+
+        .styleBtns button:nth-child(3) {
+            text-decoration: underline;
+        }
+
+        .paletteGrid {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .colorBtn {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .colorBtn.selected {
+            border: 2px solid #fff;
+        }
+
+        /* ===== DROPDOWN PROPIO ===== */
+        .customSelect {
+            position: relative;
+            flex: 1;
+        }
+
+        .customSelectBtn {
+            width: 100%;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .customDropdown {
+            display: none;
+            position: absolute;
+            top: 105%;
+            left: 0;
+            right: 0;
+            background: #262626;
+            border: 1px solid #444;
+            border-radius: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 600;
+        }
+
+        .customDropdown.open {
+            display: block;
+        }
+
+        .customDropdown div {
+            padding: 8px 10px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .customDropdown div:hover {
+            background: #363636;
+        }
+
+        /* ===== NOTE AREA ===== */
+        .titleWrap {
+            padding: 16px 20px 4px 20px;
+        }
+
+        .titleText {
+            font-size: 20px;
+            font-weight: bold;
+            outline: none;
+            min-height: 28px;
+            padding: 4px 2px;
+            border-bottom: 1px solid #262626;
+        }
+
+        .titleText:empty:before {
+            content: attr(data-placeholder);
+            color: #555;
+        }
+
+        #content {
+            flex: 1;
+            padding: 16px 20px;
+            font-size: 15px;
+            line-height: 1.6;
+            outline: none;
+            background: #111;
+            color: #ddd;
+            font-family: Arial, sans-serif;
+            overflow-y: auto;
+        }
+
+        #content:empty:before {
+            content: attr(data-placeholder);
+            color: #555;
+        }
+
+        mark.pichon-hl {
+            background: #a855f7;
+            color: #111;
+            border-radius: 3px;
+            padding: 0 1px;
+        }
+
+        mark.pichon-hl.current {
+            background: #f97316;
+        }
+
+        .autosaveTag {
+            font-size: 11px;
+            color: #666;
+            padding: 0 20px 10px 20px;
+            height: 14px;
+        }
+
+        /* ===== MODALS ===== */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.15s ease;
+            padding: 16px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .box {
+            background: #1b1b1b;
+            padding: 22px;
+            border-radius: 12px;
+            width: 320px;
+            max-width: 100%;
+            text-align: center;
+            border: 1px solid #333;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        .box h3 {
+            margin-top: 0;
+            font-family: "Times New Roman", Times, serif;
+        }
+
+        .box .noteName {
+            color: #a855f7;
+            font-weight: bold;
+        }
+
+        .box .modalBtns {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .box .modalBtns button {
+            flex: 1;
+        }
+
+        .danger {
+            background: #b91c1c;
+            border-color: #b91c1c;
+        }
+
+        .danger:hover {
+            background: #d32323;
+        }
+
+        @media (max-width: 900px) {
+
+            .bodyWrap {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 220px;
+                border-right: none;
+                border-bottom: 1px solid #333;
+            }
+
+            .toolbar {
+                gap: 8px;
+            }
+
+            .toolbar>button {
+                flex: 1;
+                min-width: 80px;
+            }
+
+            .titleWrap {
+                padding: 12px;
+            }
+
+            #content {
+                padding: 12px;
+                font-size: 17px;
+            }
+
+            .appHeader {
+                justify-content: space-between;
+            }
+
+            .customDropdown {
+                max-height: 180px;
+            }
+        }
+
+        @media (max-width: 560px) {
+
+            .appHeader {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .brandGroup,
+            .headerRight {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .formatPanel {
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .toolbar>* {
+                width: 100%;
+            }
+
+            .noteSearchWrap {
+                width: 100%;
+            }
+
+            .newNoteBtn {
+                font-size: 16px;
+            }
+
+            .searchBox input,
+            #noteSearch {
+                font-size: 16px;
+            }
+
+            button {
+                font-size: 15px;
+                padding: 10px;
+            }
+
+            .clearBtn {
+                width: 30px;
+                height: 30px;
+            }
+
+            .searchNav button {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+
+            .titleText {
+                font-size: 24px;
+            }
+
+            #content {
+                font-size: 18px;
+                line-height: 1.8;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <div class="appHeader">
+        <div class="brandGroup">
+            <div class="brand">PichonDocs</div>
+            <div class="tagline">- By Pichisoft -</div>
+        </div>
+
+        <div class="headerRight">
+            <button id="undoBtn" onmousedown="event.preventDefault()" onclick="undoAction()" disabled title="Deshacer">↶ Deshacer</button>
+            <button id="redoBtn" onmousedown="event.preventDefault()" onclick="redoAction()" disabled title="Rehacer">↷ Rehacer</button>
+
+            <div class="formatMenuWrap">
+                <button onmousedown="event.preventDefault()" onclick="toggleFormatPanel()">🎨 Formato</button>
+
+                <div class="formatPanel" id="formatPanel">
+                    <div class="formatRow">
+                        <label>Fuente</label>
+                        <div class="customSelect">
+                            <button type="button" class="customSelectBtn" id="fontSelectBtn"
+                                onmousedown="event.preventDefault()" onclick="toggleDropdown('fontDropdown')">Arial
+                                ▾</button>
+                            <div class="customDropdown" id="fontDropdown">
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Arial')">Arial</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Times New Roman')">Times
+                                    New Roman</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Georgia')">Georgia</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Courier New')">Courier
+                                    New</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Verdana')">Verdana</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Trebuchet MS')">Trebuchet
+                                    MS</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Comic Sans MS')">Comic
+                                    Sans MS</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Brush Script MT')"
+                                    style="font-family:'Brush Script MT', cursive;">Brush Script MT (cursiva)</div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseFont('Impact')">Impact</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="formatRow">
+                        <label>Tamaño</label>
+                        <div class="customSelect">
+                            <button type="button" class="customSelectBtn" id="sizeSelectBtn"
+                                onmousedown="event.preventDefault()" onclick="toggleDropdown('sizeDropdown')">Normal
+                                ▾</button>
+                            <div class="customDropdown" id="sizeDropdown">
+                                <div onmousedown="event.preventDefault()" onclick="chooseSize('13px','Pequeño')">Pequeño
+                                </div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseSize('16px','Normal')">Normal
+                                </div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseSize('22px','Grande')">Grande
+                                </div>
+                                <div onmousedown="event.preventDefault()" onclick="chooseSize('30px','Enorme')">Enorme
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="formatRow">
+                        <label>Estilo</label>
+                        <div class="styleBtns">
+                            <button id="boldBtn" onmousedown="event.preventDefault()"
+                                onclick="toggleStyle('fontWeight','bold','normal')">B</button>
+                            <button id="italicBtn" onmousedown="event.preventDefault()"
+                                onclick="toggleStyle('fontStyle','italic','normal')">I</button>
+                            <button id="underlineBtn" onmousedown="event.preventDefault()"
+                                onclick="toggleStyle('textDecorationLine','underline','none')">U</button>
+                        </div>
+                    </div>
+
+                    <div class="formatRow">
+                        <label>Color</label>
+                        <div class="paletteGrid" id="palette"></div>
+                    </div>
+                </div>
+            </div>
+
+            <a class="pichisoftLink" href="https://pichisoft.github.io/web/" target="_blank">Pichisoft</a>
+        </div>
+    </div>
+
+    <div class="bodyWrap">
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <button class="newNoteBtn" onclick="newNote()">+ Nueva nota</button>
+
+            <div class="searchBox">
+                <input id="globalSearch" placeholder="Buscar notas..." oninput="onGlobalSearchInput()" />
+                <button class="clearBtn" id="globalClearBtn" onclick="clearGlobalSearch()"
+                    title="Limpiar búsqueda">✕</button>
+            </div>
+            <div class="searchNav" id="globalSearchNav">
+                <button onmousedown="event.preventDefault()" onclick="navGlobal(-1)">▲</button>
+                <span class="count" id="globalSearchCount">1/1</span>
+                <button onmousedown="event.preventDefault()" onclick="navGlobal(1)">▼</button>
+            </div>
+
+            <div id="list"></div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="main">
+
+            <div class="toolbar">
+                <div class="noteSearchWrap">
+                    <div class="searchInputWrap">
+                        <input id="noteSearch" placeholder="Buscar dentro de la nota... (Enter)"
+                            oninput="onNoteSearchInput()"
+                            onkeydown="if(event.key==='Enter'){event.preventDefault(); searchInNote();}" />
+                        <button class="clearBtn" id="noteClearBtn" onclick="exitSearch()"
+                            title="Cerrar búsqueda">✕</button>
+                    </div>
+                    <div class="searchNav" id="noteSearchNav">
+                        <button onmousedown="event.preventDefault()" onclick="navMatch(-1)">▲</button>
+                        <span class="count" id="noteSearchCount">1/1</span>
+                        <button onmousedown="event.preventDefault()" onclick="navMatch(1)">▼</button>
+                    </div>
+                    <button onclick="searchInNote()">🔍</button>
+                </div>
+
+                <div class="spacer"></div>
+
+                <button onclick="downloadTXT()">⬇ TXT</button>
+                <button onclick="document.getElementById('importInput').click()">⬆ Importar</button>
+                <input type="file" id="importInput" accept=".txt" style="display:none"
+                    onchange="handleImportFile(event)">
+                <button onclick="deleteNote()">🗑️ Eliminar</button>
+            </div>
+
+            <div class="titleWrap">
+                <div id="titleView" class="titleText" contenteditable="true" data-placeholder="Título"></div>
+            </div>
+
+            <div class="autosaveTag" id="autosaveTag"></div>
+
+            <div id="content" contenteditable="true" data-placeholder="Escribí tu nota acá..."></div>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL BORRAR -->
+    <div class="modal" id="deleteModal">
+        <div class="box">
+            <h3>Eliminar nota</h3>
+            <p>¿Querés eliminar <span class="noteName" id="deleteNoteName"></span>? Esta acción no se puede deshacer.
+            </p>
+            <div class="modalBtns">
+                <button onclick="cancelDelete()">Cancelar</button>
+                <button class="danger" onclick="confirmDelete()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        let notes = [];
+        let currentId = null;
+        let activeEditable = null;
+        let savedRange = null;
+        let pendingDeleteId = null;
+        let saveTimeout = null;
+
+        let currentFilteredNotes = [];
+        let globalMatchIndex = 0;
+
+        let matchElements = [];
+        let currentMatchIndex = 0;
+
+        let undoStack = [];
+        let redoStack = [];
+
+        const STORAGE_KEY = "pichon_notes_v2";
+
+        const colors = [
+            "#666666", "#ffffff", "#a855f7",
+            "#3b82f6", "#22c55e", "#eab308", "#ef4444"
+        ];
+
+        let selectedColor = colors[0];
+
+        /* ================= STORAGE ================= */
+
+        function loadStorage() {
+            notes = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        }
+
+        function saveStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+        }
+
+        /* ================= DESHACER / REHACER ================= */
+
+        function cloneState() {
+            return { notes: JSON.parse(JSON.stringify(notes)), currentId };
+        }
+
+        function pushUndoSnapshot() {
+            undoStack.push(cloneState());
+            redoStack = [];
+            updateUndoRedoButtons();
+        }
+
+        function updateUndoRedoButtons() {
+            const undoBtn = document.getElementById("undoBtn");
+            const redoBtn = document.getElementById("redoBtn");
+            if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+            if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+        }
+
+        function restoreState(state) {
+            notes = JSON.parse(JSON.stringify(state.notes));
+            currentId = state.currentId;
+            saveStorage();
+
+            let n = getCurrentNote();
+            if (n) {
+                titleView.innerHTML = n.title || "";
+                content.innerHTML = n.content || "";
+                selectedColor = n.color || colors[0];
+            } else {
+                titleView.innerHTML = "";
+                content.innerHTML = "";
+            }
+
+            exitSearch();
+            renderPalette();
+            render();
+        }
+
+        function undoAction() {
+            if (!undoStack.length) return;
+
+            clearTimeout(saveTimeout);
+            saveTimeout = null;
+
+            redoStack.push(cloneState());
+            const prev = undoStack.pop();
+            restoreState(prev);
+            updateUndoRedoButtons();
+        }
+
+        function redoAction() {
+            if (!redoStack.length) return;
+
+            clearTimeout(saveTimeout);
+            saveTimeout = null;
+
+            undoStack.push(cloneState());
+            const next = redoStack.pop();
+            restoreState(next);
+            updateUndoRedoButtons();
+        }
+
+        /* ================= INIT ================= */
+
+        function start() {
+            loadStorage();
+            renderPalette();
+            render();
+            updateUndoRedoButtons();
+
+            if (notes.length) {
+                loadNote(notes[0].id);
+            } else {
+                newNote();
+            }
+
+            trackSelection(titleView);
+            trackSelection(content);
+
+            document.addEventListener("selectionchange", updateStyleButtons);
+            document.addEventListener("click", (e) => {
+                const panel = document.getElementById("formatPanel");
+                const wrap = document.querySelector(".formatMenuWrap");
+                if (panel.classList.contains("open") && !wrap.contains(e.target)) {
+                    panel.classList.remove("open");
+                }
+
+                document.querySelectorAll(".customSelect").forEach(cs => {
+                    if (!cs.contains(e.target)) {
+                        cs.querySelector(".customDropdown").classList.remove("open");
+                    }
+                });
+            });
+            window.addEventListener("beforeunload", flushSave);
+        }
+
+        function newNote() {
+            flushSave();
+            pushUndoSnapshot();
+
+            let n = {
+                id: Date.now(),
+                title: "",
+                content: "",
+                color: selectedColor
+            };
+
+            notes.unshift(n);
+            currentId = n.id;
+
+            saveStorage();
+            render();
+            loadNote(n.id);
+            titleView.focus();
+        }
+
+        function loadNote(id) {
+            flushSave();
+
+            let n = notes.find(x => x.id === id);
+            if (!n) return;
+
+            currentId = id;
+
+            titleView.innerHTML = n.title || "";
+            content.innerHTML = n.content || "";
+
+            selectedColor = n.color || colors[0];
+
+            exitSearch();
+            renderPalette();
+            render();
+        }
+
+        function getCurrentNote() {
+            return notes.find(x => x.id === currentId);
+        }
+
+        function scheduleSave() {
+            clearTimeout(saveTimeout);
+            document.getElementById("autosaveTag").innerText = "Guardando...";
+            saveTimeout = setTimeout(() => {
+                silentSave();
+                saveTimeout = null;
+                document.getElementById("autosaveTag").innerText = "Guardado ✓";
+                setTimeout(() => {
+                    document.getElementById("autosaveTag").innerText = "";
+                }, 1500);
+            }, 500);
+        }
+
+        function flushSave() {
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
+                saveTimeout = null;
+                silentSave();
+                document.getElementById("autosaveTag").innerText = "";
+            }
+        }
+
+        function silentSave() {
+            let n = getCurrentNote();
+            if (!n) return;
+
+            const newTitle = titleView.innerHTML;
+            const newContent = content.innerHTML;
+            const newColor = selectedColor;
+
+            if (n.title !== newTitle || n.content !== newContent || n.color !== newColor) {
+                pushUndoSnapshot();
+            }
+
+            n.title = newTitle;
+            n.content = newContent;
+            n.color = newColor;
+
+            saveStorage();
+            render();
+        }
+
+        function deleteNote() {
+            let n = getCurrentNote();
+            if (!n) return;
+
+            pendingDeleteId = n.id;
+            document.getElementById("deleteNoteName").innerText = plainText(n.title) || "esta nota";
+            document.getElementById("deleteModal").classList.add("show");
+        }
+
+        function cancelDelete() {
+            pendingDeleteId = null;
+            document.getElementById("deleteModal").classList.remove("show");
+        }
+
+        function confirmDelete() {
+            if (pendingDeleteId == null) return;
+
+            pushUndoSnapshot();
+
+            notes = notes.filter(x => x.id !== pendingDeleteId);
+            saveStorage();
+
+            document.getElementById("deleteModal").classList.remove("show");
+            pendingDeleteId = null;
+            currentId = null;
+
+            render();
+
+            if (notes.length > 0) {
+                loadNote(notes[0].id);
+            } else {
+                newNote();
+            }
+        }
+
+        /* ================= RENDER SIDEBAR ================= */
+
+        function plainText(html) {
+            let d = document.createElement("div");
+            d.innerHTML = html || "";
+            return d.innerText || d.textContent || "";
+        }
+
+        function normalize(str) {
+            return (str || "").toLowerCase();
+        }
+
+        function render() {
+            const query = normalize(document.getElementById("globalSearch") ? globalSearch.value.trim() : "");
+            const words = query.split(/\s+/).filter(Boolean);
+
+            document.getElementById("globalClearBtn").classList.toggle("show", query.length > 0);
+
+            list.innerHTML = "";
+
+            let filtered = notes.filter(n => {
+                if (!words.length) return true;
+                const combined = normalize(plainText(n.title) + " " + plainText(n.content));
+                return words.every(w => combined.includes(w));
+            });
+
+            currentFilteredNotes = filtered;
+
+            if (!filtered.length) {
+                let div = document.createElement("div");
+                div.className = "noResults";
+                div.innerText = query ? "No se encontraron notas." : "";
+                if (query) list.appendChild(div);
+                updateGlobalSearchNav(query, 0);
+                return;
+            }
+
+            if (globalMatchIndex >= filtered.length) globalMatchIndex = 0;
+
+            filtered.forEach((n, idx) => {
+                let div = document.createElement("div");
+                div.className = "note" + (n.id === currentId ? " active" : "");
+                if (query && idx === globalMatchIndex) div.classList.add("current-match");
+
+                let titleText = plainText(n.title) || "Sin título";
+                let snippetText = plainText(n.content);
+
+                let titleEl = document.createElement("div");
+                titleEl.style.color = n.color || "#eee";
+                titleEl.style.fontWeight = "bold";
+                titleEl.innerText = titleText;
+
+                let snippetEl = document.createElement("div");
+                snippetEl.className = "noteSnippet";
+                snippetEl.innerText = snippetText;
+
+                div.appendChild(titleEl);
+                div.appendChild(snippetEl);
+
+                div.onclick = () => loadNote(n.id);
+                list.appendChild(div);
+            });
+
+            updateGlobalSearchNav(query, filtered.length);
+        }
+
+        function updateGlobalSearchNav(query, total) {
+            const nav = document.getElementById("globalSearchNav");
+            if (!query || total === 0) {
+                nav.classList.remove("show");
+                return;
+            }
+            nav.classList.add("show");
+            document.getElementById("globalSearchCount").textContent = (globalMatchIndex + 1) + "/" + total;
+        }
+
+        function navGlobal(delta) {
+            const total = currentFilteredNotes.length;
+            if (!total) return;
+            globalMatchIndex = (globalMatchIndex + delta + total) % total;
+            render();
+            const el = list.children[globalMatchIndex];
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        function onGlobalSearchInput() {
+            globalMatchIndex = 0;
+            render();
+        }
+
+        function clearGlobalSearch() {
+            document.getElementById("globalSearch").value = "";
+            globalMatchIndex = 0;
+            render();
+            document.getElementById("globalSearch").focus();
+        }
+
+        /* ================= FORMAT MENU ================= */
+
+        function toggleFormatPanel() {
+            const panel = document.getElementById("formatPanel");
+            panel.classList.toggle("open");
+            if (!panel.classList.contains("open")) flushSave();
+        }
+
+        function closeFormatPanel() {
+            document.getElementById("formatPanel").classList.remove("open");
+        }
+
+        function toggleDropdown(id) {
+            document.querySelectorAll(".customDropdown").forEach(d => {
+                if (d.id !== id) d.classList.remove("open");
+            });
+            document.getElementById(id).classList.toggle("open");
+        }
+
+        function chooseFont(name) {
+            document.getElementById("fontSelectBtn").textContent = name + " ▾";
+            document.getElementById("fontDropdown").classList.remove("open");
+            applyStyle({ fontFamily: name });
+            closeFormatPanel();
+        }
+
+        function chooseSize(px, label) {
+            document.getElementById("sizeSelectBtn").textContent = label + " ▾";
+            document.getElementById("sizeDropdown").classList.remove("open");
+            applyStyle({ fontSize: px });
+            closeFormatPanel();
+        }
+
+        function trackSelection(el) {
+            el.addEventListener("focus", () => { activeEditable = el; });
+            el.addEventListener("input", () => {
+                scheduleSave();
+            });
+            el.addEventListener("blur", () => {
+                flushSave();
+            });
+        }
+
+        document.addEventListener("selectionchange", () => {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+            const range = sel.getRangeAt(0);
+
+            if (typeof content !== "undefined" && content.contains(range.commonAncestorContainer)) {
+                activeEditable = content;
+                savedRange = range.cloneRange();
+            } else if (typeof titleView !== "undefined" && titleView.contains(range.commonAncestorContainer)) {
+                activeEditable = titleView;
+                savedRange = range.cloneRange();
+            }
+        });
+
+        function restoreSelection() {
+            if (!activeEditable) activeEditable = content;
+            activeEditable.focus();
+            const sel = window.getSelection();
+            if (savedRange) {
+                try {
+                    sel.removeAllRanges();
+                    sel.addRange(savedRange);
+                } catch (e) {
+                    sel.selectAllChildren(activeEditable);
+                    sel.collapseToEnd();
+                }
+            }
+        }
+
+        function getStyleAtSelection(prop) {
+            if (!savedRange) return "";
+            let node = savedRange.startContainer;
+            let el = node.nodeType === 3 ? node.parentElement : node;
+            if (!el) return "";
+            return window.getComputedStyle(el)[prop] || "";
+        }
+
+        function applyStyle(styles) {
+            restoreSelection();
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+            let range = sel.getRangeAt(0);
+
+            if (range.collapsed) {
+                let container = range.startContainer;
+                let parentSpan = container.nodeType === 3 ? container.parentElement : container;
+
+                if (parentSpan && parentSpan.tagName === "SPAN" && parentSpan.dataset.pichonStyle === "1" && parentSpan.textContent === "\u200B") {
+                    Object.keys(styles).forEach(k => { parentSpan.style[k] = styles[k]; });
+                    const zwsp = parentSpan.firstChild;
+                    const newRange = document.createRange();
+                    newRange.setStart(zwsp, 1);
+                    newRange.setEnd(zwsp, 1);
+                    sel.removeAllRanges();
+                    sel.addRange(newRange);
+                } else {
+                    const span = document.createElement("span");
+                    span.dataset.pichonStyle = "1";
+                    Object.keys(styles).forEach(k => { span.style[k] = styles[k]; });
+                    const zwsp = document.createTextNode("\u200B");
+                    span.appendChild(zwsp);
+                    range.insertNode(span);
+                    range.setStart(zwsp, 1);
+                    range.setEnd(zwsp, 1);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            } else {
+                let ancestor = range.commonAncestorContainer;
+                let candidate = ancestor.nodeType === 3 ? ancestor.parentElement : ancestor;
+
+                if (candidate && candidate.tagName === "SPAN" && candidate.dataset.pichonStyle === "1" && range.toString() === candidate.textContent) {
+                    Object.keys(styles).forEach(k => { candidate.style[k] = styles[k]; });
+                    const newRange = document.createRange();
+                    newRange.selectNodeContents(candidate);
+                    sel.removeAllRanges();
+                    sel.addRange(newRange);
+                } else {
+                    const span = document.createElement("span");
+                    span.dataset.pichonStyle = "1";
+                    Object.keys(styles).forEach(k => { span.style[k] = styles[k]; });
+                    const frag = range.extractContents();
+                    span.appendChild(frag);
+                    range.insertNode(span);
+
+                    const newRange = document.createRange();
+                    newRange.selectNodeContents(span);
+                    sel.removeAllRanges();
+                    sel.addRange(newRange);
+                }
+            }
+
+            savedRange = sel.getRangeAt(0).cloneRange();
+            scheduleSave();
+            updateStyleButtons();
+        }
+
+        function toggleStyle(prop, onValue, offValue) {
+            const current = getStyleAtSelection(prop);
+            let isOn;
+
+            if (prop === "fontWeight") {
+                isOn = current === "bold" || parseInt(current) >= 600;
+            } else if (prop === "textDecorationLine" || prop === "textDecoration") {
+                isOn = (current || "").includes("underline");
+            } else {
+                isOn = current === onValue;
+            }
+
+            applyStyle({ [prop]: isOn ? offValue : onValue });
+        }
+
+        function updateStyleButtons() {
+            try {
+                const weight = getStyleAtSelection("fontWeight");
+                const style = getStyleAtSelection("fontStyle");
+                const deco = getStyleAtSelection("textDecorationLine") || getStyleAtSelection("textDecoration");
+
+                document.getElementById("boldBtn").classList.toggle("toggled", weight === "bold" || parseInt(weight) >= 600);
+                document.getElementById("italicBtn").classList.toggle("toggled", style === "italic");
+                document.getElementById("underlineBtn").classList.toggle("toggled", (deco || "").includes("underline"));
+            } catch (e) { }
+        }
+
+        function renderPalette() {
+            palette.innerHTML = "";
+
+            colors.forEach(c => {
+                let b = document.createElement("div");
+                b.className = "colorBtn" + (c === selectedColor ? " selected" : "");
+                b.style.background = c;
+
+                b.onmousedown = (e) => e.preventDefault();
+                b.onclick = () => {
+                    selectedColor = c;
+                    applyStyle({ color: c });
+                    renderPalette();
+                    closeFormatPanel();
+                };
+
+                palette.appendChild(b);
+            });
+        }
+
+        /* ================= BÚSQUEDA DENTRO DE LA NOTA ================= */
+
+        function escapeRegex(s) {
+            return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        }
+
+        function clearHighlights() {
+            content.querySelectorAll("mark.pichon-hl").forEach(m => {
+                const parent = m.parentNode;
+                while (m.firstChild) parent.insertBefore(m.firstChild, m);
+                parent.removeChild(m);
+                parent.normalize();
+            });
+        }
+
+        function exitSearch() {
+            document.getElementById("noteSearch").value = "";
+            document.getElementById("noteClearBtn").classList.remove("show");
+            document.getElementById("noteSearchNav").classList.remove("show");
+
+            clearHighlights();
+            matchElements = [];
+            currentMatchIndex = 0;
+        }
+
+        function onNoteSearchInput() {
+            const val = document.getElementById("noteSearch").value;
+            document.getElementById("noteClearBtn").classList.toggle("show", val.length > 0);
+            if (!val.trim()) {
+                clearHighlights();
+                matchElements = [];
+                document.getElementById("noteSearchNav").classList.remove("show");
+            }
+        }
+
+        function updateNoteSearchNav() {
+            const nav = document.getElementById("noteSearchNav");
+            if (!matchElements.length) {
+                nav.classList.remove("show");
+                return;
+            }
+            nav.classList.add("show");
+            document.getElementById("noteSearchCount").textContent = (currentMatchIndex + 1) + "/" + matchElements.length;
+        }
+
+        function setCurrentMatch(idx, scroll = true) {
+            matchElements.forEach(m => m.classList.remove("current"));
+            if (!matchElements.length) return;
+            currentMatchIndex = (idx + matchElements.length) % matchElements.length;
+            const el = matchElements[currentMatchIndex];
+            el.classList.add("current");
+            if (scroll) el.scrollIntoView({ behavior: "smooth", block: "center" });
+            updateNoteSearchNav();
+        }
+
+        function navMatch(delta) {
+            if (!matchElements.length) return;
+            setCurrentMatch(currentMatchIndex + delta);
+        }
+
+        function searchInNote() {
+            const raw = document.getElementById("noteSearch").value.trim();
+            if (!raw) return;
+
+            const words = raw.split(/\s+/).filter(Boolean).map(escapeRegex);
+            if (!words.length) return;
+
+            clearHighlights();
+
+            const regex = new RegExp("(" + words.join("|") + ")", "gi");
+
+            const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+            let node, nodes = [];
+            while ((node = walker.nextNode())) nodes.push(node);
+
+            nodes.forEach(textNode => {
+                const text = textNode.nodeValue;
+                regex.lastIndex = 0;
+                if (!regex.test(text)) return;
+                regex.lastIndex = 0;
+
+                const frag = document.createDocumentFragment();
+                let lastIndex = 0;
+                let m;
+
+                while ((m = regex.exec(text))) {
+                    if (m.index > lastIndex) {
+                        frag.appendChild(document.createTextNode(text.slice(lastIndex, m.index)));
+                    }
+                    const mark = document.createElement("mark");
+                    mark.className = "pichon-hl";
+                    mark.textContent = m[0];
+                    frag.appendChild(mark);
+                    lastIndex = m.index + m[0].length;
+
+                    if (m.index === regex.lastIndex) regex.lastIndex++;
+                }
+
+                if (lastIndex < text.length) {
+                    frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+                }
+
+                textNode.parentNode.replaceChild(frag, textNode);
+            });
+
+            matchElements = Array.from(content.querySelectorAll("mark.pichon-hl"));
+
+            if (matchElements.length) {
+                setCurrentMatch(0);
+            } else {
+                document.getElementById("noteSearchNav").classList.remove("show");
+            }
+        }
+
+        /* ================= EXPORTAR ================= */
+
+        function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const raw = e.target.result.replace(/\r\n/g, "\n");
+                const lines = raw.split("\n");
+
+                let title, bodyLines;
+                if (lines.length >= 3 && lines[1].trim() === "") {
+                    title = lines[0].trim();
+                    bodyLines = lines.slice(2);
+                } else {
+                    title = file.name.replace(/\.txt$/i, "");
+                    bodyLines = lines;
+                }
+
+                const bodyHtml = bodyLines
+                    .map(l => l.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"))
+                    .join("<br>");
+
+                flushSave();
+                pushUndoSnapshot();
+
+                let n = {
+                    id: Date.now(),
+                    title: title.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
+                    content: bodyHtml,
+                    color: selectedColor
+                };
+
+                notes.unshift(n);
+                currentId = n.id;
+
+                saveStorage();
+                render();
+                loadNote(n.id);
+
+                event.target.value = "";
+            };
+            reader.readAsText(file);
+        }
+
+        function downloadTXT() {
+            let n = getCurrentNote();
+            if (!n) return;
+
+            const titleTxt = plainText(n.title) || "Sin título";
+            const contentTxt = plainText(n.content);
+
+            const text = `${titleTxt}\n\n${contentTxt}`;
+
+            const blob = new Blob([text], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = (titleTxt || "nota") + ".txt";
+            a.click();
+
+            URL.revokeObjectURL(url);
+        }
+
+        /* INIT */
+        start();
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>PichonCalendar</title>
+
+    <style>
+        
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: white;
+
+            background-color: #111;
+            background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            min-height: 100vh;
+        }
+
+        .brand {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 2em;
+            margin: 0;
+        }
+.credit {
+  font-family: Verdana, sans-serif;
+  font-size: 18px;
+  font-style: italic;
+  color: #bbb;
+}
+        .brand-sub {
+            font-family: Arial, sans-serif;
+            font-style: italic;
+            font-weight: normal;
+            font-size: 0.55em;
+            opacity: 0.8;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.2);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 4px 20px 20px 20px;
+        }
+
+        .tab {
+            padding: 10px;
+            background: black;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        .tab:hover {
+            background: #222;
+        }
+
+        /* Main */
+        .main {
+            flex: 1;
+            padding: 70px 20px 20px 20px;
+        }
+
+        .main h2,
+        .main h3 {
+            margin-top: 0;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .years {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .months {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .days {
+            grid-template-columns: repeat(7, 1fr);
+        }
+
+        .item {
+            background: black;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .item:hover {
+            background: #333;
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .today {
+            background: #007BFF;
+            border: 2px solid #007BFF;
+        }
+
+        .event {
+            background: black;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .event-text {
+            margin-top: 5px;
+            display: none;
+        }
+
+        input,
+        textarea,
+        button {
+            width: 100%;
+            margin-top: 5px;
+            background: black;
+            color: white;
+            border: 1px solid white;
+            padding: 5px;
+        }
+
+        /* ===================== FONDOS ===================== */
+
+        .bgSwatch {
+            height: 50px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .bgSwatch:hover {
+            border: 2px solid white;
+        }
+
+        .bgGrid {
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        /* ===================== RESPONSIVE ===================== */
+
+        @media (max-width: 900px) {
+            .years {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .overlay {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 12px;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .sidebar h2.brand {
+                width: 100%;
+                margin: 0 0 6px 0;
+                font-size: 1.5em;
+            }
+
+            .tab {
+                flex: 1 1 auto;
+                margin-bottom: 0;
+                text-align: center;
+                font-size: 0.85em;
+            }
+
+            .main {
+                padding: 14px;
+            }
+
+            h1.brand {
+                font-size: 1.6em;
+            }
+
+            .years,
+            .months {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .item {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar h2 {
+                text-align: center;
+            }
+
+            .brand-sub {
+                display: block;
+                margin-left: 0;
+                margin-top: 2px;
+            }
+
+            .tab {
+                flex: 1 1 40%;
+            }
+
+            .years,
+            .months {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .bgGrid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .days {
+                gap: 5px;
+            }
+
+            .item {
+                padding: 6px;
+                font-size: 0.8em;
+            }
+
+            .weekdays {
+                font-size: 0.75em;
+            }
+
+            input,
+            textarea,
+            button {
+                font-size: 16px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="overlay">
+
+        <div class="sidebar">
+            <h2 class="brand">PichonCalendar<span class="brand-sub"> - By Pichisoft -</span></h2>
+            <div class="tab" onclick="showYears()">Años</div>
+            <div class="tab" onclick="showMonths()">Meses</div>
+            <div class="tab" onclick="showDays()">Días</div>
+            <div class="tab" onclick="showEvents()">Eventos</div>
+            <div class="tab" onclick="showBackground()">Fondo</div>
+        </div>
+
+        <div class="main">
+            <div id="app"></div>
+        </div>
+
+    </div>
+
+    <script>
+        const app = document.getElementById("app");
+
+        /* FECHA LOCAL (según la zona horaria de cada dispositivo) */
+        function getLocalDate() {
+            return new Date();
+        }
+
+        let today = getLocalDate();
+
+        let baseYear = today.getFullYear();
+
+        let currentYear = baseYear;
+        let currentMonth = today.getMonth();
+        let currentDay = today.getDate();
+
+        const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        const weekdays = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"];
+
+        /* STORAGE EVENTOS */
+        function getEvents() {
+            return JSON.parse(localStorage.getItem("events") || "{}");
+        }
+        function saveEvents(e) {
+            localStorage.setItem("events", JSON.stringify(e));
+        }
+
+        /* UTILIDADES */
+        function pad(n) {
+            return n.toString().padStart(2, "0");
+        }
+
+        function formatKeyAsDate(key) {
+            const [y, m, d] = key.split("-").map(Number);
+            return `${pad(d)}/${pad(m + 1)}/${y}`;
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.innerText = str || "";
+            return div.innerHTML;
+        }
+
+        /* ===================== VISTAS ===================== */
+
+        function showYears() {
+            baseYear = getLocalDate().getFullYear();
+
+            let html = "<div class='grid years'>";
+
+            for (let y = baseYear; y <= baseYear + 10; y++) {
+                html += `<div class="item" onclick="currentYear=${y}; showMonths()">${y}</div>`;
+            }
+
+            html += "</div>";
+            app.innerHTML = html;
+        }
+
+        function showMonths() {
+            let html = `<h2>${currentYear}</h2><div class="grid months">`;
+
+            months.forEach((m, i) => {
+                html += `<div class="item" onclick="showDays(currentYear, ${i})">${m}</div>`;
+            });
+
+            html += "</div>";
+            app.innerHTML = html;
+        }
+
+        function daysInMonth(y, m) {
+            return new Date(y, m + 1, 0).getDate();
+        }
+
+        function firstDay(y, m) {
+            let d = new Date(y, m, 1).getDay();
+            return d === 0 ? 6 : d - 1;
+        }
+
+        function showDays(year = currentYear, month = currentMonth) {
+
+            currentYear = year;
+            currentMonth = month;
+
+            let total = daysInMonth(year, month);
+            let start = firstDay(year, month);
+
+            let today = getLocalDate();
+
+            let html = `<h2>${months[month]} ${year}</h2>`;
+            html += `<div class="weekdays">${weekdays.map(d => `<div>${d}</div>`).join("")}</div>`;
+            html += `<div class="grid days">`;
+
+            for (let i = 0; i < start; i++) {
+                html += "<div></div>";
+            }
+
+            for (let d = 1; d <= total; d++) {
+
+                let isToday =
+                    d === today.getDate() &&
+                    month === today.getMonth() &&
+                    year === today.getFullYear();
+
+                html += `<div class="item ${isToday ? 'today' : ''}" onclick="openDay(${d})">${d}</div>`;
+            }
+
+            html += "</div>";
+            app.innerHTML = html;
+        }
+
+        function openDay(day) {
+            currentDay = day;
+
+            const events = getEvents();
+            const key = `${currentYear}-${currentMonth}-${day}`;
+            const ev = events[key] || { title: "", text: "" };
+
+            app.innerHTML = `
+        <h2>${day} ${months[currentMonth]} ${currentYear}</h2>
+
+        <input id="title" placeholder="Nombre del evento" value="${escapeHtml(ev.title)}">
+        <textarea id="text">${ev.text || ""}</textarea>
+
+        <button onclick="saveEvent()">Guardar</button>
+    `;
+        }
+
+        function saveEvent() {
+            const title = document.getElementById("title").value.trim();
+            const text = document.getElementById("text").value;
+
+            if (!title) {
+                alert("Ingresá un nombre para el evento");
+                return;
+            }
+
+            const events = getEvents();
+            const key = `${currentYear}-${currentMonth}-${currentDay}`;
+
+            events[key] = { title, text };
+
+            saveEvents(events);
+            alert("Guardado");
+        }
+
+        /* ===================== EVENTOS ===================== */
+
+        function showEvents() {
+            const events = getEvents();
+
+            let html = `
+        <h2>Eventos</h2>
+
+        <h3>Agregar evento</h3>
+
+        <input id="evTitle" placeholder="Nombre del evento">
+        <input id="evDate" placeholder="Fecha (DD/MM/AAAA)">
+        <textarea id="evText" placeholder="Descripción"></textarea>
+
+        <button onclick="addEvent()">Agregar</button>
+
+        <hr>
+    `;
+
+            let i = 0;
+
+            const sortedKeys = Object.keys(events).sort((a, b) => {
+                const [ay, am, ad] = a.split("-").map(Number);
+                const [by, bm, bd] = b.split("-").map(Number);
+                return new Date(ay, am, ad) - new Date(by, bm, bd);
+            });
+
+            for (const key of sortedKeys) {
+                const ev = events[key];
+                const id = "ev" + i;
+
+                html += `
+        <div class="event">
+            <b>${escapeHtml(ev.title) || "(Sin nombre)"}</b><br>
+            ${formatKeyAsDate(key)}
+
+            <button onclick="toggleEvent('${id}')">Ver/Ocultar</button>
+            <button onclick="editEvent('${key}')">Editar</button>
+            <button onclick="deleteEvent('${key}')">Eliminar</button>
+
+            <div id="${id}" class="event-text">${escapeHtml(ev.text)}</div>
+        </div>
+        `;
+                i++;
+            }
+
+            app.innerHTML = html;
+        }
+
+        function toggleEvent(id) {
+            const el = document.getElementById(id);
+            el.style.display = el.style.display === "block" ? "none" : "block";
+        }
+
+        /* Valida que la fecha sea real (día, mes y año dentro de rango, y que el
+           día exista para ese mes/año, contemplando años bisiestos, etc.) */
+        function isValidDate(d, m, y) {
+            if (![d, m, y].every(Number.isInteger)) return false;
+            if (m < 1 || m > 12) return false;
+            if (y < 1 || y > 9999) return false;
+
+            const maxDay = daysInMonth(y, m - 1);
+            if (d < 1 || d > maxDay) return false;
+
+            return true;
+        }
+
+        function addEvent() {
+            const title = document.getElementById("evTitle").value.trim();
+            const date = document.getElementById("evDate").value.trim();
+            const text = document.getElementById("evText").value;
+
+            if (!title) {
+                alert("Ingresá un nombre para el evento");
+                return;
+            }
+
+            const parts = date.split("/");
+
+            if (parts.length !== 3 || parts.some(p => !/^\d{1,4}$/.test(p.trim()))) {
+                alert("Usá formato DD/MM/AAAA");
+                return;
+            }
+
+            const d = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10);
+            const y = parseInt(parts[2], 10);
+
+            if (!isValidDate(d, m, y)) {
+                alert("La fecha ingresada no es válida");
+                return;
+            }
+
+            const key = `${y}-${m - 1}-${d}`;
+
+            const events = getEvents();
+            events[key] = { title, text };
+
+            saveEvents(events);
+            showEvents();
+        }
+        function editEvent(key) {
+            const events = getEvents();
+            const ev = events[key];
+            const [y, m, d] = key.split("-").map(Number);
+
+            currentYear = y;
+            currentMonth = m;
+            currentDay = d;
+
+            app.innerHTML = `
+        <h2>Editar evento</h2>
+
+        <input id="title" value="${escapeHtml(ev.title)}">
+        <textarea id="text">${ev.text || ""}</textarea>
+
+        <button onclick="saveEditedEvent('${key}')">Guardar cambios</button>
+    `;
+        }
+
+        function saveEditedEvent(oldKey) {
+            const title = document.getElementById("title").value.trim();
+            const text = document.getElementById("text").value;
+
+            if (!title) {
+                alert("Ingresá un nombre para el evento");
+                return;
+            }
+
+            const events = getEvents();
+
+            delete events[oldKey];
+
+            const newKey = `${currentYear}-${currentMonth}-${currentDay}`;
+
+            events[newKey] = { title, text };
+
+            saveEvents(events);
+            showEvents();
+        }
+        function deleteEvent(key) {
+            const ok = confirm("¿Seguro que querés borrar este evento?");
+
+            if (!ok) return;
+
+            const events = getEvents();
+            delete events[key];
+            saveEvents(events);
+
+            showEvents();
+        }
+
+        /* ===================== FONDO DE PANTALLA ===================== */
+
+        const DEFAULT_BG_IMAGE = "url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80')";
+
+        const bgColors = [
+            "#000000", "#111111", "#1e1e1e", "#0f172a", "#1e293b",
+            "#312e81", "#7c3aed", "#2563eb", "#0891b2", "#16a34a",
+            "#65a30d", "#ca8a04", "#f59e0b", "#ea580c", "#dc2626",
+            "#be123c", "#ffffff"
+        ];
+
+        function showBackground() {
+            let html = `<h2>Fondo de pantalla</h2>`;
+            html += `<p>Elegí un color sólido de fondo, o quitá el fondo actual.</p>`;
+            html += `<div class="grid bgGrid">`;
+
+            bgColors.forEach(c => {
+                html += `<div class="bgSwatch" style="background:${c};" title="${c}" onclick="setSolidBackground('${c}')"></div>`;
+            });
+
+            html += `</div>`;
+            html += `<button onclick="setDefaultBackground()" style="margin-top:15px;">Fondo predeterminado</button>`;
+            html += `<button onclick="removeBackground()" style="margin-top:10px;">Quitar fondo</button>`;
+
+            app.innerHTML = html;
+        }
+
+        function setDefaultBackground() {
+            document.body.style.backgroundImage = DEFAULT_BG_IMAGE;
+            document.body.style.backgroundColor = "#111";
+
+            localStorage.setItem("bgType", "default");
+            localStorage.removeItem("bgColor");
+        }
+
+        function setSolidBackground(color) {
+            document.body.style.backgroundImage = "none";
+            document.body.style.backgroundColor = color;
+
+            localStorage.setItem("bgType", "color");
+            localStorage.setItem("bgColor", color);
+        }
+
+        function removeBackground() {
+            document.body.style.backgroundImage = "none";
+            document.body.style.backgroundColor = "#111";
+
+            localStorage.setItem("bgType", "none");
+            localStorage.removeItem("bgColor");
+        }
+
+        function applySavedBackground() {
+            const type = localStorage.getItem("bgType");
+
+            if (type === "color") {
+                const color = localStorage.getItem("bgColor") || "#111";
+                document.body.style.backgroundImage = "none";
+                document.body.style.backgroundColor = color;
+            } else if (type === "none") {
+                document.body.style.backgroundImage = "none";
+                document.body.style.backgroundColor = "#111";
+            } else if (type === "default") {
+                document.body.style.backgroundImage = DEFAULT_BG_IMAGE;
+                document.body.style.backgroundColor = "#111";
+            }
+            /* si no hay preferencia guardada, se deja la imagen por defecto del CSS */
+        }
+
+        /* ===================== INICIO ===================== */
+
+        applySavedBackground();
+        showDays(currentYear, currentMonth);
+    </script>
+<p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff; background: rgba(0,0,0,0.55); padding: 8px 14px; border-radius: 8px; text-shadow: 0 1px 3px rgba(0,0,0,0.8);"><a href="https://pichisoft.github.io/web/" target="_blank" style="color:#4db8ff;  text-decoration: underline;">Pichisoft</a></p>
+</body>
+</html>

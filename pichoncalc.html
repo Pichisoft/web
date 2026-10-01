@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PichonCalc</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .calculator {
+            width: 360px;
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header {
+            position: fixed;
+            top: 15px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .header .title {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            font-size: 40px;
+            color: #fff;
+        }
+
+        .header .credit {
+            font-family: Arial, sans-serif;
+            font-style: italic;
+            font-weight: normal;
+            font-size: 18px;
+            color: #aaa;
+            position: relative;
+            top: 6px;
+        }
+
+        #display {
+            width: 100%;
+            height: 60px;
+            font-size: 22px;
+            text-align: right;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #000;
+            color: #0f0;
+            outline: none;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        button {
+            padding: 12px;
+            font-size: 13px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+        }
+
+        button:hover {
+            background: #555;
+        }
+
+        .eq {
+            background: #28a745;
+            grid-column: span 4;
+        }
+
+        .clear {
+            background: #dc3545;
+        }
+
+        /* partículas */
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: fly 600ms linear forwards;
+        }
+
+        @keyframes fly {
+            from {
+                transform: translate(0, 0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translate(var(--x), var(--y));
+                opacity: 0;
+            }
+        }
+        .credit {
+  font-family: Verdana, sans-serif;
+  font-size: 18px;
+  font-style: italic;
+  color: #bbb;
+}
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <span class="title">PichonCalc</span>
+        <span class="credit">- By Pichisoft -</span>
+    </div>
+
+    <div class="calculator" id="calc">
+
+        <input id="display" type="text" autofocus />
+
+        <div class="buttons">
+
+            <button onclick="append('(')">(</button>
+            <button onclick="append(')')">)</button>
+            <button onclick="clearDisplay()" class="clear">C</button>
+            <button onclick="del()">DEL</button>
+
+            <button onclick="append('7')">7</button>
+            <button onclick="append('8')">8</button>
+            <button onclick="append('9')">9</button>
+            <button onclick="append('/')">/</button>
+
+            <button onclick="append('4')">4</button>
+            <button onclick="append('5')">5</button>
+            <button onclick="append('6')">6</button>
+            <button onclick="append('*')">*</button>
+
+            <button onclick="append('1')">1</button>
+            <button onclick="append('2')">2</button>
+            <button onclick="append('3')">3</button>
+            <button onclick="append('-')">-</button>
+
+            <button onclick="append('0')">0</button>
+            <button onclick="append('.')">.</button>
+            <button onclick="append('+')">+</button>
+
+            <button class="eq" onclick="calculate(event)">=</button>
+
+        </div>
+    </div>
+
+    <script>
+        const display = document.getElementById("display");
+        const calc = document.getElementById("calc");
+
+        let lastExpression = "";
+
+        /* ===== VARIABLES ===== */
+        let vars = { a: 10, b: 5, c: 0, d: 2 };
+
+        /* ===== UTIL ===== */
+        function sanitize(expr) {
+            return expr.replace(/Math\./g, "");
+        }
+
+        function replaceLetters(expr) {
+            return expr.replace(/[a-z]/gi, m => vars[m] ?? m);
+        }
+
+        /* ===== INPUT ===== */
+        function append(v) {
+            display.value += v;
+        }
+
+        function clearDisplay() { display.value = ""; }
+        function del() { display.value = display.value.slice(0, -1); }
+
+        /* ===== PARTICULAS ===== */
+        function spawnParticles(x, y) {
+            for (let i = 0; i < 20; i++) {
+                let p = document.createElement("div");
+                p.className = "particle";
+
+                p.style.left = x + "px";
+                p.style.top = y + "px";
+
+                let angle = Math.random() * Math.PI * 2;
+                let dist = Math.random() * 80;
+
+                p.style.setProperty("--x", Math.cos(angle) * dist + "px");
+                p.style.setProperty("--y", Math.sin(angle) * dist + "px");
+
+                p.style.background = `hsl(${Math.random() * 360},100%,60%)`;
+
+                calc.appendChild(p);
+                setTimeout(() => p.remove(), 600);
+            }
+        }
+
+        /* ===== CALCULAR ===== */
+        function calculate(e) {
+            try {
+                let expr = display.value;
+
+                if (expr.trim() === "" && lastExpression) {
+                    expr = lastExpression;
+                }
+
+                expr = sanitize(expr);
+                expr = replaceLetters(expr);
+
+                let result = eval(expr);
+
+                display.value = result;
+                lastExpression = expr;
+
+                let rect = e.target.getBoundingClientRect();
+                spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+
+            } catch {
+                display.value = "Error";
+            }
+        }
+
+        /* ===== TECLADO ===== */
+        document.addEventListener("keydown", (e) => {
+            const key = e.key.toLowerCase();
+            const allowed = "0123456789+-*/().abcdefghijklmnopqrstuvwxyz";
+
+            if (allowed.includes(key)) {
+                e.preventDefault();
+                append(key);
+            } else if (key === "enter") {
+                e.preventDefault();
+                calculate({ target: document.querySelector(".eq") });
+            } else if (key === "backspace") {
+                e.preventDefault();
+                del();
+            } else if (key === "escape") {
+                e.preventDefault();
+                clearDisplay();
+            }
+        });
+    </script>
+<p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a href="https://pichisoft.github.io/web/" target="_blank" style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
+</body>
+
+</html>

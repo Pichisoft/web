@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>PichonDestiny</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #111, #222);
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    #container {
+      padding: 20px;
+    }
+
+    #respuesta {
+      font-size: 28px;
+      font-weight: bold;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    #hint {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      position: fixed;
+      top: 20px;
+      left: 25px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: white;
+    }
+
+    .byline {
+      font-family: Arial, sans-serif;
+      font-size: 0.9rem;
+      font-style: italic;
+      color: #bdbdbd;
+    }
+    .credit {
+  font-family: Verdana, sans-serif;
+  font-size: 18px;
+  font-style: italic;
+  color: #bbb;
+}
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <div class="logo">PichonDestiny</div>
+    <div class="byline">- By Pichisoft -</div>
+  </div>
+
+  <div id="container">
+    <div id="respuesta"></div>
+    <!-- <div id="hint">Tocá la pantalla para otra respuesta</div> -->
+  </div>
+
+  <script>
+    const respuestas = [
+      "SÍ",
+      "NO",
+      "TAL VEZ",
+      "NI LO INTENTES",
+      "DE UNA",
+      "MEJOR ESPERÁ",
+      "CONFÍA",
+      "NO ES EL MOMENTO",
+      "MARTA, HMMMM....",
+      "SE VIENE ALGO BUENO",
+      "MALA IDEA",
+      "HACELO",
+      "NO HAY CHANCE",
+      "PUEDE SALIR MAL",
+      "PUEDE SALIR MUY BIEN",
+      "PREGUNTÁ DE NUEVO",
+      "SEGUÍ TU INSTINTO",
+      "OLVIDATE",
+      "ES POR AHÍ",
+      "NO TE CONVIENE",
+      "100% SEGURO",
+      "DEFINITIVAMENTE",
+      "YA LO SABÉS",
+      "PENSALO 2 VECES",
+      "PUEDE QUE SÍ, PUEDE QUE NO",
+      "DEPENDE",
+      "BUENA IDEA",
+      "NO TE ENTENDÍ",
+      "PREGUNTÁ DE NUEVO POR FAVOR",
+      "MEJOR PREGUNTALE",
+      "SÍ, HAY QUE ANIMARSE",
+      "CONVIENE QUE SÍ",
+      "DIRÍA QUE ESPERE",
+      "HAY COSAS QUE NO CONVIENE PREGUNTAR",
+      "SEGURO QUE QUERÉS SABÉR?",
+      "LO SÉ, PERO NO PUEDO DECIRTE",
+      "MMMMMM...",
+      "CREO QUE NO... O MEJOR... SÍ. SÍ, DEFINITIVAMENTE",
+      "CREO QUE SÍ... O MEJOR... NO. NO, DEFINITIVAMENTE NO",
+      "TE LO DIJE...",
+      "ESCUCHÁ A TU CORAZÓN",
+      "DA-AH",
+      "HACÉ LO QUE QUIERAS",
+      "COMO QUIERAS",
+      "NOOOOOOOOOOO",
+      "SÍIIIIIII",
+      "JAJAJAJA, SÍ",
+      "JAJAJAJA, NO",
+      "ES EL SACRIFICIO QUE EXIGE LA ISLA",
+      "DEPENDE, DE TODO DEPENDE",
+      "MAÑANA",
+      "PREGUNTAME DE NUEVO EN 40 DIAS",
+      "NO TE ANIMÁS",
+      "EN SERIO?",
+      "SÍ, CLARO...",
+      "YA QUISIERA",
+      "TODAVÍA NO",
+      "PREGUNTALE AL PICHÓN",
+      "SIEMPRE",
+      "NUNCA",
+      "NO SÉ :(",
+      "ESTOY NERVIOSO PARA RESPONDER A ESA PREGUNTA",
+      "HOLA :D"
+
+    ];
+
+    const el = document.getElementById("respuesta");
+
+    function nuevaRespuesta() {
+      el.style.opacity = 0;
+      el.style.transform = "scale(0.9)";
+
+      setTimeout(() => {
+        const r = respuestas[Math.floor(Math.random() * respuestas.length)];
+        el.textContent = r;
+
+        el.style.opacity = 1;
+        el.style.transform = "scale(1)";
+      }, 150);
+    }
+
+    /* al cargar */
+    nuevaRespuesta();
+
+    /* tap */
+    document.body.addEventListener("click", nuevaRespuesta);
+    document.body.addEventListener("touchstart", nuevaRespuesta);
+    // holaa
+  </script>
+<p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999;"><a href="https://pichisoft.github.io/web/" target="_blank" style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
+</body>
+
+</html>

@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>PichonPass</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 850px;
+            margin: 30px auto;
+            transition: background .4s ease, color .4s ease;
+        }
+
+        input,
+        textarea,
+        button {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 6px;
+        }
+
+        /* THEMES */
+        .light {
+            background: #fff;
+            color: #111
+        }
+
+        .dark {
+            background: #111;
+            color: #eee
+        }
+
+        .dark input,
+        .dark textarea {
+            background: #222;
+            color: #eee;
+            border: 1px solid #444;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 2.1rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .byline {
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            font-size: 0.42em;
+            font-style: italic;
+            font-weight: normal;
+            color: #777;
+            vertical-align: middle;
+            margin-left: 6px;
+        }
+
+        /* THEME BUTTON (ANIMADO) */
+        #themeBtn {
+            width: 48px;
+            height: 48px;
+            font-size: 22px;
+            border-radius: 50%;
+            border: 1px solid #aaa;
+            background: transparent;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            transition: transform .3s ease;
+        }
+
+        #themeBtn:active {
+            transform: scale(0.85) rotate(15deg);
+        }
+
+        /* PASSWORD BAR */
+        .bar {
+            height: 8px;
+            background: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #fill {
+            height: 100%;
+            width: 0%;
+            transition: .3s;
+        }
+
+        #txt {
+            font-size: 12px;
+            margin-top: 3px;
+        }
+        .credit {
+  font-family: Verdana, sans-serif;
+  font-size: 18px;
+  font-style: italic;
+  color: #bbb;
+}
+    </style>
+
+</head>
+
+<body class="light">
+
+ <div class="topbar">
+    <h1>
+        PichonPass
+        <span class="byline">- By Pichisoft -</span>
+    </h1>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+        <button id="themeBtn" onclick="toggleTheme()">🌙</button>
+        <p style="font-weight: bold; margin: 0; font-size: 13px; text-align:right;"><a href="https://pichisoft.github.io/web/" target="_blank" style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
+    </div>
+</div>
+
+    <!-- LOGIN -->
+    <div id="auth">
+
+        <h3>Acceder</h3>
+
+        <input id="username" placeholder="Nombre de usuario">
+        <input id="password" type="password" placeholder="Contraseña">
+
+        <button onclick="login()">Entrar</button>
+        <button onclick="resetAll()">Restablecer datos</button>
+
+        <div id="error" style="color:red;display:none">
+            Usuario o contraseña incorrectos
+        </div>
+
+    </div>
+
+    <!-- APP -->
+    <div id="app" style="display:none">
+
+        <h3>Nuevo registro</h3>
+
+        <input id="title" placeholder="Título">
+        <input id="user" placeholder="Usuario">
+
+        <input id="pass" type="password" placeholder="Contraseña" oninput="checkStrength()">
+
+        <button onclick="togglePass()">Mostrar / Ocultar</button>
+
+        <div class="bar">
+            <div id="fill"></div>
+        </div>
+        <div id="txt"></div>
+
+        <input id="len" type="number" value="20">
+        <button onclick="gen()">Generar contraseña</button>
+
+        <textarea id="notes"></textarea>
+
+        <button onclick="save()">Guardar</button>
+
+        <div id="list"></div>
+
+        <button onclick="logout()">Cerrar sesión</button>
+
+    </div>
+
+    <script>
+
+        let vault = [];
+
+        /* THEME */
+        function toggleTheme() {
+            document.body.classList.toggle("dark");
+            document.body.classList.toggle("light");
+
+            let isDark = document.body.classList.contains("dark");
+
+            // sincroniza icono correctamente
+            themeBtn.textContent = isDark ? "🌙" : "☀️";
+
+            // animación suave
+            document.body.style.transition = "all .3s ease";
+            document.body.style.transform = "scale(0.98)";
+            setTimeout(() => document.body.style.transform = "scale(1)", 150);
+        }
+
+        /* LOGIN */
+        function getUsers() {
+            return JSON.parse(localStorage.getItem("users") || "{}");
+        }
+
+        function saveUsers(u) {
+            localStorage.setItem("users", JSON.stringify(u));
+        }
+
+        function login() {
+            let u = username.value.trim();
+            let p = password.value;
+
+            let users = getUsers();
+
+            if (Object.keys(users).length === 0) {
+                users[u] = p;
+                saveUsers(users);
+                enter();
+                return;
+            }
+
+            if (users[u] === p) {
+                enter();
+                return;
+            }
+
+            error.style.display = "block";
+        }
+
+        /* ENTER */
+        function enter() {
+            auth.style.display = "none";
+            app.style.display = "block";
+        }
+
+        /* RESET (FIX IMPORTANTE) */
+        function resetAll() {
+            if (!confirm("¿Borrar todo?")) return;
+
+            // BORRA TODO, INCLUYENDO USUARIOS
+            localStorage.removeItem("users");
+            localStorage.removeItem("vault");
+            location.reload();
+        }
+
+        /* PASSWORD TOGGLE */
+        function togglePass() {
+            pass.type = pass.type === "password" ? "text" : "password";
+        }
+
+        /* 🔥 NUEVA LÓGICA DE SEGURIDAD (COMO PEDISTE) */
+        function checkStrength() {
+            let p = pass.value;
+            let len = p.length;
+
+            let fill = document.getElementById("fill");
+            let txt = document.getElementById("txt");
+
+            if (len <= 5) {
+                fill.style.width = "33%";
+                fill.style.background = "red";
+                txt.textContent = "Contraseña fácil";
+            }
+            else if (len <= 8) {
+                fill.style.width = "66%";
+                fill.style.background = "orange";
+                txt.textContent = "Contraseña intermedia";
+            }
+            else {
+                fill.style.width = "100%";
+                fill.style.background = "green";
+                txt.textContent = "Contraseña difícil";
+            }
+        }
+
+        /* GENERADOR */
+        function gen() {
+            let c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>/?~`¬¦¢£¥§±÷×";
+            let n = parseInt(len.value) || 20;
+
+            let r = new Uint32Array(n);
+            crypto.getRandomValues(r);
+
+            let out = "";
+            for (let i = 0; i < n; i++) {
+                out += c[r[i] % c.length];
+            }
+
+            pass.value = out;
+            checkStrength();
+        }
+
+        /* VAULT */
+        function save() {
+            vault.push({
+                title: title.value,
+                user: user.value,
+                pass: pass.value,
+                notes: notes.value
+            });
+            render();
+        }
+
+        function render() {
+            list.innerHTML = "";
+            vault.forEach(v => {
+                let d = document.createElement("div");
+                d.className = "card";
+                d.innerHTML = `
+<b>${v.title}</b><br>
+${v.user}<br>
+${v.pass}<br>
+${v.notes}
+`;
+                list.appendChild(d);
+            });
+        }
+
+        /* LOGOUT */
+        function logout() {
+            location.reload();
+        }
+
+        function initTheme() {
+            let isDark = document.body.classList.contains("dark");
+            themeBtn.textContent = isDark ? "🌙" : "☀️";
+        }
+
+        window.onload = initTheme;
+
+    </script>
+
+</body>
+
+</html>
