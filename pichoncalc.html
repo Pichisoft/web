@@ -330,35 +330,47 @@
                 const usuario = evento.detail;
 
 
-                if (!usuario) {
+                // Dejamos visible "Iniciando sesión..."
+                // durante al menos 1 segundo.
+                setTimeout(() => {
 
-                    sessionStatus.textContent =
-                        'No tenés una sesión iniciada en Pichisoft';
+
+                    if (!usuario) {
+
+                        sessionStatus.textContent =
+                            'No tenés una sesión iniciada en Pichisoft';
+
+
+                        setTimeout(() => {
+
+                            sessionStatus.classList.add('hidden');
+
+                        }, 6000);
+
+
+                        return;
+                    }
+
+
+                    sessionStatus.classList.add('success');
+
+                    sessionStatus.innerHTML =
+                        '✓ Sesión iniciada';
+
 
                     setTimeout(() => {
 
                         sessionStatus.classList.add('hidden');
 
-                    }, 5000);
-
-                    return;
-                }
+                    }, 6000);
 
 
-                sessionStatus.classList.add('success');
-
-                sessionStatus.innerHTML =
-                    '✓ Sesión iniciada';
-
-
-                setTimeout(() => {
-
-                    sessionStatus.classList.add('hidden');
-
-                }, 6000);
+                }, 1000);
 
             }
         );
+
+    </script>
 
     </script>
     <script type="module">
