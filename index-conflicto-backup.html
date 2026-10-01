@@ -1,24 +1,39 @@
+<<<<<<< HEAD
 <!doctype html>
 <html lang="es">
+=======
+<!doctype html> 
+<html lang="en">
+>>>>>>> 9d792c1f90627ac4cc314195b2dea8e8e0da464a
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<<<<<<< HEAD
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.emailjs.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.googleapis.com ws://127.0.0.1:5500; base-uri 'self'; form-action 'self'">
+        content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.emailjs.com ws://127.0.0.1:5500; base-uri 'self'; form-action 'self'">
     <title>PichonApps</title>
+=======
+    <title>PichonApps</title>
+
+>>>>>>> 9d792c1f90627ac4cc314195b2dea8e8e0da464a
     <style>
         html {
             background-color: #222;
             color: whitesmoke;
             font-family: Verdana, "Open Sans", "Helvetica Neue", sans-serif;
+<<<<<<< HEAD
             font-size: 18px
+=======
+            font-size: 18px;
+>>>>>>> 9d792c1f90627ac4cc314195b2dea8e8e0da464a
         }
 
         a,
         a:visited {
             color: whitesmoke;
             text-decoration: none;
+<<<<<<< HEAD
             padding: 4px
         }
 
@@ -33,6 +48,24 @@
 
         .titulo {
             font-family: "Times New Roman", Times, serif
+=======
+            padding: 4px;
+        }
+
+        a:hover {
+            /* font-style: italic; */
+            background-color: whitesmoke;
+            color: #222;
+        }
+
+        li {
+            /* padding: 10px; */
+            margin-bottom: 10px;
+        }
+
+        .titulo {
+            font-family: "Times New Roman", Times, serif;
+>>>>>>> 9d792c1f90627ac4cc314195b2dea8e8e0da464a
         }
 
         .by {
@@ -40,6 +73,7 @@
             font-size: 18px;
             font-weight: normal;
             font-style: italic;
+<<<<<<< HEAD
             color: #bbb
         }
 
@@ -386,10 +420,91 @@
         .c {
             text-align: center
         }
+=======
+            color: #bbb;
+        }
+
+      .nuevo::after {
+            content: "NUEVO";
+            background-color: rgb(167, 28, 28);
+            padding: 4px;
+            font-size: 0.7em;
+            border-radius: 6px;
+        }
+         .actualizado::after {
+            content: "ACTUALIZADO";
+            background-color: rgb(44, 167, 28);
+            padding: 4px;
+            font-size: 0.7em;
+            border-radius: 6px;
+        }
+.eliminadas::after {
+  content: "ÚLTIMOS 10 DÍAS PARA USARLA";
+  background-color: rgb(167, 165, 28);
+  padding: 4px;
+  font-size: 0.7em;
+  border-radius: 6px;
+}
+
+
+.proximo::after {
+  content: "PRÓXIMAMENTE";
+  background-color: rgb(28, 65, 167);
+  padding: 4px;
+  font-size: 0.7em;
+  border-radius: 6px;
+}
+
+.etiqueta {
+  display: inline-block; /* 1. Corrige el borde raro y respeta el padding */
+  user-select: none;     /* 2. Evita que el usuario pueda seleccionar el texto */
+  padding: 4px;
+  font-size: 0.7em;
+  border-radius: 6px;
+  margin-left: 6px;
+}
+
+
+.et-nuevo {
+  background-color: rgb(167, 28, 28);
+}
+
+.et-actualizado {
+  background-color: rgb(44, 167, 28);
+}
+
+/* .et-nuevo ya está arriba, no lo repitas */
+
+/* .et-nuevo ya está arriba, no lo repitas */
+
+.et-beta {
+  background-color: rgb(193, 35, 207); /* <- pon aquí el rgb de tu color para BETA */
+}
+
+.et-cancelado {
+  background-color: rgb(92, 15, 15); /* <- pon aquí el rgb de tu color para CANCELADO */
+}
+
+.et-ultimos {
+  background-color: rgb(167, 165, 28); /* el mismo amarillo de "eliminadas" */
+}
+
+.et-act-cancelada {
+  background-color: rgb(92, 15, 15); /* <- pon aquí el rgb de tu color para ACTUALIZACIÓN CANCELADA */
+}
+
+/* .et-ultimos ya está del bloque anterior, no lo repitas */
+
+.et-mantenimiento {
+  background-color: rgb(36, 150, 170); /* <- pon aquí el rgb de tu color celeste para MANTENIMIENTO */
+}
+
+>>>>>>> 9d792c1f90627ac4cc314195b2dea8e8e0da464a
     </style>
 </head>
 
 <body>
+<<<<<<< HEAD
     <div id="cuenta"></div>
 
     <h1 class="titulo">PichonApps <span class="by">- By Pichisoft -</span></h1>
@@ -473,12 +588,7 @@
             const out = new Uint8Array(65 + 12 + ct.length); out.set(ep, 0); out.set(iv, 65); out.set(ct, 77);
             return B64.enc(out);
         }
-        function firebaseAuth() {
-            if (!window.PichisoftFirebase || !window.PichisoftFirebase.auth) {
-                throw new Error('Firebase todavía no está disponible.');
-            }
-            return window.PichisoftFirebase;
-        }
+
         const API = {
             users() { return LS.get('ps_users', {}); },
             validar(name, pass) {
@@ -486,65 +596,14 @@
                 if (pass.length < 8) throw new Error('La contraseña debe tener al menos 8 caracteres.');
                 if (pass.toLowerCase() === name.toLowerCase()) throw new Error('La contraseña no puede ser igual al usuario.');
             },
-            async register(name, email, pass, photo) {
+            async register(name, pass, photo) {
                 this.validar(name, pass);
-
-                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    throw new Error('Ingresá un email válido.');
-                }
-
-                const firebase = firebaseAuth();
-
-                try {
-                    const credencial = await firebase.createUserWithEmailAndPassword(
-                        firebase.auth,
-                        email,
-                        pass
-                    );
-
-                    const u = this.users();
-                    const k = name.toLowerCase();
-
-                    if (u[k]) {
-                        await firebase.signOut(firebase.auth);
-                        throw new Error('Ese nombre de usuario ya existe.');
-                    }
-
-                    u[k] = {
-                        name,
-                        email,
-                        photo: okFoto(photo),
-                        data: {},
-                        firebaseUid: credencial.user.uid
-                    };
-                    await firebase.setDoc(
-                        firebase.doc(firebase.db, 'users', credencial.user.uid),
-                        {
-                            username: name,
-                            email: email,
-                            photo: okFoto(photo),
-                            createdAt: new Date().toISOString()
-                        }
-                    );
-                    LS.set('ps_users', u);
-
-                    return k;
-
-                } catch (error) {
-                    if (error.code === 'auth/email-already-in-use') {
-                        throw new Error('Ese email ya está registrado.');
-                    }
-
-                    if (error.code === 'auth/invalid-email') {
-                        throw new Error('El email no es válido.');
-                    }
-
-                    if (error.code === 'auth/weak-password') {
-                        throw new Error('La contraseña es demasiado débil.');
-                    }
-
-                    throw error;
-                }
+                const u = this.users(), k = name.toLowerCase();
+                if (u[k]) throw new Error('Ese nombre de usuario ya existe.');
+                const salt = rand(16);
+                u[k] = { name, salt, hash: await pbkdf2(pass, salt), photo: okFoto(photo), data: {} };
+                LS.set('ps_users', u);
+                return k;
             },
             bloqueo(k) { const f = LS.get('ps_fails', {})[k]; return f && f.hasta > Date.now() ? Math.ceil((f.hasta - Date.now()) / 1000) : 0; },
             fallo(k) {
@@ -617,33 +676,9 @@
                 return LS.get(app + ':' + key, def);
             },
             setData(app, key, val) {
-
                 const k = sesionK();
-
-                if (k) {
-                    const u = API.users();
-
-                    u[k].data[app + ':' + key] = val;
-                    LS.set('ps_users', u);
-
-                    const usuario = u[k];
-
-                    if (usuario.firebaseUid && window.PichisoftFirebase) {
-                        const fb = window.PichisoftFirebase;
-
-                        fb.setDoc(
-                            fb.doc(fb.db, 'users', usuario.firebaseUid),
-                            { data: usuario.data },
-                            { merge: true }
-                        ).catch(error => {
-                            console.error('Error sincronizando datos con Firestore:', error);
-                        });
-                    }
-
-                } else {
-                    LS.set(app + ':' + key, val);
-                }
-
+                if (k) { const u = API.users(); u[k].data[app + ':' + key] = val; LS.set('ps_users', u); }
+                else LS.set(app + ':' + key, val);
             }
         };
 
@@ -784,45 +819,9 @@
 
         /* ---------- Pantallas ---------- */
         function iniciarSesionUI(k) {
-            API.crearSesion(k);
-            LS.set('ps_seen', 1);
-
-            const usuario = API.users()[k];
-
-            if (usuario && usuario.firebaseUid) {
-                const firebase = firebaseAuth();
-
-                firebase.getDoc(
-                    firebase.doc(firebase.db, 'users', usuario.firebaseUid)
-                ).then(snapshot => {
-                    if (snapshot.exists()) {
-                        const datos = snapshot.data();
-
-                        const users = API.users();
-
-                        users[k] = {
-                            ...users[k],
-                            ...datos,
-                            firebaseUid: usuario.firebaseUid
-                        };
-
-                        LS.set('ps_users', users);
-                    }
-
-                    document.querySelectorAll('.ov').forEach(o => o.remove());
-                    renderCuenta();
-
-                }).catch(error => {
-                    console.error('Error cargando perfil desde Firestore:', error);
-
-                    document.querySelectorAll('.ov').forEach(o => o.remove());
-                    renderCuenta();
-                });
-
-            } else {
-                document.querySelectorAll('.ov').forEach(o => o.remove());
-                renderCuenta();
-            }
+            API.crearSesion(k); LS.set('ps_seen', 1);
+            document.querySelectorAll('.ov').forEach(o => o.remove());
+            renderCuenta();
         }
 
         function pantallaBienvenida() {
@@ -844,9 +843,8 @@
         function pantallaRegistro() {
             let foto = '';
             const m = modal(`<h2 class="t">Crearse una cuenta de Pichisoft</h2>
-            <label>Nombre de usuario (obligatorio):</label><input type="text" id="u" autocomplete="username" maxlength="20">
-<label>Email (obligatorio):</label><input type="email" id="email" autocomplete="email">
-<label>Contraseña (obligatorio, mínimo 8 caracteres):</label><input type="password" id="p" autocomplete="new-password">
+    <label>Nombre de usuario (obligatorio):</label><input type="text" id="u" autocomplete="username" maxlength="20">
+    <label>Contraseña (obligatorio, mínimo 8 caracteres):</label><input type="password" id="p" autocomplete="new-password">
     <label>Repetir contraseña:</label><input type="password" id="p2" autocomplete="new-password">
     <div class="peq" style="margin-top:8px">Si la olvidás, podés restablecerla pidiendo un código por email al equipo Pichisoft.</div>
     <label>Foto de perfil (opcional):</label>
@@ -858,22 +856,17 @@
             });
             q(m, '#vol').onclick = () => { m.close(); pantallaBienvenida(); };
             q(m, '#ok').onclick = async () => {
-                const u = q(m, '#u').value.trim();
-                const email = q(m, '#email').value.trim();
-                const p = q(m, '#p').value;
-                if (!u || !email || !p) {
-                    q(m, '#er').textContent = 'Completá nombre de usuario, email y contraseña.';
-                    return;
-                }
+                const u = q(m, '#u').value.trim(), p = q(m, '#p').value;
+                if (!u || !p) { q(m, '#er').textContent = 'Completá nombre de usuario y contraseña.'; return; }
                 if (p !== q(m, '#p2').value) { q(m, '#er').textContent = 'Las contraseñas no coinciden.'; return; }
-                try { iniciarSesionUI(await API.register(u, email, p, foto)); }
+                try { iniciarSesionUI(await API.register(u, p, foto)); }
                 catch (e) { q(m, '#er').textContent = e.message; }
             };
         }
 
         function pantallaLogin() {
             const m = modal(`<h2 class="t">Iniciar sesión en mi cuenta de Pichisoft</h2>
-    <label>Email (obligatorio):</label><input type="email" id="email" autocomplete="email">
+    <label>Nombre de usuario:</label><input type="text" id="u" autocomplete="username" maxlength="20">
     <label>Contraseña:</label><input type="password" id="p" autocomplete="current-password">
     <div class="err" id="er"></div>
     <button class="btn" id="ok">Continuar</button><button class="btn" id="vol">Volver</button><br>
@@ -883,38 +876,7 @@
             q(m, '#ok').onclick = async e => {
                 e.target.disabled = true; q(m, '#er').textContent = '';
                 try {
-                    const email = q(m, '#email').value.trim();
-                    const p = q(m, '#p').value;
-
-                    const firebase = firebaseAuth();
-
-                    await firebase.signInWithEmailAndPassword(firebase.auth, email, p);
-
-                    const usuario = firebase.auth.currentUser;
-                    const perfilSnap = await firebase.getDoc(
-                        firebase.doc(firebase.db, 'users', usuario.uid)
-                    );
-
-                    if (!perfilSnap.exists()) {
-                        throw new Error('No se encontró el perfil en Firestore.');
-                    }
-
-                    const perfil = perfilSnap.data();
-                    const k = perfil.username.toLowerCase();
-
-                    const users = API.users();
-
-                    users[k] = {
-                        ...(users[k] || {}),
-                        name: perfil.username,
-                        email: usuario.email,
-                        photo: perfil.photo || '',
-                        data: { ...(users[k]?.data || {}), ...(perfil.data || {}) },
-                        firebaseUid: usuario.uid
-                    };
-
-                    LS.set('ps_users', users);
-
+                    const k = await API.checkLogin(q(m, '#u').value.trim(), q(m, '#p').value);
                     verificar(() => iniciarSesionUI(k));
                 } catch (x) { q(m, '#er').textContent = x.message; }
                 e.target.disabled = false;
@@ -1014,51 +976,70 @@
         renderCuenta();
         if (!Pichisoft.user && !LS.get('ps_seen', 0)) pantallaBienvenida();
     </script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-
-        import {
-            getAuth,
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword,
-            signOut,
-            onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-
-        import {
-            getFirestore,
-            doc,
-            setDoc,
-            getDoc
-        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
-            authDomain: "pichisoft.firebaseapp.com",
-            projectId: "pichisoft",
-            storageBucket: "pichisoft.firebasestorage.app",
-            messagingSenderId: "690032082295",
-            appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
-            measurementId: "G-K7HRKR8BJ1"
-
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        window.PichisoftFirebase = {
-            auth,
-            db,
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword,
-            signOut,
-            onAuthStateChanged,
-            doc,
-            setDoc,
-            getDoc
-        };
-    </script>
 </body>
 
 </html>
+=======
+    <h1 class="titulo">
+        PichonApps <span class="by">- By Pichisoft -</span>
+    </h1>
+    <h3>Directorio de apps</h3>
+    <ul>
+        <li class="nuevo">
+            <a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichontutorial.html">PichonTutorial</a>
+        </li>
+   <li>
+  <a target="_blank" rel="noopener noreferrer"
+      href="https://pichisoft.github.io/web/pichonalarm.html">PichonAlarm</a>
+  <span class="etiqueta et-nuevo">NUEVO</span>
+  <span class="etiqueta et-beta">VERSIÓN BETA</span>
+</li>
+
+<li class="proximo">
+    <a target="_blank" rel="noopener noreferrer"
+        href="https://pichisoft.github.io/web/#.html">PichonBirthday</a>
+</li>
+        <li>
+            <a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichoncalc.html">PichonCalc</a>
+        </li>
+        <li class="actualizado">
+            <a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichoncalendar.html">PichonCalendar</a>
+        </li>
+        <li>
+            <a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichondestiny.html">PichonDestiny</a>
+        </li>
+        <li class="actualizado">
+            <a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichondocs.html">PichonDocs</a>
+        </li>
+        <li class="actualizado">
+            <a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichonlist.html">PichonList</a>
+        </li>
+        <li>
+            <a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichonpass.html">PichonPass</a>
+        </li>
+
+          <li class="nuevo">
+            <a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichonramdom.html">PichonRamdom</a>
+        </li>
+        
+        <li>
+            <a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichonsnake.html">PichonSnake</a>
+        </li>
+         <li class="actualizado">
+            <a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.github.io/web/pichonwatch.html">PichonWatch</a>
+        </li>
+    </ul>
+</body>
+
+</html>
+>>>>>>> 9d792c1f90627ac4cc314195b2dea8e8e0da464a
