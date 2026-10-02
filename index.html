@@ -386,6 +386,52 @@
         .c {
             text-align: center
         }
+
+        /* Confirmación de cierre de sesión */
+        .confirmacion-texto {
+            font-family: Georgia, serif;
+            font-size: 1em;
+            line-height: 1.5;
+            margin: 16px 0 22px;
+        }
+
+        .confirmacion-opcion {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: 1px solid #444;
+            border-radius: 7px;
+            font-family: Georgia, serif;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .confirmacion-no {
+            background: #292929;
+            color: whitesmoke;
+        }
+
+        .confirmacion-si {
+            background: #000;
+            color: whitesmoke;
+        }
+
+        .confirmacion-no:hover {
+            background: #444;
+        }
+
+        .confirmacion-si:hover {
+            background: #ffffff;
+            color: rgb(0, 0, 0)
+        }
+
+        @media (max-width: 480px) {
+            .confirmacion-opcion {
+                font-size: .95em;
+                padding: 11px;
+            }
+        }
     </style>
 </head>
 
@@ -417,7 +463,7 @@
                 href="https://pichisoft.github.io/web/pichonlist.html">PichonList</a></li>
         <li><a target="_blank" rel="noopener noreferrer"
                 href="https://pichisoft.github.io/web/pichonpass.html">PichonPass</a></li>
-    <li class="nuevo">
+        <li class="nuevo">
             <a target="_blank" rel="noopener noreferrer"
                 href="https://pichisoft.github.io/web/pichonramdom.html">PichonRamdom</a>
         </li>
@@ -989,6 +1035,33 @@
         }
 
         /* ---------- Cabecera (arriba a la derecha) ---------- */
+        function confirmarCerrarSesion() {
+            const m = modal(`
+        <h2 class="t">Cerrar sesión</h2>
+
+        <div class="confirmacion-texto">
+            ¿Estás seguro de que querés cerrar tu sesión de Pichisoft?
+        </div>
+
+        <button class="confirmacion-opcion confirmacion-no" id="cancelar">
+            No cerrar sesión
+        </button>
+
+        <button class="confirmacion-opcion confirmacion-si" id="confirmar">
+            Cerrar sesión
+        </button>
+    `, 'sem sem2');
+
+            q(m, '#cancelar').onclick = () => {
+                m.close();
+            };
+
+            q(m, '#confirmar').onclick = () => {
+                m.close();
+                API.cerrarSesion();
+                renderCuenta();
+            };
+        }
         function renderCuenta() {
             const box = document.getElementById('cuenta'), u = Pichisoft.user;
             box.innerHTML = '';
@@ -1000,7 +1073,7 @@
             const t = document.createElement('div'); t.style.textAlign = 'right';
             const n = document.createElement('div'); n.className = 'nom'; n.textContent = u.name;
             const s = document.createElement('small'); s.textContent = 'Cerrar sesión';
-            s.onclick = () => { API.cerrarSesion(); renderCuenta(); };
+            s.onclick = confirmarCerrarSesion;
             t.append(n, s);
             const w = document.createElement('div'); w.className = 'avwrap';
             const a = document.createElement('div'); a.className = 'av';
