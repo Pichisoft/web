@@ -316,32 +316,38 @@
            (queda debajo de la cabecera; el alto lo calcula el script)
            ========================================== */
 
-        #pichisoft-session-status,
-        #pichisoft-session-profile {
-            position: absolute;
-            top: 70px;
-            right: 16px;
-            z-index: 20;
+
+        /* ==========================================
+       PICHISOFT - ESTADO DE SESIÓN
+       ========================================== */
+
+        #pichisoft-session-status {
+            position: fixed;
+            top: 12px;
+            right: 120px;
+            z-index: 9999;
             display: flex;
             align-items: center;
             gap: 8px;
+
             max-width: calc(100vw - 20px);
             box-sizing: border-box;
+            padding: 8px 16px;
+
             background: #000;
+            color: #20a84b;
+
             border: 1px solid rgba(34, 197, 94, 0.25);
             border-radius: 22px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-            font-family: Georgia, serif;
-            text-align: left;
-            pointer-events: none;
-        }
 
-        #pichisoft-session-status {
-            padding: 8px 16px;
-            color: #20a84b;
-            font-size: 14px;
-            line-height: 1.3;
+            font: 14px/1.3 Georgia, serif;
+            text-align: left;
+
+            opacity: 1;
+            transform: translateY(0);
             transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
         }
 
         #pichisoft-session-status.hidden {
@@ -383,17 +389,38 @@
         }
 
         #pichisoft-session-profile {
+            position: fixed;
+            top: 12px;
+            right: 120px;
+            z-index: 9998;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
             padding: 5px 14px 5px 5px;
+
+            background: #000;
             color: #fff;
+
+            border: 1px solid rgba(34, 197, 94, 0.25);
             border-radius: 25px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+            font-family: Georgia, serif;
+            text-align: left;
+
             opacity: 0;
             transform: translateY(-12px) scale(0.9);
             transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
+            pointer-events: none;
         }
 
         #pichisoft-session-profile.visible {
             opacity: 1;
-            transform: none;
+            transform: translateY(0) scale(1);
         }
 
         #pichisoft-profile-picture img,
@@ -423,7 +450,26 @@
             white-space: nowrap;
         }
 
+        /* Celular: título más chico para que no choque con el link "Pichisoft" */
         @media (max-width: 600px) {
+            .header {
+                top: 16px;
+                left: 15px;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .byline {
+                font-size: 0.75rem;
+            }
+
+            #pichisoft-session-status,
+            #pichisoft-session-profile {
+                right: 10px;
+            }
+
             #pichisoft-session-status {
                 font-size: 13px;
                 padding: 7px 14px;
@@ -618,7 +664,6 @@
             document.getElementById('resultado-letra').innerHTML = '<div class="result-box">' + letra + '</div>';
         }
     </script>
-
     <!-- ===== Pichisoft - Estado de sesión ===== -->
     <div id="pichisoft-session-status" role="status" aria-live="polite">
         <span class="ps-check">✓</span>
@@ -652,16 +697,6 @@
             var pic = document.getElementById("pichisoft-profile-picture");
             var nameEl = document.getElementById("pichisoft-profile-name");
             var t0 = Date.now();
-
-            /* El cartel se ubica justo debajo de la cabecera (sea cual sea su alto) */
-            function pos() {
-                var h = document.querySelector("header");
-                var t = (h ? h.offsetHeight : 60) + 8;
-                box.style.top = t + "px";
-                prof.style.top = t + "px";
-            }
-            pos();
-            window.addEventListener("resize", pos);
 
             function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
@@ -741,6 +776,7 @@
             })();
         })();
     </script>
+
 </body>
 
 </html>
