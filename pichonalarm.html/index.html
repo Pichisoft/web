@@ -376,47 +376,58 @@
             }
         }
 
-        /* ---------- ESTADO DE SESIÓN PICHISOFT ---------- */
+        /* ==========================================
+       PICHISOFT - ESTADO DE SESIÓN
+       ========================================== */
 
         #pichisoft-session-status {
-            position: relative;
-            width: calc(100% - 32px);
-            max-width: 700px;
-            margin: 10px auto 0;
-            padding: 12px 18px;
+            position: fixed;
+            top: 12px;
+            right: 120px;
+            z-index: 9999;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 8px 16px;
+
             background: #000;
-            border: 1px solid rgba(34, 197, 94, 0.25);
-            border-radius: 14px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
             color: #20a84b;
-            font-family: Georgia, serif;
-            font-size: 16px;
-            text-align: center;
+
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 22px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+            font: 14px/1.3 Georgia, serif;
+            text-align: left;
+
             opacity: 1;
             transform: translateY(0);
             transition: opacity 0.6s ease, transform 0.6s ease;
-            z-index: 40;
+            pointer-events: none;
         }
 
         #pichisoft-session-status.hidden {
             opacity: 0;
-            transform: translateY(-15px);
-            pointer-events: none;
+            transform: translateY(-12px);
         }
 
-        #pichisoft-session-status .session-check {
-            height: 0;
-            overflow: hidden;
-            font-size: 42px;
+        #pichisoft-session-status.success {
             font-weight: bold;
-            line-height: 42px;
-            opacity: 0;
-            transform: scale(0.2);
         }
 
-        #pichisoft-session-status.success .session-check {
-            height: 45px;
-            margin-bottom: 4px;
+        #pichisoft-session-status .ps-check {
+            display: none;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        #pichisoft-session-status.success .ps-check {
+            display: inline-block;
             animation: pichisoftCheck 0.8s cubic-bezier(.17, .89, .32, 1.49) forwards;
         }
 
@@ -438,33 +449,32 @@
         }
 
         #pichisoft-session-profile {
-            position: relative;
-            width: fit-content;
-            max-width: calc(100% - 32px);
-            margin: 10px 16px 0 auto;
-            z-index: 40;
+            position: fixed;
+            top: 12px;
+            right: 120px;
+            z-index: 9998;
 
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
 
-            padding: 7px 14px 7px 7px;
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 5px 14px 5px 5px;
 
             background: #000;
-            border: 1px solid rgba(34, 197, 94, 0.25);
-            border-radius: 30px;
+            color: #fff;
 
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 25px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
 
             font-family: Georgia, serif;
+            text-align: left;
 
             opacity: 0;
-            transform: translateY(-15px) scale(0.9);
-
-            transition:
-                opacity 0.7s ease,
-                transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
-
+            transform: translateY(-12px) scale(0.9);
+            transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
             pointer-events: none;
         }
 
@@ -475,11 +485,10 @@
 
         #pichisoft-profile-picture img,
         #pichisoft-profile-picture .profile-placeholder {
-            width: 38px;
-            height: 38px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             object-fit: cover;
-
             display: flex;
             align-items: center;
             justify-content: center;
@@ -487,32 +496,43 @@
 
         #pichisoft-profile-picture .profile-placeholder {
             background: #20a84b;
-            color: white;
-            font-size: 18px;
+            color: #fff;
+            font-size: 15px;
             font-weight: bold;
         }
 
-        #pichisoft-session-profile .profile-name {
-            color: #fff;
-            font-size: 16px;
+        #pichisoft-profile-name {
+            font-size: 14px;
             font-weight: bold;
-            max-width: 160px;
+            max-width: 140px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
+        /* Celular: título más chico para que no choque con el link "Pichisoft" */
         @media (max-width: 600px) {
-
-            #pichisoft-session-status {
-                width: calc(100% - 20px);
-                margin-top: 8px;
-                font-size: 14px;
+            .header {
+                top: 16px;
+                left: 15px;
             }
 
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .byline {
+                font-size: 0.75rem;
+            }
+
+            #pichisoft-session-status,
             #pichisoft-session-profile {
-                max-width: calc(100% - 20px);
-                margin-right: 10px;
+                right: 10px;
+            }
+
+            #pichisoft-session-status {
+                font-size: 13px;
+                padding: 7px 14px;
             }
         }
     </style>
@@ -521,48 +541,24 @@
 <body>
     <header>
         <div class="brand"><span class="brand-title">PichonAlarm</span><span class="brand-sub">- By Pichisoft -</span>
-        </div>
-        <button class="pichisoft-link"
+        </div> <button class="pichisoft-link"
             onclick="window.open('https://pichisoft.github.io/web/','_blank')">Pichisoft</button>
     </header>
-    <!-- Pichisoft - Estado de sesión -->
-
-    <div id="pichisoft-session-status">
-        <div class="session-check">✓</div>
-
-        <div class="session-text">
-            Iniciando sesión en tu cuenta de Pichisoft...
-        </div>
-    </div>
-
-    <div id="pichisoft-session-profile">
-
-        <div id="pichisoft-profile-picture"></div>
-
-        <div class="profile-name" id="pichisoft-profile-name">
-        </div>
-
-    </div>
-    <nav>
-        <button class="active" onclick="showTab('alarma',this)">⏰ Alarma</button>
-        <button onclick="showTab('crono',this)">⏱ Cronómetro</button>
-        <button onclick="showTab('temp',this)">⏳ Temporizador</button>
-        <button onclick="showTab('ajustes',this)">⚙️ Ajustes</button>
-    </nav>
+    <nav> <button class="active" onclick="showTab('alarma',this)">⏰ Alarma</button> <button
+            onclick="showTab('crono',this)">⏱ Cronómetro</button> <button onclick="showTab('temp',this)">⏳
+            Temporizador</button> <button onclick="showTab('ajustes',this)">⚙️ Ajustes</button> </nav>
     <main>
         <div id="tab-alarma" class="tab active">
             <div class="card">
                 <div class="field"><label>Hora</label><input type="time" id="alarmHora"></div>
                 <div class="field"><label>Etiqueta (opcional)</label><input type="text" id="alarmEtiqueta"
                         placeholder="Ej: Despertar"></div>
-                <div class="field"><label>Tono</label>
-                    <select id="alarmTono">
+                <div class="field"><label>Tono</label> <select id="alarmTono">
                         <option value="clasico">Clásico</option>
                         <option value="digital">Digital</option>
                         <option value="campana">Campanita</option>
                         <option value="fuerte">Alarma fuerte</option>
-                    </select>
-                </div>
+                    </select> </div>
                 <div class="field">
                     <div class="checkbox-row"><input type="checkbox" id="alarmRepetir" onchange="toggleDias()"><label
                             for="alarmRepetir" style="margin:0">Repetir</label></div>
@@ -582,49 +578,40 @@
             </div>
             <div id="listaAlarmas"></div>
         </div>
-
         <div id="tab-crono" class="tab">
             <div class="card">
                 <div class="big-display" id="cronoDisplay">00:00.00</div>
-                <div class="btn-row">
-                    <button class="btn" id="cronoStartBtn" onclick="cronoStartPause()">Iniciar</button>
-                    <button class="btn secondary" onclick="cronoLap()">Vuelta</button>
-                    <button class="btn danger" onclick="cronoReset()">Reiniciar</button>
-                </div>
+                <div class="btn-row"> <button class="btn" id="cronoStartBtn"
+                        onclick="cronoStartPause()">Iniciar</button> <button class="btn secondary"
+                        onclick="cronoLap()">Vuelta</button> <button class="btn danger"
+                        onclick="cronoReset()">Reiniciar</button> </div>
                 <div class="laps" id="cronoLaps"></div>
             </div>
         </div>
-
         <div id="tab-temp" class="tab">
             <div class="card">
                 <div class="field"><label>Duración</label>
-                    <div class="timer-inputs">
-                        <input type="number" id="tHoras" min="0" max="23" value="0" placeholder="hs">
-                        <input type="number" id="tMin" min="0" max="59" value="5" placeholder="min">
-                        <input type="number" id="tSeg" min="0" max="59" value="0" placeholder="seg">
-                    </div>
+                    <div class="timer-inputs"> <input type="number" id="tHoras" min="0" max="23" value="0"
+                            placeholder="hs"> <input type="number" id="tMin" min="0" max="59" value="5"
+                            placeholder="min"> <input type="number" id="tSeg" min="0" max="59" value="0"
+                            placeholder="seg"> </div>
                 </div>
-                <div class="field"><label>Tono</label>
-                    <select id="tempTono">
+                <div class="field"><label>Tono</label> <select id="tempTono">
                         <option value="clasico">Clásico</option>
                         <option value="digital">Digital</option>
                         <option value="campana">Campanita</option>
                         <option value="fuerte">Alarma fuerte</option>
-                    </select>
-                </div>
+                    </select> </div>
                 <div class="big-display" id="tempDisplay">05:00</div>
-                <div class="btn-row">
-                    <button class="btn" id="tempStartBtn" onclick="tempStartPause()">Iniciar</button>
+                <div class="btn-row"> <button class="btn" id="tempStartBtn" onclick="tempStartPause()">Iniciar</button>
                     <button class="btn danger" onclick="tempReset()">Reiniciar</button>
                 </div>
             </div>
         </div>
-
         <div id="tab-ajustes" class="tab">
             <div class="card">
-                <div class="field"><label>Tiempo de posponer (minutos)</label>
-                    <input type="number" id="ajustePosponer" min="1" max="60" value="5" oninput="guardarAjustes()">
-                </div>
+                <div class="field"><label>Tiempo de posponer (minutos)</label> <input type="number" id="ajustePosponer"
+                        min="1" max="60" value="5" oninput="guardarAjustes()"> </div>
                 <p class="note">Este valor se usa cada vez que apretás "Posponer" en una alarma.</p>
                 <div class="btn-row"><button class="btn secondary" onclick="pedirPermiso(true)">Activar
                         notificaciones</button></div>
@@ -632,611 +619,128 @@
             </div>
         </div>
     </main>
-
     <div class="overlay" id="ringOverlay">
         <div class="overlay-card">
             <h2 id="ringTitle">¡Alarma!</h2>
             <p id="ringSub"></p>
-            <div class="btn-row">
-                <button class="btn secondary" id="snoozeBtn" onclick="posponerAlarma()">Posponer</button>
-                <button class="btn" onclick="detenerSonido()">Detener</button>
-            </div>
+            <div class="btn-row"> <button class="btn secondary" id="snoozeBtn"
+                    onclick="posponerAlarma()">Posponer</button> <button class="btn"
+                    onclick="detenerSonido()">Detener</button> </div>
             <p class="note">Si no escuchás nada, tocá la pantalla para activar el sonido.</p>
         </div>
     </div>
+    <script> /* ---------- ESTADO PERSISTENTE ---------- */ const K = 'pichonalarm.v1'; let S = { alarmas: [], seq: 1, posponer: 5, ult: Date.now(), crono: { acum: 0, inicio: null, laps: [] }, temp: { endAt: null, rest: 0, h: 0, m: 5, s: 0, tono: 'clasico' }, ring: null }; try { const r = JSON.parse(localStorage.getItem(K)); if (r) S = Object.assign(S, r); } catch (e) { } function save() { try { localStorage.setItem(K, JSON.stringify(S)); } catch (e) { } } function cambio() { save(); programar(); } const $ = id => document.getElementById(id); /* ---------- AUDIO ---------- */ let audioCtx = null, beepTimer = null; function ctx() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; } function stopBeeps() { clearInterval(beepTimer); beepTimer = null; } function beepPattern(type) { stopBeeps(); const c = ctx(); const P = { clasico: { wave: 'sine', freqs: [880], gap: 400, dur: 200 }, digital: { wave: 'square', freqs: [660, 880], gap: 250, dur: 120 }, campana: { wave: 'triangle', freqs: [1046, 784], gap: 500, dur: 300 }, fuerte: { wave: 'sawtooth', freqs: [600, 900, 600], gap: 150, dur: 150 } }; const p = P[type] || P.clasico; let i = 0; function tick() { if (c.state !== 'running') { c.resume().catch(() => { }); return; } const o = c.createOscillator(), g = c.createGain(); o.type = p.wave; o.frequency.value = p.freqs[i++ % p.freqs.length]; g.gain.value = 0.25; o.connect(g).connect(c.destination); o.start(); o.stop(c.currentTime + p.dur / 1000); } tick(); beepTimer = setInterval(tick, p.gap); } function detenerSonido() { stopBeeps(); S.ring = null; cambio(); $('ringOverlay').classList.remove('active'); } function mostrarRing(r) { beepPattern(r.tono); $('ringTitle').textContent = r.titulo; $('ringSub').textContent = r.sub || ''; $('snoozeBtn').style.display = (r.ctx && r.ctx.type === 'alarm') ? 'inline-block' : 'none'; $('ringOverlay').classList.add('active'); } function sonar(tono, titulo, sub, contexto) { S.ring = { tono, titulo, sub, ctx: contexto || null }; save(); mostrarRing(S.ring); if (document.hidden) notif(titulo, sub || ''); } function guardarAjustes() { const v = parseInt($('ajustePosponer').value); S.posponer = (v && v > 0) ? v : 5; save(); } function posponerAlarma() { const r = S.ring; if (r && r.ctx && r.ctx.type === 'alarm') { const a = S.alarmas.find(x => x.id === r.ctx.id); if (a) { a.activa = true; a.snoozeUntil = Date.now() + S.posponer * 60000; } } detenerSonido(); renderAlarmas(); } // Los navegadores bloquean el audio hasta que hay un toque del usuario ['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { try { ctx().resume(); } catch (e) { } }, { passive: true })); /* ---------- NOTIFICACIONES ---------- */ function actualizarPermNote() { if (!('Notification' in window)) { $('permNote').textContent = 'Este navegador no soporta notificaciones.'; return; } $('permNote').textContent = 'Notificaciones: ' + ({ granted: 'activadas ✔', denied: 'bloqueadas (habilitalas en los ajustes del sitio)', default: 'sin activar' })[Notification.permission]; } async function pedirPermiso(forzar) { try { if ('Notification' in window && Notification.permission === 'default') await Notification.requestPermission(); } catch (e) { } actualizarPermNote(); programar(); } async function notif(t, b) { try { if (!('Notification' in window) || Notification.permission !== 'granted') return; const r = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); if (r) r.showNotification(t, { body: b, requireInteraction: true, vibrate: [300, 100, 300], tag: 'pa-ring' }); else { const n = new Notification(t, { body: b, tag: 'pa-ring' }); n.onclick = () => { window.focus(); n.close(); }; } } catch (e) { } } // Notificaciones programadas para cuando la app está cerrada (requiere sw.js y un navegador con Notification Triggers) async function programar() { try { if (!('Notification' in window) || Notification.permission !== 'granted' || typeof TimestampTrigger === 'undefined') return; const r = await navigator.serviceWorker.getRegistration(); if (!r) return; (await r.getNotifications({ includeTriggered: true })).forEach(n => { if ((n.tag || '').startsWith('prog-')) n.close(); }); const now = Date.now(); S.alarmas.forEach(a => { if (a.snoozeUntil) { r.showNotification('¡Alarma pospuesta!', { body: a.etiqueta || a.hora, tag: 'prog-s' + a.id, showTrigger: new TimestampTrigger(a.snoozeUntil), requireInteraction: true }); return; } if (!a.activa) return; const t = prox(a, now, now + 8 * 86400000); if (t) r.showNotification('¡Alarma!', { body: a.etiqueta || a.hora, tag: 'prog-a' + a.id, showTrigger: new TimestampTrigger(t), requireInteraction: true }); }); if (S.temp.endAt && S.temp.endAt > now) r.showNotification('¡Temporizador finalizado!', { tag: 'prog-t', showTrigger: new TimestampTrigger(S.temp.endAt), requireInteraction: true }); } catch (e) { } } /* ---------- TABS ---------- */ function showTab(name, btn) { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('nav button').forEach(b => b.classList.remove('active')); $('tab-' + name).classList.add('active'); btn.classList.add('active'); } /* ---------- ALARMAS ---------- */ function toggleDias() { $('diasContainer').style.display = $('alarmRepetir').checked ? 'flex' : 'none'; } document.querySelectorAll('.day-chip').forEach(c => c.addEventListener('click', () => c.classList.toggle('on'))); function agregarAlarma() { const hora = $('alarmHora').value; if (!hora) { alert('Elegí una hora'); return; } const repetir = $('alarmRepetir').checked; const dias = []; if (repetir) document.querySelectorAll('.day-chip.on').forEach(c => dias.push(parseInt(c.dataset.day))); S.alarmas.push({ id: S.seq++, hora, etiqueta: $('alarmEtiqueta').value.trim(), tono: $('alarmTono').value, repetir, dias, activa: true, snoozeUntil: null, creada: Date.now() }); $('alarmHora').value = ''; $('alarmEtiqueta').value = ''; $('alarmRepetir').checked = false; document.querySelectorAll('.day-chip').forEach(c => c.classList.remove('on')); toggleDias(); renderAlarmas(); cambio(); pedirPermiso(); } function renderAlarmas() { const cont = $('listaAlarmas'); cont.innerHTML = ''; const N = { 0: 'Dom', 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb' }; S.alarmas.forEach(a => { const div = document.createElement('div'); div.className = 'alarm-item'; let meta = a.etiqueta || ''; if (a.repetir && a.dias.length) meta += (meta ? ' · ' : '') + [...a.dias].sort().map(d => N[d]).join(', '); else if (a.repetir) meta += (meta ? ' · ' : '') + 'Repite (sin días elegidos)'; div.innerHTML = <div><div class="alarm-time">${a.hora}</div><div class="alarm-meta">${meta.replace(/</g, '&lt;')}</div></div> <div class="alarm-actions"><label class="switch"><input type="checkbox" ${a.activa ? 'checked' : ''} onchange="toggleAlarma(${a.id})"><span class="slider"></span></label> <button class="delete-x" onclick="borrarAlarma(${a.id})">✕</button></div>; cont.appendChild(div); }); } function toggleAlarma(id) { const a = S.alarmas.find(x => x.id === id); a.activa = !a.activa; a.snoozeUntil = null; if (a.activa) a.creada = Date.now(); renderAlarmas(); cambio(); } function borrarAlarma(id) { S.alarmas = S.alarmas.filter(x => x.id !== id); renderAlarmas(); cambio(); } // Próxima ocurrencia de la alarma en el intervalo (desde, hasta] function prox(a, desde, hasta) { const [h, m] = a.hora.split(':').map(Number); const d0 = new Date(desde); d0.setHours(0, 0, 0, 0); for (let i = 0; i < 10; i++) { const t = new Date(d0); t.setDate(t.getDate() + i); t.setHours(h, m, 0, 0); const ts = t.getTime(); if (ts > hasta) break; if (ts <= desde) continue; if (!a.repetir || !a.dias.length || a.dias.includes(t.getDay())) return ts; } return null; } /* ---------- CRONÓMETRO ---------- */ function formatCrono(ms) { const cs = Math.floor((ms % 1000) / 10), s = Math.floor(ms / 1000) % 60, m = Math.floor(ms / 60000); return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(cs).padStart(2, '0'); } const cronoMs = () => S.crono.acum + (S.crono.inicio ? Date.now() - S.crono.inicio : 0); function cronoStartPause() { const c = S.crono; if (c.inicio) { c.acum += Date.now() - c.inicio; c.inicio = null; } else c.inicio = Date.now(); cambio(); pintar(); } function cronoLap() { if (!S.crono.inicio) return; S.crono.laps.push(formatCrono(cronoMs())); cambio(); renderLaps(); } function cronoReset() { S.crono = { acum: 0, inicio: null, laps: [] }; cambio(); renderLaps(); pintar(); } function renderLaps() { $('cronoLaps').innerHTML = S.crono.laps.map((l, i) => <div class="lap-item"><span>Vuelta ${i + 1}</span><span>${l}</span></div>).reverse().join(''); } /* ---------- TEMPORIZADOR ---------- */ function formatTemp(s) { const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60, p = n => String(n).padStart(2, '0'); return h > 0 ? p(h) + ':' + p(m) + ':' + p(sec) : p(m) + ':' + p(sec); } const tempRem = () => S.temp.endAt ? Math.max(0, Math.ceil((S.temp.endAt - Date.now()) / 1000)) : S.temp.rest; function leerInputsTemp() { S.temp.h = parseInt($('tHoras').value) || 0; S.temp.m = parseInt($('tMin').value) || 0; S.temp.s = parseInt($('tSeg').value) || 0; S.temp.tono = $('tempTono').value; } function tempStartPause() { const t = S.temp; if (t.endAt) { t.rest = tempRem(); t.endAt = null; } else { if (t.rest <= 0) { leerInputsTemp(); t.rest = t.h * 3600 + t.m * 60 + t.s; if (t.rest <= 0) { alert('Poné una duración mayor a 0'); return; } } t.endAt = Date.now() + t.rest * 1000; pedirPermiso(); } cambio(); pintar(); } function tempReset() { S.temp.endAt = null; S.temp.rest = 0; leerInputsTemp(); cambio(); pintar(); } ['tHoras', 'tMin', 'tSeg'].forEach(id => $(id).addEventListener('input', () => { if (!S.temp.endAt) tempReset(); })); $('tempTono').addEventListener('change', () => { S.temp.tono = $('tempTono').value; save(); }); /* ---------- PINTAR Y BUCLE PRINCIPAL ---------- */ function pintar() { const c = S.crono; $('cronoDisplay').textContent = formatCrono(cronoMs()); $('cronoStartBtn').textContent = c.inicio ? 'Pausar' : (c.acum > 0 ? 'Reanudar' : 'Iniciar'); const t = S.temp; const mostrar = (t.endAt || t.rest > 0) ? tempRem() : t.h * 3600 + t.m * 60 + t.s; $('tempDisplay').textContent = formatTemp(mostrar); $('tempStartBtn').textContent = t.endAt ? 'Pausar' : (t.rest > 0 ? 'Reanudar' : 'Iniciar'); } let n = 0; function tick() { const now = Date.now(); // Revisa desde la última vez que la app estuvo viva (máx. 12 h atrás), // así detecta alarmas que "sonaron" mientras estaba cerrada. const desde = Math.max(S.ult || now, now - 43200000); let ch = false; S.alarmas.forEach(a => { if (a.snoozeUntil && now >= a.snoozeUntil) { a.snoozeUntil = null; ch = true; sonar(a.tono, '¡Alarma pospuesta!', a.etiqueta || a.hora, { type: 'alarm', id: a.id }); return; } if (!a.activa || a.snoozeUntil) return; const t = prox(a, Math.max(desde, a.creada || 0), now); if (t) { ch = true; if (!a.repetir) a.activa = false; sonar(a.tono, '¡Alarma!', a.etiqueta || a.hora, { type: 'alarm', id: a.id }); } }); if (ch) renderAlarmas(); S.ult = now; if (S.temp.endAt && now >= S.temp.endAt) { S.temp.endAt = null; S.temp.rest = 0; ch = true; sonar(S.temp.tono, '¡Temporizador finalizado!', '', { type: 'timer' }); } pintar(); if (ch || ++n % 10 === 0) save(); } /* ---------- INICIO ---------- */ $('ajustePosponer').value = S.posponer; $('tHoras').value = S.temp.h; $('tMin').value = S.temp.m; $('tSeg').value = S.temp.s; $('tempTono').value = S.temp.tono; renderAlarmas(); renderLaps(); actualizarPermNote(); if (S.ring) mostrarRing(S.ring); // seguía sonando cuando se cerró la página tick(); setInterval(tick, 100); document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); }); window.addEventListener('pagehide', save); /* ---------- PWA (manifest embebido + sw.js opcional) ---------- */ try { const icon = "data:image/svg+xml," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='#2d6cdf'/><text x='50' y='68' font-size='55' text-anchor='middle'>⏰</text></svg>"); const man = { name: 'PichonAlarm', short_name: 'PichonAlarm', start_url: location.origin + location.pathname, display: 'standalone', background_color: '#0c0c0c', theme_color: '#0c0c0c', icons: [{ src: icon, sizes: 'any', type: 'image/svg+xml' }] }; const l = document.createElement('link'); l.rel = 'manifest'; l.href = URL.createObjectURL(new Blob([JSON.stringify(man)], { type: 'application/manifest+json' })); document.head.appendChild(l); } catch (e) { } if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(programar).catch(() => { }); </script>
+    <!-- ===== Pichisoft - Estado de sesión ===== -->
+    <div id="pichisoft-session-status" role="status" aria-live="polite">
+        <span class="ps-check">✓</span>
+        <span class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span>
+    </div>
+
+    <div id="pichisoft-session-profile">
+        <div id="pichisoft-profile-picture"></div>
+        <span id="pichisoft-profile-name"></span>
+    </div>
 
     <script>
-        /* ---------- ESTADO PERSISTENTE ---------- */
-        const K = 'pichonalarm.v1';
-        let S = {
-            alarmas: [], seq: 1, posponer: 5, ult: Date.now(),
-            crono: { acum: 0, inicio: null, laps: [] },
-            temp: { endAt: null, rest: 0, h: 0, m: 5, s: 0, tono: 'clasico' },
-            ring: null
-        };
-        async function cargarDatosPichonAlarm() {
-
-            // Esperamos a que Firebase esté disponible.
-            if (!window.PichisoftFirebase) return;
-
-            const firebase = window.PichisoftFirebase;
-            const usuario = firebase.currentUser;
-
-            // Sin cuenta → usamos LocalStorage como siempre.
-            if (!usuario) return;
-
-            try {
-
-                const snapshot = await firebase.getDoc(
-                    firebase.doc(
-                        firebase.db,
-                        'users',
-                        usuario.uid
-                    )
-                );
-
-                if (!snapshot.exists()) return;
-
-                const datos = snapshot.data();
-
-                if (
-                    datos.data &&
-                    datos.data.pichonalarm
-                ) {
-
-                    // Firebase tiene datos de PichonAlarm.
-                    S = Object.assign(
-                        S,
-                        datos.data.pichonalarm
-                    );
-
-                    // También actualizamos LocalStorage.
-                    // Así queda una copia local disponible.
-                    try {
-                        localStorage.setItem(
-                            K,
-                            JSON.stringify(S)
-                        );
-                    } catch (e) {
-                        console.error(
-                            'Error actualizando LocalStorage:',
-                            e
-                        );
-                    }
-
-                    // Actualizamos la interfaz.
-                    render();
-
-                    // Reprogramamos alarmas/temporizador.
-                    programar();
-                }
-
-            } catch (error) {
-
-                console.error(
-                    'Error cargando PichonAlarm desde Firebase:',
-                    error
-                );
-
-            }
-        }
-        try { const r = JSON.parse(localStorage.getItem(K)); if (r) S = Object.assign(S, r); } catch (e) { }
-        async function save() {
-
-            // SIEMPRE guardamos en LocalStorage.
-            // Esto mantiene funcionando PichonAlarm sin cuenta.
-            try {
-                localStorage.setItem(K, JSON.stringify(S));
-            } catch (e) {
-                console.error('Error guardando en LocalStorage:', e);
-            }
-
-
-            // Si no hay Firebase, terminamos acá.
-            if (!window.PichisoftFirebase) return;
-
-
-            const firebase = window.PichisoftFirebase;
-            const usuario = firebase.currentUser;
-
-
-            // Sin cuenta → solamente LocalStorage.
-            if (!usuario) return;
-
-
-            // Con cuenta → también guardamos en Firebase.
-            try {
-
-                await firebase.setDoc(
-                    firebase.doc(
-                        firebase.db,
-                        'users',
-                        usuario.uid
-                    ),
-                    {
-                        data: {
-                            pichonalarm: S
-                        }
-                    },
-                    {
-                        merge: true
-                    }
-                );
-
-            } catch (error) {
-
-                console.error(
-                    'Error sincronizando PichonAlarm con Firebase:',
-                    error
-                );
-
-            }
-        }
-        function cambio() { save(); programar(); }
-        const $ = id => document.getElementById(id);
-
-        /* ---------- AUDIO ---------- */
-        let audioCtx = null, beepTimer = null;
-        function ctx() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
-        function stopBeeps() { clearInterval(beepTimer); beepTimer = null; }
-        function beepPattern(type) {
-            stopBeeps();
-            const c = ctx();
-            const P = {
-                clasico: { wave: 'sine', freqs: [880], gap: 400, dur: 200 },
-                digital: { wave: 'square', freqs: [660, 880], gap: 250, dur: 120 },
-                campana: { wave: 'triangle', freqs: [1046, 784], gap: 500, dur: 300 },
-                fuerte: { wave: 'sawtooth', freqs: [600, 900, 600], gap: 150, dur: 150 }
+        (function () {
+            /* Todo va dentro de esta función para no chocar con las variables de la app */
+            var CFG = {
+                apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+                authDomain: "pichisoft.firebaseapp.com",
+                projectId: "pichisoft",
+                storageBucket: "pichisoft.firebasestorage.app",
+                messagingSenderId: "690032082295",
+                appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+                measurementId: "G-K7HRKR8BJ1"
             };
-            const p = P[type] || P.clasico;
-            let i = 0;
-            function tick() {
-                if (c.state !== 'running') { c.resume().catch(() => { }); return; }
-                const o = c.createOscillator(), g = c.createGain();
-                o.type = p.wave; o.frequency.value = p.freqs[i++ % p.freqs.length];
-                g.gain.value = 0.25;
-                o.connect(g).connect(c.destination);
-                o.start(); o.stop(c.currentTime + p.dur / 1000);
-            }
-            tick();
-            beepTimer = setInterval(tick, p.gap);
-        }
-        function detenerSonido() {
-            stopBeeps();
-            S.ring = null; cambio();
-            $('ringOverlay').classList.remove('active');
-        }
-        function mostrarRing(r) {
-            beepPattern(r.tono);
-            $('ringTitle').textContent = r.titulo;
-            $('ringSub').textContent = r.sub || '';
-            $('snoozeBtn').style.display = (r.ctx && r.ctx.type === 'alarm') ? 'inline-block' : 'none';
-            $('ringOverlay').classList.add('active');
-        }
-        function sonar(tono, titulo, sub, contexto) {
-            S.ring = { tono, titulo, sub, ctx: contexto || null };
-            save();
-            mostrarRing(S.ring);
-            if (document.hidden) notif(titulo, sub || '');
-        }
-        function guardarAjustes() {
-            const v = parseInt($('ajustePosponer').value);
-            S.posponer = (v && v > 0) ? v : 5;
-            save();
-        }
-        function posponerAlarma() {
-            const r = S.ring;
-            if (r && r.ctx && r.ctx.type === 'alarm') {
-                const a = S.alarmas.find(x => x.id === r.ctx.id);
-                if (a) { a.activa = true; a.snoozeUntil = Date.now() + S.posponer * 60000; }
-            }
-            detenerSonido();
-            renderAlarmas();
-        }
-        // Los navegadores bloquean el audio hasta que hay un toque del usuario
-        ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
-            document.addEventListener(ev, () => { try { ctx().resume(); } catch (e) { } }, { passive: true }));
+            var V = "https://www.gstatic.com/firebasejs/12.3.0/";
+            var DUR_INICIO = 12000;   // "Iniciando sesión..."
+            var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
 
-        /* ---------- NOTIFICACIONES ---------- */
-        function actualizarPermNote() {
-            if (!('Notification' in window)) { $('permNote').textContent = 'Este navegador no soporta notificaciones.'; return; }
-            $('permNote').textContent = 'Notificaciones: ' + ({ granted: 'activadas ✔', denied: 'bloqueadas (habilitalas en los ajustes del sitio)', default: 'sin activar' })[Notification.permission];
-        }
-        async function pedirPermiso(forzar) {
-            try {
-                if ('Notification' in window && Notification.permission === 'default') await Notification.requestPermission();
-            } catch (e) { }
-            actualizarPermNote(); programar();
-        }
-        async function notif(t, b) {
-            try {
-                if (!('Notification' in window) || Notification.permission !== 'granted') return;
-                const r = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
-                if (r) r.showNotification(t, { body: b, requireInteraction: true, vibrate: [300, 100, 300], tag: 'pa-ring' });
-                else { const n = new Notification(t, { body: b, tag: 'pa-ring' }); n.onclick = () => { window.focus(); n.close(); }; }
-            } catch (e) { }
-        }
-        // Notificaciones programadas para cuando la app está cerrada (requiere sw.js y un navegador con Notification Triggers)
-        async function programar() {
-            try {
-                if (!('Notification' in window) || Notification.permission !== 'granted' || typeof TimestampTrigger === 'undefined') return;
-                const r = await navigator.serviceWorker.getRegistration();
-                if (!r) return;
-                (await r.getNotifications({ includeTriggered: true })).forEach(n => { if ((n.tag || '').startsWith('prog-')) n.close(); });
-                const now = Date.now();
-                S.alarmas.forEach(a => {
-                    if (a.snoozeUntil) { r.showNotification('¡Alarma pospuesta!', { body: a.etiqueta || a.hora, tag: 'prog-s' + a.id, showTrigger: new TimestampTrigger(a.snoozeUntil), requireInteraction: true }); return; }
-                    if (!a.activa) return;
-                    const t = prox(a, now, now + 8 * 86400000);
-                    if (t) r.showNotification('¡Alarma!', { body: a.etiqueta || a.hora, tag: 'prog-a' + a.id, showTrigger: new TimestampTrigger(t), requireInteraction: true });
-                });
-                if (S.temp.endAt && S.temp.endAt > now)
-                    r.showNotification('¡Temporizador finalizado!', { tag: 'prog-t', showTrigger: new TimestampTrigger(S.temp.endAt), requireInteraction: true });
-            } catch (e) { }
-        }
+            var box = document.getElementById("pichisoft-session-status");
+            var txt = box.querySelector(".ps-text");
+            var prof = document.getElementById("pichisoft-session-profile");
+            var pic = document.getElementById("pichisoft-profile-picture");
+            var nameEl = document.getElementById("pichisoft-profile-name");
+            var t0 = Date.now();
 
-        /* ---------- TABS ---------- */
-        function showTab(name, btn) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-            $('tab-' + name).classList.add('active');
-            btn.classList.add('active');
-        }
+            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-        /* ---------- ALARMAS ---------- */
-        function toggleDias() { $('diasContainer').style.display = $('alarmRepetir').checked ? 'flex' : 'none'; }
-        document.querySelectorAll('.day-chip').forEach(c => c.addEventListener('click', () => c.classList.toggle('on')));
+            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
+               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
+            async function comprobar() {
+                try {
+                    var m = await Promise.all([
+                        import(V + "firebase-app.js"),
+                        import(V + "firebase-auth.js"),
+                        import(V + "firebase-firestore.js")
+                    ]);
+                    var app = m[0].initializeApp(CFG);
+                    var auth = m[1].getAuth(app);
+                    var db = m[2].getFirestore(app);
 
-        function agregarAlarma() {
-            const hora = $('alarmHora').value;
-            if (!hora) { alert('Elegí una hora'); return; }
-            const repetir = $('alarmRepetir').checked;
-            const dias = [];
-            if (repetir) document.querySelectorAll('.day-chip.on').forEach(c => dias.push(parseInt(c.dataset.day)));
-            S.alarmas.push({ id: S.seq++, hora, etiqueta: $('alarmEtiqueta').value.trim(), tono: $('alarmTono').value, repetir, dias, activa: true, snoozeUntil: null, creada: Date.now() });
-            $('alarmHora').value = ''; $('alarmEtiqueta').value = ''; $('alarmRepetir').checked = false;
-            document.querySelectorAll('.day-chip').forEach(c => c.classList.remove('on'));
-            toggleDias(); renderAlarmas(); cambio();
-            pedirPermiso();
-        }
-        function renderAlarmas() {
-            const cont = $('listaAlarmas');
-            cont.innerHTML = '';
-            const N = { 0: 'Dom', 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb' };
-            S.alarmas.forEach(a => {
-                const div = document.createElement('div');
-                div.className = 'alarm-item';
-                let meta = a.etiqueta || '';
-                if (a.repetir && a.dias.length) meta += (meta ? ' · ' : '') + [...a.dias].sort().map(d => N[d]).join(', ');
-                else if (a.repetir) meta += (meta ? ' · ' : '') + 'Repite (sin días elegidos)';
-                div.innerHTML = `<div><div class="alarm-time">${a.hora}</div><div class="alarm-meta">${meta.replace(/</g, '&lt;')}</div></div>
-      <div class="alarm-actions"><label class="switch"><input type="checkbox" ${a.activa ? 'checked' : ''} onchange="toggleAlarma(${a.id})"><span class="slider"></span></label>
-      <button class="delete-x" onclick="borrarAlarma(${a.id})">✕</button></div>`;
-                cont.appendChild(div);
-            });
-        }
-        function toggleAlarma(id) {
-            const a = S.alarmas.find(x => x.id === id);
-            a.activa = !a.activa; a.snoozeUntil = null;
-            if (a.activa) a.creada = Date.now();
-            renderAlarmas(); cambio();
-        }
-        function borrarAlarma(id) { S.alarmas = S.alarmas.filter(x => x.id !== id); renderAlarmas(); cambio(); }
+                    var user = await Promise.race([
+                        new Promise(function (res) {
+                            m[1].onAuthStateChanged(auth, function (u) {
+                                window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
+                                res(u);
+                            });
+                        }),
+                        wait(15000).then(function () { throw new Error("tiempo agotado"); })
+                    ]);
 
-        // Próxima ocurrencia de la alarma en el intervalo (desde, hasta]
-        function prox(a, desde, hasta) {
-            const [h, m] = a.hora.split(':').map(Number);
-            const d0 = new Date(desde); d0.setHours(0, 0, 0, 0);
-            for (let i = 0; i < 10; i++) {
-                const t = new Date(d0); t.setDate(t.getDate() + i); t.setHours(h, m, 0, 0);
-                const ts = t.getTime();
-                if (ts > hasta) break;
-                if (ts <= desde) continue;
-                if (!a.repetir || !a.dias.length || a.dias.includes(t.getDay())) return ts;
-            }
-            return null;
-        }
-
-        /* ---------- CRONÓMETRO ---------- */
-        function formatCrono(ms) {
-            const cs = Math.floor((ms % 1000) / 10), s = Math.floor(ms / 1000) % 60, m = Math.floor(ms / 60000);
-            return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(cs).padStart(2, '0');
-        }
-        const cronoMs = () => S.crono.acum + (S.crono.inicio ? Date.now() - S.crono.inicio : 0);
-        function cronoStartPause() {
-            const c = S.crono;
-            if (c.inicio) { c.acum += Date.now() - c.inicio; c.inicio = null; }
-            else c.inicio = Date.now();
-            cambio(); pintar();
-        }
-        function cronoLap() {
-            if (!S.crono.inicio) return;
-            S.crono.laps.push(formatCrono(cronoMs()));
-            cambio(); renderLaps();
-        }
-        function cronoReset() { S.crono = { acum: 0, inicio: null, laps: [] }; cambio(); renderLaps(); pintar(); }
-        function renderLaps() {
-            $('cronoLaps').innerHTML = S.crono.laps.map((l, i) => `<div class="lap-item"><span>Vuelta ${i + 1}</span><span>${l}</span></div>`).reverse().join('');
-        }
-
-        /* ---------- TEMPORIZADOR ---------- */
-        function formatTemp(s) {
-            const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60, p = n => String(n).padStart(2, '0');
-            return h > 0 ? p(h) + ':' + p(m) + ':' + p(sec) : p(m) + ':' + p(sec);
-        }
-        const tempRem = () => S.temp.endAt ? Math.max(0, Math.ceil((S.temp.endAt - Date.now()) / 1000)) : S.temp.rest;
-        function leerInputsTemp() {
-            S.temp.h = parseInt($('tHoras').value) || 0;
-            S.temp.m = parseInt($('tMin').value) || 0;
-            S.temp.s = parseInt($('tSeg').value) || 0;
-            S.temp.tono = $('tempTono').value;
-        }
-        function tempStartPause() {
-            const t = S.temp;
-            if (t.endAt) { t.rest = tempRem(); t.endAt = null; }
-            else {
-                if (t.rest <= 0) {
-                    leerInputsTemp();
-                    t.rest = t.h * 3600 + t.m * 60 + t.s;
-                    if (t.rest <= 0) { alert('Poné una duración mayor a 0'); return; }
+                    var perfil = {};
+                    if (user) {
+                        try {
+                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+                            if (snap.exists()) perfil = snap.data();
+                        } catch (e) {
+                            console.error("Pichisoft: no se pudo leer el perfil", e);
+                        }
+                    }
+                    return { user: user, perfil: perfil };
+                } catch (e) {
+                    console.error("Pichisoft:", e);
+                    return { error: true };
                 }
-                t.endAt = Date.now() + t.rest * 1000;
-                pedirPermiso();
-            }
-            cambio(); pintar();
-        }
-        function tempReset() { S.temp.endAt = null; S.temp.rest = 0; leerInputsTemp(); cambio(); pintar(); }
-        ['tHoras', 'tMin', 'tSeg'].forEach(id => $(id).addEventListener('input', () => { if (!S.temp.endAt) tempReset(); }));
-        $('tempTono').addEventListener('change', () => { S.temp.tono = $('tempTono').value; save(); });
-
-        /* ---------- PINTAR Y BUCLE PRINCIPAL ---------- */
-        function pintar() {
-            const c = S.crono;
-            $('cronoDisplay').textContent = formatCrono(cronoMs());
-            $('cronoStartBtn').textContent = c.inicio ? 'Pausar' : (c.acum > 0 ? 'Reanudar' : 'Iniciar');
-            const t = S.temp;
-            const mostrar = (t.endAt || t.rest > 0) ? tempRem() : t.h * 3600 + t.m * 60 + t.s;
-            $('tempDisplay').textContent = formatTemp(mostrar);
-            $('tempStartBtn').textContent = t.endAt ? 'Pausar' : (t.rest > 0 ? 'Reanudar' : 'Iniciar');
-        }
-
-        let n = 0;
-        function tick() {
-            const now = Date.now();
-            // Revisa desde la última vez que la app estuvo viva (máx. 12 h atrás),
-            // así detecta alarmas que "sonaron" mientras estaba cerrada.
-            const desde = Math.max(S.ult || now, now - 43200000);
-            let ch = false;
-            S.alarmas.forEach(a => {
-                if (a.snoozeUntil && now >= a.snoozeUntil) {
-                    a.snoozeUntil = null; ch = true;
-                    sonar(a.tono, '¡Alarma pospuesta!', a.etiqueta || a.hora, { type: 'alarm', id: a.id });
-                    return;
-                }
-                if (!a.activa || a.snoozeUntil) return;
-                const t = prox(a, Math.max(desde, a.creada || 0), now);
-                if (t) {
-                    ch = true;
-                    if (!a.repetir) a.activa = false;
-                    sonar(a.tono, '¡Alarma!', a.etiqueta || a.hora, { type: 'alarm', id: a.id });
-                }
-            });
-            if (ch) renderAlarmas();
-            S.ult = now;
-            if (S.temp.endAt && now >= S.temp.endAt) {
-                S.temp.endAt = null; S.temp.rest = 0; ch = true;
-                sonar(S.temp.tono, '¡Temporizador finalizado!', '', { type: 'timer' });
-            }
-            pintar();
-            if (ch || ++n % 10 === 0) save();
-        }
-
-        /* ---------- INICIO ---------- */
-        $('ajustePosponer').value = S.posponer;
-        $('tHoras').value = S.temp.h; $('tMin').value = S.temp.m; $('tSeg').value = S.temp.s;
-        $('tempTono').value = S.temp.tono;
-        renderAlarmas(); renderLaps(); actualizarPermNote();
-        if (S.ring) mostrarRing(S.ring);   // seguía sonando cuando se cerró la página
-        tick();
-        setInterval(tick, 100);
-        document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
-        window.addEventListener('pagehide', save);
-
-
-        /* ---------- PWA (manifest embebido + sw.js opcional) ---------- */
-        try {
-            const icon = "data:image/svg+xml," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='#2d6cdf'/><text x='50' y='68' font-size='55' text-anchor='middle'>⏰</text></svg>");
-            const man = { name: 'PichonAlarm', short_name: 'PichonAlarm', start_url: location.origin + location.pathname, display: 'standalone', background_color: '#0c0c0c', theme_color: '#0c0c0c', icons: [{ src: icon, sizes: 'any', type: 'image/svg+xml' }] };
-            const l = document.createElement('link');
-            l.rel = 'manifest';
-            l.href = URL.createObjectURL(new Blob([JSON.stringify(man)], { type: 'application/manifest+json' }));
-            document.head.appendChild(l);
-        } catch (e) { }
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(programar).catch(() => { });
-    </script>
-    <script>
-        const sessionStatus =
-            document.getElementById('pichisoft-session-status');
-
-        const sessionProfile =
-            document.getElementById('pichisoft-session-profile');
-
-        const profilePicture =
-            document.getElementById('pichisoft-profile-picture');
-
-        const profileName =
-            document.getElementById('pichisoft-profile-name');
-
-
-        async function iniciarEstadoSesion() {
-
-            const usuario =
-                window.PichisoftFirebase?.currentUser;
-
-
-            if (!usuario) {
-
-                sessionStatus.classList.remove('success');
-
-                sessionStatus.querySelector('.session-text').textContent =
-                    'No tenés una sesión iniciada en Pichisoft';
-
-                setTimeout(() => {
-
-                    sessionStatus.classList.add('hidden');
-
-                }, 6000);
-
-                return;
             }
 
-
-            const firebase =
-                window.PichisoftFirebase;
-
-
-            let perfil = {};
-
-
-            try {
-
-                const perfilSnap =
-                    await firebase.getDoc(
-                        firebase.doc(
-                            firebase.db,
-                            'users',
-                            usuario.uid
-                        )
-                    );
-
-
-                if (perfilSnap.exists()) {
-                    perfil = perfilSnap.data();
-                }
-
-            } catch (error) {
-
-                console.error(
-                    'Error cargando perfil de Pichisoft:',
-                    error
-                );
-
+            async function aviso(texto) {
+                txt.textContent = texto;
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
             }
 
+            (async function () {
+                var r = await comprobar();
+                await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
 
-            sessionStatus.classList.add('success');
+                if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
+                if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
 
-            sessionStatus.querySelector('.session-text').textContent =
-                'Sesión iniciada';
+                box.classList.add("success");
+                txt.textContent = "Sesión iniciada";
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
 
-
-            setTimeout(() => {
-
-                sessionStatus.classList.add('hidden');
-
-
-                profileName.textContent =
-                    perfil.username ||
-                    usuario.email ||
-                    'Usuario';
-
-
-                if (perfil.photo) {
-
-                    const img =
-                        document.createElement('img');
-
-                    img.src = perfil.photo;
-                    img.alt = 'Foto de perfil';
-
-                    profilePicture.replaceChildren(img);
-
+                var nombre = r.perfil.username || "Usuario";
+                nameEl.textContent = nombre;
+                var foto = r.perfil.photo;
+                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
+                    var img = new Image();
+                    img.src = foto;
+                    img.alt = "Foto de perfil";
+                    pic.replaceChildren(img);
                 } else {
-
-                    const placeholder =
-                        document.createElement('div');
-
-                    placeholder.className =
-                        'profile-placeholder';
-
-                    placeholder.textContent =
-                        (
-                            perfil.username ||
-                            usuario.email ||
-                            'U'
-                        )
-                            .charAt(0)
-                            .toUpperCase();
-
-                    profilePicture.replaceChildren(
-                        placeholder
-                    );
+                    var ph = document.createElement("div");
+                    ph.className = "profile-placeholder";
+                    ph.textContent = nombre.charAt(0).toUpperCase();
+                    pic.replaceChildren(ph);
                 }
-
-
-                setTimeout(() => {
-
-                    sessionProfile.classList.add('visible');
-
-                }, 450);
-
-            }, 6000);
-        }
-
-
-        setTimeout(() => {
-
-            iniciarEstadoSesion();
-
-        }, 12000);
-    </script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-
-        import {
-            getAuth,
-            onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-
-        import {
-            getFirestore,
-            doc,
-            getDoc
-        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
-            authDomain: "pichisoft.firebaseapp.com",
-            projectId: "pichisoft",
-            storageBucket: "pichisoft.firebasestorage.app",
-            messagingSenderId: "690032082295",
-            appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
-            measurementId: "G-K7HRKR8BJ1"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        window.PichisoftFirebase = {
-            auth,
-            db,
-            doc,
-            getDoc,
-            currentUser: null
-        };
-
-        onAuthStateChanged(auth, usuario => {
-
-            window.PichisoftFirebase.currentUser = usuario;
-
-            // Cuando Firebase termina de comprobar la sesión,
-            // cargamos los datos de PichonAlarm si corresponde.
-            if (usuario) {
-                cargarDatosPichonAlarm();
-            }
-
-        });
+                await wait(450);
+                prof.classList.add("visible");
+            })();
+        })();
     </script>
 </body>
 
