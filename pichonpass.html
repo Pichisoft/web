@@ -108,28 +108,192 @@
             font-size: 12px;
             margin-top: 3px;
         }
+
         .credit {
-  font-family: Verdana, sans-serif;
-  font-size: 18px;
-  font-style: italic;
-  color: #bbb;
-}
+            font-family: Verdana, sans-serif;
+            font-size: 18px;
+            font-style: italic;
+            color: #bbb;
+        }
+
+        /* ==========================================
+       PICHISOFT - ESTADO DE SESIÓN
+       ========================================== */
+
+        #pichisoft-session-status {
+            position: fixed;
+            top: 12px;
+            right: 420px;
+            z-index: 9999;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 8px 16px;
+
+            background: #000;
+            color: #20a84b;
+
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 22px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+            font: 14px/1.3 Georgia, serif;
+            text-align: left;
+
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
+        }
+
+        #pichisoft-session-status.hidden {
+            opacity: 0;
+            transform: translateY(-12px);
+        }
+
+        #pichisoft-session-status.success {
+            font-weight: bold;
+        }
+
+        #pichisoft-session-status .ps-check {
+            display: none;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        #pichisoft-session-status.success .ps-check {
+            display: inline-block;
+            animation: pichisoftCheck 0.8s cubic-bezier(.17, .89, .32, 1.49) forwards;
+        }
+
+        @keyframes pichisoftCheck {
+            0% {
+                opacity: 0;
+                transform: scale(0.2) rotate(-25deg);
+            }
+
+            60% {
+                opacity: 1;
+                transform: scale(1.25) rotate(8deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        #pichisoft-session-profile {
+            position: fixed;
+            top: 12px;
+            right: 420px;
+            z-index: 9998;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 5px 14px 5px 5px;
+
+            background: #000;
+            color: #fff;
+
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 25px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+            font-family: Georgia, serif;
+            text-align: left;
+
+            opacity: 0;
+            transform: translateY(-12px) scale(0.9);
+            transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
+            pointer-events: none;
+        }
+
+        #pichisoft-session-profile.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        #pichisoft-profile-picture img,
+        #pichisoft-profile-picture .profile-placeholder {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pichisoft-profile-picture .profile-placeholder {
+            background: #20a84b;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #pichisoft-profile-name {
+            font-size: 14px;
+            font-weight: bold;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Celular: título más chico para que no choque con el link "Pichisoft" */
+        @media (max-width: 600px) {
+            .header {
+                top: 16px;
+                left: 15px;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .byline {
+                font-size: 0.75rem;
+            }
+
+            #pichisoft-session-status,
+            #pichisoft-session-profile {
+                right: 10px;
+            }
+
+            #pichisoft-session-status {
+                font-size: 13px;
+                padding: 7px 14px;
+            }
+        }
     </style>
 
 </head>
 
-<body class="light">
+<body class="dark">
 
- <div class="topbar">
-    <h1>
-        PichonPass
-        <span class="byline">- By Pichisoft -</span>
-    </h1>
-    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
-        <button id="themeBtn" onclick="toggleTheme()">🌙</button>
-        <p style="font-weight: bold; margin: 0; font-size: 13px; text-align:right;"><a href="https://pichisoft.github.io/web/" target="_blank" style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
+
+    <div class="topbar">
+        <h1>
+            PichonPass
+            <span class="byline">- By Pichisoft -</span>
+        </h1>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+            <button id="themeBtn" onclick="toggleTheme()">🌙</button>
+            <p style="font-weight: bold; margin: 0; font-size: 13px; text-align:right;"><a
+                    href="https://pichisoft.github.io/web/" target="_blank"
+                    style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
+        </div>
     </div>
-</div>
 
     <!-- LOGIN -->
     <div id="auth">
@@ -182,21 +346,18 @@
 
         let vault = [];
 
-        /* THEME */
         function toggleTheme() {
             document.body.classList.toggle("dark");
             document.body.classList.toggle("light");
-
             let isDark = document.body.classList.contains("dark");
 
-            // sincroniza icono correctamente
             themeBtn.textContent = isDark ? "🌙" : "☀️";
+            document.body.style.transition = "background .3s ease, color .3s ease";
 
-            // animación suave
-            document.body.style.transition = "all .3s ease";
-            document.body.style.transform = "scale(0.98)";
-            setTimeout(() => document.body.style.transform = "scale(1)", 150);
+            // 🔥 NUEVO: Guarda la elección del usuario ("dark" o "light")
+            localStorage.setItem("pichonpass-theme", isDark ? "dark" : "light");
         }
+
 
         /* LOGIN */
         function getUsers() {
@@ -323,12 +484,140 @@ ${v.notes}
         }
 
         function initTheme() {
+            // 🔥 NUEVO: Revisa si el usuario ya había elegido un tema antes
+            let savedTheme = localStorage.getItem("pichonpass-theme");
+
+            // Si guardó el tema claro, cambiamos las clases del body
+            if (savedTheme === "light") {
+                document.body.classList.remove("dark");
+                document.body.classList.add("light");
+            }
+            // Si guardó el oscuro (o es la primera vez que entra), nos aseguramos de que tenga 'dark'
+            else if (savedTheme === "dark") {
+                document.body.classList.remove("light");
+                document.body.classList.add("dark");
+            }
+
+            // Sincroniza el emoji del botón según el estado final del body
             let isDark = document.body.classList.contains("dark");
             themeBtn.textContent = isDark ? "🌙" : "☀️";
         }
 
+
         window.onload = initTheme;
 
+    </script>
+    <!-- ===== Pichisoft - Estado de sesión ===== -->
+    <div id="pichisoft-session-status" role="status" aria-live="polite">
+        <span class="ps-check">✓</span>
+        <span class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span>
+    </div>
+
+    <div id="pichisoft-session-profile">
+        <div id="pichisoft-profile-picture"></div>
+        <span id="pichisoft-profile-name"></span>
+    </div>
+
+    <script>
+        (function () {
+            /* Todo va dentro de esta función para no chocar con las variables de la app */
+            var CFG = {
+                apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+                authDomain: "pichisoft.firebaseapp.com",
+                projectId: "pichisoft",
+                storageBucket: "pichisoft.firebasestorage.app",
+                messagingSenderId: "690032082295",
+                appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+                measurementId: "G-K7HRKR8BJ1"
+            };
+            var V = "https://www.gstatic.com/firebasejs/12.3.0/";
+            var DUR_INICIO = 12000;   // "Iniciando sesión..."
+            var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+
+            var box = document.getElementById("pichisoft-session-status");
+            var txt = box.querySelector(".ps-text");
+            var prof = document.getElementById("pichisoft-session-profile");
+            var pic = document.getElementById("pichisoft-profile-picture");
+            var nameEl = document.getElementById("pichisoft-profile-name");
+            var t0 = Date.now();
+
+            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
+               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
+            async function comprobar() {
+                try {
+                    var m = await Promise.all([
+                        import(V + "firebase-app.js"),
+                        import(V + "firebase-auth.js"),
+                        import(V + "firebase-firestore.js")
+                    ]);
+                    var app = m[0].initializeApp(CFG);
+                    var auth = m[1].getAuth(app);
+                    var db = m[2].getFirestore(app);
+
+                    var user = await Promise.race([
+                        new Promise(function (res) {
+                            m[1].onAuthStateChanged(auth, function (u) {
+                                window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
+                                res(u);
+                            });
+                        }),
+                        wait(15000).then(function () { throw new Error("tiempo agotado"); })
+                    ]);
+
+                    var perfil = {};
+                    if (user) {
+                        try {
+                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+                            if (snap.exists()) perfil = snap.data();
+                        } catch (e) {
+                            console.error("Pichisoft: no se pudo leer el perfil", e);
+                        }
+                    }
+                    return { user: user, perfil: perfil };
+                } catch (e) {
+                    console.error("Pichisoft:", e);
+                    return { error: true };
+                }
+            }
+
+            async function aviso(texto) {
+                txt.textContent = texto;
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+            }
+
+            (async function () {
+                var r = await comprobar();
+                await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
+
+                if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
+                if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
+
+                box.classList.add("success");
+                txt.textContent = "Sesión iniciada";
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+
+                var nombre = r.perfil.username || "Usuario";
+                nameEl.textContent = nombre;
+                var foto = r.perfil.photo;
+                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
+                    var img = new Image();
+                    img.src = foto;
+                    img.alt = "Foto de perfil";
+                    pic.replaceChildren(img);
+                } else {
+                    var ph = document.createElement("div");
+                    ph.className = "profile-placeholder";
+                    ph.textContent = nombre.charAt(0).toUpperCase();
+                    pic.replaceChildren(ph);
+                }
+                await wait(450);
+                prof.classList.add("visible");
+            })();
+        })();
     </script>
 
 </body>
