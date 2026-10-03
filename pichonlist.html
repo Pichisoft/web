@@ -874,6 +874,35 @@
         padding: 7px 14px;
       }
     }
+
+    /* ===== Pichisoft - cartel de sesión en celular (PichonList) ===== */
+    @media (max-width: 600px) {
+      header {
+        position: relative;
+        padding-top: 62px;
+      }
+
+      /* el link "Pichisoft" pasa arriba a la derecha, dentro de la franja libre */
+      p[style*="top: 100px"] {
+        position: absolute !important;
+        top: 12px !important;
+        right: 12px !important;
+      }
+
+      #pichisoft-session-status,
+      #pichisoft-session-profile {
+        position: absolute;
+        top: 8px;
+        right: 90px;
+        left: auto;
+        max-width: calc(100vw - 100px);
+      }
+
+      #pichisoft-session-status {
+        font-size: 12px;
+        padding: 7px 12px;
+      }
+    }
   </style>
 </head>
 
