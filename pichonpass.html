@@ -628,8 +628,8 @@
 
         #pichisoft-session-status {
             position: fixed;
-            top: 12px;
-            right: 420px;
+            top: 2px;
+            right: 100px;
             z-index: 9999;
             display: flex;
             align-items: center;
@@ -696,8 +696,8 @@
 
         #pichisoft-session-profile {
             position: fixed;
-            top: 12px;
-            right: 420px;
+            top: 2px;
+            right: 100px;
             z-index: 9998;
             display: flex;
             align-items: center;
@@ -1896,45 +1896,16 @@
                 return;
             }
 
-            // Datos propios de PichonPass
+            // Datos propios de PichonPass Premium
             localStorage.removeItem("users");
             localStorage.removeItem("vault");
-            localStorage.removeItem(BD);
+            localStorage.removeItem("pichonpass-bd");
             localStorage.removeItem("pichonpass-theme");
 
             // NO tocar datos de la cuenta de Pichisoft.
             // Firebase mantiene la sesión y el perfil intactos.
 
             location.reload();
-        }
-        /* PASSWORD TOGGLE */
-        function togglePass() {
-            pass.type = pass.type === "password" ? "text" : "password";
-        }
-
-        /* SEGURIDAD DE LA CONTRASEÑA */
-        function checkStrength() {
-            let p = pass.value;
-            let len = p.length;
-
-            let fill = document.getElementById("fill");
-            let txt = document.getElementById("txt");
-
-            if (len <= 5) {
-                fill.style.width = "33%";
-                fill.style.background = "red";
-                txt.textContent = "Contraseña fácil";
-            }
-            else if (len <= 8) {
-                fill.style.width = "66%";
-                fill.style.background = "orange";
-                txt.textContent = "Contraseña intermedia";
-            }
-            else {
-                fill.style.width = "100%";
-                fill.style.background = "green";
-                txt.textContent = "Contraseña difícil";
-            }
         }
 
         /* GENERADOR */
