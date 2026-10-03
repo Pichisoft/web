@@ -289,10 +289,10 @@
             #pichisoft-session-profile {
                 position: absolute;
                 top: 8px;
+                left: auto;
                 right: 8px;
-                left: 8px;
-                width: auto;
-                max-width: none;
+                width: max-content;
+                max-width: calc(100vw - 16px);
                 box-sizing: border-box;
             }
 
@@ -645,87 +645,87 @@
                 box.style.top = t + "px";
                 prof.style.top = t + "px";
             }
-        
+
             pos();
-        window.addEventListener("resize", pos);
+            window.addEventListener("resize", pos);
 
-        function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-        /* Espera a que Firebase confirme si hay sesión y lee el perfil.
-           Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
-        async function comprobar() {
-            try {
-                var m = await Promise.all([
-                    import(V + "firebase-app.js"),
-                    import(V + "firebase-auth.js"),
-                    import(V + "firebase-firestore.js")
-                ]);
-                var app = m[0].initializeApp(CFG);
-                var auth = m[1].getAuth(app);
-                var db = m[2].getFirestore(app);
+            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
+               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
+            async function comprobar() {
+                try {
+                    var m = await Promise.all([
+                        import(V + "firebase-app.js"),
+                        import(V + "firebase-auth.js"),
+                        import(V + "firebase-firestore.js")
+                    ]);
+                    var app = m[0].initializeApp(CFG);
+                    var auth = m[1].getAuth(app);
+                    var db = m[2].getFirestore(app);
 
-                var user = await Promise.race([
-                    new Promise(function (res) {
-                        m[1].onAuthStateChanged(auth, function (u) {
-                            window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
-                            res(u);
-                        });
-                    }),
-                    wait(15000).then(function () { throw new Error("tiempo agotado"); })
-                ]);
+                    var user = await Promise.race([
+                        new Promise(function (res) {
+                            m[1].onAuthStateChanged(auth, function (u) {
+                                window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
+                                res(u);
+                            });
+                        }),
+                        wait(15000).then(function () { throw new Error("tiempo agotado"); })
+                    ]);
 
-                var perfil = {};
-                if (user) {
-                    try {
-                        var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
-                        if (snap.exists()) perfil = snap.data();
-                    } catch (e) {
-                        console.error("Pichisoft: no se pudo leer el perfil", e);
+                    var perfil = {};
+                    if (user) {
+                        try {
+                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+                            if (snap.exists()) perfil = snap.data();
+                        } catch (e) {
+                            console.error("Pichisoft: no se pudo leer el perfil", e);
+                        }
                     }
+                    return { user: user, perfil: perfil };
+                } catch (e) {
+                    console.error("Pichisoft:", e);
+                    return { error: true };
                 }
-                return { user: user, perfil: perfil };
-            } catch (e) {
-                console.error("Pichisoft:", e);
-                return { error: true };
             }
-        }
 
-        async function aviso(texto) {
-            txt.textContent = texto;
-            await wait(DUR_MENSAJE);
-            box.classList.add("hidden");
-        }
-
-        (async function () {
-            var r = await comprobar();
-            await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
-
-            if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
-            if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
-
-            box.classList.add("success");
-            txt.textContent = "Sesión iniciada";
-            await wait(DUR_MENSAJE);
-            box.classList.add("hidden");
-
-            var nombre = r.perfil.username || "Usuario";
-            nameEl.textContent = nombre;
-            var foto = r.perfil.photo;
-            if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
-                var img = new Image();
-                img.src = foto;
-                img.alt = "Foto de perfil";
-                pic.replaceChildren(img);
-            } else {
-                var ph = document.createElement("div");
-                ph.className = "profile-placeholder";
-                ph.textContent = nombre.charAt(0).toUpperCase();
-                pic.replaceChildren(ph);
+            async function aviso(texto) {
+                txt.textContent = texto;
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
             }
-            await wait(450);
-            prof.classList.add("visible");
+
+            (async function () {
+                var r = await comprobar();
+                await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
+
+                if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
+                if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
+
+                box.classList.add("success");
+                txt.textContent = "Sesión iniciada";
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+
+                var nombre = r.perfil.username || "Usuario";
+                nameEl.textContent = nombre;
+                var foto = r.perfil.photo;
+                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
+                    var img = new Image();
+                    img.src = foto;
+                    img.alt = "Foto de perfil";
+                    pic.replaceChildren(img);
+                } else {
+                    var ph = document.createElement("div");
+                    ph.className = "profile-placeholder";
+                    ph.textContent = nombre.charAt(0).toUpperCase();
+                    pic.replaceChildren(ph);
+                }
+                await wait(450);
+                prof.classList.add("visible");
+            })();
         })();
-        }) ();
     </script>
     <script src="pichisoft-datos.js?v=2" data-keys="pichonpass-bd"></script>
 </body>
