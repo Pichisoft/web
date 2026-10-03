@@ -536,6 +536,103 @@
             line-height: 1.5;
             margin: 12px 0 18px;
         }
+
+        /* ===== PichonApps en celular (solo hasta 600px: la PC no cambia) ===== */
+        @media (max-width: 600px) {
+            html {
+                font-size: 16px;
+            }
+
+            body {
+                padding-top: 56px;
+            }
+
+            /* Cuenta: arriba a la derecha, en su propia franja, y se va con el scroll */
+            #cuenta {
+                position: absolute;
+                top: 8px;
+                right: 10px;
+                gap: 8px;
+            }
+
+            #cuenta .nom {
+                font-size: .85rem;
+                max-width: 42vw;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            #cuenta .cuenta-accion,
+            #cuenta small {
+                font-size: .7rem;
+            }
+
+            .avwrap,
+            .av {
+                width: 38px;
+                height: 38px;
+            }
+
+            .av {
+                font-size: 1rem;
+            }
+
+            /* Título más chico y el "- By Pichisoft -" en su propio renglón */
+            .titulo {
+                font-size: 1.5rem;
+                line-height: 1.2;
+                margin: .3em 0 .2em;
+            }
+
+            .by {
+                display: block;
+                font-size: .78rem;
+                margin-top: 3px;
+            }
+
+            h3 {
+                font-size: 1.05rem;
+            }
+
+            /* Lista de apps y etiquetas más chicas (entran varias por renglón) */
+            li {
+                font-size: .92rem;
+                line-height: 2;
+                margin-bottom: 8px;
+            }
+
+            .nuevo::after,
+            .actualizado::after,
+            .eliminadas::after,
+            .proximo::after {
+                display: inline-block;
+            }
+
+            .nuevo::after,
+            .actualizado::after,
+            .eliminadas::after,
+            .proximo::after,
+            .etiqueta {
+                font-size: .62em;
+                padding: 2px 6px;
+                margin-left: 5px;
+                white-space: nowrap;
+            }
+
+            /* Paneles (registro, perfil, etc.) */
+            .t {
+                font-size: 1.4rem;
+            }
+
+            .opt {
+                font-size: 1.25rem;
+            }
+
+            .codigo {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
 
