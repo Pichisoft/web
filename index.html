@@ -728,6 +728,42 @@
             }
             return window.PichisoftFirebase;
         }
+
+        function traducirError(error) {
+            const mensajes = {
+                'auth/email-already-in-use': 'Este email ya está en uso.',
+                'auth/invalid-email': 'La estructura del email no es válida.',
+                'auth/weak-password': 'La contraseña es demasiado corta, debe ser de 8 caracteres como mínimo.',
+                'auth/invalid-credential': 'El email o la contraseña son incorrectos.',
+                'auth/wrong-password': 'La contraseña actual es incorrecta.',
+                'auth/user-not-found': 'No existe una cuenta de Pichisoft con esos datos.',
+                'auth/too-many-requests': 'Demasiados intentos. Espera un momento antes de volver a intentarlo.',
+                'auth/network-request-failed': 'No se pudo conectar con Firebase. Revisa tu conexión a internet.',
+                'auth/requires-recent-login': 'Por seguridad, tienes que volver a iniciar sesión antes de cambiar estos datos.',
+                'auth/operation-not-allowed': 'Esta operación no está habilitada en Firebase.',
+                'auth/credential-already-in-use': 'Estas credenciales ya están asociadas a otra cuenta.',
+                'auth/username-already-exists': 'Este nombre de usuario ya está en uso.',
+                'permission-denied': 'No tienes permiso para realizar esta operación.',
+                'unavailable': 'El servicio no está disponible en este momento. Intenta de nuevo.',
+                'deadline-exceeded': 'La operación tardó demasiado. Intenta de nuevo.'
+            };
+
+            if (!error) {
+                return 'Ocurrió un error inesperado. Intentá de nuevo.';
+            }
+
+            if (mensajes[error.code]) {
+                return mensajes[error.code];
+            }
+
+            if (!error.code) {
+                return error.message || 'Ocurrió un error inesperado.';
+            }
+
+            console.error('Error no traducido:', error);
+
+            return 'No se pudo completar la operación. Intentá de nuevo.';
+        }
         const API = {
             users() { return LS.get('ps_users', {}); },
             validar(name, pass) {
@@ -1336,8 +1372,11 @@
                     return;
                 }
                 if (p !== q(m, '#p2').value) { q(m, '#er').textContent = 'Las contraseñas no coinciden.'; return; }
-                try { iniciarSesionUI(await API.register(u, email, p, foto)); }
-                catch (e) { q(m, '#er').textContent = e.message; }
+                try {
+                    iniciarSesionUI(await API.register(u, email, p, foto));
+                } catch (e) {
+                    q(m, '#er').textContent = traducirError(e);
+                }
             };
         }
 
@@ -1386,7 +1425,9 @@
                     LS.set('ps_users', users);
 
                     verificar(usuario.email, () => iniciarSesionUI(k));
-                } catch (x) { q(m, '#er').textContent = x.message; }
+                } catch (x) {
+                    q(m, '#er').textContent = traducirError(x);
+                }
                 e.target.disabled = false;
             };
         }
@@ -1600,18 +1641,15 @@
 
                 boton.disabled = true;
 
-                /*
-                 * Si cambia el email, primero verificamos el EMAIL ACTUAL.
-                 */
+
+
                 if (cambioEmail) {
 
-                    m.close();
-
-                    verificar(usuario.email, async () => {
+                    verificar(nuevoEmail, async () => {
 
                         try {
 
-                            await API.guardarPerfil(
+                            const nuevaK = await API.guardarPerfil(
                                 k,
                                 nuevoNombre,
                                 nuevoEmail,
@@ -1619,18 +1657,21 @@
                                 passActual
                             );
 
+                            m.close();
                             renderCuenta();
 
                             alert('Perfil actualizado correctamente.');
 
                         } catch (x) {
 
-                            alert(x.message);
+                            error.textContent = traducirError(x);
+                            boton.disabled = false;
                         }
 
                     });
 
                     return;
+
                 }
 
                 try {
