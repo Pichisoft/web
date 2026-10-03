@@ -3514,10 +3514,7 @@
         }
 
 
-        function confirmReset() {
-
-            // Avisar directamente a pichisoft-datos.js que esta clave
-            // fue eliminada intencionalmente y debe borrarse también de Firebase.
+        async function confirmReset() {
             localStorage.setItem(
                 "ps_borrar_nube__pichonpass-bd",
                 "1"
@@ -3527,6 +3524,10 @@
             localStorage.removeItem("vault");
             localStorage.removeItem("pichonpass-bd");
             localStorage.removeItem("pichonpass-theme");
+
+            // Dar tiempo a que pichisoft-datos.js termine
+            // de procesar el borrado antes de recargar.
+            await new Promise(resolve => setTimeout(resolve, 1500));
 
             location.reload();
         }
