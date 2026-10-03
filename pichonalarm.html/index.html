@@ -631,6 +631,29 @@
                 padding-bottom: 7px;
             }
         }
+
+        /* ===== Pichisoft - cartel de sesión en celular (PichonAlarm) ===== */
+        @media (max-width: 600px) {
+            header {
+                padding-bottom: 60px;
+            }
+
+            #pichisoft-session-status,
+            #pichisoft-session-profile {
+                position: absolute;
+                top: calc(env(safe-area-inset-top, 0px) + 46px);
+                right: 10px;
+                left: auto;
+                max-width: calc(100vw - 20px);
+            }
+
+            #pichisoft-session-status {
+                justify-content: flex-start;
+                text-align: left;
+                font-size: 13px;
+                padding: 7px 14px;
+            }
+        }
     </style>
 </head>
 
