@@ -3516,70 +3516,14 @@
 
         function confirmReset() {
 
-            localStorage.removeItem(
-                "users"
-            );
-
-
-            localStorage.removeItem(
-                BD
-            );
-
-
-            localStorage.removeItem(
-                "pichonpass-theme"
-            );
-
+            localStorage.removeItem("users");
+            localStorage.removeItem("vault");
+            localStorage.removeItem("pichonpass-bd");
+            localStorage.removeItem("pichonpass-theme");
 
             location.reload();
         }
 
-
-
-
-
-        /*
-         * ============================================================
-         * INICIO
-         * ============================================================
-         */
-
-        window.addEventListener(
-            "load",
-            () => {
-
-                initTheme();
-
-                render();
-
-            }
-        );
-        document.addEventListener("DOMContentLoaded", () => {
-            const panel = document.getElementById("newRecordPanel");
-
-            if (!panel) return;
-
-            panel.addEventListener("toggle", () => {
-                if (panel.open && editingIndex === -1) {
-                    document.getElementById("title").value = "";
-                    document.getElementById("user").value = "";
-                    document.getElementById("email").value = "";
-                    document.getElementById("pass").value = "";
-                    document.getElementById("notes").value = "";
-
-                    const fill = document.getElementById("fill");
-                    const txt = document.getElementById("txt");
-
-                    if (fill) {
-                        fill.style.width = "0%";
-                    }
-
-                    if (txt) {
-                        txt.textContent = "";
-                    }
-                }
-            });
-        });
     </script>
 
 </body>
