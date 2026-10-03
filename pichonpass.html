@@ -1394,6 +1394,20 @@
             -webkit-user-select: text;
             -moz-user-select: text;
         }
+
+        .master-password-warning {
+            margin: 10px auto 14px;
+            max-width: 320px;
+            padding: 9px 12px;
+            box-sizing: border-box;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.4;
+            text-align: left;
+            color: #d6d6d6;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
     </style>
 
 </head>
@@ -1435,7 +1449,6 @@
         </div>
 
     </div>
-
     <!-- LOGIN -->
     <div id="auth">
 
@@ -1443,6 +1456,11 @@
 
         <input id="username" placeholder="Nombre de usuario">
         <input id="password" type="password" placeholder="Contraseña">
+
+        <div class="master-password-warning">
+            🔐 <strong>Importante:</strong> tu contraseña maestra no se puede recuperar.
+            Elegí una contraseña fuerte y única y no la compartas con nadie.
+        </div>
 
         <button id="loginBtn" onclick="login()">Entrar</button>
         <button onclick="resetAll()">Restablecer datos</button>
