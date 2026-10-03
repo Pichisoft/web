@@ -1835,60 +1835,60 @@
             checkStrength();
         }
 
-        /* VAULT */
         async function save() {
-            const title = document.getElementById("title").value.trim();
-            const user = document.getElementById("user").value.trim();
-            const email = document.getElementById("email").value.trim();
-            const pass = document.getElementById("pass").value;
-            const notes = document.getElementById("notes").value.trim();
+            // Aseguramos capturar los elementos correctamente
+            const titleInput = document.getElementById("title");
+            const userInput = document.getElementById("user");
+            const emailInput = document.getElementById("email");
+            const passInput = document.getElementById("pass");
+            const notesInput = document.getElementById("notes");
+
+            const title = titleInput ? titleInput.value.trim() : "";
+            const user = userInput ? userInput.value.trim() : "";
+            const email = emailInput ? emailInput.value.trim() : "";
+            const pass = passInput ? passInput.value : "";
+            const notes = notesInput ? notesInput.value.trim() : "";
 
             const titleError = document.getElementById("title-error");
             const userError = document.getElementById("user-error");
 
-            if (titleError) {
-                titleError.textContent = "";
-            }
+            if (titleError) titleError.textContent = "";
+            if (userError) userError.textContent = "";
 
-            if (userError) {
-                userError.textContent = "";
-            }
-
+            // Validaciones obligatorias
             if (!title) {
-                if (titleError) {
-                    titleError.textContent = "El título es obligatorio.";
-                }
-
+                if (titleError) titleError.textContent = "El título es obligatorio.";
                 return;
             }
-
             if (!user) {
-                if (userError) {
-                    userError.textContent = "El usuario es obligatorio.";
-                }
-
+                if (userError) userError.textContent = "El usuario es obligatorio.";
                 return;
             }
 
-            const record = {
-                title,
-                user,
-                email,
-                pass,
-                notes
-            };
+            const record = { title, user, email, pass, notes };
 
-            if (editingIndex >= 0) {
+            // Verificación segura del índice de edición
+            if (typeof editingIndex !== "undefined" && editingIndex >= 0) {
                 vault[editingIndex] = record;
             } else {
                 vault.push(record);
             }
 
-            await persist();
+            try {
+                // Guardado asíncrono y cifrado definitivo en LocalStorage
+                await persist();
 
-            render();
-            clearForm();
+                // Forzar el redibujado de la lista en pantalla
+                render();
+
+                // Limpiar cajas de texto y colapsar el menú desplegable
+                clearForm();
+
+            } catch (error) {
+                console.error("Error crítico al persistir los datos de PichonPass:", error);
+            }
         }
+
         function render() {
             const list = document.getElementById("list");
 
@@ -3454,6 +3454,28 @@
 
             location.reload();
         }
+        let horaSalida = null;
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "hidden") {
+                // Guardamos el momento exacto en el que minimizó
+                horaSalida = Date.now();
+            } else if (document.visibilityState === "visible") {
+                if (horaSalida) {
+                    const tiempoTranscurrido = Date.now() - horaSalida;
+
+                    // Si pasó más de 60 segundos fuera, cerramos sesión
+                    if (tiempoTranscurrido >= TIEMPO_CIERRE_SESION) {
+                        console.log("PichonPass: Pasaron más de 60s afuera. Cerrando sesión.");
+                        logout();
+                    } else {
+                        // Si regresó antes, limpiamos la marca de tiempo
+                        horaSalida = null;
+                        console.log("PichonPass: Sesión salvada.");
+                    }
+                }
+            }
+        });
 
     </script>
 
