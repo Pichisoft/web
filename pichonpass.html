@@ -455,16 +455,22 @@
             app.style.display = "block";
         }
 
-        /* RESET */
         function resetAll() {
-            if (!confirm("¿Borrar todo? Se borran tus contraseñas guardadas de este dispositivo (y de tu cuenta de Pichisoft, si tenés sesión iniciada).")) return;
+            if (!confirm("¿Restablecer PichonPass? Se eliminarán únicamente los datos guardados de PichonPass en este dispositivo. Tu cuenta de Pichisoft no se verá afectada.")) {
+                return;
+            }
 
-            localStorage.removeItem("users");
-            localStorage.removeItem("vault");
-            localStorage.removeItem(BD);
+            // Datos propios de PichonPass
+            localStorage.removeItem("users");       // Datos antiguos/migrados
+            localStorage.removeItem("vault");       // Datos antiguos
+            localStorage.removeItem(BD);            // Base cifrada actual
+            localStorage.removeItem("pichonpass-theme");
+
+            // NO tocar datos de la cuenta de Pichisoft.
+            // Firebase mantiene la sesión y el perfil intactos.
+
             location.reload();
         }
-
         /* PASSWORD TOGGLE */
         function togglePass() {
             pass.type = pass.type === "password" ? "text" : "password";
