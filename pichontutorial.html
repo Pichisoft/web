@@ -435,29 +435,48 @@
             white-space: nowrap;
         }
 
-        /* Celular: título más chico para que no choque con el link "Pichisoft" */
         @media (max-width: 600px) {
-            .header {
-                top: 16px;
-                left: 15px;
-            }
-
-            .logo {
-                font-size: 1.5rem;
-            }
-
-            .byline {
-                font-size: 0.75rem;
-            }
-
-            #pichisoft-session-status,
-            #pichisoft-session-profile {
-                right: 10px;
-            }
 
             #pichisoft-session-status {
-                font-size: 13px;
+                top: max(10px, env(safe-area-inset-top, 10px));
+                right: 10px;
+
+                width: auto;
+                max-width: calc(100vw - 20px);
+
                 padding: 7px 14px;
+
+                font-size: 13px;
+
+                white-space: normal;
+                overflow-wrap: anywhere;
+
+                transform: translateY(0);
+            }
+
+            #pichisoft-session-status.hidden {
+                transform: translateY(-15px);
+            }
+
+            #pichisoft-session-profile {
+                top: max(10px, env(safe-area-inset-top, 10px));
+                right: 10px;
+
+                width: auto;
+                max-width: calc(100vw - 20px);
+
+                transform: translateY(-12px) scale(0.9);
+            }
+
+            #pichisoft-session-profile.visible {
+                transform: translateY(0) scale(1);
+            }
+
+            #pichisoft-profile-name {
+                max-width: calc(100vw - 75px);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
         }
     </style>
