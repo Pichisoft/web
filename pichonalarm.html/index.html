@@ -510,29 +510,125 @@
             white-space: nowrap;
         }
 
-        /* Celular: título más chico para que no choque con el link "Pichisoft" */
+        /* ==========================================
+   PICHISOFT - ADAPTACIÓN RESPONSIVE
+   ========================================== */
+
         @media (max-width: 600px) {
-            .header {
-                top: 16px;
-                left: 15px;
+
+            /* Mensaje "Iniciando sesión..." */
+            #pichisoft-session-status {
+                top: max(12px, env(safe-area-inset-top, 0px));
+                left: 12px;
+                right: 12px;
+
+                width: auto;
+                max-width: none;
+
+                justify-content: center;
+                text-align: center;
+
+                padding: 9px 14px;
+
+                font-size: clamp(12px, 3.5vw, 14px);
+
+                transform: translateY(0);
             }
 
-            .logo {
-                font-size: 1.5rem;
+            #pichisoft-session-status.hidden {
+                transform: translateY(-18px);
             }
 
-            .byline {
-                font-size: 0.75rem;
+            #pichisoft-session-status .ps-check {
+                font-size: 19px;
+                flex-shrink: 0;
             }
+
+
+            /* Usuario que aparece después */
+            #pichisoft-session-profile {
+                top: max(12px, env(safe-area-inset-top, 0px));
+                right: 12px;
+                left: auto;
+
+                max-width: calc(100vw - 24px);
+
+                padding: 5px 12px 5px 5px;
+                gap: 7px;
+
+                overflow: hidden;
+
+                transform: translateY(-18px) scale(0.92);
+                transform-origin: top right;
+            }
+
+            #pichisoft-session-profile.visible {
+                transform: translateY(0) scale(1);
+            }
+
+
+            /* Foto de perfil */
+            #pichisoft-profile-picture img,
+            #pichisoft-profile-picture .profile-placeholder {
+                width: 30px;
+                height: 30px;
+                min-width: 30px;
+                min-height: 30px;
+            }
+
+
+            /* Nombre */
+            #pichisoft-profile-name {
+                font-size: clamp(12px, 3.6vw, 14px);
+
+                max-width: min(55vw, 180px);
+
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
+
+        /* ==========================================
+   CELULARES MUY PEQUEÑOS
+   ========================================== */
+
+        @media (max-width: 380px) {
+
+            #pichisoft-session-status {
+                left: 8px;
+                right: 8px;
+
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            #pichisoft-session-profile {
+                right: 8px;
+                max-width: calc(100vw - 16px);
+            }
+
+            #pichisoft-profile-name {
+                max-width: 48vw;
+            }
+        }
+
+
+        /* ==========================================
+   MÓVIL HORIZONTAL / POCO ALTO
+   ========================================== */
+
+        @media (max-width: 600px) and (max-height: 500px) {
 
             #pichisoft-session-status,
             #pichisoft-session-profile {
-                right: 10px;
+                top: max(8px, env(safe-area-inset-top, 0px));
             }
 
             #pichisoft-session-status {
-                font-size: 13px;
-                padding: 7px 14px;
+                padding-top: 7px;
+                padding-bottom: 7px;
             }
         }
     </style>
