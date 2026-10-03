@@ -809,6 +809,23 @@
                 padding: 7px 14px;
             }
         }
+
+        /* ===== Pichisoft - cartel de sesión en celular (PichonSnake) ===== */
+        @media (max-width: 600px) {
+            body {
+                padding-top: 48px;
+            }
+
+            /* arriba a la izquierda: a la derecha están los botones de pausa */
+            #pichisoft-session-status,
+            #pichisoft-session-profile {
+                position: absolute;
+                top: 6px;
+                left: 8px;
+                right: auto;
+                max-width: calc(100vw - 16px);
+            }
+        }
     </style>
 </head>
 
