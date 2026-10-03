@@ -1892,23 +1892,7 @@
         }
 
         function resetAll() {
-            if (!confirm("¿Restablecer PichonPass? Se eliminarán únicamente los datos guardados de PichonPass en este dispositivo. Tu cuenta de Pichisoft no se verá afectada.")) {
-                return;
-            }
-
-            // Datos propios de PichonPass Premium
-            localStorage.removeItem("users");
-            localStorage.removeItem("vault");
-            localStorage.removeItem("pichonpass-bd");
-            localStorage.removeItem("pichonpass-theme");
-
-            // NO tocar datos de la cuenta de Pichisoft.
-            // Firebase mantiene la sesión y el perfil intactos.
-
-            console.log("ANTES DE RECARGAR:", localStorage.getItem("pichonpass-bd"));
-            {
-                document.getElementById("resetModal").style.display = "flex";
-            }
+            document.getElementById("resetModal").style.display = "flex";
         }
 
         /* GENERADOR */
