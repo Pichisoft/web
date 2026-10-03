@@ -801,6 +801,23 @@
                 padding: 7px 14px;
             }
         }
+
+        /* ===== Pichisoft - cartel de sesión en celular y tablet (PichonDocs) =====
+   Solo para pantallas de hasta 900px: en PC no cambia nada. */
+        @media (max-width: 900px) {
+            .appHeader {
+                margin-top: 46px;
+            }
+
+            #pichisoft-session-status,
+            #pichisoft-session-profile {
+                position: absolute;
+                top: 6px;
+                right: 8px;
+                left: auto;
+                max-width: calc(100vw - 16px);
+            }
+        }
     </style>
 </head>
 
@@ -1801,3 +1818,4 @@
 </body>
 
 </html>
+        
