@@ -440,6 +440,14 @@
             -moz-user-select: none;
             -ms-user-select: none;
         }
+
+        .verificacion-info {
+            font-family: Georgia, serif;
+            font-size: 1em;
+            font-weight: normal;
+            line-height: 1.5;
+            margin: 12px 0 18px;
+        }
     </style>
 </head>
 
@@ -634,26 +642,22 @@
                 u[k].tok = t; LS.set('ps_users', u);
                 LS.set('ps_session', { k, t, exp: Date.now() + 30 * 864e5 });
             },
-            cerrarSesion() {
+            async cerrarSesion() {
+
                 const k = sesionK();
-                if (k) { const u = this.users(); delete u[k].tok; LS.set('ps_users', u); }
+
+                if (k) {
+                    const u = this.users();
+                    delete u[k].tok;
+                    LS.set('ps_users', u);
+                }
+
+                await firebase.auth.signOut();
+
                 localStorage.removeItem('ps_session');
+
             },
-            // Códigos de 6 dígitos (aleatorio criptográfico), guardados solo como hash, de un solo uso, vencen a los 10 min
-            async newCode() {
-                const now = Date.now(), codes = LS.get('ps_codes', {});
-                for (const h in codes) if (codes[h] < now) delete codes[h];
-                let c, h;
-                do { c = String(100000 + crypto.getRandomValues(new Uint32Array(1))[0] % 900000); h = await sha('code:' + c); } while (codes[h]);
-                codes[h] = now + 600000; LS.set('ps_codes', codes);
-                return c;
-            },
-            async useCode(c) {
-                const codes = LS.get('ps_codes', {}), h = await sha('code:' + c);
-                if (!codes[h] || codes[h] < Date.now()) return false;
-                delete codes[h]; LS.set('ps_codes', codes); return true;
-            }
-        };
+        }
 
         function sesionK() {
             const s = LS.get('ps_session', null);
@@ -803,20 +807,51 @@
             return true;
         }
 
-        function verificar(onOk) {
-            const m = modal(`<h2 class="t">Código de verificación</h2>
-    <div class="peq">Te enviaremos un código de 6 dígitos desde pichisoft.github@gmail.com. No guardamos tu email.</div>
-    <label>Email donde recibirás el código:</label><input type="text" id="em" inputmode="email">
-    <div class="err" id="er"></div>
-    <button class="btn" id="ok">Enviar código</button><button class="btn" id="no">Cancelar</button>`, 'sem sem2');
+
+        function ocultarEmail(email) {
+            const [usuario, dominio] = email.split('@');
+            return usuario.slice(0, 2) + '**@' + dominio;
+        }
+
+        async function verificar(email, onOk) {
+            const m = modal(`
+        <h2 class="t">Código de verificación</h2>
+        <div class="verificacion-info" id="inf">
+            Enviando código de verificación...
+        </div>
+        <div class="err" id="er"></div>
+        <button class="btn" id="no">Cancelar</button>
+    `, 'sem sem2');
+
             q(m, '#no').onclick = () => m.close();
-            q(m, '#ok').onclick = async e => {
-                const em = q(m, '#em').value.trim();
-                if (!/^\S+@\S+\.\S+$/.test(em)) { q(m, '#er').textContent = 'Escribí un email válido.'; return; }
-                e.target.disabled = true; q(m, '#er').textContent = 'Enviando...';
-                try { const code = await API.newCode(); const enviado = await enviarCodigo(em, code); m.close(); pasoCodigo(code, em, enviado, onOk); }
-                catch (x) { q(m, '#er').textContent = x.message; e.target.disabled = false; }
-            };
+
+            try {
+                const code = await API.newCode();
+                await enviarCodigo(email, code);
+
+                if (!m.isConnected) return;
+
+                m.close();
+                pasoCodigo(code, email, true, onOk);
+
+            } catch (error) {
+                if (!m.isConnected) return;
+
+                q(m, '#inf').textContent =
+                    'No se pudo enviar el código de verificación.';
+                q(m, '#er').textContent = error.message;
+
+                const reintentar = document.createElement('button');
+                reintentar.className = 'btn';
+                reintentar.textContent = 'Reintentar';
+
+                reintentar.onclick = () => {
+                    m.close();
+                    verificar(email, onOk);
+                };
+
+                q(m, '.box').insertBefore(reintentar, q(m, '#no'));
+            }
         }
 
         function pasoCodigo(code, email, enviado, onOk) {
@@ -825,9 +860,10 @@
     <label>Escribí el código de 6 dígitos:</label><input type="text" id="cd" inputmode="numeric" maxlength="6">
     <div class="err" id="er"></div>
     <button class="btn" id="ok">Verificar</button><button class="btn" id="no">Cancelar</button>`, 'sem sem2');
-            q(m, '#inf').textContent = enviado
-                ? 'Te enviamos un código a ' + email + '. Si no lo ves, revisá spam.'
-                : 'MODO PRUEBA (envío de mails sin configurar). Tu código es: ' + code;
+            q(m, '#inf').textContent =
+                'Te enviamos un código de verificación a ' +
+                ocultarEmail(email) +
+                '. Si no lo ves, revisá spam.';
             q(m, '#no').onclick = () => m.close();
             let intentos = 0;
             q(m, '#ok').onclick = async () => {
@@ -971,7 +1007,7 @@
 
                     LS.set('ps_users', users);
 
-                    verificar(() => iniciarSesionUI(k));
+                    verificar(usuario.email, () => iniciarSesionUI(k));
                 } catch (x) { q(m, '#er').textContent = x.message; }
                 e.target.disabled = false;
             };
