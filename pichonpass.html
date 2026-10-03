@@ -1718,7 +1718,9 @@
             const u = username.value.trim();
             const p = password.value;
 
+            // Ocultamos el error al iniciar el intento
             error.style.display = "none";
+            error.textContent = "Usuario o contraseña incorrectos"; // Texto por defecto
 
             if (!u || !p) {
                 error.style.display = "block";
@@ -1726,162 +1728,63 @@
             }
 
             loginBtn.disabled = true;
-
             try {
-
-                /*
-                 * ============================================================
-                 * COMPROBAR CUENTA PICHISOFT
-                 * ============================================================
-                 *
-                 * Esperamos a que Firebase termine de comprobar
-                 * si existe una sesión de Pichisoft.
-                 */
-
-                const tienePremium =
-                    await window.PichisoftSessionReady;
-
+                /* COMPROBAR CUENTA PICHISOFT */
+                const tienePremium = await window.PichisoftSessionReady;
                 if (!tienePremium) {
                     window.location.href = "pichonpass-classic.html";
                     return;
                 }
 
-
-                /*
-                 * ============================================================
-                 * ABRIR / CREAR VAULT
-                 * ============================================================
-                 */
-
+                /* ABRIR / CREAR VAULT */
                 let bd = null;
-
                 try {
-                    bd = JSON.parse(
-                        localStorage.getItem(BD) || "null"
-                    );
+                    bd = JSON.parse(localStorage.getItem(BD) || "null");
                 } catch (e) {
                     bd = null;
                 }
 
-
                 if (bd) {
-
-                    /*
-                     * Ya existe una bóveda.
-                     * Comprobamos usuario + contraseña.
-                     */
-
+                    /* Ya existe una bóveda. Comprobamos usuario + contraseña. */
                     if (bd.u !== u) {
                         throw new Error("bad");
                     }
-
-
-                    const salt =
-                        fromHex(bd.s);
-
-                    const key =
-                        await deriveKey(
-                            p,
-                            salt
-                        );
-
-
-                    const pt =
-                        await crypto.subtle.decrypt(
-                            {
-                                name: "AES-GCM",
-                                iv: fromHex(bd.i)
-                            },
-                            key,
-                            fromB64(bd.c)
-                        );
-
-
-                    vault =
-                        JSON.parse(
-                            td.decode(pt)
-                        );
-
-
+                    const salt = fromHex(bd.s);
+                    const key = await deriveKey(p, salt);
+                    const pt = await crypto.subtle.decrypt(
+                        { name: "AES-GCM", iv: fromHex(bd.i) },
+                        key,
+                        fromB64(bd.c)
+                    );
+                    vault = JSON.parse(td.decode(pt));
                     cryptoKey = key;
                     cryptoSalt = salt;
                     masterUser = u;
-
                 } else {
-
-                    /*
-                     * Primera vez.
-                     */
-
-                    const old =
-                        getUsers();
-
-
-                    if (
-                        Object.keys(old).length > 0 &&
-                        old[u] !== p
-                    ) {
+                    /* Primera vez (o datos recién restablecidos) */
+                    const old = getUsers();
+                    if (Object.keys(old).length > 0 && old[u] !== p) {
                         throw new Error("bad");
                     }
-
-
-                    cryptoSalt =
-                        crypto.getRandomValues(
-                            new Uint8Array(16)
-                        );
-
-
-                    cryptoKey =
-                        await deriveKey(
-                            p,
-                            cryptoSalt
-                        );
-
-
+                    cryptoSalt = crypto.getRandomValues(new Uint8Array(16));
+                    cryptoKey = await deriveKey(p, cryptoSalt);
                     masterUser = u;
-
                     vault = [];
-
-
                     await persist();
-
-
-                    localStorage.removeItem(
-                        "users"
-                    );
+                    localStorage.removeItem("users");
                 }
 
-
-                /*
-                 * ============================================================
-                 * ENTRAR
-                 * ============================================================
-                 */
-
+                /* ENTRAR (Flujo Exitoso) */
                 password.value = "";
-
-                error.textContent =
-                    "Usuario o contraseña incorrectos";
-
+                error.style.display = "none"; // Nos aseguramos de ocultar el error si todo salió bien
                 enter();
-
                 render();
-
             } catch (e) {
-
-                console.error(
-                    "PichonPass:",
-                    e
-                );
-
-                error.textContent =
-                    "Usuario o contraseña incorrectos";
-
+                console.error("PichonPass:", e);
+                // Si el error fue por datos incorrectos o fallo de descifrado, lo mostramos
+                error.textContent = "Usuario o contraseña incorrectos";
                 error.style.display = "block";
-
             }
-
-
             loginBtn.disabled = false;
         }
 
