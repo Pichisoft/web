@@ -135,6 +135,93 @@
             text-align: right
         }
 
+        #cuenta .cuenta-accion {
+            display: block;
+            background: none;
+            border: 0;
+            color: #888;
+            font-family: inherit;
+            font-size: .65em;
+            cursor: pointer;
+            text-align: right;
+            padding: 0;
+            margin: 3px 0 0 auto;
+        }
+
+        #cuenta .cuenta-accion:hover {
+            color: #ccc;
+        }
+
+        #cuenta .cuenta-acciones {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        #cuenta .cuenta-acciones button {
+            font-family: inherit;
+        }
+
+        .perfil-seccion {
+            margin-top: 18px;
+            padding-top: 4px;
+        }
+
+        .perfil-password-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            background: none;
+            border: 0;
+            color: whitesmoke;
+            font-family: inherit;
+            font-size: .95em;
+            padding: 10px 0;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .perfil-password-toggle:hover {
+            color: #ccc;
+        }
+
+        .perfil-password-flecha {
+            font-size: 1.2em;
+            margin-left: 10px;
+        }
+
+        .perfil-password-panel {
+            display: none;
+            padding-bottom: 4px;
+        }
+
+        .perfil-password-panel.abierto {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            #cuenta {
+                right: 10px;
+                top: 10px;
+                gap: 8px;
+            }
+
+            #cuenta .cuenta-accion,
+            #cuenta small {
+                font-size: .7em;
+            }
+
+            .ov {
+                padding: 10px;
+            }
+
+            .ov.sem .box,
+            .ov.sem2 .box {
+                padding: 18px;
+            }
+        }
+
         #cuenta small:hover {
             color: #ccc
         }
@@ -262,6 +349,7 @@
         }
 
         .box input[type=text],
+        .box input[type=email],
         .box input[type=password] {
             width: 100%;
             box-sizing: border-box;
@@ -642,6 +730,160 @@
                 const u = this.users(), t = rand(32);
                 u[k].tok = t; LS.set('ps_users', u);
                 LS.set('ps_session', { k, t, exp: Date.now() + 30 * 864e5 });
+            },
+            async guardarPerfil(k, nuevoNombre, nuevoEmail, nuevaPass, passActual) {
+                const users = this.users();
+                const u = users[k];
+
+                if (!u) {
+                    throw new Error('No se encontró la cuenta.');
+                }
+
+                nuevoNombre = nuevoNombre.trim();
+                nuevoEmail = nuevoEmail.trim();
+
+                if (!/^[A-Za-z0-9_.-]{3,20}$/.test(nuevoNombre)) {
+                    throw new Error(
+                        'El usuario debe tener de 3 a 20 caracteres: letras, números, _ . -'
+                    );
+                }
+
+                if (!nuevoEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nuevoEmail)) {
+                    throw new Error('Ingresá un email válido.');
+                }
+
+                const nuevaK = nuevoNombre.toLowerCase();
+
+                if (nuevaK !== k && users[nuevaK]) {
+                    throw new Error('Ese nombre de usuario ya existe.');
+                }
+
+                if (nuevaPass) {
+                    this.validar(nuevoNombre, nuevaPass);
+
+                    if (!passActual) {
+                        throw new Error('Ingresá tu contraseña actual para cambiar la contraseña.');
+                    }
+                }
+
+                const firebase = firebaseAuth();
+                const usuarioFirebase = firebase.auth.currentUser;
+
+                if (!usuarioFirebase) {
+                    throw new Error('La sesión de Firebase no está disponible. Volvé a iniciar sesión.');
+                }
+
+                const cambioEmail = nuevoEmail !== u.email;
+                const cambioNombre = nuevoNombre !== u.name;
+                const cambioPass = !!nuevaPass;
+
+                try {
+                    /*
+                     * Si se cambia la contraseña, necesitamos la contraseña actual
+                     * para volver a autenticar al usuario antes de modificarla.
+                     */
+                    if (cambioPass) {
+                        const credencial = firebase.EmailAuthProvider.credential(
+                            usuarioFirebase.email,
+                            passActual
+                        );
+
+                        await firebase.reauthenticateWithCredential(
+                            usuarioFirebase,
+                            credencial
+                        );
+                    }
+
+                    /*
+                     * Cambiar email en Firebase Authentication.
+                     */
+                    if (cambioEmail) {
+                        await firebase.updateEmail(
+                            usuarioFirebase,
+                            nuevoEmail
+                        );
+                    }
+
+                    /*
+                     * Cambiar contraseña en Firebase Authentication.
+                     */
+                    if (cambioPass) {
+                        await firebase.updatePassword(
+                            usuarioFirebase,
+                            nuevaPass
+                        );
+                    }
+
+                    /*
+                     * Actualizar el perfil en Firestore.
+                     */
+                    await firebase.setDoc(
+                        firebase.doc(firebase.db, 'users', u.firebaseUid),
+                        {
+                            username: nuevoNombre,
+                            email: nuevoEmail,
+                            photo: u.photo || '',
+                            data: u.data || {}
+                        },
+                        { merge: true }
+                    );
+
+                    /*
+                     * Actualizar el almacenamiento local.
+                     */
+                    const perfilActualizado = {
+                        ...u,
+                        name: nuevoNombre,
+                        email: nuevoEmail
+                    };
+
+                    delete users[k];
+                    users[nuevaK] = perfilActualizado;
+
+                    LS.set('ps_users', users);
+
+                    /*
+                     * Si cambió el nombre de usuario, también cambiamos
+                     * la clave de la sesión actual.
+                     */
+                    const sesion = LS.get('ps_session', null);
+
+                    if (sesion && sesion.k === k) {
+                        sesion.k = nuevaK;
+                        LS.set('ps_session', sesion);
+                    }
+
+                    return nuevaK;
+
+                } catch (error) {
+
+                    console.error('Error actualizando perfil:', error);
+
+                    if (error.code === 'auth/wrong-password' ||
+                        error.code === 'auth/invalid-credential') {
+                        throw new Error('La contraseña actual es incorrecta.');
+                    }
+
+                    if (error.code === 'auth/requires-recent-login') {
+                        throw new Error(
+                            'Por seguridad, necesitás volver a iniciar sesión antes de cambiar estos datos.'
+                        );
+                    }
+
+                    if (error.code === 'auth/email-already-in-use') {
+                        throw new Error('Ese email ya está registrado.');
+                    }
+
+                    if (error.code === 'auth/invalid-email') {
+                        throw new Error('El email no es válido.');
+                    }
+
+                    if (error.code === 'auth/weak-password') {
+                        throw new Error('La contraseña nueva es demasiado débil.');
+                    }
+
+                    throw error;
+                }
             },
             async cerrarSesion() {
 
@@ -1118,6 +1360,205 @@
         }
 
         /* ---------- Cabecera (arriba a la derecha) ---------- */
+        function editarPerfil() {
+            const k = sesionK();
+            const usuario = k ? API.users()[k] : null;
+
+            if (!usuario) return;
+
+            const m = modal(`
+        <h2 class="t">Editar perfil</h2>
+
+        <label>Nombre de usuario:</label>
+        <input
+            type="text"
+            id="ep-usuario"
+            maxlength="20"
+            autocomplete="username"
+            value="${usuario.name.replace(/"/g, '&quot;')}"
+        >
+
+        <label>Email:</label>
+        <input
+            type="email"
+            id="ep-email"
+            autocomplete="email"
+            value="${usuario.email.replace(/"/g, '&quot;')}"
+        >
+
+        <div class="perfil-seccion">
+
+            <button class="perfil-password-toggle" id="ep-toggle-pass">
+                <span>Contraseña</span>
+                <span class="perfil-password-flecha" id="ep-flecha">→</span>
+            </button>
+
+            <div class="perfil-password-panel" id="ep-password-panel">
+
+                <label>Contraseña actual:</label>
+                <input
+                    type="password"
+                    id="ep-pass-actual"
+                    autocomplete="current-password"
+                >
+
+                <label>Contraseña nueva:</label>
+                <input
+                    type="password"
+                    id="ep-pass-nueva"
+                    autocomplete="new-password"
+                >
+
+                <label>Repetir contraseña:</label>
+                <input
+                    type="password"
+                    id="ep-pass-repetir"
+                    autocomplete="new-password"
+                >
+
+                <div class="peq" style="margin-top:8px">
+                    La contraseña debe tener al menos 8 caracteres.
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="err" id="ep-error"></div>
+
+        <button class="btn" id="ep-guardar">Guardar</button>
+        <button class="btn" id="ep-cancelar">Cancelar</button>
+    `, 'sem');
+
+            let passwordAbierta = false;
+
+            q(m, '#ep-toggle-pass').onclick = () => {
+
+                passwordAbierta = !passwordAbierta;
+
+                const panel = q(m, '#ep-password-panel');
+                const flecha = q(m, '#ep-flecha');
+
+                if (passwordAbierta) {
+                    panel.classList.add('abierto');
+                    flecha.textContent = '↓';
+                } else {
+                    panel.classList.remove('abierto');
+                    flecha.textContent = '→';
+                }
+            };
+
+            q(m, '#ep-cancelar').onclick = () => {
+                m.close();
+            };
+
+            q(m, '#ep-guardar').onclick = async e => {
+
+                const boton = e.target;
+                const error = q(m, '#ep-error');
+
+                error.textContent = '';
+
+                const nuevoNombre = q(m, '#ep-usuario').value.trim();
+                const nuevoEmail = q(m, '#ep-email').value.trim();
+
+                const passActual = q(m, '#ep-pass-actual').value;
+                const passNueva = q(m, '#ep-pass-nueva').value;
+                const passRepetida = q(m, '#ep-pass-repetir').value;
+
+                if (!nuevoNombre || !nuevoEmail) {
+                    error.textContent = 'Completá el nombre de usuario y el email.';
+                    return;
+                }
+
+                if (passNueva || passRepetida || passActual) {
+
+                    if (!passActual) {
+                        error.textContent =
+                            'Ingresá tu contraseña actual para cambiar la contraseña.';
+                        return;
+                    }
+
+                    if (!passNueva) {
+                        error.textContent =
+                            'Ingresá una contraseña nueva.';
+                        return;
+                    }
+
+                    if (passNueva !== passRepetida) {
+                        error.textContent =
+                            'Las contraseñas no coinciden.';
+                        return;
+                    }
+
+                    if (passNueva.length < 8) {
+                        error.textContent =
+                            'La contraseña debe tener al menos 8 caracteres.';
+                        return;
+                    }
+                }
+
+                const cambioEmail =
+                    nuevoEmail.toLowerCase() !== usuario.email.toLowerCase();
+
+                boton.disabled = true;
+
+                /*
+                 * Si cambia el email, primero verificamos el EMAIL ACTUAL.
+                 */
+                if (cambioEmail) {
+
+                    m.close();
+
+                    verificar(usuario.email, async () => {
+
+                        try {
+
+                            await API.guardarPerfil(
+                                k,
+                                nuevoNombre,
+                                nuevoEmail,
+                                passNueva,
+                                passActual
+                            );
+
+                            renderCuenta();
+
+                            alert('Perfil actualizado correctamente.');
+
+                        } catch (x) {
+
+                            alert(x.message);
+                        }
+
+                    });
+
+                    return;
+                }
+
+                try {
+
+                    const nuevaK = await API.guardarPerfil(
+                        k,
+                        nuevoNombre,
+                        nuevoEmail,
+                        passNueva,
+                        passActual
+                    );
+
+                    m.close();
+
+                    renderCuenta();
+
+                    alert('Perfil actualizado correctamente.');
+
+                } catch (x) {
+
+                    error.textContent = x.message;
+                    boton.disabled = false;
+                }
+            };
+        }
         function confirmarCerrarSesion() {
             const m = modal(`
         <h2 class="t">Cerrar sesión</h2>
@@ -1154,11 +1595,28 @@
                 b.className = 'btn'; b.style.margin = 0; b.textContent = 'Registrarse';
                 b.onclick = pantallaBienvenida; box.appendChild(b); return;
             }
-            const t = document.createElement('div'); t.style.textAlign = 'right';
-            const n = document.createElement('div'); n.className = 'nom'; n.textContent = u.name;
-            const s = document.createElement('small'); s.textContent = 'Cerrar sesión';
+            const t = document.createElement('div');
+            t.style.textAlign = 'right';
+
+            const n = document.createElement('div');
+            n.className = 'nom';
+            n.textContent = u.name;
+
+            const acciones = document.createElement('div');
+            acciones.className = 'cuenta-acciones';
+
+            const editar = document.createElement('button');
+            editar.className = 'cuenta-accion';
+            editar.textContent = 'Editar perfil';
+            editar.onclick = editarPerfil;
+
+            const s = document.createElement('button');
+            s.className = 'cuenta-accion';
+            s.textContent = 'Cerrar sesión';
             s.onclick = confirmarCerrarSesion;
-            t.append(n, s);
+
+            acciones.append(editar, s);
+            t.append(n, acciones);
             const w = document.createElement('div'); w.className = 'avwrap';
             const a = document.createElement('div'); a.className = 'av';
             if (okFoto(u.photo)) { const i = document.createElement('img'); i.src = u.photo; a.appendChild(i); }
@@ -1181,9 +1639,12 @@
             createUserWithEmailAndPassword,
             signInWithEmailAndPassword,
             signOut,
-            onAuthStateChanged
+            onAuthStateChanged,
+            updateEmail,
+            updatePassword,
+            reauthenticateWithCredential,
+            EmailAuthProvider
         } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-
         import {
             getFirestore,
             doc,
@@ -1213,6 +1674,10 @@
             signInWithEmailAndPassword,
             signOut,
             onAuthStateChanged,
+            updateEmail,
+            updatePassword,
+            reauthenticateWithCredential,
+            EmailAuthProvider,
             doc,
             setDoc,
             getDoc
