@@ -1112,7 +1112,18 @@
                     }
                 });
             });
-            window.addEventListener("beforeunload", flushSave);
+            // Guarda todo inmediatamente al cerrar o salir de la página
+            window.addEventListener("pagehide", () => {
+                flushSave();
+            });
+
+            // Guarda también si minimizas o cambias de pestaña en el celular
+            document.addEventListener("visibilitychange", () => {
+                if (document.visibilityState === "hidden") {
+                    flushSave();
+                }
+            });
+
         }
 
         function newNote() {
@@ -1157,16 +1168,20 @@
             return notes.find(x => x.id === currentId);
         }
 
+        /* ================= SISTEMA DE GUARDADO MEJORADO ================= */
         function scheduleSave() {
             clearTimeout(saveTimeout);
-            document.getElementById("autosaveTag").innerText = "Guardando...";
+            const tag = document.getElementById("autosaveTag");
+            if (tag) tag.innerText = "Guardando...";
+
             saveTimeout = setTimeout(() => {
                 silentSave();
-                saveTimeout = null;
-                document.getElementById("autosaveTag").innerText = "Guardado ✓";
-                setTimeout(() => {
-                    document.getElementById("autosaveTag").innerText = "";
-                }, 1500);
+                if (tag) {
+                    tag.innerText = "Guardado ✓";
+                    setTimeout(() => {
+                        if (tag && tag.innerText === "Guardado ✓") tag.innerText = "";
+                    }, 1500);
+                }
             }, 500);
         }
 
@@ -1174,9 +1189,8 @@
             if (saveTimeout) {
                 clearTimeout(saveTimeout);
                 saveTimeout = null;
-                silentSave();
-                document.getElementById("autosaveTag").innerText = "";
             }
+            silentSave();
         }
 
         function silentSave() {
@@ -1195,9 +1209,16 @@
             n.content = newContent;
             n.color = newColor;
 
-            saveStorage();
-            render();
+            // Forzamos al navegador a guardar en el disco de forma inmediata
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+
+            // Actualiza la lista de notas de la izquierda sin romper nada
+            const query = document.getElementById("globalSearch") ? globalSearch.value.trim() : "";
+            if (!query) {
+                render();
+            }
         }
+
 
         function deleteNote() {
             let n = getCurrentNote();
