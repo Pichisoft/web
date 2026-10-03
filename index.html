@@ -599,6 +599,7 @@
                         throw new Error('Ese email ya está registrado.');
                     }
 
+
                     if (error.code === 'auth/invalid-email') {
                         throw new Error('El email no es válido.');
                     }
@@ -652,11 +653,49 @@
                     LS.set('ps_users', u);
                 }
 
-                await firebase.auth.signOut();
+                const fb = firebaseAuth();
+                await fb.signOut(fb.auth);
 
                 localStorage.removeItem('ps_session');
 
             },
+            async newCode() {
+                const now = Date.now();
+                const codes = LS.get('ps_codes', {});
+
+                for (const h in codes) {
+                    if (codes[h] < now) delete codes[h];
+                }
+
+                let c, h;
+
+                do {
+                    c = String(
+                        100000 +
+                        crypto.getRandomValues(new Uint32Array(1))[0] % 900000
+                    );
+                    h = await sha('code:' + c);
+                } while (codes[h]);
+
+                codes[h] = now + 600000;
+                LS.set('ps_codes', codes);
+
+                return c;
+            },
+
+            async useCode(c) {
+                const codes = LS.get('ps_codes', {});
+                const h = await sha('code:' + c);
+
+                if (!codes[h] || codes[h] < Date.now()) {
+                    return false;
+                }
+
+                delete codes[h];
+                LS.set('ps_codes', codes);
+
+                return true;
+            }
         }
 
         function sesionK() {
@@ -1102,6 +1141,7 @@
 
             q(m, '#confirmar').onclick = () => {
                 m.close();
+
                 API.cerrarSesion();
                 renderCuenta();
             };
