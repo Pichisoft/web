@@ -2523,7 +2523,7 @@
 
         })();
     </script>
-    <script src="pichisoft-datos.js?v=2" data-keys="pichonpass-bd"></script>
+    <script src="pichisoft-datos.js?v=3" data-keys="pichonpass-bd"></script>
     <!-- MODAL RESTABLECER DATOS -->
 
     <div id="resetModal" class="modal-overlay">
@@ -3515,6 +3515,13 @@
 
 
         function confirmReset() {
+
+            // Avisar directamente a pichisoft-datos.js que esta clave
+            // fue eliminada intencionalmente y debe borrarse también de Firebase.
+            localStorage.setItem(
+                "ps_borrar_nube__pichonpass-bd",
+                "1"
+            );
 
             localStorage.removeItem("users");
             localStorage.removeItem("vault");
