@@ -27,6 +27,7 @@
             padding: 12px;
             margin-top: 10px;
             border-radius: 6px;
+            overflow-wrap: anywhere;
         }
 
         /* THEMES */
@@ -319,7 +320,7 @@
         <input id="username" placeholder="Nombre de usuario">
         <input id="password" type="password" placeholder="Contraseña">
 
-        <button onclick="login()">Entrar</button>
+        <button id="loginBtn" onclick="login()">Entrar</button>
         <button onclick="resetAll()">Restablecer datos</button>
 
         <div id="error" style="color:red;display:none">
@@ -360,7 +361,37 @@
 
     <script>
 
+        /* ============================================================
+           Tus registros se guardan CIFRADOS (AES-GCM) con tu contraseña
+           principal. Sin esa contraseña, lo guardado es texto ilegible
+           (también en la nube, si tenés cuenta de Pichisoft).
+           ============================================================ */
         let vault = [];
+        let cryptoKey = null, cryptoSalt = null, masterUser = "";
+        const BD = "pichonpass-bd";
+        const te = new TextEncoder(), td = new TextDecoder();
+
+        const toHex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+        const fromHex = h => Uint8Array.from(h.match(/../g) || [], x => parseInt(x, 16));
+        function toB64(buf) {
+            const b = new Uint8Array(buf); let s = "";
+            for (let i = 0; i < b.length; i += 8192) s += String.fromCharCode.apply(null, b.subarray(i, i + 8192));
+            return btoa(s);
+        }
+        const fromB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+        async function deriveKey(pass, salt) {
+            const base = await crypto.subtle.importKey("raw", te.encode(pass), "PBKDF2", false, ["deriveKey"]);
+            return crypto.subtle.deriveKey(
+                { name: "PBKDF2", salt, iterations: 310000, hash: "SHA-256" },
+                base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+        }
+
+        async function persist() {
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, cryptoKey, te.encode(JSON.stringify(vault)));
+            localStorage.setItem(BD, JSON.stringify({ u: masterUser, s: toHex(cryptoSalt), i: toHex(iv), c: toB64(ct) }));
+        }
 
         function toggleTheme() {
             document.body.classList.toggle("dark");
@@ -370,39 +401,52 @@
             themeBtn.textContent = isDark ? "🌙" : "☀️";
             document.body.style.transition = "background .3s ease, color .3s ease";
 
-            // 🔥 NUEVO: Guarda la elección del usuario ("dark" o "light")
+            // Guarda la elección del usuario ("dark" o "light")
             localStorage.setItem("pichonpass-theme", isDark ? "dark" : "light");
         }
 
 
         /* LOGIN */
         function getUsers() {
-            return JSON.parse(localStorage.getItem("users") || "{}");
+            try { return JSON.parse(localStorage.getItem("users") || "{}"); } catch (e) { return {}; }
         }
 
-        function saveUsers(u) {
-            localStorage.setItem("users", JSON.stringify(u));
-        }
+        async function login() {
+            const u = username.value.trim();
+            const p = password.value;
+            error.style.display = "none";
 
-        function login() {
-            let u = username.value.trim();
-            let p = password.value;
+            if (!u || !p) { error.style.display = "block"; return; }
 
-            let users = getUsers();
+            let bd = null;
+            try { bd = JSON.parse(localStorage.getItem(BD) || "null"); } catch (e) { }
 
-            if (Object.keys(users).length === 0) {
-                users[u] = p;
-                saveUsers(users);
+            loginBtn.disabled = true;
+            try {
+                if (bd) {
+                    // Ya hay una cuenta guardada: se prueba abrirla con la contraseña
+                    if (bd.u !== u) throw new Error("bad");
+                    const salt = fromHex(bd.s), key = await deriveKey(p, salt);
+                    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: fromHex(bd.i) }, key, fromB64(bd.c));
+                    vault = JSON.parse(td.decode(pt));
+                    cryptoKey = key; cryptoSalt = salt; masterUser = u;
+                } else {
+                    // Primera vez (o cuenta vieja sin cifrar: se migra y se borra la contraseña en texto plano)
+                    const old = getUsers();
+                    if (Object.keys(old).length > 0 && old[u] !== p) throw new Error("bad");
+                    cryptoSalt = crypto.getRandomValues(new Uint8Array(16));
+                    cryptoKey = await deriveKey(p, cryptoSalt);
+                    masterUser = u; vault = [];
+                    await persist();
+                    localStorage.removeItem("users");
+                }
+                password.value = "";
                 enter();
-                return;
+                render();
+            } catch (e) {
+                error.style.display = "block";
             }
-
-            if (users[u] === p) {
-                enter();
-                return;
-            }
-
-            error.style.display = "block";
+            loginBtn.disabled = false;
         }
 
         /* ENTER */
@@ -411,13 +455,13 @@
             app.style.display = "block";
         }
 
-        /* RESET (FIX IMPORTANTE) */
+        /* RESET */
         function resetAll() {
-            if (!confirm("¿Borrar todo?")) return;
+            if (!confirm("¿Borrar todo? Se borran tus contraseñas guardadas de este dispositivo (y de tu cuenta de Pichisoft, si tenés sesión iniciada).")) return;
 
-            // BORRA TODO, INCLUYENDO USUARIOS
             localStorage.removeItem("users");
             localStorage.removeItem("vault");
+            localStorage.removeItem(BD);
             location.reload();
         }
 
@@ -426,7 +470,7 @@
             pass.type = pass.type === "password" ? "text" : "password";
         }
 
-        /* 🔥 NUEVA LÓGICA DE SEGURIDAD (COMO PEDISTE) */
+        /* SEGURIDAD DE LA CONTRASEÑA */
         function checkStrength() {
             let p = pass.value;
             let len = p.length;
@@ -469,27 +513,40 @@
         }
 
         /* VAULT */
-        function save() {
+        async function save() {
             vault.push({
                 title: title.value,
                 user: user.value,
                 pass: pass.value,
                 notes: notes.value
             });
+            await persist();
+            title.value = user.value = pass.value = notes.value = "";
+            checkStrength();
             render();
         }
 
         function render() {
             list.innerHTML = "";
-            vault.forEach(v => {
-                let d = document.createElement("div");
+            vault.forEach((v, i) => {
+                const d = document.createElement("div");
                 d.className = "card";
-                d.innerHTML = `
-<b>${v.title}</b><br>
-${v.user}<br>
-${v.pass}<br>
-${v.notes}
-`;
+                const b = document.createElement("b");
+                b.textContent = v.title;
+                d.appendChild(b);
+                [v.user, v.pass, v.notes].forEach(t => {
+                    d.appendChild(document.createElement("br"));
+                    d.appendChild(document.createTextNode(t || ""));
+                });
+                const del = document.createElement("button");
+                del.textContent = "Eliminar";
+                del.onclick = async () => {
+                    if (!confirm("¿Eliminar este registro?")) return;
+                    vault.splice(i, 1);
+                    await persist();
+                    render();
+                };
+                d.appendChild(del);
                 list.appendChild(d);
             });
         }
@@ -500,15 +557,13 @@ ${v.notes}
         }
 
         function initTheme() {
-            // 🔥 NUEVO: Revisa si el usuario ya había elegido un tema antes
+            // Revisa si el usuario ya había elegido un tema antes
             let savedTheme = localStorage.getItem("pichonpass-theme");
 
-            // Si guardó el tema claro, cambiamos las clases del body
             if (savedTheme === "light") {
                 document.body.classList.remove("dark");
                 document.body.classList.add("light");
             }
-            // Si guardó el oscuro (o es la primera vez que entra), nos aseguramos de que tenga 'dark'
             else if (savedTheme === "dark") {
                 document.body.classList.remove("light");
                 document.body.classList.add("dark");
@@ -556,6 +611,16 @@ ${v.notes}
             var pic = document.getElementById("pichisoft-profile-picture");
             var nameEl = document.getElementById("pichisoft-profile-name");
             var t0 = Date.now();
+
+            /* El cartel se ubica justo debajo de la cabecera (sea cual sea su alto) */
+            function pos() {
+                var h = document.querySelector("header");
+                var t = (h ? h.offsetHeight : 60) + 8;
+                box.style.top = t + "px";
+                prof.style.top = t + "px";
+            }
+            pos();
+            window.addEventListener("resize", pos);
 
             function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
@@ -635,7 +700,7 @@ ${v.notes}
             })();
         })();
     </script>
-
+    <script src="pichisoft-datos.js?v=2" data-keys="pichonpass-bd"></script>
 </body>
 
 </html>
