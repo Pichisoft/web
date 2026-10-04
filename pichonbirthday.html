@@ -1506,6 +1506,22 @@
                 })()
             }
             else list();
+            // Buscamos el botón de guardar por su ID y le damos la orden de funcionar
+            document.addEventListener('DOMContentLoaded', () => {
+                const btnGuardar = document.getElementById('sg') || document.querySelector('.ok');
+                if (btnGuardar) {
+                    btnGuardar.onclick = () => {
+                        console.log("¡Botón presionado con éxito!");
+                        if (typeof save === 'function') {
+                            save('gift');
+                        } else {
+                            alert("La función save no está definida.");
+                        }
+                    };
+                } else {
+                    console.warn("No se encontró el botón de guardar en el HTML.");
+                }
+            });
         })();
 
     </script>
