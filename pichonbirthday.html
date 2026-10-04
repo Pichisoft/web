@@ -1493,18 +1493,26 @@
             }
             else {
                 // Si no hay datos en la URL, maneja el comportamiento normal de la app
-                const q = new URLSearchParams(location.search).get('g');
-                if (q) {
-                    $('#mine').innerHTML = '<h3>Cargando regalo...</h3>';
-                    (async () => {
-                        let g = await dbGet(q); if (!g) g = await cloud(q, null, 150);
-                        if (g) { S = loadS(g); M = g.media || {}; $('#home').classList.add('off'); view(false, true) }
-                        else $('#mine').innerHTML = '<h3>No se encontró este regalo.</h3>'
-                    })()
-                }
-                else list();
-            }
+                // LEER EL REGALO COMPRIMIDO DESDE EL LINK
+                const paramData = new URLSearchParams(location.search).get('data');
 
+                if (paramData) {
+                    $('#mine').innerHTML = '<h3>Cargando regalo...</h3>';
+                    try {
+                        // Traduce el link largo a los datos reales del regalo
+                        const g = JSON.parse(decodeURIComponent(escape(atob(paramData))));
+                        S = loadS(g);
+                        M = g.media || {};
+                        $('#home').classList.add('off');
+                        view(false, true);
+                    } catch (e) {
+                        $('#mine').innerHTML = '<h3>El link del regalo está dañado o incompleto.</h3>';
+                    }
+                } else {
+                    // SI NO HAY REGALO EN EL LINK, MUESTRA LA LISTA NORMAL
+                    list();
+                }
+            }
 
         })();
 
