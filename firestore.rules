@@ -9,26 +9,21 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == userId;
+      allow read, write: if request.auth != null && request.auth.uid == userId;
 
       match /data/{docId} {
-        allow read, write: if request.auth != null
-                           && request.auth.uid == userId;
+        allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
 
-    // PICHONFOOD: recetas
     match /recipes/{recipeId} {
       allow read: if true;
-      allow create: if request.auth != null
-                    && request.resource.data.authorId == request.auth.uid;
-      allow update: if request.auth != null && (
-                    resource.data.authorId == request.auth.uid ||
-                    request.resource.data.diff(resource.data).affectedKeys()
-                      .hasOnly(['likes','ratings','comments']));
-      allow delete: if request.auth != null
-                    && resource.data.authorId == request.auth.uid;
+
+      allow create: if request.auth != null && request.resource.data.authorId == request.auth.uid && !('prize' in request.resource.data);
+
+      allow update: if (request.auth != null && request.auth.uid in ['PEGA_AQUI_TU_UID'] && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prize','prizeAt'])) || (request.auth != null && resource.data.authorId == request.auth.uid && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['prize','prizeAt','authorId'])) || (request.auth != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes','ratings','comments']));
+
+      allow delete: if request.auth != null && resource.data.authorId == request.auth.uid;
     }
 
   }
