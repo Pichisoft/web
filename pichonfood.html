@@ -446,9 +446,9 @@
         }
 
         .star {
-            width: 22px;
-            height: 22px;
-            background: #444;
+            width: 24px;
+            height: 24px;
+            background: #666;
             border: 0;
             padding: 0;
             clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)
@@ -467,8 +467,12 @@
             touch-action: manipulation
         }
 
-        .starb:hover .star {
+        .stars.act:hover .star {
             background: var(--limed)
+        }
+
+        .stars.act .starb:hover~.starb .star {
+            background: #666
         }
 
         .star.on {
@@ -1121,7 +1125,7 @@
         };
 
         /* Render */
-        const stars = (n, act) => { let h = '<span class="stars">'; for (let i = 1; i <= 5; i++) { const s = `<i class="star${i <= n ? " on" : ""}"></i>`; h += act ? `<button type="button" class="starb" data-act="rate" data-v="${i}" aria-label="${i} estrellas">${s}</button>` : s } return h + "</span>" };
+        const stars = (n, act) => { let h = '<span class="stars' + (act ? " act" : "") + '">'; for (let i = 1; i <= 5; i++) { const s = `<i class="star${i <= n ? " on" : ""}"></i>`; h += act ? `<button type="button" class="starb" data-act="rate" data-v="${i}" aria-label="${i} estrellas">${s}</button>` : s } return h + "</span>" };
         const fecha = ms => new Date(ms).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) + " hs";
         const fechaDia = ms => new Date(ms).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
         const stats = r => { const rv = Object.values(r.ratings || {}), lv = Object.values(r.likes || {}); return { n: rv.length, avg: rv.length ? rv.reduce((a, b) => a + b, 0) / rv.length : 0, up: lv.filter(v => v === 1).length, down: lv.filter(v => v === -1).length } };
@@ -1134,12 +1138,12 @@
   <h3>${esc(r.name)}</h3>
   <p class="tipos">Tipo de comida: ${esc((r.types || []).map(k => LBL[k] || k).join(", "))}</p>
   <p class="meta">Por ${esc(r.authorName || "Usuario")} - ${fecha(r.createdAt)}</p>
-  <div class="sum">${stars(Math.round(s.avg), false)}<span>${s.n ? s.avg.toFixed(1) + " / 5 (" + s.n + ")" : "Sin calificar"}</span><span>Me gusta: ${s.up}</span><span>No me gusta: ${s.down}</span></div>
+  <div class="sum">${stars(my, true)}<span>${s.n ? "Promedio " + s.avg.toFixed(1) + " / 5 (" + s.n + ")" : "Sin calificar"}</span><span>Me gusta: ${s.up}</span><span>No me gusta: ${s.down}</span></div>
+  <p class="small" style="margin:-6px 0 10px">${my ? "Tu calificación: " + my + " de 5 (tocá otra estrella para cambiarla)" : "Tocá una estrella para calificar"}</p>
   <button class="btn ghost sm" data-act="toggle" type="button">${isOpen ? "Ocultar receta" : "Ver receta"}</button>
   <div class="detail" ${isOpen ? "" : "hidden"}>
    <h4>Ingredientes</h4>${(r.ingredients || []).length ? "<ul>" + r.ingredients.map(i => `<li>${esc(i)}</li>`).join("") + "</ul>" : '<p class="small">Sin ingredientes.</p>'}
    <h4>Preparación</h4>${r.intro ? `<p>${esc(r.intro)}</p>` : ""}${steps}${r.editedAt ? `<p class="edited">Última edición: ${fechaDia(r.editedAt)}</p>` : ""}
-   <h4>Tu calificación</h4>${stars(my, true)}
    <div class="acts">
     <button class="btn ghost sm${ml === 1 ? " on" : ""}" data-act="like" type="button"><i class="tri"></i>Me gusta</button>
     <button class="btn ghost sm${ml === -1 ? " on" : ""}" data-act="dislike" type="button"><i class="tri down"></i>No me gusta</button>
