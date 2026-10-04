@@ -1451,12 +1451,13 @@
 
             /* ---------- Guardar ---------- */
             async function save(kind) {
+                alert("¡Hice clic en guardar!"); // <-- Esto nos dirá si el botón al menos reacciona
+
                 endEdit(true);
                 S.title = $('#ti').value.trim();
                 if (!S.id) S.id = uid();
                 if (kind == 'gift') S.st = 'gift';
 
-                // Guardar en el dispositivo primero (IndexedDB)
                 try {
                     const used = new Set(S.bg.m ? [S.bg.m] : []);
                     S.items.forEach(i => { if (i.m) used.add(i.m); (i.ms || []).forEach(m => used.add(m)) });
@@ -1472,23 +1473,12 @@
                         return;
                     }
 
-                    // Intentar subir a la nube con un límite de tiempo para que no se congele nunca
-                    let ok = false;
-                    try {
-                        ok = await Promise.race([
-                            cloud(g.id, g, 30),
-                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000)) // Si tarda más de 8s, continúa igual
-                        ]);
-                    } catch (err) {
-                        console.warn("La nube tardó mucho, pero se guardó localmente:", err);
-                        ok = false;
-                    }
-
+                    const ok = await cloud(g.id, g, 30);
                     const link = location.href.split(/[?#]/)[0] + '?g=' + g.id;
                     const w = mk('div');
                     w.innerHTML = '<p>¡Tu regalo está guardado! Este es su link:</p><a href="' + link + '"></a><p></p>';
                     w.querySelector('a').textContent = link;
-                    w.lastChild.textContent = ok ? 'También quedó en la nube: el link funciona en otros dispositivos.' : 'Guardado en este dispositivo (la nube tardó en responder, pero el link funcionará si vuelve la red).';
+                    w.lastChild.textContent = ok ? 'También quedó en la nube: el link funciona en otros dispositivos.' : 'Quedó guardado en este dispositivo.';
 
                     modal('Regalo guardado', w, () => { location.href = link }, 'Ir al regalo');
 
