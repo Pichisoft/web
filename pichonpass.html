@@ -1652,9 +1652,21 @@
             </button>
         </div>
     </div>
-
+    <!-- PUERTA DE ACCESO PREMIUM -->
+    <div id="gate" style="max-width:420px; margin:50px auto; text-align:center;">
+        <p id="gateText">Verificando tu cuenta de Pichisoft...</p>
+        <div id="gateActions" style="display:none;">
+            <a class="pichisoft-link" href="https://pichisoft.github.io/web/" target="_blank" rel="noopener noreferrer">
+                Crear cuenta de Pichisoft
+            </a>
+            <br><br>
+            <a class="pichisoft-link" href="pichonpass-classic.html">
+                Usar la versión clásica
+            </a>
+        </div>
+    </div>
     <!-- CONTENEDOR UNICO DE AUTENTICACIÓN (Toma el espacio central libre) -->
-    <div id="auth">
+    <div id="auth" style="display:none">
         <h3>Acceder</h3>
         <input id="username" placeholder="Nombre de usuario">
         <input id="password" type="password" placeholder="Contraseña">
@@ -2006,9 +2018,10 @@
 
         /* ENTER */
         function enter() {
+            if (!window.PichisoftPremium) return; // sin cuenta de Pichisoft no se entra
             auth.style.display = "none";
             app.style.display = "block";
-            render(); // Asegura mostrar los registros descifrados de inmediato
+            render();
         }
 
         function resetAll() {
@@ -2844,7 +2857,20 @@
          * ============================================================
          * FUERZA DE CONTRASEÑA
          * ============================================================
-         */
+         */window.PichisoftSessionReady.then((ok) => {
+            const gate = document.getElementById("gate");
+            const authBox = document.getElementById("auth");
+
+            if (ok) {
+                gate.style.display = "none";
+                authBox.style.display = "block";
+            } else {
+                document.getElementById("gateText").textContent =
+                    "PichonPass Premium es solo para usuarios con cuenta de Pichisoft. " +
+                    "Iniciá sesión en Pichisoft o creá una cuenta para continuar.";
+                document.getElementById("gateActions").style.display = "block";
+            }
+        });
 
         function getPasswordStrength(value) {
 
