@@ -1179,6 +1179,7 @@
                     const f = await new Promise((r, j) => { let n = 0; const t = setInterval(() => { if (window.PichisoftFirebase && window.PichisoftFirebase.db) { clearInterval(t); r(window.PichisoftFirebase) } else if (++n > tries) { clearInterval(t); j() } }, 100) }); const m = await import(V + 'firebase-firestore.js');
                     if (g) {
                         const j = JSON.stringify(g);
+                        if (j.length > 5e6) return false; // Permitir hasta ~5 MB
                         await m.setDoc(m.doc(f.db, 'gifts', id), { json: j, uid: f.currentUser ? f.currentUser.uid : null, t: Date.now() });
                         return true;
                     }
