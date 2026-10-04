@@ -1451,21 +1451,41 @@
 
             /* ---------- Guardar ---------- */
             async function save(kind) {
-                endEdit(true); S.title = $('#ti').value.trim(); if (!S.id) S.id = uid(); if (kind == 'gift') S.st = 'gift';
-                const used = new Set(S.bg.m ? [S.bg.m] : []); S.items.forEach(i => { if (i.m) used.add(i.m); (i.ms || []).forEach(m => used.add(m)) }); const media = {}; used.forEach(k => media[k] = M[k]);
+                endEdit(true);
+                S.title = $('#ti').value.trim();
+                if (!S.id) S.id = uid();
+                if (kind == 'gift') S.st = 'gift';
+
+                const used = new Set(S.bg.m ? [S.bg.m] : []);
+                S.items.forEach(i => { if (i.m) used.add(i.m); (i.ms || []).forEach(m => used.add(m)) });
+                const media = {};
+                used.forEach(k => media[k] = M[k]);
+
                 const g = { id: S.id, title: S.title || 'Sin título', st: S.st, bg: S.bg, items: S.items, ts: S.ts, fr: S.fr, media, t: Date.now() };
-                try { await dbPut(g) } catch (e) { modal('No se pudo guardar', mk('p', '', 'El navegador no permitió guardar (espacio lleno o modo privado).')); return }
-                if (kind != 'gift') { modal('Borrador guardado', mk('p', '', 'Podés cerrar y seguir después desde "Mis regalos y borradores" en la pantalla de inicio.')); return }
-                const ok = await cloud(g.id, g, 30);
-                console.log("¿Se subió a la nube?", ok); // Mira esto en la consola (F12)
-                if (!ok) {
-                    alert("¡Alerta! El regalo es demasiado pesado para la nube de Firebase y no se pudo sincronizar.");
+
+                try {
+                    await dbPut(g);
+                } catch (e) {
+                    modal('No se pudo guardar', mk('p', '', 'El navegador no permitió guardar (espacio lleno o modo privado).'));
+                    return;
                 }
-                w.innerHTML = '<p>¡Tu regalo está guardado! Este es su link:</p><a href="' + link + '"></a><p></p>'; w.querySelector('a').textContent = link;
-                w.lastChild.textContent = ok ? 'También quedó en la nube: el link funciona en otros dispositivos.' : 'Quedó guardado en este dispositivo. Para abrirlo desde otro, tiene que poder subirse a la nube (iniciá sesión en Pichisoft y que el regalo pese menos de ~900 KB).';
-                modal('Regalo guardado', w, () => { location.href = link }, 'Ir al regalo')
+
+                if (kind != 'gift') {
+                    modal('Borrador guardado', mk('p', '', 'Podés cerrar y seguir después desde "Mis regalos y borradores" en la pantalla de inicio.'));
+                    return;
+                }
+
+                const ok = await cloud(g.id, g, 30);
+                console.log("¿Se subió a la nube?", ok);
+
+                const link = location.href.split(/[?#]/)[0] + '?g=' + g.id;
+                const w = mk('div');
+                w.innerHTML = '<p>¡Tu regalo está guardado! Este es su link:</p><a href="' + link + '"></a><p></p>';
+                w.querySelector('a').textContent = link;
+                w.lastChild.textContent = ok ? 'También quedó en la nube: el link funciona en otros dispositivos.' : 'Quedó guardado en este dispositivo (falló la subida a la nube).';
+
+                modal('Regalo guardado', w, () => { location.href = link }, 'Ir al regalo');
             }
-            $('#sd').onclick = () => save('draft'); $('#sg').onclick = () => save('gift');
 
             /* ---------- Inicio y rutas ---------- */
             function openEd(g) { S = g ? loadS(g) : fresh(); M = g ? g.media || {} : {}; sel = null; editing = null; hist = []; hi = -1; $('#ti').value = S.title; syncT(); $('#home').classList.add('off'); $('#editor').classList.add('on'); fit(); draw(); push() }
