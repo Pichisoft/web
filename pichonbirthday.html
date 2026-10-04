@@ -1451,29 +1451,47 @@
 
             /* ---------- Guardar ---------- */
             async function save(kind) {
-                alert("¡Hice clic en guardar!"); // <-- Esto nos dirá si el botón al menos reacciona
-
-                endEdit(true);
-                S.title = $('#ti').value.trim();
-                if (!S.id) S.id = uid();
-                if (kind == 'gift') S.st = 'gift';
+                console.log("1. Entró a la función save. Tipo:", kind);
 
                 try {
-                    const used = new Set(S.bg.m ? [S.bg.m] : []);
-                    S.items.forEach(i => { if (i.m) used.add(i.m); (i.ms || []).forEach(m => used.add(m)) });
+                    if (typeof endEdit === 'function') {
+                        endEdit(true);
+                    }
+
+                    const tiInput = $('#ti');
+                    S.title = tiInput ? tiInput.value.trim() : 'Regalo';
+                    if (!S.id) S.id = uid();
+                    if (kind == 'gift') S.st = 'gift';
+
+                    console.log("2. Procesando multimedia y datos...");
+                    const used = new Set(S.bg && S.bg.m ? [S.bg.m] : []);
+                    if (S.items) {
+                        S.items.forEach(i => { if (i.m) used.add(i.m); (i.ms || []).forEach(m => used.add(m)) });
+                    }
                     const media = {};
-                    used.forEach(k => media[k] = M[k]);
+                    if (typeof M !== 'undefined') {
+                        used.forEach(k => media[k] = M[k]);
+                    }
 
                     const g = { id: S.id, title: S.title || 'Sin título', st: S.st, bg: S.bg, items: S.items, ts: S.ts, fr: S.fr, media, t: Date.now() };
 
-                    await dbPut(g);
+                    console.log("3. Guardando localmente (dbPut)...");
+                    if (typeof dbPut === 'function') {
+                        await dbPut(g);
+                    }
 
                     if (kind != 'gift') {
                         modal('Borrador guardado', mk('p', '', 'Podés cerrar y seguir después desde "Mis regalos y borradores" en la pantalla de inicio.'));
                         return;
                     }
 
-                    const ok = await cloud(g.id, g, 30);
+                    console.log("4. Subiendo a la nube...");
+                    let ok = false;
+                    if (typeof cloud === 'function') {
+                        ok = await cloud(g.id, g, 30);
+                    }
+                    console.log("5. Nube respondida. ¿Ok?", ok);
+
                     const link = location.href.split(/[?#]/)[0] + '?g=' + g.id;
                     const w = mk('div');
                     w.innerHTML = '<p>¡Tu regalo está guardado! Este es su link:</p><a href="' + link + '"></a><p></p>';
@@ -1483,8 +1501,8 @@
                     modal('Regalo guardado', w, () => { location.href = link }, 'Ir al regalo');
 
                 } catch (e) {
-                    console.error("Error al guardar:", e);
-                    modal('No se pudo guardar', mk('p', '', 'El navegador no permitió guardar (espacio lleno o modo privado).'));
+                    console.error("¡ERROR CRÍTICO EN SAVE!", e);
+                    alert("Hubo un error al guardar: " + e.message);
                 }
             }
             /* ---------- Inicio y rutas ---------- */
