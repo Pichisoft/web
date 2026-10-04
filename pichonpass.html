@@ -1440,6 +1440,63 @@
             gap: 6px;
             flex-shrink: 0;
         }
+
+        /* Botón de alternancia de contraseña */
+        .toggle-pass-btn {
+            width: 43px;
+            min-width: 43px;
+            height: 42px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: transparent !important;
+        }
+
+        body.dark .toggle-pass-btn {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #eee;
+        }
+
+        body.light .toggle-pass-btn {
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            color: #222;
+        }
+
+        /* Icono del Ojo en CSS */
+        .eye-icon {
+            position: relative;
+            width: 16px;
+            height: 10px;
+            border: 2px solid currentColor;
+            border-radius: 50% / 50%;
+            box-sizing: border-box;
+        }
+
+        .eye-icon::after {
+            content: "";
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: currentColor;
+            border-radius: 50%;
+            left: 4px;
+            top: 1px;
+        }
+
+        /* Estado oculto (Ojo tachado) */
+        .toggle-pass-btn.hidden-pass .eye-icon::before {
+            content: "";
+            position: absolute;
+            width: 18px;
+            height: 2px;
+            background: currentColor;
+            top: 2px;
+            left: -3px;
+            transform: rotate(35deg);
+            z-index: 1;
+        }
     </style>
 
 </head>
@@ -1626,6 +1683,11 @@
 
 
         <h3>Mis registros</h3>
+        <input id="searchBar" type="text" placeholder="Buscar registros por título..." oninput="render()"
+            style="margin-bottom: 15px;">
+
+
+        style="margin-bottom: 15px;">
 
         <div id="list"></div>
 
@@ -1806,6 +1868,9 @@
 
                 password.value = "";
                 error.style.display = "none";
+
+                localStorage.setItem("pichonpass-remembered-user", u);
+
                 enter();
             } catch (e) {
                 console.error("PichonPass:", e);
@@ -1899,13 +1964,22 @@
 
         function render() {
             const list = document.getElementById("list");
-
             if (!list) return;
-
             list.innerHTML = "";
 
+            // Capturar el texto del buscador
+            const searchInput = document.getElementById("searchBar");
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
+
             vault.forEach((r, i) => {
+                // Filtrar registros si no coinciden con la búsqueda
+                if (query && r.title && !r.title.toLowerCase().includes(query)) {
+                    return;
+                }
+
                 const details = document.createElement("details");
+                // ... todo el resto de tu código original de render() sigue exactamente igual ...
+
                 details.className = "card";
 
                 // Encabezado del panel
@@ -1937,8 +2011,49 @@
                 }
 
                 if (r.pass) {
-                    addCardField(content, "Contraseña", r.pass);
+                    const field = document.createElement("div");
+                    field.className = "card-field";
+
+                    const labelElement = document.createElement("span");
+                    labelElement.className = "card-label";
+                    labelElement.textContent = "Contraseña";
+
+                    const row = document.createElement("div");
+                    row.className = "card-value";
+
+                    const valueElement = document.createElement("span");
+                    valueElement.textContent = "••••••••";
+
+                    // Botón con icono dibujado en CSS
+                    const toggleBtn = document.createElement("button");
+                    toggleBtn.type = "button";
+                    toggleBtn.className = "toggle-pass-btn hidden-pass"; // Inicia oculto (tachado)
+
+                    const eye = document.createElement("span");
+                    eye.className = "eye-icon";
+                    toggleBtn.appendChild(eye);
+
+                    toggleBtn.onclick = () => {
+                        if (valueElement.textContent === "••••••••") {
+                            valueElement.textContent = r.pass;
+                            toggleBtn.classList.remove("hidden-pass"); // Quita la tachadura
+                        } else {
+                            valueElement.textContent = "••••••••";
+                            toggleBtn.classList.add("hidden-pass"); // Añade la tachadura
+                        }
+                    };
+
+                    const copy = makeCopyButton(r.pass);
+
+                    row.appendChild(valueElement);
+                    row.appendChild(toggleBtn);
+                    row.appendChild(copy);
+                    field.appendChild(labelElement);
+                    field.appendChild(row);
+                    content.appendChild(field);
                 }
+
+
 
                 if (r.notes) {
                     addCardField(content, "Notas", r.notes);
@@ -2077,7 +2192,6 @@
         function initTheme() {
             // Revisa si el usuario ya había elegido un tema antes
             let savedTheme = localStorage.getItem("pichonpass-theme");
-
             if (savedTheme === "light") {
                 document.body.classList.remove("dark");
                 document.body.classList.add("light");
@@ -2086,14 +2200,22 @@
                 document.body.classList.remove("light");
                 document.body.classList.add("dark");
             }
-
             // Sincroniza el emoji del botón según el estado final del body
             let isDark = document.body.classList.contains("dark");
-            themeBtn.textContent = isDark ? "🌙" : "☀️";
+            if (themeBtn) themeBtn.textContent = isDark ? "🌙" : "☀️";
+
+            // NUEVO: Recuerda el nombre de usuario si existe y lo escribe en el input
+            const rememberedUser = localStorage.getItem("pichonpass-remembered-user");
+            const usernameInput = document.getElementById("username");
+            if (rememberedUser && usernameInput) {
+                usernameInput.value = rememberedUser;
+                // Opcional: Pone el foco directamente en la contraseña para agilizar el ingreso
+                const passwordInput = document.getElementById("password");
+                if (passwordInput) passwordInput.focus();
+            }
         }
-
-
         window.onload = initTheme;
+
 
     </script>
     <!-- ===== Pichisoft - Estado de sesión ===== -->
@@ -3061,47 +3183,42 @@
          */
 
         async function copyText(text) {
+            if (!text) return;
 
-            if (!text) {
-                return;
-            }
+            const ejecutarCopiado = async (txt) => {
+                try {
+                    await navigator.clipboard.writeText(txt);
+                } catch (error) {
+                    const textarea = document.createElement("textarea");
+                    textarea.value = txt;
+                    textarea.style.position = "fixed";
+                    textarea.style.opacity = "0";
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand("copy");
+                    textarea.remove();
+                }
+            };
 
+            await ejecutarCopiado(text);
 
-            try {
-
-                await navigator.clipboard.writeText(
-                    text
-                );
-
-            } catch (error) {
-
-                const textarea =
-                    document.createElement(
-                        "textarea"
-                    );
-
-
-                textarea.value = text;
-
-                textarea.style.position =
-                    "fixed";
-
-                textarea.style.opacity =
-                    "0";
-
-
-                document.body.appendChild(
-                    textarea
-                );
-
-
-                textarea.select();
-
-                document.execCommand("copy");
-
-                textarea.remove();
-            }
+            // Limpieza programada en segundo plano
+            setTimeout(async () => {
+                try {
+                    const contenidoActual = await navigator.clipboard.readText();
+                    if (contenidoActual === text) {
+                        await navigator.clipboard.writeText("");
+                        console.log("PichonPass: Clipboard cleared securely.");
+                    }
+                } catch (e) {
+                    // Fallback si la API de lectura no tiene permisos activos
+                    if (document.hasFocus()) {
+                        navigator.clipboard.writeText("").catch(() => { });
+                    }
+                }
+            }, 45000);
         }
+
 
 
         function showCopied(button) {
