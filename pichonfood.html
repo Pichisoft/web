@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>PichonFood</title>
+    <title>PichonFood - By Pichisoft</title>
     <style>
         :root {
             --lime: #a3e635;
@@ -714,6 +714,11 @@
             color: var(--muted)
         }
 
+        .adm {
+            color: var(--lime);
+            font-weight: bold
+        }
+
         .urow {
             display: flex;
             justify-content: space-between;
@@ -1007,7 +1012,7 @@
         <section id="v-dest" class="view" hidden>
             <button class="btn ghost sm back" data-go="home" type="button">Volver</button>
             <h2>Usuarios destacados</h2>
-            <p class="small">Usuarios con 80 puntos o más.</p>
+            <p class="small">Usuarios con 80 puntos o más, y el administrador.</p>
             <div id="dlist"></div>
         </section>
 
@@ -1216,11 +1221,11 @@
         const conflict = (a, b) => (CONF[a] || []).includes(b) || (CONF[b] || []).includes(a);
 
         let db = null, fs = null, user = null, uname = "Usuario", recipes = [], photo = "", curTypes = [], view = "home", profUid = null, favs = [], US = {}, curChallenge = null;
-        const ADMINS = ["PEGA_AQUI_TU_UID"], PTS = { 1: 6, 2: 4, 3: 2 }, D5 = 5 * 864e5;
+        const ADMINS = ["XIY1FfjUDodaSBSGema6NgixKRs1"], PTS = { 1: 6, 2: 4, 3: 2 }, D5 = 5 * 864e5;
         const isAdmin = () => !!user && ADMINS.includes(user.uid);
         const sel = [], filt = [], open = new Set(), drafts = {};
         const toast = m => { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 5500) };
-        const need = () => user ? true : (toast("No se detectó tu sesión de Pichisoft. Iniciá sesión y abrí la app desde el mismo sitio (https://pichisoft.github.io/web/)."), false);
+        const need = () => user ? true : (toast("No se detectó tu sesión de Pichisoft. Iniciá sesión y abrí la app desde el mismo sitio (pichisoft.github.io)."), false);
 
         function ask(t, m, ok, no = "Cancelar") {
             return new Promise(res => {
@@ -1418,7 +1423,7 @@
         const blank = (uid, name) => ({ uid, name, pts: 0, n: 0, likes: 0, avg: 0 });
         const avgTxt = u => u.avg ? u.avg.toFixed(1) : "-";
         const statsHTML = u => `<div class="stats"><div><b>${u.pts}</b><span>Puntos acumulados</span></div><div><b>${u.n}</b><span>Recetas</span></div><div><b>${u.likes}</b><span>Me gusta recibidos</span></div><div><b>${avgTxt(u)}</b><span>Promedio de estrellas</span></div></div>`;
-        const urow = u => `<div class="urow"><div><b>${esc(u.name)}</b><div class="small">Puntos: ${u.pts} - Recetas: ${u.n} - Me gusta: ${u.likes} - Estrellas: ${avgTxt(u)}</div></div><button class="btn ghost sm" data-pact="view" data-u="${esc(u.uid)}" type="button">Ver perfil</button></div>`;
+        const urow = u => `<div class="urow"><div><b>${ADMINS.includes(u.uid) ? '<span class="adm">Admin</span> ' : ""}${esc(u.name)}</b><div class="small">Puntos: ${u.pts} - Recetas: ${u.n} - Me gusta: ${u.likes} - Estrellas: ${avgTxt(u)}</div></div><button class="btn ghost sm" data-pact="view" data-u="${esc(u.uid)}" type="button">Ver perfil</button></div>`;
         function renderProf() {
             const own = profUid === null, uid = own ? (user && user.uid) : profUid;
             if (!uid) { $("#pstats").innerHTML = '<div class="panel"><p class="muted">Iniciá sesión en Pichisoft para ver tu perfil.</p></div>'; $("#pown").hidden = true; $("#prt").textContent = ""; $("#precipes").innerHTML = ""; return }
@@ -1430,7 +1435,11 @@
             $("#precipes").innerHTML = recipes.filter(r => r.authorId === uid).sort((a, b) => b.createdAt - a.createdAt).map(card).join("") || '<p class="muted">Todavía no hay recetas.</p>'
         }
         function renderUres() { const q = $("#uq").value.trim().toLowerCase(); $("#ures").innerHTML = q ? (Object.values(US).filter(u => u.name.toLowerCase().includes(q)).map(urow).join("") || '<p class="small">No se encontraron usuarios con recetas.</p>') : "" }
-        function renderDest() { $("#dlist").innerHTML = Object.values(US).filter(u => u.pts >= 80).sort((a, b) => b.pts - a.pts).map(urow).join("") || '<p class="muted">Todavía no hay usuarios destacados.</p>' }
+        function renderDest() {
+            const adm = ADMINS.filter(a => a !== "XIY1FfjUDodaSBSGema6NgixKRs1").map(a => US[a] || blank(a, user && user.uid === a ? uname : "Administrador"));
+            const rest = Object.values(US).filter(u => u.pts >= 80 && !ADMINS.includes(u.uid)).sort((a, b) => b.pts - a.pts);
+            $("#dlist").innerHTML = [...adm, ...rest].map(urow).join("") || '<p class="muted">Todavía no hay usuarios destacados.</p>'
+        }
         $("#uq").oninput = renderUres;
         document.addEventListener("click", async e => {
             const b = e.target.closest("[data-pact]"); if (!b) return; const u = b.dataset.u;
