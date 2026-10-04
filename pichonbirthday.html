@@ -1456,37 +1456,47 @@
                 if (!S.id) S.id = uid();
                 if (kind == 'gift') S.st = 'gift';
 
-                const used = new Set(S.bg.m ? [S.bg.m] : []);
-                S.items.forEach(i => { if (i.m) used.add(i.m); (i.ms || []).forEach(m => used.add(m)) });
-                const media = {};
-                used.forEach(k => media[k] = M[k]);
-
-                const g = { id: S.id, title: S.title || 'Sin título', st: S.st, bg: S.bg, items: S.items, ts: S.ts, fr: S.fr, media, t: Date.now() };
-
+                // Guardar en el dispositivo primero (IndexedDB)
                 try {
+                    const used = new Set(S.bg.m ? [S.bg.m] : []);
+                    S.items.forEach(i => { if (i.m) used.add(i.m); (i.ms || []).forEach(m => used.add(m)) });
+                    const media = {};
+                    used.forEach(k => media[k] = M[k]);
+
+                    const g = { id: S.id, title: S.title || 'Sin título', st: S.st, bg: S.bg, items: S.items, ts: S.ts, fr: S.fr, media, t: Date.now() };
+
                     await dbPut(g);
+
+                    if (kind != 'gift') {
+                        modal('Borrador guardado', mk('p', '', 'Podés cerrar y seguir después desde "Mis regalos y borradores" en la pantalla de inicio.'));
+                        return;
+                    }
+
+                    // Intentar subir a la nube con un límite de tiempo para que no se congele nunca
+                    let ok = false;
+                    try {
+                        ok = await Promise.race([
+                            cloud(g.id, g, 30),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000)) // Si tarda más de 8s, continúa igual
+                        ]);
+                    } catch (err) {
+                        console.warn("La nube tardó mucho, pero se guardó localmente:", err);
+                        ok = false;
+                    }
+
+                    const link = location.href.split(/[?#]/)[0] + '?g=' + g.id;
+                    const w = mk('div');
+                    w.innerHTML = '<p>¡Tu regalo está guardado! Este es su link:</p><a href="' + link + '"></a><p></p>';
+                    w.querySelector('a').textContent = link;
+                    w.lastChild.textContent = ok ? 'También quedó en la nube: el link funciona en otros dispositivos.' : 'Guardado en este dispositivo (la nube tardó en responder, pero el link funcionará si vuelve la red).';
+
+                    modal('Regalo guardado', w, () => { location.href = link }, 'Ir al regalo');
+
                 } catch (e) {
+                    console.error("Error al guardar:", e);
                     modal('No se pudo guardar', mk('p', '', 'El navegador no permitió guardar (espacio lleno o modo privado).'));
-                    return;
                 }
-
-                if (kind != 'gift') {
-                    modal('Borrador guardado', mk('p', '', 'Podés cerrar y seguir después desde "Mis regalos y borradores" en la pantalla de inicio.'));
-                    return;
-                }
-
-                const ok = await cloud(g.id, g, 30);
-                console.log("¿Se subió a la nube?", ok);
-
-                const link = location.href.split(/[?#]/)[0] + '?g=' + g.id;
-                const w = mk('div');
-                w.innerHTML = '<p>¡Tu regalo está guardado! Este es su link:</p><a href="' + link + '"></a><p></p>';
-                w.querySelector('a').textContent = link;
-                w.lastChild.textContent = ok ? 'También quedó en la nube: el link funciona en otros dispositivos.' : 'Quedó guardado en este dispositivo (falló la subida a la nube).';
-
-                modal('Regalo guardado', w, () => { location.href = link }, 'Ir al regalo');
             }
-
             /* ---------- Inicio y rutas ---------- */
             function openEd(g) { S = g ? loadS(g) : fresh(); M = g ? g.media || {} : {}; sel = null; editing = null; hist = []; hi = -1; $('#ti').value = S.title; syncT(); $('#home').classList.add('off'); $('#editor').classList.add('on'); fit(); draw(); push() }
             $('#goGift').onclick = () => openEd();
