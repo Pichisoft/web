@@ -454,8 +454,21 @@
             clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)
         }
 
-        button.star {
-            cursor: pointer
+        i.star {
+            display: block
+        }
+
+        .starb {
+            background: transparent;
+            border: 0;
+            padding: 6px 3px;
+            cursor: pointer;
+            line-height: 0;
+            touch-action: manipulation
+        }
+
+        .starb:hover .star {
+            background: var(--limed)
         }
 
         .star.on {
@@ -1108,7 +1121,7 @@
         };
 
         /* Render */
-        const stars = (n, act) => { const t = act ? "button" : "span"; let h = '<span class="stars">'; for (let i = 1; i <= 5; i++)h += `<${t} ${act ? `data-act="rate" data-v="${i}" aria-label="${i} estrellas"` : ""} class="star${i <= n ? " on" : ""}"></${t}>`; return h + "</span>" };
+        const stars = (n, act) => { let h = '<span class="stars">'; for (let i = 1; i <= 5; i++) { const s = `<i class="star${i <= n ? " on" : ""}"></i>`; h += act ? `<button type="button" class="starb" data-act="rate" data-v="${i}" aria-label="${i} estrellas">${s}</button>` : s } return h + "</span>" };
         const fecha = ms => new Date(ms).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) + " hs";
         const fechaDia = ms => new Date(ms).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
         const stats = r => { const rv = Object.values(r.ratings || {}), lv = Object.values(r.likes || {}); return { n: rv.length, avg: rv.length ? rv.reduce((a, b) => a + b, 0) / rv.length : 0, up: lv.filter(v => v === 1).length, down: lv.filter(v => v === -1).length } };
@@ -1116,7 +1129,7 @@
             const s = stats(r), uid = user && user.uid, my = uid ? (r.ratings || {})[uid] || 0 : 0, ml = uid ? (r.likes || {})[uid] : 0, isOpen = open.has(r.id);
             const img = typeof r.photo === "string" && r.photo.startsWith("data:image/") ? `<img class="photo" src="${esc(r.photo)}" alt="Foto de ${esc(r.name)}">` : "";
             const steps = (r.steps || []).map((t, i) => `<h2 class="paso">Paso ${i + 1}:</h2><p>${esc(t)}</p>`).join("");
-            const cms = (r.comments || []).map(c => `<div class="cm"><b>${esc(c.name)}</b><span>${fecha(c.at)}</span><p>${esc(c.text)}</p></div>`).join("") || '<p class="small">Todavía no hay comentarios.</p>';
+            const cms = (r.comments || []).map((c, i) => `<div class="cm"><b>${esc(c.name)}</b><span>${fecha(c.at)}</span>${uid && c.uid === uid ? `<button class="btn ghost sm" style="float:right;padding:2px 10px" data-act="delcomment" data-i="${i}" type="button">Eliminar</button>` : ""}<p>${esc(c.text)}</p></div>`).join("") || '<p class="small">Todavía no hay comentarios.</p>';
             return `<article class="card" id="r-${r.id}" data-id="${r.id}">${img}<div class="cbody">
   <h3>${esc(r.name)}</h3>
   <p class="tipos">Tipo de comida: ${esc((r.types || []).map(k => LBL[k] || k).join(", "))}</p>
@@ -1132,7 +1145,7 @@
     <button class="btn ghost sm${ml === -1 ? " on" : ""}" data-act="dislike" type="button"><i class="tri down"></i>No me gusta</button>
     <button class="btn ghost sm" data-act="share" type="button"><i class="ico-share"><b></b></i>Compartir</button>
     <button class="btn ghost sm" data-act="copy" type="button"><i class="ico-copy"></i>Copiar receta</button>
-    ${uid && r.authorId === uid ? '<button class="btn sm" data-act="edit" type="button">Editar receta</button>' : ""}
+    ${uid && r.authorId === uid ? '<button class="btn sm" data-act="edit" type="button">Editar receta</button><button class="btn ghost sm" data-act="delete" type="button">Eliminar receta</button>' : ""}
    </div>
    <h4>Comentarios</h4>${cms}
    <div class="row"><input class="in cin" maxlength="300" placeholder="Escribí un comentario" value="${esc(drafts[r.id] || "")}"><button class="btn sm" data-act="comment" type="button">Comentar</button></div>
@@ -1172,10 +1185,12 @@
                 else if (a === "edit") { if (user && r.authorId === user.uid) editRecipe(r) }
                 else if (a === "copy") copy(recipeText(r), "Receta copiada")
                 else if (a === "share") shareDlg(r)
-                else if (a === "rate") { if (need()) await fs.updateDoc(ref, { ["ratings." + user.uid]: +b.dataset.v }) }
+                else if (a === "rate") { if (!need()) return; const v = +b.dataset.v; r.ratings = { ...(r.ratings || {}), [user.uid]: v }; render(); await fs.updateDoc(ref, { ["ratings." + user.uid]: v }); toast("Calificaste con " + v + (v === 1 ? " estrella" : " estrellas")) }
+                else if (a === "delcomment") { const cm = (r.comments || [])[+b.dataset.i]; if (!user || !cm || cm.uid !== user.uid) return; if (confirm("¿Eliminar tu comentario?")) await fs.updateDoc(ref, { comments: fs.arrayRemove(cm) }) }
+                else if (a === "delete") { if (user && r.authorId === user.uid && confirm("¿Eliminar esta receta? No se puede deshacer.")) { await fs.deleteDoc(ref); open.delete(r.id); toast("Receta eliminada") } }
                 else if (a === "like" || a === "dislike") { if (!need()) return; const v = a === "like" ? 1 : -1, cur = (r.likes || {})[user.uid]; await fs.updateDoc(ref, { ["likes." + user.uid]: cur === v ? fs.deleteField() : v }) }
                 else if (a === "comment") { if (!need()) return; const i = c.querySelector(".cin"), t = i.value.trim(); if (!t) return; await fs.updateDoc(ref, { comments: fs.arrayUnion({ uid: user.uid, name: uname, text: t, at: Date.now() }) }); drafts[r.id] = ""; }
-            } catch (err) { console.error(err); toast("No se pudo completar la acción") }
+            } catch (err) { console.error(err); render(); toast("No se pudo completar la acción: " + (err.code || err.message)) }
         });
 
         /* Firebase (usa la sesión detectada por el script de Pichisoft) */
