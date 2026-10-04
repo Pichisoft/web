@@ -1638,6 +1638,36 @@
                 width: 100% !important;
             }
         }
+
+        /* =========================================================
+   FIX: ojo de mostrar/ocultar contraseña
+   ========================================================= */
+
+        /* Anula el estilo heredado de ".card-value span" */
+        .toggle-pass-btn .eye-icon {
+            flex: 0 0 22px !important;
+            width: 22px !important;
+            height: 22px !important;
+            padding: 0 !important;
+            background: none !important;
+            border-radius: 0 !important;
+            white-space: normal !important;
+        }
+
+        /* Color del ojo en cada tema (incluido Premium) */
+        body.dark .toggle-pass-btn,
+        body.premium-mode.dark .toggle-pass-btn {
+            color: #eeeeee !important;
+            background: transparent !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        }
+
+        body.light .toggle-pass-btn,
+        body.premium-mode.light .toggle-pass-btn {
+            color: #222222 !important;
+            background: transparent !important;
+            border: 1px solid rgba(0, 0, 0, 0.3) !important;
+        }
     </style>
 
 </head>
