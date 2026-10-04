@@ -274,9 +274,7 @@
         }
 
         .chip.choc {
-            grid-column: 1/-1;
-            font-weight: bold;
-            justify-content: center
+            font-weight: bold
         }
 
         .cartel {
@@ -673,6 +671,67 @@
             border-bottom: 6px solid currentColor
         }
 
+        .lnk {
+            background: none;
+            border: 0;
+            color: var(--lime);
+            cursor: pointer;
+            padding: 0;
+            text-decoration: underline;
+            font: inherit
+        }
+
+        .mrow {
+            display: flex;
+            justify-content: space-between;
+            gap: 4px 12px;
+            flex-wrap: wrap
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 12px 0
+        }
+
+        .stats div {
+            background: #111;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center
+        }
+
+        .stats b {
+            display: block;
+            color: var(--lime);
+            font-size: 1.3rem
+        }
+
+        .stats span {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .urow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            background: #111;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin: 8px 0
+        }
+
+        @media(max-width:560px) {
+            .stats {
+                grid-template-columns: 1fr 1fr
+            }
+        }
+
         /* Modal y aviso */
         #ov,
         #cf {
@@ -936,13 +995,35 @@
             <div class="opts">
                 <button class="btn" id="b-crear" type="button">+Crear receta</button>
                 <button class="btn" id="b-ver" type="button">Ver recetas</button>
+                <button class="btn" id="b-dest" type="button">Usuarios destacados</button>
+                <button class="btn" id="b-prof" type="button">Mi perfil</button>
             </div>
             <h2 id="t-recetas" style="margin-top:28px;scroll-margin-top:calc(var(--hh) + 80px)">Recetas:</h2>
             <div id="list"></div>
-            <div class="panel">
-                <h2>Mis recetas</h2>
-                <div id="mine"></div>
+
+        </section>
+
+        <!-- Usuarios destacados -->
+        <section id="v-dest" class="view" hidden>
+            <button class="btn ghost sm back" data-go="home" type="button">Volver</button>
+            <h2>Usuarios destacados</h2>
+            <p class="small">Usuarios con 80 puntos o más.</p>
+            <div id="dlist"></div>
+        </section>
+
+        <!-- Perfil -->
+        <section id="v-prof" class="view" hidden>
+            <button class="btn ghost sm back" data-go="home" type="button">Volver</button>
+            <div id="pstats"></div>
+            <div id="pown" class="panel" hidden>
+                <h3>Buscar usuarios</h3>
+                <input class="in" id="uq" placeholder="Nombre de usuario" style="margin-top:8px">
+                <div id="ures"></div>
+                <h3 style="margin-top:18px">Favoritos</h3>
+                <div id="favs"></div>
             </div>
+            <h3 id="prt" style="margin:18px 0 6px"></h3>
+            <div id="precipes"></div>
         </section>
 
         <!-- Elegir tipo -->
@@ -1099,12 +1180,23 @@
         })();
     </script>
 
+    <!-- ===== DESAFÍOS ===== (ver DESAFIOS.md)
+     Para agregar un desafío: copiá un bloque { ... }, cambiá id y texto.
+     activo:true  -> se muestra al apretar "+Crear receta" (se muestra el primero activo de la lista).
+     activo:false -> no se muestra. El título "Desafío de hoy:" ya viene puesto. -->
+    <script>
+        window.DESAFIOS = [
+            { id: "2026-10-04", activo: true, texto: "Haz una torta creativa, con un dibujo encima de ella, que sea comestible." }
+            // ,{ id:"2026-10-05", activo:false, texto:"Escribí acá la descripción del próximo desafío." }
+        ];
+    </script>
+
     <!-- App PichonFood -->
     <script type="module">
         const V = "https://www.gstatic.com/firebasejs/12.3.0/";
         const $ = s => document.querySelector(s);
         const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-        const TYPES = [["dulce", "Comida dulce"], ["salada", "Comida salada"], ["desayuno", "Comida de desayuno"], ["cena", "Comida de cena"], ["almuerzo", "Comida de almuerzo"], ["merienda", "Comida de merienda"], ["postres", "Postres"], ["carnes", "Carnes"], ["fruta", "Fruta"], ["verdura", "Verdura"], ["chocolate", "SOLO CHOCOLATE"]];
+        const TYPES = [["dulce", "Comida dulce"], ["salada", "Comida salada"], ["desayuno", "Comida de desayuno"], ["cena", "Comida de cena"], ["almuerzo", "Comida de almuerzo"], ["merienda", "Comida de merienda"], ["postres", "Postres"], ["carnes", "Carnes"], ["fruta", "Fruta"], ["verdura", "Verdura"], ["creativa", "Comida creativa"], ["chocolate", "SOLO CHOCOLATE"]];
         const LBL = Object.fromEntries(TYPES);
         const INFO = {
             dulce: "Harás una receta de comida dulce, por ejemplo, una torta.",
@@ -1117,27 +1209,30 @@
             carnes: "Harás una receta de una carne, por ejemplo, pollo al libro. (Puede ser una receta que tenga una carne, no tiene que ser solamente carne. Por ejemplo: fideos con pollo).",
             fruta: "Harás una receta de una fruta, por ejemplo, banana con dulce de leche casero.",
             verdura: "Harás una receta de una verdura, por ejemplo, papas fritas con carne.",
+            creativa: "Harás una receta de comida creativa, por ejemplo, una torta con un dibujo comestible encima.",
             chocolate: "¡Harás una receta de una comida que tenga chocolate! Puede ser tanto una torta abundante con mucho chocolate, como también galletas con chips de chocolate."
         };
         const CONF = { dulce: ["salada", "carnes", "verdura"], salada: ["postres", "chocolate"], postres: ["carnes", "verdura"], carnes: ["fruta", "chocolate"], verdura: ["chocolate"] };
         const conflict = (a, b) => (CONF[a] || []).includes(b) || (CONF[b] || []).includes(a);
 
-        let db = null, fs = null, user = null, uname = "Usuario", recipes = [], photo = "", curTypes = [];
+        let db = null, fs = null, user = null, uname = "Usuario", recipes = [], photo = "", curTypes = [], view = "home", profUid = null, favs = [], US = {}, curChallenge = null;
+        const ADMINS = ["PEGA_AQUI_TU_UID"], PTS = { 1: 6, 2: 4, 3: 2 }, D5 = 5 * 864e5;
+        const isAdmin = () => !!user && ADMINS.includes(user.uid);
         const sel = [], filt = [], open = new Set(), drafts = {};
         const toast = m => { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 5500) };
         const need = () => user ? true : (toast("No se detectó tu sesión de Pichisoft. Iniciá sesión y abrí la app desde el mismo sitio (https://pichisoft.github.io/web/)."), false);
 
-        function ask(t, m, ok) {
+        function ask(t, m, ok, no = "Cancelar") {
             return new Promise(res => {
                 const o = $("#cf"); o.hidden = false;
-                o.innerHTML = `<div class="box" role="dialog" aria-modal="true"><h3 class="ttl-lime">${esc(t)}</h3><p>${esc(m)}</p><button class="btn" data-v="1" type="button">${esc(ok)}</button><button class="btn ghost" data-v="0" type="button">Cancelar</button></div>`;
+                o.innerHTML = `<div class="box" role="dialog" aria-modal="true"><h3>${esc(t)}</h3><p>${esc(m)}</p><button class="btn" data-v="1" type="button">${esc(ok)}</button><button class="btn ghost" data-v="0" type="button">${esc(no)}</button></div>`;
                 const done = v => { o.hidden = true; o.onclick = null; res(v) };
                 o.onclick = e => { const b = e.target.closest("[data-v]"); if (b) done(b.dataset.v === "1"); else if (e.target === o) done(false) }
             })
         }
 
         /* Vistas */
-        function go(v) { document.querySelectorAll(".view").forEach(s => s.hidden = s.id !== "v-" + v); scrollTo(0, 0) }
+        function go(v) { view = v; document.querySelectorAll(".view").forEach(s => s.hidden = s.id !== "v-" + v); if (v === "prof" || v === "dest") render(); scrollTo(0, 0) }
         document.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) go(b.dataset.go) });
 
         /* Chips */
@@ -1158,7 +1253,14 @@
         $("#q").oninput = render;
 
         /* Inicio */
-        $("#b-crear").onclick = () => { sel.length = 0; chips($("#tchips"), sel, true); go("tipo") };
+        $("#b-crear").onclick = async () => {
+            sel.length = 0; chips($("#tchips"), sel, true); curChallenge = null;
+            const d = (window.DESAFIOS || []).find(x => x.activo);
+            if (d && await ask("Desafío de hoy:", d.texto, "Aceptar", "Quizás luego")) curChallenge = d.id;
+            go("tipo")
+        };
+        $("#b-dest").onclick = () => go("dest");
+        $("#b-prof").onclick = () => { profUid = null; go("prof") };
         $("#b-ver").onclick = () => $("#t-recetas").scrollIntoView();
         $("#b-tipo-ok").onclick = () => {
             if (!sel.length) return toast("Elegí al menos un tipo de receta");
@@ -1192,7 +1294,7 @@
             const data = { name, ingredients, intro: $("#e-intro").value.trim(), steps, photo }, msg = editId ? "Cambios guardados" : "Receta publicada";
             try {
                 if (editId) await fs.updateDoc(fs.doc(db, "recipes", editId), { ...data, editedAt: Date.now() });
-                else await fs.addDoc(fs.collection(db, "recipes"), { ...data, types: curTypes, authorId: user.uid, authorName: uname, createdAt: Date.now(), likes: {}, ratings: {}, comments: [] });
+                else await fs.addDoc(fs.collection(db, "recipes"), { ...data, types: curTypes, ...(curChallenge ? { challenge: curChallenge } : {}), authorId: user.uid, authorName: uname, createdAt: Date.now(), likes: {}, ratings: {}, comments: [] });
                 resetForm(); toast(msg); go("home")
             } catch (err) { console.error(err); toast(err.code === "permission-denied" ? "Firestore no permite guardar: hay que actualizar las reglas de la colección recipes" : "No se pudo guardar: " + (err.code || err.message)) }
         };
@@ -1224,7 +1326,8 @@
             return `<article class="card" id="r-${r.id}" data-id="${r.id}">${img}<div class="cbody">
   <h3>${esc(r.name)}</h3>
   <p class="tipos">Tipo de comida: ${esc((r.types || []).map(k => LBL[k] || k).join(", "))}</p>
-  <p class="meta">Por ${esc(r.authorName || "Usuario")} - ${fecha(r.createdAt)}</p>
+  <p class="meta mrow"><span>Por <button class="lnk" data-pact="view" data-u="${esc(r.authorId)}" type="button">${esc(r.authorName || "Usuario")}</button> - ${fecha(r.createdAt)}</span><span>Puntos acumulados: ${(US[r.authorId] || { pts: 0 }).pts}</span></p>
+  ${r.prize ? `<p class="tipos">Ganó el ${r.prize}.º lugar del desafío diario</p>` : ""}${r.challenge ? '<p class="small">Participó en el desafío diario</p>' : ""}
   <div class="sum">${stars(my, true)}<span>${s.n ? "Promedio " + s.avg.toFixed(1) + " / 5 (" + s.n + ")" : "Sin calificar"}</span><span>Me gusta: ${s.up}</span><span>No me gusta: ${s.down}</span></div>
   <p class="small" style="margin:-6px 0 10px">${my ? "Tu calificación: " + my + " de 5 (tocá otra estrella para cambiarla)" : "Tocá una estrella para calificar"}</p>
   <button class="btn ghost sm" data-act="toggle" type="button">${isOpen ? "Ocultar receta" : "Ver receta"}</button>
@@ -1238,16 +1341,18 @@
     <button class="btn ghost sm" data-act="copy" type="button"><i class="ico-copy"></i>Copiar receta</button>
     ${uid && r.authorId === uid ? '<button class="btn sm" data-act="edit" type="button">Editar receta</button><button class="btn ghost sm" data-act="delete" type="button">Eliminar receta</button>' : ""}
    </div>
+   ${isAdmin() ? `<h4>Administrador: premio del desafío</h4><div class="acts">${[[1, "1.º lugar (6 pts)"], [2, "2.º lugar (4 pts)"], [3, "3.º lugar (2 pts)"], [0, "Quitar premio"]].map(([v, l]) => `<button class="btn ghost sm${(r.prize || 0) === v ? " on" : ""}" data-act="prize" data-v="${v}" type="button">${l}</button>`).join("")}</div>` : ""}
    <h4>Comentarios</h4>${cms}
    <div class="row"><input class="in cin" maxlength="300" placeholder="Escribí un comentario" value="${esc(drafts[r.id] || "")}"><button class="btn sm" data-act="comment" type="button">Comentar</button></div>
   </div></div></article>`;
         }
         function render() {
+            US = userStats();
             const q = $("#q").value.trim().toLowerCase();
             const ok = r => (!q || (r.name || "").toLowerCase().includes(q)) && filt.every(k => (r.types || []).includes(k));
-            const all = recipes.filter(ok), mine = user ? all.filter(r => r.authorId === user.uid) : [];
+            const all = sortR(recipes.filter(ok));
             $("#list").innerHTML = all.map(card).join("") || `<p class="muted">${db ? "No hay recetas para mostrar." : "Conectando con Pichisoft..."}</p>`;
-            $("#mine").innerHTML = !user ? '<p class="muted">Iniciá sesión en Pichisoft para ver tus recetas.</p>' : (mine.map(card).join("") || '<p class="muted">Todavía no publicaste recetas.</p>');
+            if (view === "prof") renderProf(); if (view === "dest") renderDest();
         }
         document.addEventListener("input", e => { const t = e.target; if (t.classList.contains("cin")) drafts[t.closest(".card").dataset.id] = t.value; else if (t.classList.contains("rin")) drafts["k:" + t.dataset.k] = t.value });
 
@@ -1274,13 +1379,14 @@
             const ref = fs.doc(db, "recipes", r.id);
             try {
                 if (a === "toggle") { open.has(r.id) ? open.delete(r.id) : open.add(r.id); render() }
+                else if (a === "prize") { if (!isAdmin()) return; const v = +b.dataset.v; await fs.updateDoc(ref, v ? { prize: v, prizeAt: Date.now() } : { prize: fs.deleteField(), prizeAt: fs.deleteField() }); toast(v ? "Premio asignado" : "Premio quitado") }
                 else if (a === "edit") { if (user && r.authorId === user.uid) editRecipe(r) }
                 else if (a === "copy") copy(recipeText(r), "Receta copiada")
                 else if (a === "share") shareDlg(r)
                 else if (a === "rate") { if (!need()) return; const v = +b.dataset.v; r.ratings = { ...(r.ratings || {}), [user.uid]: v }; render(); await fs.updateDoc(ref, { ["ratings." + user.uid]: v }); toast("Calificaste con " + v + (v === 1 ? " estrella" : " estrellas")) }
                 else if (a === "delcomment") { const k = b.dataset.k, cmt = (r.comments || []).find(x => ckey(x) === k); if (!user || !cmt || cmt.uid !== user.uid) return; if (await ask("Eliminar comentario", cmt.parent ? "¿Querés eliminar tu respuesta?" : "¿Querés eliminar tu comentario? También se borrarán las respuestas que tenga.", "Eliminar")) await editComments(r, cs => cs.filter(x => ckey(x) !== k && x.parent !== k)) }
                 else if (a === "clike" || a === "cdislike") { if (!need()) return; const v = a === "clike" ? 1 : -1, k = b.dataset.k; await editComments(r, cs => cs.map(x => { if (ckey(x) !== k) return x; const l = { ...(x.likes || {}) }; if (l[user.uid] === v) delete l[user.uid]; else l[user.uid] = v; return { ...x, likes: l } })) }
-                else if (a === "creply") { if (!need()) return; const k = b.dataset.k; replying = replying === k ? null : k; render(); const i = document.querySelector('.rin[data-k="' + k + '"]'); i && i.focus() }
+                else if (a === "creply") { if (!need()) return; const k = b.dataset.k; replying = replying === k ? null : k; render(); const i = [...document.querySelectorAll('.rin[data-k="' + k + '"]')].find(x => x.offsetParent); i && i.focus() }
                 else if (a === "csend") {
                     if (!need()) return; const k = b.dataset.k, i = b.closest(".cm").querySelector(".rin"), t = i.value.trim(); if (!t) return; const tg = (r.comments || []).find(x => ckey(x) === k); if (!tg) return;
                     await fs.updateDoc(ref, { comments: fs.arrayUnion({ id: newId(), uid: user.uid, name: uname, text: t, at: Date.now(), parent: tg.parent || ckey(tg), toName: tg.name }) }); delete drafts["k:" + k]; replying = null; render()
@@ -1291,10 +1397,54 @@
             } catch (err) { console.error(err); render(); toast("No se pudo completar la acción: " + (err.code || err.message)) }
         });
 
+        /* Puntos, perfiles y destacados */
+        function userStats() {
+            const m = {};
+            recipes.forEach(r => {
+                const u = m[r.authorId] || (m[r.authorId] = { uid: r.authorId, name: r.authorName || "Usuario", pts: 0, n: 0, likes: 0, rs: 0, rc: 0, pr: [] });
+                u.n++; Object.values(r.likes || {}).forEach(v => { if (v === 1) u.likes++ }); Object.values(r.ratings || {}).forEach(v => { u.rs += v; u.rc++ });
+                if (PTS[r.prize]) { u.pts += PTS[r.prize]; u.pr.push({ at: r.prizeAt || 0, p: PTS[r.prize] }) }
+            });
+            Object.values(m).forEach(u => {
+                u.avg = u.rc ? u.rs / u.rc : 0; u.pr.sort((a, b) => a.at - b.at); let c = 0; u.cross = 0;
+                u.pr.forEach(x => { const b = Math.floor(c / 30); c += x.p; if (Math.floor(c / 30) > b) u.cross = x.at })
+            }); /* u.cross = momento en que cruzó un múltiplo de 30 */
+            return m
+        }
+        function sortR(a) {
+            const now = Date.now(), b = r => { const u = US[r.authorId]; return u && u.cross && now - u.cross < D5 && now - r.createdAt < D5 ? 1 : 0 };
+            return [...a].sort((x, y) => b(y) - b(x) || y.createdAt - x.createdAt)
+        }
+        const blank = (uid, name) => ({ uid, name, pts: 0, n: 0, likes: 0, avg: 0 });
+        const avgTxt = u => u.avg ? u.avg.toFixed(1) : "-";
+        const statsHTML = u => `<div class="stats"><div><b>${u.pts}</b><span>Puntos acumulados</span></div><div><b>${u.n}</b><span>Recetas</span></div><div><b>${u.likes}</b><span>Me gusta recibidos</span></div><div><b>${avgTxt(u)}</b><span>Promedio de estrellas</span></div></div>`;
+        const urow = u => `<div class="urow"><div><b>${esc(u.name)}</b><div class="small">Puntos: ${u.pts} - Recetas: ${u.n} - Me gusta: ${u.likes} - Estrellas: ${avgTxt(u)}</div></div><button class="btn ghost sm" data-pact="view" data-u="${esc(u.uid)}" type="button">Ver perfil</button></div>`;
+        function renderProf() {
+            const own = profUid === null, uid = own ? (user && user.uid) : profUid;
+            if (!uid) { $("#pstats").innerHTML = '<div class="panel"><p class="muted">Iniciá sesión en Pichisoft para ver tu perfil.</p></div>'; $("#pown").hidden = true; $("#prt").textContent = ""; $("#precipes").innerHTML = ""; return }
+            const u = US[uid] || blank(uid, own ? uname : "Usuario"), isFav = favs.includes(uid);
+            $("#pstats").innerHTML = `<div class="panel"><h2>${own ? "Mi perfil" : esc(u.name)}</h2>${own ? `<p class="small">${esc(uname)}</p>` : ""}${statsHTML(u)}${!own && user ? `<button class="btn sm" data-pact="fav" data-u="${esc(uid)}" type="button">${isFav ? "Quitar de favoritos" : "Agregar a favoritos"}</button>` : ""}${own ? `<p class="small">Tu ID de usuario: ${esc(uid)}</p>` : ""}</div>`;
+            $("#pown").hidden = !own;
+            if (own) { renderUres(); $("#favs").innerHTML = favs.map(f => urow(US[f] || blank(f, "Usuario sin recetas"))).join("") || '<p class="small">Todavía no agregaste favoritos.</p>' }
+            $("#prt").textContent = own ? "Mis recetas" : "Recetas de " + u.name;
+            $("#precipes").innerHTML = recipes.filter(r => r.authorId === uid).sort((a, b) => b.createdAt - a.createdAt).map(card).join("") || '<p class="muted">Todavía no hay recetas.</p>'
+        }
+        function renderUres() { const q = $("#uq").value.trim().toLowerCase(); $("#ures").innerHTML = q ? (Object.values(US).filter(u => u.name.toLowerCase().includes(q)).map(urow).join("") || '<p class="small">No se encontraron usuarios con recetas.</p>') : "" }
+        function renderDest() { $("#dlist").innerHTML = Object.values(US).filter(u => u.pts >= 80).sort((a, b) => b.pts - a.pts).map(urow).join("") || '<p class="muted">Todavía no hay usuarios destacados.</p>' }
+        $("#uq").oninput = renderUres;
+        document.addEventListener("click", async e => {
+            const b = e.target.closest("[data-pact]"); if (!b) return; const u = b.dataset.u;
+            if (b.dataset.pact === "view") { profUid = user && u === user.uid ? null : u; go("prof") }
+            else if (b.dataset.pact === "fav") {
+                if (!need()) return; const n = favs.includes(u) ? favs.filter(x => x !== u) : [...favs, u];
+                try { await fs.setDoc(fs.doc(db, "users", user.uid, "data", "pichonfood"), { favs: n }, { merge: true }); favs = n; render() } catch (err) { console.error(err); toast("No se pudo guardar: " + (err.code || err.message)) }
+            }
+        });
+
         /* Firebase (usa la sesión detectada por el script de Pichisoft) */
         async function setUser(u) {
-            user = u; uname = "Usuario";
-            if (u) { try { const s = await fs.getDoc(fs.doc(db, "users", u.uid)); if (s.exists() && s.data().username) uname = s.data().username } catch { } }
+            user = u; uname = "Usuario"; favs = [];
+            if (u) { try { const s = await fs.getDoc(fs.doc(db, "users", u.uid)); if (s.exists() && s.data().username) uname = s.data().username } catch { } try { const f = await fs.getDoc(fs.doc(db, "users", u.uid, "data", "pichonfood")); if (f.exists()) favs = f.data().favs || [] } catch { } }
             render()
         }
         (async () => {
