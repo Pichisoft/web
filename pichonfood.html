@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>PichonFood - By Pichisoft</title>
+    <title>PichonFood</title>
     <style>
         :root {
             --lime: #a3e635;
@@ -609,6 +609,70 @@
             margin: 2px 0 0
         }
 
+        .cm .small {
+            display: block;
+            margin: 2px 0
+        }
+
+        .thread {
+            margin: 8px 0
+        }
+
+        .cm.rp {
+            margin-left: 22px;
+            border-left: 2px solid var(--lime)
+        }
+
+        .cacts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px
+        }
+
+        .mini {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            color: var(--lime);
+            border: 1px solid var(--lime);
+            border-radius: 8px;
+            padding: 3px 10px;
+            font-size: 13px;
+            cursor: pointer
+        }
+
+        .mini:hover {
+            background: rgba(163, 230, 53, .12)
+        }
+
+        .mini.on {
+            background: var(--lime);
+            color: #111
+        }
+
+        .ico-reply {
+            position: relative;
+            display: inline-block;
+            width: 13px;
+            height: 9px;
+            margin: 4px 0 0 5px;
+            border-left: 2px solid currentColor;
+            border-bottom: 2px solid currentColor;
+            border-radius: 0 0 0 4px
+        }
+
+        .ico-reply::before {
+            content: "";
+            position: absolute;
+            left: -6px;
+            top: -5px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 6px solid currentColor
+        }
+
         /* Modal y aviso */
         #ov,
         #cf {
@@ -1061,7 +1125,7 @@
         let db = null, fs = null, user = null, uname = "Usuario", recipes = [], photo = "", curTypes = [];
         const sel = [], filt = [], open = new Set(), drafts = {};
         const toast = m => { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 5500) };
-        const need = () => user ? true : (toast("No se detectó tu sesión de Pichisoft. Iniciá sesión y abrí la app desde el mismo sitio (pichisoft.github.io)."), false);
+        const need = () => user ? true : (toast("No se detectó tu sesión de Pichisoft. Iniciá sesión y abrí la app desde el mismo sitio (https://pichisoft.github.io/web/)."), false);
 
         function ask(t, m, ok) {
             return new Promise(res => {
@@ -1138,11 +1202,25 @@
         const fecha = ms => new Date(ms).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) + " hs";
         const fechaDia = ms => new Date(ms).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
         const stats = r => { const rv = Object.values(r.ratings || {}), lv = Object.values(r.likes || {}); return { n: rv.length, avg: rv.length ? rv.reduce((a, b) => a + b, 0) / rv.length : 0, up: lv.filter(v => v === 1).length, down: lv.filter(v => v === -1).length } };
+        const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+        const ckey = c => c.id || c.uid + "_" + c.at;
+        let replying = null;
+        function cm(c, uid, rp) {
+            const k = esc(ckey(c)), lk = c.likes || {}, lv = Object.values(lk), ml = uid ? lk[uid] : 0;
+            return `<div class="cm${rp ? " rp" : ""}"><b>${esc(c.name)}</b><span>${fecha(c.at)}</span>${c.toName ? `<div class="small">En respuesta a ${esc(c.toName)}</div>` : ""}<p>${esc(c.text)}</p>
+  <div class="cacts">
+   <button class="mini${ml === 1 ? " on" : ""}" data-act="clike" data-k="${k}" type="button" aria-label="Me gusta"><i class="tri"></i>${lv.filter(v => v === 1).length}</button>
+   <button class="mini${ml === -1 ? " on" : ""}" data-act="cdislike" data-k="${k}" type="button" aria-label="No me gusta"><i class="tri down"></i>${lv.filter(v => v === -1).length}</button>
+   <button class="mini" data-act="creply" data-k="${k}" type="button"><i class="ico-reply"></i>Responder</button>
+   ${uid && c.uid === uid ? `<button class="mini" data-act="delcomment" data-k="${k}" type="button">Eliminar</button>` : ""}
+  </div>
+  ${replying === ckey(c) ? `<div class="row"><input class="in rin" data-k="${k}" maxlength="300" placeholder="Escribí tu respuesta" value="${esc(drafts["k:" + ckey(c)] || "")}"><button class="btn sm" data-act="csend" data-k="${k}" type="button">Enviar</button></div>` : ""}
+  </div>`}
         function card(r) {
             const s = stats(r), uid = user && user.uid, my = uid ? (r.ratings || {})[uid] || 0 : 0, ml = uid ? (r.likes || {})[uid] : 0, isOpen = open.has(r.id);
             const img = typeof r.photo === "string" && r.photo.startsWith("data:image/") ? `<img class="photo" src="${esc(r.photo)}" alt="Foto de ${esc(r.name)}">` : "";
             const steps = (r.steps || []).map((t, i) => `<h2 class="paso">Paso ${i + 1}:</h2><p>${esc(t)}</p>`).join("");
-            const cms = (r.comments || []).map((c, i) => `<div class="cm"><b>${esc(c.name)}</b><span>${fecha(c.at)}</span>${uid && c.uid === uid ? `<button class="btn ghost sm" style="float:right;padding:2px 10px" data-act="delcomment" data-i="${i}" type="button">Eliminar</button>` : ""}<p>${esc(c.text)}</p></div>`).join("") || '<p class="small">Todavía no hay comentarios.</p>';
+            const allc = r.comments || [], cms = allc.filter(c => !c.parent).map(c => `<div class="thread">${cm(c, uid)}${allc.filter(x => x.parent === ckey(c)).map(x => cm(x, uid, 1)).join("")}</div>`).join("") || '<p class="small">Todavía no hay comentarios.</p>';
             return `<article class="card" id="r-${r.id}" data-id="${r.id}">${img}<div class="cbody">
   <h3>${esc(r.name)}</h3>
   <p class="tipos">Tipo de comida: ${esc((r.types || []).map(k => LBL[k] || k).join(", "))}</p>
@@ -1171,9 +1249,10 @@
             $("#list").innerHTML = all.map(card).join("") || `<p class="muted">${db ? "No hay recetas para mostrar." : "Conectando con Pichisoft..."}</p>`;
             $("#mine").innerHTML = !user ? '<p class="muted">Iniciá sesión en Pichisoft para ver tus recetas.</p>' : (mine.map(card).join("") || '<p class="muted">Todavía no publicaste recetas.</p>');
         }
-        document.addEventListener("input", e => { if (e.target.classList.contains("cin")) drafts[e.target.closest(".card").dataset.id] = e.target.value });
+        document.addEventListener("input", e => { const t = e.target; if (t.classList.contains("cin")) drafts[t.closest(".card").dataset.id] = t.value; else if (t.classList.contains("rin")) drafts["k:" + t.dataset.k] = t.value });
 
         /* Acciones */
+        const editComments = (r, fn) => fs.runTransaction(db, async tx => { const ref = fs.doc(db, "recipes", r.id), sn = await tx.get(ref); if (!sn.exists()) return; tx.update(ref, { comments: fn([...(sn.data().comments || [])]) }) });
         const recipeText = r => `${r.name}\nTipo de comida: ${(r.types || []).map(k => LBL[k]).join(", ")}\n\nIngredientes:\n${(r.ingredients || []).map(i => "- " + i).join("\n")}\n\nPreparación:\n${r.intro || ""}\n${(r.steps || []).map((t, i) => `Paso ${i + 1}: ${t}`).join("\n")}\n\nReceta de PichonFood - By Pichisoft`;
         async function copy(t, m) { try { await navigator.clipboard.writeText(t) } catch { const a = document.createElement("textarea"); a.value = t; document.body.append(a); a.select(); document.execCommand("copy"); a.remove() } toast(m) }
         const link = id => location.href.split("#")[0] + "#receta=" + id;
@@ -1199,10 +1278,16 @@
                 else if (a === "copy") copy(recipeText(r), "Receta copiada")
                 else if (a === "share") shareDlg(r)
                 else if (a === "rate") { if (!need()) return; const v = +b.dataset.v; r.ratings = { ...(r.ratings || {}), [user.uid]: v }; render(); await fs.updateDoc(ref, { ["ratings." + user.uid]: v }); toast("Calificaste con " + v + (v === 1 ? " estrella" : " estrellas")) }
-                else if (a === "delcomment") { const cm = (r.comments || [])[+b.dataset.i]; if (!user || !cm || cm.uid !== user.uid) return; if (await ask("Eliminar comentario", "¿Querés eliminar tu comentario?", "Eliminar")) await fs.updateDoc(ref, { comments: fs.arrayRemove(cm) }) }
+                else if (a === "delcomment") { const k = b.dataset.k, cmt = (r.comments || []).find(x => ckey(x) === k); if (!user || !cmt || cmt.uid !== user.uid) return; if (await ask("Eliminar comentario", cmt.parent ? "¿Querés eliminar tu respuesta?" : "¿Querés eliminar tu comentario? También se borrarán las respuestas que tenga.", "Eliminar")) await editComments(r, cs => cs.filter(x => ckey(x) !== k && x.parent !== k)) }
+                else if (a === "clike" || a === "cdislike") { if (!need()) return; const v = a === "clike" ? 1 : -1, k = b.dataset.k; await editComments(r, cs => cs.map(x => { if (ckey(x) !== k) return x; const l = { ...(x.likes || {}) }; if (l[user.uid] === v) delete l[user.uid]; else l[user.uid] = v; return { ...x, likes: l } })) }
+                else if (a === "creply") { if (!need()) return; const k = b.dataset.k; replying = replying === k ? null : k; render(); const i = document.querySelector('.rin[data-k="' + k + '"]'); i && i.focus() }
+                else if (a === "csend") {
+                    if (!need()) return; const k = b.dataset.k, i = b.closest(".cm").querySelector(".rin"), t = i.value.trim(); if (!t) return; const tg = (r.comments || []).find(x => ckey(x) === k); if (!tg) return;
+                    await fs.updateDoc(ref, { comments: fs.arrayUnion({ id: newId(), uid: user.uid, name: uname, text: t, at: Date.now(), parent: tg.parent || ckey(tg), toName: tg.name }) }); delete drafts["k:" + k]; replying = null; render()
+                }
                 else if (a === "delete") { if (user && r.authorId === user.uid && await ask("Eliminar receta", "¿Querés eliminar esta receta? No se puede deshacer.", "Eliminar")) { await fs.deleteDoc(ref); open.delete(r.id); toast("Receta eliminada") } }
                 else if (a === "like" || a === "dislike") { if (!need()) return; const v = a === "like" ? 1 : -1, cur = (r.likes || {})[user.uid]; await fs.updateDoc(ref, { ["likes." + user.uid]: cur === v ? fs.deleteField() : v }) }
-                else if (a === "comment") { if (!need()) return; const i = c.querySelector(".cin"), t = i.value.trim(); if (!t) return; await fs.updateDoc(ref, { comments: fs.arrayUnion({ uid: user.uid, name: uname, text: t, at: Date.now() }) }); drafts[r.id] = ""; }
+                else if (a === "comment") { if (!need()) return; const i = c.querySelector(".cin"), t = i.value.trim(); if (!t) return; await fs.updateDoc(ref, { comments: fs.arrayUnion({ id: newId(), uid: user.uid, name: uname, text: t, at: Date.now() }) }); drafts[r.id] = ""; }
             } catch (err) { console.error(err); render(); toast("No se pudo completar la acción: " + (err.code || err.message)) }
         });
 
