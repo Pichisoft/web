@@ -1497,6 +1497,110 @@
             transform: rotate(35deg);
             z-index: 1;
         }
+
+        /* =========================================================
+   MÓVIL / TABLET CHICA - carteles de Pichisoft compactos
+   (no afecta a PC)
+   ========================================================= */
+        @media (max-width: 700px) {
+
+            body {
+                margin: 0;
+                padding: 64px 14px 90px;
+                /* espacio arriba para los carteles y abajo para el aviso premium */
+            }
+
+            /* Ambos carteles ocupan el mismo lugar arriba (nunca aparecen juntos) */
+            #pichisoft-session-status,
+            #pichisoft-session-profile {
+                position: fixed;
+                top: 8px;
+                bottom: auto;
+                /* evita que se estiren a lo alto */
+                height: auto;
+                max-height: 48px;
+            }
+
+            #pichisoft-session-status {
+                left: 10px;
+                right: 10px;
+                width: auto;
+                max-width: none;
+                justify-content: center;
+                padding: 8px 14px;
+                font-size: 13px;
+                border-radius: 22px;
+            }
+
+            #pichisoft-session-profile {
+                left: auto;
+                right: 10px;
+                width: auto;
+                max-width: calc(100vw - 20px);
+                padding: 4px 12px 4px 4px;
+            }
+
+            #pichisoft-profile-name {
+                max-width: 38vw;
+                font-size: 13px;
+            }
+
+            /* Aviso premium: abajo, ancho completo y legible */
+            .premium-notice {
+                left: 10px;
+                right: 10px;
+                bottom: 10px;
+                max-width: none;
+                padding: 10px 12px;
+                border-radius: 10px;
+                text-align: center;
+                font-size: 13px;
+                box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+            }
+
+            body.dark .premium-notice {
+                background: #1b1d22;
+                border: 1px solid #444;
+            }
+
+            body.light .premium-notice {
+                background: #ffffff;
+                border: 1px solid #ccc;
+            }
+
+            /* Evita el zoom automático de iOS al tocar un campo */
+            input,
+            textarea {
+                font-size: 16px;
+            }
+
+            /* Botones de registros: en columna para que no se aprieten */
+            .record-actions {
+                flex-direction: column;
+            }
+
+            .record-actions button {
+                width: 100%;
+            }
+
+            .topbar {
+                gap: 8px;
+            }
+
+            .pichisoft-link {
+                font-size: 15px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .topbar h1 {
+                font-size: 23px;
+            }
+
+            .byline {
+                font-size: 14px;
+            }
+        }
     </style>
 
 </head>
@@ -2265,30 +2369,22 @@
 
             var t0 = Date.now();
 
-
-            /* ============================================================
-               POSICIÓN DEL CARTEL DE SESIÓN
-               ============================================================ */
-
             function pos() {
 
-                var h =
-                    document.querySelector(".topbar");
-
-                var t =
-                    (h ? h.offsetHeight : 60) + 8;
-
-                if (window.innerWidth <= 600) {
-                    t = 8;
+                // Móvil: la posición la maneja el CSS (limpiamos los estilos inline)
+                if (window.innerWidth <= 700) {
+                    box.style.top = "";
+                    prof.style.top = "";
+                    return;
                 }
+
+                // PC: igual que antes
+                var h = document.querySelector(".topbar");
+                var t = (h ? h.offsetHeight : 60) + 8;
 
                 box.style.top = t + "px";
                 prof.style.top = t + "px";
             }
-
-            pos();
-
-            window.addEventListener("resize", pos);
 
 
             /* ============================================================
