@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>PichonFood - By Pichisoft</title>
+    <style>
+        :root {
+            --lime: #a3e635;
+            --limed: #84cc16;
+            --bg: #0b0b0b;
+            --panel: #161616;
+            --line: #2a2a2a;
+            --txt: #e5e5e5;
+            --muted: #9ca3af;
+            --moss: #556b2f;
+            --hh: 56px
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        [hidden] {
+            display: none !important
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--txt);
+            font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #fff;
+            margin: 0
+        }
+
+        button,
+        input,
+        textarea {
+            font: inherit
+        }
+
+        /* Barra superior */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--hh);
+            background: #000;
+            z-index: 100;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .header {
+            position: absolute;
+            top: 8px;
+            left: 20px;
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            white-space: nowrap
+        }
+
+        .logo {
+            font: bold 2rem "Times New Roman", Times, serif;
+            color: #fff
+        }
+
+        .byline {
+            font-size: .85rem;
+            font-style: italic;
+            color: #888
+        }
+
+        .plink {
+            position: absolute;
+            top: 18px;
+            right: 20px;
+            color: #3b82f6;
+            text-decoration: underline;
+            font-family: Verdana, sans-serif;
+            font-size: 15px
+        }
+
+        .searchbar {
+            position: fixed;
+            top: var(--hh);
+            left: 0;
+            right: 0;
+            background: #000;
+            border-bottom: 1px solid var(--line);
+            z-index: 90;
+            padding: 10px 16px
+        }
+
+        .sb-in {
+            max-width: 900px;
+            margin: auto;
+            display: flex;
+            gap: 8px;
+            position: relative
+        }
+
+        .sb-in input {
+            flex: 1;
+            min-width: 0;
+            background: #111;
+            border: 1px solid var(--lime);
+            color: #fff;
+            border-radius: 10px;
+            padding: 9px 12px;
+            outline: none
+        }
+
+        #fpanel {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: var(--panel);
+            border: 1px solid var(--lime);
+            border-radius: 12px;
+            padding: 14px;
+            max-height: 65vh;
+            overflow: auto
+        }
+
+        #fpanel p {
+            margin: 0 0 10px;
+            color: var(--muted);
+            font-size: 14px
+        }
+
+        main {
+            max-width: 900px;
+            margin: auto;
+            padding: calc(var(--hh) + 84px) 16px 60px
+        }
+
+        /* Botones y paneles */
+        .btn {
+            background: var(--lime);
+            color: #111;
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .btn:hover {
+            background: var(--limed)
+        }
+
+        .btn.ghost {
+            background: transparent;
+            color: var(--lime);
+            border: 1px solid var(--lime)
+        }
+
+        .btn.ghost:hover {
+            background: rgba(163, 230, 53, .12)
+        }
+
+        .btn.sm {
+            padding: 6px 12px;
+            font-size: 14px
+        }
+
+        .btn.on {
+            background: var(--lime);
+            color: #111
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 18px;
+            margin: 18px 0
+        }
+
+        .opts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px
+        }
+
+        .opts .btn {
+            justify-content: center;
+            padding: 16px;
+            font-size: 18px
+        }
+
+        .center {
+            text-align: center;
+            margin-top: 18px
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        .small {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .back {
+            margin-bottom: 8px
+        }
+
+        .ttl-lime {
+            color: var(--lime) !important
+        }
+
+        /* Tipos */
+        .chips {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px
+        }
+
+        .chip {
+            background: var(--moss);
+            color: #fff;
+            font-family: Verdana, sans-serif;
+            font-size: 14px;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-align: left
+        }
+
+        .chip::before {
+            content: "";
+            flex: none;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #fff;
+            border-radius: 3px
+        }
+
+        .chip.sel {
+            border-color: var(--lime)
+        }
+
+        .chip.sel::before {
+            background: var(--lime);
+            border-color: var(--lime)
+        }
+
+        .chip:disabled {
+            opacity: .3;
+            cursor: not-allowed
+        }
+
+        .chip.choc {
+            grid-column: 1/-1;
+            font-weight: bold;
+            justify-content: center
+        }
+
+        .cartel {
+            background: var(--panel);
+            border: 1px solid var(--lime);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0
+        }
+
+        .cartel p {
+            margin: 6px 0 12px
+        }
+
+        /* Editor */
+        label.lb {
+            display: block;
+            font-weight: 600;
+            color: #fff;
+            margin: 18px 0 6px
+        }
+
+        .in,
+        textarea.in {
+            width: 100%;
+            background: #111;
+            border: 1px solid var(--line);
+            color: #fff;
+            border-radius: 10px;
+            padding: 10px 12px;
+            outline: none
+        }
+
+        .in:focus {
+            border-color: var(--lime)
+        }
+
+        textarea.in {
+            min-height: 90px;
+            resize: vertical
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            margin: 8px 0;
+            align-items: center
+        }
+
+        .rowh {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-top: 22px
+        }
+
+        .step {
+            margin-top: 14px
+        }
+
+        .step h2,
+        .paso {
+            font: bold 1.15rem Verdana, sans-serif;
+            color: #fff;
+            margin: 14px 0 4px
+        }
+
+        .stephead {
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .preview {
+            max-width: 100%;
+            max-height: 260px;
+            border-radius: 12px;
+            margin-top: 10px;
+            display: block
+        }
+
+        .xbtn {
+            position: relative;
+            width: 34px;
+            height: 34px;
+            flex: none;
+            background: transparent;
+            border: 1px solid var(--lime);
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        .xbtn::before,
+        .xbtn::after {
+            content: "";
+            position: absolute;
+            left: 8px;
+            top: 15px;
+            width: 16px;
+            height: 2px;
+            background: var(--lime);
+            transform: rotate(45deg)
+        }
+
+        .xbtn::after {
+            transform: rotate(-45deg)
+        }
+
+        .pub {
+            width: 100%;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 17px;
+            margin-top: 24px;
+            padding: 14px
+        }
+
+        /* Recetas */
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            overflow: hidden;
+            margin: 14px 0
+        }
+
+        .card .photo {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            display: block
+        }
+
+        .cbody {
+            padding: 16px
+        }
+
+        .cbody h3 {
+            font-size: 1.3rem
+        }
+
+        .tipos {
+            margin: 4px 0;
+            color: var(--lime);
+            font-size: 14px
+        }
+
+        .meta {
+            margin: 2px 0 8px;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .sum {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 14px;
+            align-items: center;
+            font-size: 14px;
+            margin: 8px 0 12px
+        }
+
+        .stars {
+            display: inline-flex;
+            gap: 3px
+        }
+
+        .star {
+            width: 22px;
+            height: 22px;
+            background: #444;
+            border: 0;
+            padding: 0;
+            clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)
+        }
+
+        button.star {
+            cursor: pointer
+        }
+
+        .star.on {
+            background: var(--lime)
+        }
+
+        .detail {
+            margin-top: 14px;
+            border-top: 1px solid var(--line);
+            padding-top: 6px
+        }
+
+        .detail h4 {
+            margin: 16px 0 6px;
+            color: #fff;
+            font-size: 1.05rem
+        }
+
+        .detail ul {
+            margin: 0;
+            padding-left: 20px
+        }
+
+        .detail p {
+            margin: 4px 0;
+            white-space: pre-wrap
+        }
+
+        .acts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 16px 0
+        }
+
+        .tri {
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 9px solid currentColor
+        }
+
+        .tri.down {
+            border-bottom: 0;
+            border-top: 9px solid currentColor
+        }
+
+        .ico-copy {
+            position: relative;
+            width: 18px;
+            height: 17px;
+            display: inline-block
+        }
+
+        .ico-copy::before,
+        .ico-copy::after {
+            content: "";
+            position: absolute;
+            width: 8px;
+            height: 10px;
+            border: 2px solid currentColor;
+            border-radius: 2px
+        }
+
+        .ico-copy::before {
+            left: 0;
+            top: 5px
+        }
+
+        .ico-copy::after {
+            left: 6px;
+            top: 0
+        }
+
+        .ico-share {
+            position: relative;
+            display: inline-block;
+            width: 18px;
+            height: 18px
+        }
+
+        .ico-share::before {
+            content: "";
+            position: absolute;
+            left: 1px;
+            top: 6px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 10px -6px 0 currentColor, 10px 6px 0 currentColor
+        }
+
+        .ico-share::after,
+        .ico-share b {
+            content: "";
+            position: absolute;
+            left: 4px;
+            top: 8px;
+            width: 11px;
+            height: 1.5px;
+            background: currentColor;
+            transform-origin: 0 50%
+        }
+
+        .ico-share::after {
+            transform: rotate(-31deg)
+        }
+
+        .ico-share b {
+            transform: rotate(31deg)
+        }
+
+        .cm {
+            background: #111;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin: 8px 0;
+            font-size: 14px
+        }
+
+        .cm b {
+            color: #fff
+        }
+
+        .cm span {
+            color: var(--muted);
+            font-size: 12px;
+            margin-left: 6px
+        }
+
+        .cm p {
+            margin: 2px 0 0
+        }
+
+        /* Modal y aviso */
+        #ov {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .75);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px
+        }
+
+        #ov .box {
+            background: var(--panel);
+            border: 1px solid var(--lime);
+            border-radius: 14px;
+            padding: 18px;
+            width: 100%;
+            max-width: 380px
+        }
+
+        #ov .btn {
+            width: 100%;
+            justify-content: center;
+            margin-top: 8px
+        }
+
+        #toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%);
+            background: var(--lime);
+            color: #111;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 22px;
+            z-index: 10001;
+            max-width: 90vw;
+            text-align: center
+        }
+
+        /* ==========================================
+   PICHISOFT - ESTADO DE SESIÓN
+   (movido arriba, a la izquierda del link "Pichisoft", para no tapar nada)
+   ========================================== */
+        #pichisoft-session-status {
+            position: fixed;
+            top: 10px;
+            right: 110px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 8px 16px;
+            background: #000;
+            color: #20a84b;
+            border: 1px solid rgba(34, 197, 94, .25);
+            border-radius: 22px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .25);
+            font: 14px/1.3 Georgia, serif;
+            text-align: left;
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity .6s ease, transform .6s ease;
+            pointer-events: none
+        }
+
+        #pichisoft-session-status.hidden {
+            opacity: 0;
+            transform: translateY(-12px)
+        }
+
+        #pichisoft-session-status.success {
+            font-weight: bold
+        }
+
+        #pichisoft-session-status .ps-check {
+            display: none;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1
+        }
+
+        #pichisoft-session-status.success .ps-check {
+            display: inline-block;
+            animation: pichisoftCheck .8s cubic-bezier(.17, .89, .32, 1.49) forwards
+        }
+
+        @keyframes pichisoftCheck {
+            0% {
+                opacity: 0;
+                transform: scale(.2) rotate(-25deg)
+            }
+
+            60% {
+                opacity: 1;
+                transform: scale(1.25) rotate(8deg)
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0)
+            }
+        }
+
+        #pichisoft-session-profile {
+            position: fixed;
+            top: 6px;
+            right: 110px;
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 5px 14px 5px 5px;
+            background: #000;
+            color: #fff;
+            border: 1px solid rgba(34, 197, 94, .25);
+            border-radius: 25px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .25);
+            font-family: Georgia, serif;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(-12px) scale(.9);
+            transition: opacity .7s ease, transform .7s cubic-bezier(.17, .89, .32, 1.3);
+            pointer-events: none
+        }
+
+        #pichisoft-session-profile.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1)
+        }
+
+        #pichisoft-profile-picture img,
+        #pichisoft-profile-picture .profile-placeholder {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        #pichisoft-profile-picture .profile-placeholder {
+            background: #20a84b;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold
+        }
+
+        #pichisoft-profile-name {
+            font-size: 14px;
+            font-weight: bold;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        /* Celular */
+        @media (max-width:760px) {
+            :root {
+                --hh: 98px
+            }
+
+            .header {
+                top: 16px;
+                left: 15px
+            }
+
+            .logo {
+                font-size: 1.5rem
+            }
+
+            .byline {
+                font-size: .75rem
+            }
+
+            .plink {
+                top: 18px;
+                right: 12px;
+                font-size: 14px
+            }
+
+            #pichisoft-session-status,
+            #pichisoft-session-profile {
+                right: 10px;
+                top: 50px
+            }
+
+            #pichisoft-session-status {
+                font-size: 13px;
+                padding: 7px 14px
+            }
+
+            main {
+                padding-top: calc(var(--hh) + 84px)
+            }
+        }
+
+        @media (max-width:420px) {
+
+            .opts,
+            .chips {
+                gap: 8px
+            }
+
+            .chip {
+                font-size: 13px;
+                padding: 9px
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="topbar">
+        <div class="header"><span class="logo">PichonFood</span><span class="byline">- By Pichisoft -</span></div>
+        <a class="plink" href="https://pichisoft.github.io/web/">Pichisoft</a>
+    </div>
+
+    <!-- ===== Pichisoft - Estado de sesión ===== -->
+    <div id="pichisoft-session-status" role="status" aria-live="polite">
+        <span class="ps-check">✓</span>
+        <span class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span>
+    </div>
+    <div id="pichisoft-session-profile">
+        <div id="pichisoft-profile-picture"></div>
+        <span id="pichisoft-profile-name"></span>
+    </div>
+
+    <div class="searchbar">
+        <div class="sb-in">
+            <input id="q" type="search" placeholder="Buscar recetas por nombre" aria-label="Buscar recetas por nombre">
+            <button class="btn ghost" id="fbtn" type="button">Filtros</button>
+            <div id="fpanel" hidden>
+                <p>Elegí uno o más tipos: se mostrarán las recetas que los tengan todos.</p>
+                <div class="chips" id="fchips"></div>
+                <div class="center"><button class="btn ghost sm" id="fclear" type="button">Limpiar filtros</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <!-- Inicio -->
+        <section id="v-home" class="view">
+            <div class="opts">
+                <button class="btn" id="b-crear" type="button">+Crear receta</button>
+                <button class="btn" id="b-ver" type="button">Ver recetas</button>
+            </div>
+            <h2 id="t-recetas" style="margin-top:28px;scroll-margin-top:calc(var(--hh) + 80px)">Recetas:</h2>
+            <div id="list"></div>
+            <div class="panel">
+                <h2>Mis recetas</h2>
+                <div id="mine"></div>
+            </div>
+        </section>
+
+        <!-- Elegir tipo -->
+        <section id="v-tipo" class="view" hidden>
+            <button class="btn ghost sm back" data-go="home" type="button">Volver</button>
+            <div class="panel">
+                <h2 class="ttl-lime">Elije el tipo de receta</h2>
+                <p class="small">Podés elegir más de un tipo. Las opciones contrarias no se pueden combinar; desayuno,
+                    almuerzo, merienda y cena sí.</p>
+                <div class="chips" id="tchips"></div>
+                <div class="center"><button class="btn" id="b-tipo-ok" type="button">Crear receta</button></div>
+            </div>
+        </section>
+
+        <!-- Carteles -->
+        <section id="v-info" class="view" hidden>
+            <button class="btn ghost sm back" data-go="tipo" type="button">Volver</button>
+            <div id="carteles"></div>
+        </section>
+
+        <!-- Editor -->
+        <section id="v-edit" class="view" hidden>
+            <button class="btn ghost sm back" data-go="info" type="button">Volver</button>
+            <div class="panel">
+                <p class="tipos" id="e-tipos"></p>
+                <button class="btn" id="b-foto" type="button">Agregar foto de la comida</button>
+                <input type="file" id="foto" accept="image/*" hidden>
+                <div class="small" style="margin-top:6px">agrega una foto de cómo quedó tu receta...</div>
+                <img id="fprev" class="preview" alt="Vista previa" hidden>
+                <button class="btn ghost sm" id="fquit" type="button" hidden style="margin-top:8px">Quitar foto</button>
+
+                <label class="lb" for="e-name">Nombre de la receta (obligatorio)</label>
+                <input class="in" id="e-name" maxlength="80">
+
+                <div class="rowh">
+                    <h3>Ingredientes:</h3><button class="btn sm" id="b-ing" type="button">+Agregar ingrediente</button>
+                </div>
+                <div id="ings"></div>
+
+                <div class="rowh">
+                    <h3>Preparación</h3><button class="btn sm" id="b-paso" type="button">Agregar paso</button>
+                </div>
+                <textarea class="in" id="e-intro"
+                    placeholder="Escribí una nota o explicá la preparación. Si querés, separala en pasos."
+                    style="margin-top:8px"></textarea>
+                <div id="steps"></div>
+
+                <button class="btn pub" id="b-pub" type="button">Publicar receta</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="ov" hidden></div>
+    <div id="toast" hidden></div>
+
+    <!-- Detección de cuenta Pichisoft -->
+    <script>
+        (function () {
+            var CFG = {
+                apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+                authDomain: "pichisoft.firebaseapp.com",
+                projectId: "pichisoft",
+                storageBucket: "pichisoft.firebasestorage.app",
+                messagingSenderId: "690032082295",
+                appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+                measurementId: "G-K7HRKR8BJ1"
+            };
+            var V = "https://www.gstatic.com/firebasejs/12.3.0/";
+            var DUR_INICIO = 12000;
+            var DUR_MENSAJE = 6000;
+
+            var box = document.getElementById("pichisoft-session-status");
+            var txt = box.querySelector(".ps-text");
+            var prof = document.getElementById("pichisoft-session-profile");
+            var pic = document.getElementById("pichisoft-profile-picture");
+            var nameEl = document.getElementById("pichisoft-profile-name");
+            var t0 = Date.now();
+
+            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+            async function comprobar() {
+                try {
+                    var m = await Promise.all([
+                        import(V + "firebase-app.js"),
+                        import(V + "firebase-auth.js"),
+                        import(V + "firebase-firestore.js")
+                    ]);
+                    var app = m[0].initializeApp(CFG);
+                    var auth = m[1].getAuth(app);
+                    var db = m[2].getFirestore(app);
+
+                    var user = await Promise.race([
+                        new Promise(function (res) {
+                            m[1].onAuthStateChanged(auth, function (u) {
+                                window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
+                                res(u);
+                            });
+                        }),
+                        wait(15000).then(function () { throw new Error("tiempo agotado"); })
+                    ]);
+
+                    var perfil = {};
+                    if (user) {
+                        try {
+                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+                            if (snap.exists()) perfil = snap.data();
+                        } catch (e) {
+                            console.error("Pichisoft: no se pudo leer el perfil", e);
+                        }
+                    }
+                    return { user: user, perfil: perfil };
+                } catch (e) {
+                    console.error("Pichisoft:", e);
+                    return { error: true };
+                }
+            }
+
+            async function aviso(texto) {
+                txt.textContent = texto;
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+            }
+
+            (async function () {
+                var r = await comprobar();
+                await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
+
+                if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
+                if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
+
+                box.classList.add("success");
+                txt.textContent = "Sesión iniciada";
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+
+                var nombre = r.perfil.username || "Usuario";
+                nameEl.textContent = nombre;
+                var foto = r.perfil.photo;
+                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
+                    var img = new Image();
+                    img.src = foto;
+                    img.alt = "Foto de perfil";
+                    pic.replaceChildren(img);
+                } else {
+                    var ph = document.createElement("div");
+                    ph.className = "profile-placeholder";
+                    ph.textContent = nombre.charAt(0).toUpperCase();
+                    pic.replaceChildren(ph);
+                }
+                await wait(450);
+                prof.classList.add("visible");
+            })();
+        })();
+    </script>
+
+    <!-- App PichonFood -->
+    <script type="module">
+        const V = "https://www.gstatic.com/firebasejs/12.3.0/";
+        const $ = s => document.querySelector(s);
+        const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+        const TYPES = [["dulce", "Comida dulce"], ["salada", "Comida salada"], ["desayuno", "Comida de desayuno"], ["cena", "Comida de cena"], ["almuerzo", "Comida de almuerzo"], ["merienda", "Comida de merienda"], ["postres", "Postres"], ["carnes", "Carnes"], ["fruta", "Fruta"], ["verdura", "Verdura"], ["chocolate", "SOLO CHOCOLATE"]];
+        const LBL = Object.fromEntries(TYPES);
+        const INFO = {
+            dulce: "Harás una receta de comida dulce, por ejemplo, una torta.",
+            salada: "Harás una receta de comida salada, por ejemplo, una ensalada.",
+            desayuno: "Harás una receta de comida de desayuno, por ejemplo, galletas.",
+            cena: "Harás una receta de comida de cena, por ejemplo, un budín.",
+            almuerzo: "Harás una receta de comida de almuerzo, por ejemplo, un puré casero.",
+            merienda: "Harás de receta una comida de merienda, por ejemplo, un postre.",
+            postres: "Harás de receta un postre, por ejemplo, un tiramisú.",
+            carnes: "Harás una receta de una carne, por ejemplo, pollo al libro. (Puede ser una receta que tenga una carne, no tiene que ser solamente carne. Por ejemplo: fideos con pollo).",
+            fruta: "Harás una receta de una fruta, por ejemplo, banana con dulce de leche casero.",
+            verdura: "Harás una receta de una verdura, por ejemplo, papas fritas con carne.",
+            chocolate: "¡Harás una receta de una comida que tenga chocolate! Puede ser tanto una torta abundante con mucho chocolate, como también galletas con chips de chocolate."
+        };
+        const CONF = { dulce: ["salada", "carnes", "verdura"], salada: ["postres", "chocolate"], postres: ["carnes", "verdura"], carnes: ["fruta", "chocolate"], verdura: ["chocolate"] };
+        const conflict = (a, b) => (CONF[a] || []).includes(b) || (CONF[b] || []).includes(a);
+
+        let db = null, fs = null, user = null, uname = "Usuario", recipes = [], photo = "", curTypes = [];
+        const sel = [], filt = [], open = new Set(), drafts = {};
+        const toast = m => { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3200) };
+        const need = () => user ? true : (toast("Necesitás una cuenta de Pichisoft para hacer esto"), false);
+
+        /* Vistas */
+        function go(v) { document.querySelectorAll(".view").forEach(s => s.hidden = s.id !== "v-" + v); scrollTo(0, 0) }
+        document.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) go(b.dataset.go) });
+
+        /* Chips */
+        function chips(el, arr, noConf, cb) {
+            el.innerHTML = TYPES.map(([k, l]) => {
+                const dis = noConf && !arr.includes(k) && arr.some(s => conflict(s, k));
+                return `<button type="button" class="chip${arr.includes(k) ? " sel" : ""}${k === "chocolate" ? " choc" : ""}" data-k="${k}" ${dis ? "disabled" : ""}>${l}</button>`
+            }).join("");
+            el.onclick = e => {
+                const b = e.target.closest(".chip"); if (!b || b.disabled) return; const k = b.dataset.k, i = arr.indexOf(k);
+                i < 0 ? arr.push(k) : arr.splice(i, 1); chips(el, arr, noConf, cb); cb && cb()
+            };
+        }
+        chips($("#tchips"), sel, true);
+        chips($("#fchips"), filt, false, () => { $("#fbtn").textContent = filt.length ? `Filtros (${filt.length})` : "Filtros"; render() });
+        $("#fbtn").onclick = () => $("#fpanel").hidden = !$("#fpanel").hidden;
+        $("#fclear").onclick = () => { filt.length = 0; chips($("#fchips"), filt, false, () => { }); $("#fbtn").textContent = "Filtros"; render() };
+        $("#q").oninput = render;
+
+        /* Inicio */
+        $("#b-crear").onclick = () => { sel.length = 0; chips($("#tchips"), sel, true); go("tipo") };
+        $("#b-ver").onclick = () => $("#t-recetas").scrollIntoView();
+        $("#b-tipo-ok").onclick = () => {
+            if (!sel.length) return toast("Elegí al menos un tipo de receta");
+            curTypes = [...sel];
+            $("#carteles").innerHTML = curTypes.map(k => `<div class="cartel"><h3>${LBL[k]}</h3><p>${INFO[k]}</p><button class="btn" data-cook type="button">¡A cocinar!</button></div>`).join("");
+            go("info")
+        };
+        $("#carteles").onclick = e => { if (e.target.closest("[data-cook]")) { $("#e-tipos").textContent = "Tipo de comida: " + curTypes.map(k => LBL[k]).join(", "); go("edit") } };
+
+        /* Editor */
+        const addIng = () => { const d = document.createElement("div"); d.className = "row"; d.innerHTML = '<input class="in ing" maxlength="100" placeholder="Ej: 3 huevos"><button class="xbtn" type="button" aria-label="Quitar ingrediente"></button>'; d.querySelector("button").onclick = () => d.remove(); $("#ings").append(d); d.querySelector("input").focus() };
+        $("#b-ing").onclick = addIng;
+        const renum = () => document.querySelectorAll("#steps .step").forEach((s, i) => s.querySelector("h2").textContent = `Paso ${i + 1}:`);
+        $("#b-paso").onclick = () => { const d = document.createElement("div"); d.className = "step"; d.innerHTML = '<div class="stephead"><h2></h2><button class="xbtn" type="button" aria-label="Quitar paso"></button></div><textarea class="in" placeholder="Escribí este paso"></textarea>'; d.querySelector("button").onclick = () => { d.remove(); renum() }; $("#steps").append(d); renum(); d.querySelector("textarea").focus() };
+        $("#b-foto").onclick = () => $("#foto").click();
+        $("#foto").onchange = async e => { const f = e.target.files[0]; if (!f) return; try { photo = await compress(f); $("#fprev").src = photo; $("#fprev").hidden = false; $("#fquit").hidden = false } catch { toast("No se pudo leer la imagen") } };
+        $("#fquit").onclick = () => { photo = ""; $("#fprev").hidden = true; $("#fquit").hidden = true; $("#foto").value = "" };
+        function compress(file) { return new Promise((ok, no) => { const r = new FileReader(); r.onload = () => { const i = new Image(); i.onload = () => { const k = Math.min(1, 800 / Math.max(i.width, i.height)), c = document.createElement("canvas"); c.width = i.width * k; c.height = i.height * k; c.getContext("2d").drawImage(i, 0, 0, c.width, c.height); ok(c.toDataURL("image/jpeg", .7)) }; i.onerror = no; i.src = r.result }; r.onerror = no; r.readAsDataURL(file) }) }
+        $("#b-pub").onclick = async () => {
+            const name = $("#e-name").value.trim();
+            if (!name) return toast("Poné el nombre de la receta");
+            if (!need()) return;
+            if (!db) return toast("Sin conexión con Pichisoft");
+            const ingredients = [...document.querySelectorAll(".ing")].map(i => i.value.trim()).filter(Boolean);
+            const steps = [...document.querySelectorAll("#steps textarea")].map(t => t.value.trim());
+            try {
+                await fs.addDoc(fs.collection(db, "recipes"), { name, types: curTypes, ingredients, intro: $("#e-intro").value.trim(), steps, photo, authorId: user.uid, authorName: uname, createdAt: Date.now(), likes: {}, ratings: {}, comments: [] });
+                $("#e-name").value = ""; $("#e-intro").value = ""; $("#ings").innerHTML = ""; $("#steps").innerHTML = ""; $("#fquit").click();
+                toast("Receta publicada"); go("home")
+            } catch (err) { console.error(err); toast("No se pudo publicar la receta") }
+        };
+
+        /* Render */
+        const stars = (n, act) => { const t = act ? "button" : "span"; let h = '<span class="stars">'; for (let i = 1; i <= 5; i++)h += `<${t} ${act ? `data-act="rate" data-v="${i}" aria-label="${i} estrellas"` : ""} class="star${i <= n ? " on" : ""}"></${t}>`; return h + "</span>" };
+        const fecha = ms => new Date(ms).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) + " hs";
+        const stats = r => { const rv = Object.values(r.ratings || {}), lv = Object.values(r.likes || {}); return { n: rv.length, avg: rv.length ? rv.reduce((a, b) => a + b, 0) / rv.length : 0, up: lv.filter(v => v === 1).length, down: lv.filter(v => v === -1).length } };
+        function card(r) {
+            const s = stats(r), uid = user && user.uid, my = uid ? (r.ratings || {})[uid] || 0 : 0, ml = uid ? (r.likes || {})[uid] : 0, isOpen = open.has(r.id);
+            const img = typeof r.photo === "string" && r.photo.startsWith("data:image/") ? `<img class="photo" src="${esc(r.photo)}" alt="Foto de ${esc(r.name)}">` : "";
+            const steps = (r.steps || []).map((t, i) => `<h2 class="paso">Paso ${i + 1}:</h2><p>${esc(t)}</p>`).join("");
+            const cms = (r.comments || []).map(c => `<div class="cm"><b>${esc(c.name)}</b><span>${fecha(c.at)}</span><p>${esc(c.text)}</p></div>`).join("") || '<p class="small">Todavía no hay comentarios.</p>';
+            return `<article class="card" id="r-${r.id}" data-id="${r.id}">${img}<div class="cbody">
+  <h3>${esc(r.name)}</h3>
+  <p class="tipos">Tipo de comida: ${esc((r.types || []).map(k => LBL[k] || k).join(", "))}</p>
+  <p class="meta">Por ${esc(r.authorName || "Usuario")} - ${fecha(r.createdAt)}</p>
+  <div class="sum">${stars(Math.round(s.avg), false)}<span>${s.n ? s.avg.toFixed(1) + " / 5 (" + s.n + ")" : "Sin calificar"}</span><span>Me gusta: ${s.up}</span><span>No me gusta: ${s.down}</span></div>
+  <button class="btn ghost sm" data-act="toggle" type="button">${isOpen ? "Ocultar receta" : "Ver receta"}</button>
+  <div class="detail" ${isOpen ? "" : "hidden"}>
+   <h4>Ingredientes</h4>${(r.ingredients || []).length ? "<ul>" + r.ingredients.map(i => `<li>${esc(i)}</li>`).join("") + "</ul>" : '<p class="small">Sin ingredientes.</p>'}
+   <h4>Preparación</h4>${r.intro ? `<p>${esc(r.intro)}</p>` : ""}${steps}
+   <h4>Tu calificación</h4>${stars(my, true)}
+   <div class="acts">
+    <button class="btn ghost sm${ml === 1 ? " on" : ""}" data-act="like" type="button"><i class="tri"></i>Me gusta</button>
+    <button class="btn ghost sm${ml === -1 ? " on" : ""}" data-act="dislike" type="button"><i class="tri down"></i>No me gusta</button>
+    <button class="btn ghost sm" data-act="share" type="button"><i class="ico-share"><b></b></i>Compartir</button>
+    <button class="btn ghost sm" data-act="copy" type="button"><i class="ico-copy"></i>Copiar receta</button>
+   </div>
+   <h4>Comentarios</h4>${cms}
+   <div class="row"><input class="in cin" maxlength="300" placeholder="Escribí un comentario" value="${esc(drafts[r.id] || "")}"><button class="btn sm" data-act="comment" type="button">Comentar</button></div>
+  </div></div></article>`;
+        }
+        function render() {
+            const q = $("#q").value.trim().toLowerCase();
+            const ok = r => (!q || (r.name || "").toLowerCase().includes(q)) && filt.every(k => (r.types || []).includes(k));
+            const all = recipes.filter(ok), mine = user ? all.filter(r => r.authorId === user.uid) : [];
+            $("#list").innerHTML = all.map(card).join("") || `<p class="muted">${db ? "No hay recetas para mostrar." : "Conectando con Pichisoft..."}</p>`;
+            $("#mine").innerHTML = !user ? '<p class="muted">Iniciá sesión en Pichisoft para ver tus recetas.</p>' : (mine.map(card).join("") || '<p class="muted">Todavía no publicaste recetas.</p>');
+        }
+        document.addEventListener("input", e => { if (e.target.classList.contains("cin")) drafts[e.target.closest(".card").dataset.id] = e.target.value });
+
+        /* Acciones */
+        const recipeText = r => `${r.name}\nTipo de comida: ${(r.types || []).map(k => LBL[k]).join(", ")}\n\nIngredientes:\n${(r.ingredients || []).map(i => "- " + i).join("\n")}\n\nPreparación:\n${r.intro || ""}\n${(r.steps || []).map((t, i) => `Paso ${i + 1}: ${t}`).join("\n")}\n\nReceta de PichonFood - By Pichisoft`;
+        async function copy(t, m) { try { await navigator.clipboard.writeText(t) } catch { const a = document.createElement("textarea"); a.value = t; document.body.append(a); a.select(); document.execCommand("copy"); a.remove() } toast(m) }
+        const link = id => location.href.split("#")[0] + "#receta=" + id;
+        function shareDlg(r) {
+            const u = encodeURIComponent(link(r.id)), t = encodeURIComponent("Mirá esta receta en PichonFood: " + r.name);
+            const L = [["Copiar link", null], ["WhatsApp", "https://wa.me/?text=" + t + "%20" + u], ["Telegram", "https://t.me/share/url?url=" + u + "&text=" + t], ["Facebook", "https://www.facebook.com/sharer/sharer.php?u=" + u], ["X", "https://twitter.com/intent/tweet?text=" + t + "&url=" + u], ["Correo", "mailto:?subject=" + encodeURIComponent(r.name) + "&body=" + t + "%20" + u]];
+            const o = $("#ov"); o.hidden = false;
+            o.innerHTML = `<div class="box"><h3>Compartir receta</h3>${L.map(([n, h], i) => `<button class="btn ghost" data-i="${i}" type="button">${n}</button>`).join("")}${navigator.share ? '<button class="btn ghost" data-i="n" type="button">Más opciones</button>' : ""}<button class="btn" data-i="x" type="button">Cerrar</button></div>`;
+            o.onclick = e => {
+                const b = e.target.closest("[data-i]"); if (e.target === o || (b && b.dataset.i === "x")) { o.hidden = true; return } if (!b) return;
+                if (b.dataset.i === "n") navigator.share({ title: r.name, url: link(r.id) }).catch(() => { });
+                else if (b.dataset.i === "0") copy(link(r.id), "Link copiado");
+                else window.open(L[b.dataset.i][1], "_blank", "noopener")
+            }
+        }
+        document.addEventListener("click", async e => {
+            const b = e.target.closest("[data-act]"); if (!b) return;
+            const c = b.closest(".card"), r = recipes.find(x => x.id === c.dataset.id), a = b.dataset.act; if (!r) return;
+            const ref = fs.doc(db, "recipes", r.id);
+            try {
+                if (a === "toggle") { open.has(r.id) ? open.delete(r.id) : open.add(r.id); render() }
+                else if (a === "copy") copy(recipeText(r), "Receta copiada")
+                else if (a === "share") shareDlg(r)
+                else if (a === "rate") { if (need()) await fs.updateDoc(ref, { ["ratings." + user.uid]: +b.dataset.v }) }
+                else if (a === "like" || a === "dislike") { if (!need()) return; const v = a === "like" ? 1 : -1, cur = (r.likes || {})[user.uid]; await fs.updateDoc(ref, { ["likes." + user.uid]: cur === v ? fs.deleteField() : v }) }
+                else if (a === "comment") { if (!need()) return; const i = c.querySelector(".cin"), t = i.value.trim(); if (!t) return; await fs.updateDoc(ref, { comments: fs.arrayUnion({ uid: user.uid, name: uname, text: t, at: Date.now() }) }); drafts[r.id = r.id] = ""; }
+            } catch (err) { console.error(err); toast("No se pudo completar la acción") }
+        });
+
+        /* Firebase (usa la sesión detectada por el script de Pichisoft) */
+        async function setUser(u) {
+            user = u; uname = "Usuario";
+            if (u) { try { const s = await fs.getDoc(fs.doc(db, "users", u.uid)); if (s.exists() && s.data().username) uname = s.data().username } catch { } }
+            render()
+        }
+        (async () => {
+            try {
+                fs = await import(V + "firebase-firestore.js"); const au = await import(V + "firebase-auth.js");
+                let t = 0; while (!window.PichisoftFirebase && t++ < 250) await new Promise(r => setTimeout(r, 100));
+                const PF = window.PichisoftFirebase; if (!PF) throw new Error("sin conexión");
+                db = PF.db; await setUser(PF.currentUser);
+                au.onAuthStateChanged(PF.auth, setUser);
+                fs.onSnapshot(fs.query(fs.collection(db, "recipes"), fs.orderBy("createdAt", "desc")), snap => {
+                    recipes = snap.docs.map(d => ({ id: d.id, ...d.data() })); render();
+                    const m = location.hash.match(/receta=(\w+)/);
+                    if (m && !onSnapshot.done) { onSnapshot.done = 1; open.add(m[1]); render(); const el = document.getElementById("r-" + m[1]); el && el.scrollIntoView() }
+                }, err => { console.error(err); $("#list").innerHTML = '<p class="muted">No se pudieron cargar las recetas.</p>' });
+            } catch (e) { console.error(e); render(); $("#list").innerHTML = '<p class="muted">No se pudo conectar con Pichisoft.</p>' }
+        })();
+        const onSnapshot = {};
+        render();
+    </script>
+</body>
+
+</html>
