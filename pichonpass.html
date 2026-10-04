@@ -15,18 +15,17 @@
    PICHONPASS BASE
    ========================================================= */
 
+        /* =========================================================
+           PICHONPASS BASE
+           ========================================================= */
         body {
             margin: 0;
             padding: 20px;
             min-height: 100vh;
             font-family: Arial, sans-serif;
-
-            body {
-                transition:
-                    background-color 0.3s ease,
-                    color 0.3s ease;
-            }
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
+
 
         body.dark {
             background: #111216;
@@ -41,13 +40,17 @@
         /* =========================================================
    BARRA SUPERIOR
    ========================================================= */
-
+        /* =========================================================
+           BARRA SUPERIOR (CORREGIDA)
+           ========================================================= */
         .topbar {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             gap: 15px;
-            margin-bottom: 25px;
+            margin-bottom: 35px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(128, 128, 128, 0.2);
         }
 
         .topbar h1 {
@@ -80,15 +83,16 @@
 
         .topbar-right {
             display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 6px;
+            flex-direction: row;
+            /* Alinea el link y el emoji al lado del otro */
+            align-items: center;
+            gap: 15px;
+            flex-shrink: 0;
         }
 
         /* =========================================================
-   BOTÓN DE TEMA
-   ========================================================= */
-
+           BOTÓN DE TEMA
+           ========================================================= */
         #themeBtn {
             width: 42px;
             height: 38px;
@@ -100,9 +104,8 @@
         }
 
         /* =========================================================
-   CONTENIDO
-   ========================================================= */
-
+           CONTENIDO CENTRAL
+           ========================================================= */
         #auth,
         #app {
             max-width: 1050px;
@@ -111,6 +114,8 @@
 
         #auth {
             max-width: 420px;
+            margin-top: 50px;
+            /* Despeja el formulario para usar el centro */
         }
 
         input,
@@ -1396,12 +1401,14 @@
         }
 
         .master-password-warning {
-            margin: 10px auto 14px;
-            max-width: 320px;
-            padding: 9px 12px;
+            margin: 12px 0 16px;
+            /* Remueve el 'auto' lateral para alinear a la izquierda */
+            width: 100%;
+            /* Hace que ocupe el mismo ancho que los inputs */
+            padding: 11px 14px;
             box-sizing: border-box;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 13px;
             line-height: 1.4;
             text-align: left;
             color: #d8b85c;
@@ -1409,6 +1416,7 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
             user-select: none;
         }
+
 
         .pichisoft-link {
             font-family: "Times New Roman", Times, serif;
@@ -1438,74 +1446,38 @@
 
 <body class="dark">
 
-
+    <!-- BARRA SUPERIOR LIMPIA (Sin inicios de sesión adentro) -->
     <div class="topbar">
-
-        <div style="
-            display:flex;
-            align-items:center;
-            gap:10px;
-            flex-wrap:wrap;
-        ">
-
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
             <h1>
                 PichonPass
                 <span class="byline">
                     - By Pichisoft -
                 </span>
             </h1>
-
             <span id="premiumBadge" class="premium-badge">
                 VERSIÓN PREMIUM
             </span>
-
         </div>
-
-
         <div class="topbar-right">
-
-            <a class="pichisoft-link" href="https://pichisoft.github.io/web/" target="_blank" rel="noopener noreferrer">
+            <a class="pichisoft-link" href="https://github.io" target="_blank" rel="noopener noreferrer">
                 Pichisoft
             </a>
-
             <button id="themeBtn" onclick="toggleTheme()">
                 🌙
             </button>
-
         </div>
-        <!-- LOGIN -->
-        <div id="auth">
+    </div>
 
-            <h3>Acceder</h3>
-
-            <input id="username" placeholder="Nombre de usuario">
-            <input id="password" type="password" placeholder="Contraseña">
-
-            <div class="master-password-warning">
-                🔐 <strong>Importante:</strong> si olvidas tu contraseña maestra, o quieres editarla para mayor
-                seguridad,
-                no podrás recuperarla, por lo tanto, te recomendamos que
-                elijas una contraseña larga, difícil, no la compartas con nadie y recuerda anotarla en un lugar seguro.
-            </div>
-
-            <button id="loginBtn" onclick="login()">Entrar</button>
-            <button onclick="resetAll()">Restablecer datos</button>
-
-            <div id="error" style="color:red;display:none">
-                Usuario o contraseña incorrectos
-            </div>
-
-        </div>
-    </div><!-- Cierre de .topbar -->
-
-    <!-- PEGALO ACÁ (Fuera de la barra superior) -->
+    <!-- CONTENEDOR UNICO DE AUTENTICACIÓN (Toma el espacio central libre) -->
     <div id="auth">
         <h3>Acceder</h3>
         <input id="username" placeholder="Nombre de usuario">
         <input id="password" type="password" placeholder="Contraseña">
         <div class="master-password-warning">
             🔐 <strong>Importante:</strong> si olvidas tu contraseña maestra, o quieres editarla para mayor seguridad,
-            no podrás recuperarla...
+            no podrás recuperarla, por lo tanto, te recomendamos que elijas una contraseña larga, difícil, no la
+            compartas con nadie y recuerda anotarla en un lugar seguro.
         </div>
         <button id="loginBtn" onclick="login()">Entrar</button>
         <button onclick="resetAll()">Restablecer datos</button>
@@ -1514,7 +1486,9 @@
         </div>
     </div>
 
+    <!-- EL ELEMENTO #APP CONTINÚA IGUAL ABAJO -->
     <div id="app" style="display:none">
+
 
         <details class="new-record" id="newRecordPanel">
 
