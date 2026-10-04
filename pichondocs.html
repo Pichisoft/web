@@ -1126,12 +1126,21 @@
 
         }
 
+
         function newNote() {
+            // Primero guarda la nota que estaba abierta.
             flushSave();
+
             pushUndoSnapshot();
 
-            let n = {
-                id: Date.now(),
+            // Evita IDs duplicados si se crean notas muy rápido.
+            let newId = Date.now();
+            while (notes.some(note => note.id === newId)) {
+                newId++;
+            }
+
+            const n = {
+                id: newId,
                 title: "",
                 content: "",
                 color: selectedColor
@@ -1140,12 +1149,20 @@
             notes.unshift(n);
             currentId = n.id;
 
+            // Limpia el editor directamente, sin cargar la nota anterior.
+            titleView.innerHTML = "";
+            content.innerHTML = "";
+
+            activeEditable = titleView;
+            savedRange = null;
+
+            exitSearch();
             saveStorage();
             render();
-            loadNote(n.id);
+            renderPalette();
+
             titleView.focus();
         }
-
         function loadNote(id) {
             flushSave();
 
@@ -1169,53 +1186,84 @@
         }
 
         /* ================= SISTEMA DE GUARDADO MEJORADO ================= */
+
         function scheduleSave() {
             clearTimeout(saveTimeout);
+
             const tag = document.getElementById("autosaveTag");
+
             if (tag) tag.innerText = "Guardando...";
 
             saveTimeout = setTimeout(() => {
-                silentSave();
+                saveTimeout = null;
+
+                const guardado = silentSave();
+
                 if (tag) {
-                    tag.innerText = "Guardado ✓";
-                    setTimeout(() => {
-                        if (tag && tag.innerText === "Guardado ✓") tag.innerText = "";
-                    }, 1500);
+                    tag.innerText = guardado
+                        ? "Guardado ✓"
+                        : "Error al guardar";
+
+                    if (guardado) {
+                        setTimeout(() => {
+                            if (tag.innerText === "Guardado ✓") {
+                                tag.innerText = "";
+                            }
+                        }, 2000);
+                    }
                 }
             }, 500);
         }
 
         function flushSave() {
-            if (saveTimeout) {
+            if (saveTimeout !== null) {
                 clearTimeout(saveTimeout);
                 saveTimeout = null;
             }
-            silentSave();
+
+            return silentSave();
         }
 
         function silentSave() {
-            let n = getCurrentNote();
-            if (!n) return;
+            const n = getCurrentNote();
+
+            if (!n) return false;
 
             const newTitle = titleView.innerHTML;
             const newContent = content.innerHTML;
             const newColor = selectedColor;
 
-            if (n.title !== newTitle || n.content !== newContent || n.color !== newColor) {
+            const changed =
+                n.title !== newTitle ||
+                n.content !== newContent ||
+                n.color !== newColor;
+
+            if (changed) {
                 pushUndoSnapshot();
+
+                n.title = newTitle;
+                n.content = newContent;
+                n.color = newColor;
             }
 
-            n.title = newTitle;
-            n.content = newContent;
-            n.color = newColor;
+            try {
+                localStorage.setItem(
+                    STORAGE_KEY,
+                    JSON.stringify(notes)
+                );
 
-            // Forzamos al navegador a guardar en el disco de forma inmediata
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+                const query = document.getElementById("globalSearch")
+                    ? document.getElementById("globalSearch").value.trim()
+                    : "";
 
-            // Actualiza la lista de notas de la izquierda sin romper nada
-            const query = document.getElementById("globalSearch") ? globalSearch.value.trim() : "";
-            if (!query) {
-                render();
+                if (!query) {
+                    render();
+                }
+
+                return true;
+            } catch (error) {
+                console.error("Error al guardar las notas:", error);
+                return false;
             }
         }
 
