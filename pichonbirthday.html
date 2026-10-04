@@ -1524,16 +1524,15 @@
                 })()
             }
             else list();
-            // Buscamos el botón de guardar por su ID y le damos la orden de funcionar
             document.addEventListener('DOMContentLoaded', () => {
                 const btnGuardar = document.getElementById('sg') || document.querySelector('.ok');
                 if (btnGuardar) {
                     btnGuardar.onclick = () => {
-                        console.log("¡Botón presionado con éxito!");
+                        console.log("¡Botón presionado, ejecutando save!");
                         if (typeof save === 'function') {
                             save('gift');
                         } else {
-                            alert("La función save no está definida.");
+                            console.error("La función save no está definida.");
                         }
                     };
                 } else {
