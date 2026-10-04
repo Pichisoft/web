@@ -7,21 +7,14 @@ service cloud.firestore {
 
       allow read, write: if request.auth != null
                          && request.auth.uid == userId;
+
+      // Subcolección de datos (pichisoft-datos.js)
+      match /data/{docId} {
+        allow read, write: if request.auth != null
+                           && request.auth.uid == userId;
+      }
     }
+
+    // Todo lo demás queda denegado por defecto
   }
-}
-rules_version = '2';
-
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    match /users/{userId} {
-
-      allow read, write: if request.auth != null
-                         && request.auth.uid == userId;
-    }
-  }
-}
-match /users/{uid}/data/{docId} {
-  allow read, write: if request.auth != null && request.auth.uid == uid;
 }
