@@ -610,7 +610,8 @@
         }
 
         /* Modal y aviso */
-        #ov {
+        #ov,
+        #cf {
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, .75);
@@ -621,7 +622,8 @@
             padding: 16px
         }
 
-        #ov .box {
+        #ov .box,
+        #cf .box {
             background: var(--panel);
             border: 1px solid var(--lime);
             border-radius: 14px;
@@ -630,10 +632,15 @@
             max-width: 380px
         }
 
-        #ov .btn {
+        #ov .btn,
+        #cf .btn {
             width: 100%;
             justify-content: center;
             margin-top: 8px
+        }
+
+        #cf p {
+            margin: 8px 0 14px
         }
 
         #toast {
@@ -925,6 +932,7 @@
     </main>
 
     <div id="ov" hidden></div>
+    <div id="cf" hidden></div>
     <div id="toast" hidden></div>
 
     <!-- Detección de cuenta Pichisoft -->
@@ -1055,6 +1063,15 @@
         const toast = m => { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 5500) };
         const need = () => user ? true : (toast("No se detectó tu sesión de Pichisoft. Iniciá sesión y abrí la app desde el mismo sitio (pichisoft.github.io)."), false);
 
+        function ask(t, m, ok) {
+            return new Promise(res => {
+                const o = $("#cf"); o.hidden = false;
+                o.innerHTML = `<div class="box" role="dialog" aria-modal="true"><h3 class="ttl-lime">${esc(t)}</h3><p>${esc(m)}</p><button class="btn" data-v="1" type="button">${esc(ok)}</button><button class="btn ghost" data-v="0" type="button">Cancelar</button></div>`;
+                const done = v => { o.hidden = true; o.onclick = null; res(v) };
+                o.onclick = e => { const b = e.target.closest("[data-v]"); if (b) done(b.dataset.v === "1"); else if (e.target === o) done(false) }
+            })
+        }
+
         /* Vistas */
         function go(v) { document.querySelectorAll(".view").forEach(s => s.hidden = s.id !== "v-" + v); scrollTo(0, 0) }
         document.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) go(b.dataset.go) });
@@ -1182,8 +1199,8 @@
                 else if (a === "copy") copy(recipeText(r), "Receta copiada")
                 else if (a === "share") shareDlg(r)
                 else if (a === "rate") { if (!need()) return; const v = +b.dataset.v; r.ratings = { ...(r.ratings || {}), [user.uid]: v }; render(); await fs.updateDoc(ref, { ["ratings." + user.uid]: v }); toast("Calificaste con " + v + (v === 1 ? " estrella" : " estrellas")) }
-                else if (a === "delcomment") { const cm = (r.comments || [])[+b.dataset.i]; if (!user || !cm || cm.uid !== user.uid) return; if (confirm("¿Eliminar tu comentario?")) await fs.updateDoc(ref, { comments: fs.arrayRemove(cm) }) }
-                else if (a === "delete") { if (user && r.authorId === user.uid && confirm("¿Eliminar esta receta? No se puede deshacer.")) { await fs.deleteDoc(ref); open.delete(r.id); toast("Receta eliminada") } }
+                else if (a === "delcomment") { const cm = (r.comments || [])[+b.dataset.i]; if (!user || !cm || cm.uid !== user.uid) return; if (await ask("Eliminar comentario", "¿Querés eliminar tu comentario?", "Eliminar")) await fs.updateDoc(ref, { comments: fs.arrayRemove(cm) }) }
+                else if (a === "delete") { if (user && r.authorId === user.uid && await ask("Eliminar receta", "¿Querés eliminar esta receta? No se puede deshacer.", "Eliminar")) { await fs.deleteDoc(ref); open.delete(r.id); toast("Receta eliminada") } }
                 else if (a === "like" || a === "dislike") { if (!need()) return; const v = a === "like" ? 1 : -1, cur = (r.likes || {})[user.uid]; await fs.updateDoc(ref, { ["likes." + user.uid]: cur === v ? fs.deleteField() : v }) }
                 else if (a === "comment") { if (!need()) return; const i = c.querySelector(".cin"), t = i.value.trim(); if (!t) return; await fs.updateDoc(ref, { comments: fs.arrayUnion({ uid: user.uid, name: uname, text: t, at: Date.now() }) }); drafts[r.id] = ""; }
             } catch (err) { console.error(err); render(); toast("No se pudo completar la acción: " + (err.code || err.message)) }
