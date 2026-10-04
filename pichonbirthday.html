@@ -1452,12 +1452,14 @@
                 try { await dbPut(g) } catch (e) { modal('No se pudo guardar', mk('p', '', 'El navegador no permitió guardar (espacio lleno o modo privado).')); return }
                 if (kind != 'gift') { modal('Borrador guardado', mk('p', '', 'Podés cerrar y seguir después desde "Mis regalos y borradores" en la pantalla de inicio.')); return }
                 // CÓDIGO NUEVO: Comprime el regalo completo en texto para meterlo al link
+                // CORRECCIÓN: Usamos [0] para obtener la dirección web limpia en formato de texto
                 const datosComprimidos = btoa(unescape(encodeURIComponent(JSON.stringify(g))));
                 const link = location.href.split(/[?#]/)[0] + '?data=' + datosComprimidos;
                 const w = mk('div');
                 w.innerHTML = '<p>¡Tu regalo está guardado! Este es su link:</p><a href="' + link + '"></a><p></p>';
                 w.querySelector('a').textContent = link;
                 w.lastChild.textContent = 'El regalo se guardó directamente en el enlace. ¡Ya lo podés compartir!';
+
 
                 modal('Regalo guardado', w, () => { location.href = link }, 'Ir al regalo')
             }
@@ -1475,6 +1477,7 @@
                 })
             }
             // CÓDIGO NUEVO: Lee el regalo comprimido desde la URL directamente
+            // CORRECCIÓN: Detecta el link pesado, si existe lo abre, si no va al listado normal
             const paramData = new URLSearchParams(location.search).get('data');
             if (paramData) {
                 $('#mine').innerHTML = '<h3>Cargando regalo...</h3>';
@@ -1488,7 +1491,20 @@
                     $('#mine').innerHTML = '<h3>No se pudo abrir este regalo o el link está incompleto.</h3>';
                 }
             }
-            else list();
+            else {
+                // Si no hay datos en la URL, maneja el comportamiento normal de la app
+                const q = new URLSearchParams(location.search).get('g');
+                if (q) {
+                    $('#mine').innerHTML = '<h3>Cargando regalo...</h3>';
+                    (async () => {
+                        let g = await dbGet(q); if (!g) g = await cloud(q, null, 150);
+                        if (g) { S = loadS(g); M = g.media || {}; $('#home').classList.add('off'); view(false, true) }
+                        else $('#mine').innerHTML = '<h3>No se encontró este regalo.</h3>'
+                    })()
+                }
+                else list();
+            }
+
 
         })();
 
