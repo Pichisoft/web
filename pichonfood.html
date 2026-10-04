@@ -491,6 +491,13 @@
             margin: 16px 0
         }
 
+        .edited {
+            margin: 12px 0 0;
+            font-size: 13px;
+            font-style: italic;
+            color: var(--muted)
+        }
+
         .tri {
             width: 0;
             height: 0;
@@ -878,7 +885,7 @@
 
         <!-- Editor -->
         <section id="v-edit" class="view" hidden>
-            <button class="btn ghost sm back" data-go="info" type="button">Volver</button>
+            <button class="btn ghost sm back" id="e-back" type="button">Volver</button>
             <div class="panel">
                 <p class="tipos" id="e-tipos"></p>
                 <button class="btn" id="b-foto" type="button">Agregar foto de la comida</button>
@@ -1036,8 +1043,8 @@
 
         let db = null, fs = null, user = null, uname = "Usuario", recipes = [], photo = "", curTypes = [];
         const sel = [], filt = [], open = new Set(), drafts = {};
-        const toast = m => { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3200) };
-        const need = () => user ? true : (toast("Necesitás una cuenta de Pichisoft para hacer esto"), false);
+        const toast = m => { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 5500) };
+        const need = () => user ? true : (toast("No se detectó tu sesión de Pichisoft. Iniciá sesión y abrí la app desde el mismo sitio (pichisoft.github.io)."), false);
 
         /* Vistas */
         function go(v) { document.querySelectorAll(".view").forEach(s => s.hidden = s.id !== "v-" + v); scrollTo(0, 0) }
@@ -1069,13 +1076,18 @@
             $("#carteles").innerHTML = curTypes.map(k => `<div class="cartel"><h3>${LBL[k]}</h3><p>${INFO[k]}</p><button class="btn" data-cook type="button">¡A cocinar!</button></div>`).join("");
             go("info")
         };
-        $("#carteles").onclick = e => { if (e.target.closest("[data-cook]")) { $("#e-tipos").textContent = "Tipo de comida: " + curTypes.map(k => LBL[k]).join(", "); go("edit") } };
+        $("#carteles").onclick = e => { if (e.target.closest("[data-cook]")) { if (editId) resetForm(); $("#e-tipos").textContent = "Tipo de comida: " + curTypes.map(k => LBL[k]).join(", "); go("edit") } };
 
         /* Editor */
-        const addIng = () => { const d = document.createElement("div"); d.className = "row"; d.innerHTML = '<input class="in ing" maxlength="100" placeholder="Ej: 3 huevos"><button class="xbtn" type="button" aria-label="Quitar ingrediente"></button>'; d.querySelector("button").onclick = () => d.remove(); $("#ings").append(d); d.querySelector("input").focus() };
-        $("#b-ing").onclick = addIng;
+        let editId = null;
+        const addIng = (v = "") => { const d = document.createElement("div"); d.className = "row"; d.innerHTML = '<input class="in ing" maxlength="100" placeholder="Ej: 3 huevos"><button class="xbtn" type="button" aria-label="Quitar ingrediente"></button>'; d.querySelector("button").onclick = () => d.remove(); $("#ings").append(d); const i = d.querySelector("input"); i.value = v; if (!v) i.focus() };
+        $("#b-ing").onclick = () => addIng();
         const renum = () => document.querySelectorAll("#steps .step").forEach((s, i) => s.querySelector("h2").textContent = `Paso ${i + 1}:`);
-        $("#b-paso").onclick = () => { const d = document.createElement("div"); d.className = "step"; d.innerHTML = '<div class="stephead"><h2></h2><button class="xbtn" type="button" aria-label="Quitar paso"></button></div><textarea class="in" placeholder="Escribí este paso"></textarea>'; d.querySelector("button").onclick = () => { d.remove(); renum() }; $("#steps").append(d); renum(); d.querySelector("textarea").focus() };
+        const addStep = (v = "") => { const d = document.createElement("div"); d.className = "step"; d.innerHTML = '<div class="stephead"><h2></h2><button class="xbtn" type="button" aria-label="Quitar paso"></button></div><textarea class="in" placeholder="Escribí este paso"></textarea>'; d.querySelector("button").onclick = () => { d.remove(); renum() }; $("#steps").append(d); renum(); const t = d.querySelector("textarea"); t.value = v; if (!v) t.focus() };
+        $("#b-paso").onclick = () => addStep();
+        function resetForm() { editId = null; $("#e-name").value = ""; $("#e-intro").value = ""; $("#ings").innerHTML = ""; $("#steps").innerHTML = ""; $("#fquit").click(); $("#b-pub").textContent = "Publicar receta" }
+        function editRecipe(r) { resetForm(); editId = r.id; curTypes = r.types || []; $("#e-tipos").textContent = "Tipo de comida: " + curTypes.map(k => LBL[k] || k).join(", "); $("#e-name").value = r.name || ""; $("#e-intro").value = r.intro || ""; (r.ingredients || []).forEach(i => addIng(i)); (r.steps || []).forEach(s => addStep(s)); photo = r.photo || ""; if (photo) { $("#fprev").src = photo; $("#fprev").hidden = false; $("#fquit").hidden = false } $("#b-pub").textContent = "Guardar cambios"; go("edit") }
+        $("#e-back").onclick = () => { if (editId) { resetForm(); go("home") } else go("info") };
         $("#b-foto").onclick = () => $("#foto").click();
         $("#foto").onchange = async e => { const f = e.target.files[0]; if (!f) return; try { photo = await compress(f); $("#fprev").src = photo; $("#fprev").hidden = false; $("#fquit").hidden = false } catch { toast("No se pudo leer la imagen") } };
         $("#fquit").onclick = () => { photo = ""; $("#fprev").hidden = true; $("#fquit").hidden = true; $("#foto").value = "" };
@@ -1087,16 +1099,18 @@
             if (!db) return toast("Sin conexión con Pichisoft");
             const ingredients = [...document.querySelectorAll(".ing")].map(i => i.value.trim()).filter(Boolean);
             const steps = [...document.querySelectorAll("#steps textarea")].map(t => t.value.trim());
+            const data = { name, ingredients, intro: $("#e-intro").value.trim(), steps, photo }, msg = editId ? "Cambios guardados" : "Receta publicada";
             try {
-                await fs.addDoc(fs.collection(db, "recipes"), { name, types: curTypes, ingredients, intro: $("#e-intro").value.trim(), steps, photo, authorId: user.uid, authorName: uname, createdAt: Date.now(), likes: {}, ratings: {}, comments: [] });
-                $("#e-name").value = ""; $("#e-intro").value = ""; $("#ings").innerHTML = ""; $("#steps").innerHTML = ""; $("#fquit").click();
-                toast("Receta publicada"); go("home")
-            } catch (err) { console.error(err); toast("No se pudo publicar la receta") }
+                if (editId) await fs.updateDoc(fs.doc(db, "recipes", editId), { ...data, editedAt: Date.now() });
+                else await fs.addDoc(fs.collection(db, "recipes"), { ...data, types: curTypes, authorId: user.uid, authorName: uname, createdAt: Date.now(), likes: {}, ratings: {}, comments: [] });
+                resetForm(); toast(msg); go("home")
+            } catch (err) { console.error(err); toast(err.code === "permission-denied" ? "Firestore no permite guardar: hay que actualizar las reglas de la colección recipes" : "No se pudo guardar: " + (err.code || err.message)) }
         };
 
         /* Render */
         const stars = (n, act) => { const t = act ? "button" : "span"; let h = '<span class="stars">'; for (let i = 1; i <= 5; i++)h += `<${t} ${act ? `data-act="rate" data-v="${i}" aria-label="${i} estrellas"` : ""} class="star${i <= n ? " on" : ""}"></${t}>`; return h + "</span>" };
         const fecha = ms => new Date(ms).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) + " hs";
+        const fechaDia = ms => new Date(ms).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
         const stats = r => { const rv = Object.values(r.ratings || {}), lv = Object.values(r.likes || {}); return { n: rv.length, avg: rv.length ? rv.reduce((a, b) => a + b, 0) / rv.length : 0, up: lv.filter(v => v === 1).length, down: lv.filter(v => v === -1).length } };
         function card(r) {
             const s = stats(r), uid = user && user.uid, my = uid ? (r.ratings || {})[uid] || 0 : 0, ml = uid ? (r.likes || {})[uid] : 0, isOpen = open.has(r.id);
@@ -1111,13 +1125,14 @@
   <button class="btn ghost sm" data-act="toggle" type="button">${isOpen ? "Ocultar receta" : "Ver receta"}</button>
   <div class="detail" ${isOpen ? "" : "hidden"}>
    <h4>Ingredientes</h4>${(r.ingredients || []).length ? "<ul>" + r.ingredients.map(i => `<li>${esc(i)}</li>`).join("") + "</ul>" : '<p class="small">Sin ingredientes.</p>'}
-   <h4>Preparación</h4>${r.intro ? `<p>${esc(r.intro)}</p>` : ""}${steps}
+   <h4>Preparación</h4>${r.intro ? `<p>${esc(r.intro)}</p>` : ""}${steps}${r.editedAt ? `<p class="edited">Última edición: ${fechaDia(r.editedAt)}</p>` : ""}
    <h4>Tu calificación</h4>${stars(my, true)}
    <div class="acts">
     <button class="btn ghost sm${ml === 1 ? " on" : ""}" data-act="like" type="button"><i class="tri"></i>Me gusta</button>
     <button class="btn ghost sm${ml === -1 ? " on" : ""}" data-act="dislike" type="button"><i class="tri down"></i>No me gusta</button>
     <button class="btn ghost sm" data-act="share" type="button"><i class="ico-share"><b></b></i>Compartir</button>
     <button class="btn ghost sm" data-act="copy" type="button"><i class="ico-copy"></i>Copiar receta</button>
+    ${uid && r.authorId === uid ? '<button class="btn sm" data-act="edit" type="button">Editar receta</button>' : ""}
    </div>
    <h4>Comentarios</h4>${cms}
    <div class="row"><input class="in cin" maxlength="300" placeholder="Escribí un comentario" value="${esc(drafts[r.id] || "")}"><button class="btn sm" data-act="comment" type="button">Comentar</button></div>
@@ -1154,11 +1169,12 @@
             const ref = fs.doc(db, "recipes", r.id);
             try {
                 if (a === "toggle") { open.has(r.id) ? open.delete(r.id) : open.add(r.id); render() }
+                else if (a === "edit") { if (user && r.authorId === user.uid) editRecipe(r) }
                 else if (a === "copy") copy(recipeText(r), "Receta copiada")
                 else if (a === "share") shareDlg(r)
                 else if (a === "rate") { if (need()) await fs.updateDoc(ref, { ["ratings." + user.uid]: +b.dataset.v }) }
                 else if (a === "like" || a === "dislike") { if (!need()) return; const v = a === "like" ? 1 : -1, cur = (r.likes || {})[user.uid]; await fs.updateDoc(ref, { ["likes." + user.uid]: cur === v ? fs.deleteField() : v }) }
-                else if (a === "comment") { if (!need()) return; const i = c.querySelector(".cin"), t = i.value.trim(); if (!t) return; await fs.updateDoc(ref, { comments: fs.arrayUnion({ uid: user.uid, name: uname, text: t, at: Date.now() }) }); drafts[r.id = r.id] = ""; }
+                else if (a === "comment") { if (!need()) return; const i = c.querySelector(".cin"), t = i.value.trim(); if (!t) return; await fs.updateDoc(ref, { comments: fs.arrayUnion({ uid: user.uid, name: uname, text: t, at: Date.now() }) }); drafts[r.id] = ""; }
             } catch (err) { console.error(err); toast("No se pudo completar la acción") }
         });
 
