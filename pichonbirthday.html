@@ -1451,9 +1451,14 @@
                 const g = { id: S.id, title: S.title || 'Sin título', st: S.st, bg: S.bg, items: S.items, ts: S.ts, fr: S.fr, media, t: Date.now() };
                 try { await dbPut(g) } catch (e) { modal('No se pudo guardar', mk('p', '', 'El navegador no permitió guardar (espacio lleno o modo privado).')); return }
                 if (kind != 'gift') { modal('Borrador guardado', mk('p', '', 'Podés cerrar y seguir después desde "Mis regalos y borradores" en la pantalla de inicio.')); return }
-                const ok = await cloud(g.id, g, 30), link = location.href.split(/[?#]/)[0] + '?g=' + g.id, w = mk('div');
-                w.innerHTML = '<p>¡Tu regalo está guardado! Este es su link:</p><a href="' + link + '"></a><p></p>'; w.querySelector('a').textContent = link;
-                w.lastChild.textContent = ok ? 'También quedó en la nube: el link funciona en otros dispositivos.' : 'Quedó guardado en este dispositivo. Para abrirlo desde otro, tiene que poder subirse a la nube (iniciá sesión en Pichisoft y que el regalo pese menos de ~900 KB).';
+                // CÓDIGO NUEVO: Comprime el regalo completo en texto para meterlo al link
+                const datosComprimidos = btoa(unescape(encodeURIComponent(JSON.stringify(g))));
+                const link = location.href.split(/[?#]/)[0] + '?data=' + datosComprimidos;
+                const w = mk('div');
+                w.innerHTML = '<p>¡Tu regalo está guardado! Este es su link:</p><a href="' + link + '"></a><p></p>';
+                w.querySelector('a').textContent = link;
+                w.lastChild.textContent = 'El regalo se guardó directamente en el enlace. ¡Ya lo podés compartir!';
+
                 modal('Regalo guardado', w, () => { location.href = link }, 'Ir al regalo')
             }
             $('#sd').onclick = () => save('draft'); $('#sg').onclick = () => save('gift');
@@ -1469,14 +1474,22 @@
                     e.onclick = () => openEd(g); x.onclick = async () => { if (confirm('¿Borrar "' + g.title + '"?')) { await dbDel(g.id); list() } }; r.append(l, s, e, x); m.append(r)
                 })
             }
-            const q = new URLSearchParams(location.search).get('g');
-            if (q) {
-                $('#mine').innerHTML = '<h3>Cargando regalo...</h3>'; (async () => {
-                    let g = await dbGet(q); if (!g) g = await cloud(q, null, 150);
-                    if (g) { S = loadS(g); M = g.media || {}; $('#home').classList.add('off'); view(false, true) } else $('#mine').innerHTML = '<h3>No se encontró este regalo.</h3>'
-                })()
+            // CÓDIGO NUEVO: Lee el regalo comprimido desde la URL directamente
+            const paramData = new URLSearchParams(location.search).get('data');
+            if (paramData) {
+                $('#mine').innerHTML = '<h3>Cargando regalo...</h3>';
+                try {
+                    const g = JSON.parse(decodeURIComponent(escape(atob(paramData))));
+                    S = loadS(g);
+                    M = g.media || {};
+                    $('#home').classList.add('off');
+                    view(false, true);
+                } catch (e) {
+                    $('#mine').innerHTML = '<h3>No se pudo abrir este regalo o el link está incompleto.</h3>';
+                }
             }
             else list();
+
         })();
 
     </script>
