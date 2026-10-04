@@ -1456,7 +1456,11 @@
                 const g = { id: S.id, title: S.title || 'Sin título', st: S.st, bg: S.bg, items: S.items, ts: S.ts, fr: S.fr, media, t: Date.now() };
                 try { await dbPut(g) } catch (e) { modal('No se pudo guardar', mk('p', '', 'El navegador no permitió guardar (espacio lleno o modo privado).')); return }
                 if (kind != 'gift') { modal('Borrador guardado', mk('p', '', 'Podés cerrar y seguir después desde "Mis regalos y borradores" en la pantalla de inicio.')); return }
-                const ok = await cloud(g.id, g, 30), link = location.href.split(/[?#]/)[0] + '?g=' + g.id, w = mk('div');
+                const ok = await cloud(g.id, g, 30);
+                console.log("¿Se subió a la nube?", ok); // Mira esto en la consola (F12)
+                if (!ok) {
+                    alert("¡Alerta! El regalo es demasiado pesado para la nube de Firebase y no se pudo sincronizar.");
+                }
                 w.innerHTML = '<p>¡Tu regalo está guardado! Este es su link:</p><a href="' + link + '"></a><p></p>'; w.querySelector('a').textContent = link;
                 w.lastChild.textContent = ok ? 'También quedó en la nube: el link funciona en otros dispositivos.' : 'Quedó guardado en este dispositivo. Para abrirlo desde otro, tiene que poder subirse a la nube (iniciá sesión en Pichisoft y que el regalo pese menos de ~900 KB).';
                 modal('Regalo guardado', w, () => { location.href = link }, 'Ir al regalo')
