@@ -1012,7 +1012,7 @@
         <section id="v-dest" class="view" hidden>
             <button class="btn ghost sm back" data-go="home" type="button">Volver</button>
             <h2>Usuarios destacados</h2>
-            <p class="small">Usuarios con 80 puntos o más.</p>
+            <p class="small">Usuarios con 80 puntos o más, y el administrador.</p>
             <div id="dlist"></div>
         </section>
 
@@ -1407,7 +1407,8 @@
             const m = {};
             recipes.forEach(r => {
                 const u = m[r.authorId] || (m[r.authorId] = { uid: r.authorId, name: r.authorName || "Usuario", pts: 0, n: 0, likes: 0, rs: 0, rc: 0, pr: [] });
-                u.n++; Object.values(r.likes || {}).forEach(v => { if (v === 1) u.likes++ }); Object.values(r.ratings || {}).forEach(v => { u.rs += v; u.rc++ });
+                u.n++; u.pts += 5; u.pr.push({ at: r.createdAt || 0, p: 5 }); /* 5 puntos por publicar una receta */
+                Object.values(r.likes || {}).forEach(v => { if (v === 1) u.likes++ }); Object.values(r.ratings || {}).forEach(v => { u.rs += v; u.rc++ });
                 if (PTS[r.prize]) { u.pts += PTS[r.prize]; u.pr.push({ at: r.prizeAt || 0, p: PTS[r.prize] }) }
             });
             Object.values(m).forEach(u => {
@@ -1436,7 +1437,7 @@
         }
         function renderUres() { const q = $("#uq").value.trim().toLowerCase(); $("#ures").innerHTML = q ? (Object.values(US).filter(u => u.name.toLowerCase().includes(q)).map(urow).join("") || '<p class="small">No se encontraron usuarios con recetas.</p>') : "" }
         function renderDest() {
-            const adm = ADMINS.filter(a => a !== "XIY1FfjUDodaSBSGema6NgixKRs1").map(a => US[a] || blank(a, user && user.uid === a ? uname : "Administrador"));
+            const adm = ADMINS.map(a => US[a] || blank(a, user && user.uid === a ? uname : "Administrador"));
             const rest = Object.values(US).filter(u => u.pts >= 80 && !ADMINS.includes(u.uid)).sort((a, b) => b.pts - a.pts);
             $("#dlist").innerHTML = [...adm, ...rest].map(urow).join("") || '<p class="muted">Todavía no hay usuarios destacados.</p>'
         }
