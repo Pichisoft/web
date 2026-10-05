@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>PichonFood</title>
+    <title>PichonFood - By Pichisoft</title>
     <style>
         :root {
             --lime: #a3e635;
@@ -1191,7 +1191,7 @@
      activo:false -> no se muestra. El título "Desafío de hoy:" ya viene puesto. -->
     <script>
         window.DESAFIOS = [
-            { id: "2026-10-04", activo: true, texto: "Haz una torta creativa, con un dibujo encima de ella, que sea comestible." }
+            { id: "2026-10-04", activo: false, texto: "Haz una torta creativa, con un dibujo encima de ella, que sea comestible." }
             // ,{ id:"2026-10-05", activo:false, texto:"Escribí acá la descripción del próximo desafío." }
         ];
     </script>
@@ -1225,7 +1225,7 @@
         const isAdmin = () => !!user && ADMINS.includes(user.uid);
         const sel = [], filt = [], open = new Set(), drafts = {};
         const toast = m => { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 5500) };
-        const need = () => user ? true : (toast("No se detectó tu sesión de Pichisoft. Iniciá sesión y abrí la app desde el mismo sitio (https://pichisoft.github.io/web/)."), false);
+        const need = () => user ? true : (toast("No se detectó tu sesión de Pichisoft. Iniciá sesión y abrí la app desde el mismo sitio (pichisoft.github.io)."), false);
 
         function ask(t, m, ok, no = "Cancelar") {
             return new Promise(res => {
