@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PichonMorse</title>
+    <style>
+        :root {
+            --bg: #14181c;
+            --panel: #1c2228;
+            --line: #2d363f;
+            --ink: #e9edf0;
+            --mute: #8a949d;
+            --key: #c9962b;
+            --keyhi: #f0bd4d;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif
+        }
+
+        body {
+            min-height: 100vh;
+            padding: 28px 20px 48px
+        }
+
+        .wrap {
+            max-width: 720px;
+            margin: 0 auto
+        }
+
+        .toplink {
+            position: fixed;
+            top: 14px;
+            right: 18px;
+            color: #3d8bff;
+            text-decoration: underline;
+            text-decoration-color: #3d8bff;
+            font-size: 1rem
+        }
+
+        header {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 28px 0 28px
+        }
+
+        h1 {
+            margin: 0;
+            color: #fff;
+            font-family: "Times New Roman", Times, serif;
+            font-weight: 700;
+            font-size: 2.8rem;
+            line-height: 1
+        }
+
+        .by {
+            color: #888;
+            font-size: .95rem;
+            font-style: italic
+        }
+
+        section {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px
+        }
+
+        h2 {
+            margin: 0 0 12px;
+            font-size: 1.05rem;
+            font-weight: 600
+        }
+
+        #key {
+            display: block;
+            width: 100%;
+            height: 150px;
+            border: 0;
+            border-radius: 10px;
+            background: var(--key);
+            color: #1a1200;
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            touch-action: none;
+            box-shadow: 0 6px 0 #8a6414;
+            transition: transform .05s, box-shadow .05s
+        }
+
+        #key.down {
+            background: var(--keyhi);
+            transform: translateY(5px);
+            box-shadow: 0 1px 0 #8a6414
+        }
+
+        .hint {
+            color: var(--mute);
+            font-size: .88rem;
+            margin: 10px 0 0
+        }
+
+        .out {
+            min-height: 3.2em;
+            margin-top: 14px;
+            padding: 12px;
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-family: ui-monospace, Menlo, Consolas, monospace;
+            font-size: 1.25rem;
+            word-break: break-word
+        }
+
+        .out small {
+            display: block;
+            color: var(--mute);
+            font-size: .8rem;
+            font-family: system-ui, sans-serif;
+            margin-bottom: 4px
+        }
+
+        #live {
+            letter-spacing: .15em;
+            color: var(--keyhi)
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 12px
+        }
+
+        button.b {
+            background: #2a333c;
+            color: var(--ink);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 9px 14px;
+            font-size: .95rem;
+            cursor: pointer
+        }
+
+        button.b:hover {
+            background: #34404b
+        }
+
+        button.b:focus-visible,
+        #key:focus-visible,
+        textarea:focus-visible,
+        input:focus-visible,
+        .toplink:focus-visible {
+            outline: 2px solid #3d8bff;
+            outline-offset: 2px
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 90px;
+            resize: vertical;
+            background: var(--bg);
+            color: var(--ink);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 1.05rem;
+            font-family: inherit
+        }
+
+        label {
+            color: var(--mute);
+            font-size: .9rem
+        }
+
+        input[type=range] {
+            accent-color: var(--key)
+        }
+
+        #morseOut {
+            letter-spacing: .12em;
+            color: var(--keyhi)
+        }
+
+        .flash {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #333;
+            vertical-align: middle;
+            margin-left: 6px
+        }
+
+        .flash.on {
+            background: var(--keyhi)
+        }
+    </style>
+</head>
+
+<body>
+    <a class="toplink" href="https://pichisoft.github.io/web/">Pichisoft</a>
+    <div class="wrap">
+        <header>
+            <h1>PichonMorse</h1>
+            <span class="by"> - By Pichisoft - </span>
+        </header>
+
+        <section>
+            <h2>Tocá el botón y escuchá el morse</h2>
+            <button id="key" aria-label="Manipulador de morse">Mantené apretado (o usá la barra espaciadora)</button>
+            <p class="hint">Toque corto = punto, toque largo = raya. Pausa corta = nueva letra, pausa larga = nueva
+                palabra.</p>
+            <div class="out"><small>Morse</small><span id="live"></span></div>
+            <div class="out"><small>Texto reconocido</small><span id="decoded"></span></div>
+            <div class="row">
+                <button class="b" id="back">Borrar último</button>
+                <button class="b" id="clear">Limpiar</button>
+                <label>Velocidad <input type="range" id="wpm" min="5" max="30" value="12"> <span id="wpmv">12</span>
+                    ppm</label>
+            </div>
+        </section>
+
+        <section>
+            <h2>Escribí texto y te lo digo en morse</h2>
+            <textarea id="txt" placeholder="Escribí lo que quieras: letras, números y símbolos"></textarea>
+            <div class="out"><small>Morse <span class="flash" id="flash"></span></small><span id="morseOut"></span>
+            </div>
+            <div class="row">
+                <button class="b" id="play">Reproducir</button>
+                <button class="b" id="stop">Detener</button>
+                <button class="b" id="copy">Copiar morse</button>
+            </div>
+        </section>
+
+        <section>
+            <h2>Morse a texto</h2>
+            <textarea id="m2t"
+                placeholder="Pegá morse acá: puntos y rayas, letras separadas por espacio y palabras por /"></textarea>
+            <div class="out"><small>Texto</small><span id="m2tOut"></span></div>
+        </section>
+    </div>
+
+    <script>
+        const MORSE = {
+            A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.", G: "--.", H: "....", I: "..", J: ".---", K: "-.-", L: ".-..", M: "--",
+            N: "-.", O: "---", P: ".--.", Q: "--.-", R: ".-.", S: "...", T: "-", U: "..-", V: "...-", W: ".--", X: "-..-", Y: "-.--", Z: "--..",
+            "Ñ": "--.--",
+            0: "-----", 1: ".----", 2: "..---", 3: "...--", 4: "....-", 5: ".....", 6: "-....", 7: "--...", 8: "---..", 9: "----.",
+            ".": ".-.-.-", ",": "--..--", "?": "..--..", "'": ".----.", "!": "-.-.--", "/": "-..-.", "(": "-.--.", ")": "-.--.-",
+            "&": ".-...", ":": "---...", ";": "-.-.-.", "=": "-...-", "+": ".-.-.", "-": "-....-", "_": "..--.-", '"': ".-..-.",
+            "$": "...-..-", "@": ".--.-."
+        };
+        const REV = Object.fromEntries(Object.entries(MORSE).map(([k, v]) => [v, k]));
+        const $ = id => document.getElementById(id);
+        const unit = () => 1200 / $("wpm").value;
+        $("wpm").oninput = () => $("wpmv").textContent = $("wpm").value;
+
+        // ---- Audio ----
+        let ctx, osc, gain;
+        function audio() {
+            if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+            if (ctx.state === "suspended") ctx.resume();
+            return ctx;
+        }
+        function toneStart() {
+            const c = audio();
+            osc = c.createOscillator(); gain = c.createGain();
+            osc.frequency.value = 650; osc.type = "sine";
+            gain.gain.setValueAtTime(0, c.currentTime);
+            gain.gain.linearRampToValueAtTime(.3, c.currentTime + .005);
+            osc.connect(gain).connect(c.destination); osc.start();
+        }
+        function toneStop() {
+            if (!osc) return;
+            const c = ctx, o = osc, g = gain;
+            g.gain.cancelScheduledValues(c.currentTime);
+            g.gain.setValueAtTime(g.gain.value, c.currentTime);
+            g.gain.linearRampToValueAtTime(0, c.currentTime + .01);
+            o.stop(c.currentTime + .02); osc = null;
+        }
+
+        // ---- Manipulador ----
+        let pressAt = 0, cur = "", text = "", letterT, wordT, isDown = false;
+        function render() {
+            $("live").textContent = cur || "\u00A0";
+            $("decoded").textContent = text;
+        }
+        function commitLetter() {
+            if (!cur) return;
+            text += REV[cur] || "?";
+            cur = ""; render();
+            wordT = setTimeout(() => { if (text && !text.endsWith(" ")) { text += " "; render(); } }, unit() * 4);
+        }
+        function down() {
+            if (isDown) return; isDown = true;
+            clearTimeout(letterT); clearTimeout(wordT);
+            pressAt = performance.now(); toneStart();
+            $("key").classList.add("down");
+        }
+        function up() {
+            if (!isDown) return; isDown = false;
+            toneStop(); $("key").classList.remove("down");
+            const d = performance.now() - pressAt;
+            cur += d < unit() * 2 ? "." : "-";
+            render();
+            letterT = setTimeout(commitLetter, unit() * 3);
+        }
+        const k = $("key");
+        k.addEventListener("pointerdown", e => { k.setPointerCapture(e.pointerId); down(); });
+        k.addEventListener("pointerup", up);
+        k.addEventListener("pointercancel", up);
+        addEventListener("keydown", e => {
+            if (e.code === "Space" && !/TEXTAREA|INPUT|BUTTON/.test(document.activeElement.tagName)) { e.preventDefault(); if (!e.repeat) down(); }
+        });
+        addEventListener("keyup", e => {
+            if (e.code === "Space" && !/TEXTAREA|INPUT|BUTTON/.test(document.activeElement.tagName)) up();
+        });
+        $("back").onclick = () => { if (cur) cur = cur.slice(0, -1); else text = text.slice(0, -1); render(); };
+        $("clear").onclick = () => { cur = ""; text = ""; clearTimeout(letterT); clearTimeout(wordT); render(); };
+
+        // ---- Texto a morse ----
+        function norm(s) {
+            return s.toUpperCase().replace(/Ñ/g, "\u0001").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\u0001/g, "Ñ");
+        }
+        function toMorse(s) {
+            return norm(s).split(/\s+/).filter(Boolean)
+                .map(w => [...w].map(ch => MORSE[ch]).filter(Boolean).join(" ")).join(" / ");
+        }
+        $("txt").oninput = () => $("morseOut").textContent = toMorse($("txt").value);
+
+        let timers = [];
+        function stopPlay() { timers.forEach(clearTimeout); timers = []; toneStop(); $("flash").classList.remove("on"); }
+        $("stop").onclick = stopPlay;
+        $("play").onclick = () => {
+            stopPlay();
+            const m = toMorse($("txt").value); if (!m) return;
+            const u = unit(); let t = 0;
+            const beep = len => {
+                timers.push(setTimeout(() => { toneStart(); $("flash").classList.add("on"); }, t));
+                timers.push(setTimeout(() => { toneStop(); $("flash").classList.remove("on"); }, t + len));
+                t += len;
+            };
+            [...m].forEach((c, i) => {
+                if (c === ".") { beep(u); t += u; }
+                else if (c === "-") { beep(u * 3); t += u; }
+                else if (c === " ") {
+                    const prev = m[i - 1], next = m[i + 1];
+                    if (prev === "/" || next === "/") t += u * 2;   // alrededor de "/"
+                    else t += u * 2;                           // total 3u entre letras
+                }
+                else if (c === "/") t += u * 3;                 // total ~7u entre palabras
+            });
+        };
+        $("copy").onclick = () => navigator.clipboard && navigator.clipboard.writeText($("morseOut").textContent);
+
+        // ---- Morse a texto ----
+        $("m2t").oninput = () => {
+            const s = $("m2t").value.replace(/[·•]/g, ".").replace(/[–—−_]/g, "-");
+            $("m2tOut").textContent = s.split(/\s*\/\s*|\s{3,}|\n/).map(w =>
+                w.trim().split(/\s+/).filter(Boolean).map(c => REV[c] || "?").join("")).join(" ");
+        };
+        render();
+    </script>
+</body>
+
+</html>
