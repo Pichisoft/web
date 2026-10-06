@@ -89,16 +89,33 @@ body.prem .p-gear{display:flex}
 .sw:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
 .pm-reset{margin-top:22px;width:100%;background:none;border:1px solid var(--line);color:var(--gold2);border-radius:10px;padding:12px;font:inherit;font-size:.85rem;cursor:pointer}
 .pm-reset:hover{background:rgba(212,175,55,.1)}
-
+.flat>.cat-h::before{content:"";display:inline-block;width:20px;height:20px;margin-right:10px;vertical-align:middle;background:linear-gradient(var(--gold),var(--gold)) 0 3px/100% 3px no-repeat,linear-gradient(var(--gold),var(--gold)) 0 9px/70% 3px no-repeat,linear-gradient(var(--gold),var(--gold)) 0 15px/40% 3px no-repeat}
 .aviso{display:none;position:fixed;right:14px;bottom:14px;z-index:40;max-width:min(320px,calc(100vw - 28px));font:.78rem/1.5 Verdana,"Open Sans",sans-serif;color:#fff;background:rgba(20,20,20,.92);border:1px solid #3a3a3a;border-radius:10px;padding:10px 12px}
 body:not(.prem) .aviso{display:block}
-
+.acc>.acc-h>span:first-child{font-size:0;width:20px;height:20px;flex:none;position:relative}
+.acc:not(.sub)>.acc-h>span:first-child{background:linear-gradient(var(--gold),var(--gold)) 0 3px/100% 3px no-repeat,linear-gradient(var(--gold),var(--gold)) 0 9px/70% 3px no-repeat,linear-gradient(var(--gold),var(--gold)) 0 15px/40% 3px no-repeat}
+.acc.sub>.acc-h>span:first-child::before{content:"";position:absolute;inset:3px;border:2px solid var(--gold);border-radius:3px;transform:rotate(45deg) scale(.8)}
 @media (max-width:600px){
   .p-gear{position:absolute;top:70px;right:10px;width:38px;height:38px}
   body.prem .titulo,body.prem .bienvenida{padding-right:46px}
   .badge-prem{font-size:11px;margin:6px 0 0}
   .bienvenida{font-size:.95rem}
   .pm-panel{padding:14px 18px 26px}
+  .pm-dlg{position:fixed;inset:0;z-index:95;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);opacity:0;transition:opacity .18s}
+.pm-dlg.on{opacity:1}
+.pm-card{width:min(360px,100%);box-sizing:border-box;text-align:center;font-family:Verdana,"Open Sans",sans-serif;color:#fff;background:linear-gradient(180deg,#1e1e1e,#0f0f0f);border:1px solid var(--line);border-radius:18px;padding:26px 22px 20px;box-shadow:0 24px 60px rgba(0,0,0,.65);transform:translateY(12px) scale(.97);transition:transform .2s}
+.pm-dlg.on .pm-card{transform:none}
+.pm-ico{width:44px;height:44px;margin:0 auto 16px;border:3px solid var(--gold);border-top-color:transparent;border-radius:50%;position:relative;transform:rotate(-20deg)}
+.pm-ico::after{content:"";position:absolute;top:-4px;right:1px;border-left:9px solid var(--gold);border-top:6px solid transparent;border-bottom:6px solid transparent}
+.pm-card h3{margin:0 0 8px;font-family:"Times New Roman",Times,serif;font-size:1.35rem}
+.pm-card p{margin:0 0 20px;color:#a8a8a8;font-size:.82rem;line-height:1.5}
+.pm-btns{display:flex;gap:10px}
+.pm-btn{flex:1;padding:12px 10px;border-radius:10px;font:inherit;font-size:.85rem;cursor:pointer;transition:filter .15s,background .15s}
+.pm-btn.no{background:none;border:1px solid #444;color:#ddd}
+.pm-btn.no:hover{background:#262626}
+.pm-btn.si{border:0;font-weight:bold;color:#2a2000;background:linear-gradient(135deg,#f1d98a,#c9a227)}
+.pm-btn.si:hover{filter:brightness(1.1)}
+.pm-btn:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
 }
 @media (prefers-reduced-motion:reduce){.acc-b,.pm-ov,.pm-panel,.p-gear{animation:none!important;transition:none!important}}
 `;
@@ -259,7 +276,7 @@ body:not(.prem) .aviso{display:block}
             root.append(acc('Apps ordenadas', '✨', [...CATS.map(catEl), sub], 'ord'));
         } else {
             const f = document.createElement('section'); f.className = 'cat flat';
-            const h = document.createElement('div'); h.className = 'cat-h'; h.textContent = '✨  Todas las apps';
+            const h = document.createElement('div'); h.className = 'cat-h'; h.textContent = 'Todas las apps';
             const l = document.createElement('div'); l.className = 'lista'; l.dataset.flat = '1';
             lay.flat.forEach(n => l.append(item(MAP[n], true)));
             f.append(h, l); root.append(f);
@@ -323,7 +340,50 @@ body:not(.prem) .aviso{display:block}
         const o = $('#pCfg'); if (!o) return;
         o.classList.remove('on'); setTimeout(() => o.remove(), 200);
     }
+    function confirmarReset() {
+        if ($('#pcfOv')) return;
 
+        if (!$('#pcfCss')) {
+            const st = document.createElement('style'); st.id = 'pcfCss';
+            st.textContent = `
+.pcf-ov{position:fixed;inset:0;z-index:130;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;transition:opacity .18s}
+.pcf-ov.on{opacity:1}
+.pcf-card{width:min(400px,100%);box-sizing:border-box;background:#141414;border:1px solid #3a3a3a;border-top:3px solid #d4af37;border-radius:14px;padding:28px 24px 22px;box-shadow:0 26px 70px rgba(0,0,0,.8);transform:translateY(14px) scale(.97);transition:transform .2s}
+.pcf-ov.on .pcf-card{transform:none}
+.pcf-card h3{margin:0 0 12px;font-family:"Times New Roman",Times,serif;font-weight:bold;font-size:1.55rem;line-height:1.2;color:#fff;text-align:left}
+.pcf-card p{margin:0 0 24px;font-family:Verdana,"Open Sans",sans-serif;font-size:.85rem;line-height:1.6;color:#bdbdbd;text-align:left}
+.pcf-btn{display:block;width:100%;box-sizing:border-box;padding:14px 12px;border-radius:8px;font-family:Verdana,"Open Sans",sans-serif;font-size:.9rem;cursor:pointer;transition:background-color .15s,color .15s}
+.pcf-btn+.pcf-btn{margin-top:10px}
+.pcf-no{background-color:#8c8c8c;color:#000;border:1px solid #8c8c8c}
+.pcf-no:hover{background-color:#d2d2d2;color:#000}
+.pcf-si{background-color:#000;color:#fff;border:1px solid #4a4a4a}
+.pcf-si:hover{background-color:#fff;color:#000}
+.pcf-btn:focus-visible{outline:2px solid #f1d98a;outline-offset:2px}
+.pcf-card .pcf-btn{font-family:Georgia,"Times New Roman",serif!important;font-size:1rem!important;font-weight:normal}`;
+            document.head.appendChild(st);
+        }
+
+        const d = document.createElement('div'); d.id = 'pcfOv'; d.className = 'pcf-ov';
+        d.innerHTML = `<div class="pcf-card" role="alertdialog" aria-modal="true" aria-labelledby="pcfT">
+    <h3 id="pcfT">¿Restablecer el orden de las apps?</h3>
+    <p>El orden que le aplicaste a tus apps, volverán al orden predeterminado.</p>
+    <button class="pcf-btn pcf-no" id="pcfNo">No quiero restablecer el orden</button>
+    <button class="pcf-btn pcf-si" id="pcfSi">Restablecer orden</button>
+  </div>`;
+        document.body.append(d);
+        requestAnimationFrame(() => d.classList.add('on'));
+
+        const esc = e => { if (e.key === 'Escape') { e.stopImmediatePropagation(); cerrar(); } };
+        const cerrar = () => {
+            document.removeEventListener('keydown', esc, true);
+            d.classList.remove('on'); setTimeout(() => d.remove(), 180);
+        };
+        document.addEventListener('keydown', esc, true);
+        d.onclick = e => { if (e.target === d) cerrar(); };
+        d.querySelector('#pcfNo').onclick = cerrar;
+        d.querySelector('#pcfSi').onclick = () => { cerrar(); setD('layout', null); cargarLay(); render(); };
+        d.querySelector('#pcfNo').focus();
+    }
     function abrirConfig() {
         if ($('#pCfg')) return;
         const o = document.createElement('div'); o.id = 'pCfg'; o.className = 'pm-ov';
@@ -344,9 +404,8 @@ body:not(.prem) .aviso{display:block}
             s.checked = !!cfg[s.dataset.k];
             s.onchange = () => { cfg[s.dataset.k] = s.checked; setD('cfg', cfg); render(); };
         });
-        o.querySelector('#cfgReset').onclick = () => {
-            if (!confirm('¿Restablecer el orden original de las apps?')) return;
-            setD('layout', null); cargarLay(); render();
+        {
+            o.querySelector('#cfgReset').onclick = confirmarReset;
         };
     }
 
