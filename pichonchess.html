@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PichonChess</title>
+    <style>
+        :root {
+            --bg: #0e120f;
+            --pn: #161c17;
+            --ln: #27322a;
+            --g: #20a84b;
+            --lt: #ebe7d3;
+            --dk: #5b8a5e
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+            color: #e8ece8;
+            font: 15px/1.45 Georgia, serif
+        }
+
+        body {
+            background: radial-gradient(1200px 600px at 50% -10%, #1b2a1f, var(--bg)) fixed var(--bg)
+        }
+
+        .off {
+            display: none !important
+        }
+
+        .header {
+            position: absolute;
+            top: 18px;
+            left: 24px;
+            max-width: calc(100% - 120px);
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0 4px
+        }
+
+        .logo {
+            font: bold 2.1rem "Times New Roman", Times, serif;
+            color: #fff
+        }
+
+        .byline {
+            font: italic .9rem "Times New Roman", Times, serif;
+            color: #9a9a9a
+        }
+
+        .plink {
+            position: absolute;
+            top: 18px;
+            right: 20px;
+            font: 14px Verdana, sans-serif;
+            color: #2f7bff;
+            text-decoration: underline;
+            text-decoration-color: #2f7bff
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 100px 16px 40px
+        }
+
+        h1,
+        h2 {
+            font-family: "Times New Roman", Times, serif;
+            margin: 0 0 8px
+        }
+
+        h1 {
+            font-size: 2.4rem;
+            max-width: 620px
+        }
+
+        .mu {
+            color: #9aa79c;
+            font-size: 13px;
+            margin: 4px 0 14px
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 16px;
+            margin-top: 26px
+        }
+
+        .card {
+            background: var(--pn);
+            border: 1px solid var(--ln);
+            border-radius: 16px;
+            padding: 22px;
+            cursor: pointer;
+            transition: transform .2s, border-color .2s
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: var(--g)
+        }
+
+        .card h3 {
+            margin: 14px 0 6px;
+            font: bold 1.25rem "Times New Roman", serif
+        }
+
+        .card p {
+            margin: 0;
+            color: #9aa79c
+        }
+
+        .ic {
+            width: 54px;
+            height: 54px
+        }
+
+        .pw {
+            display: block;
+            width: 100%;
+            height: 100%;
+            pointer-events: none
+        }
+
+        .pc {
+            display: block;
+            width: 100%;
+            height: 100%
+        }
+
+        .pw.w {
+            filter: drop-shadow(0 0 1px #000) drop-shadow(0 1px 1px #0008)
+        }
+
+        .pw.b {
+            filter: drop-shadow(0 0 1px #eee) drop-shadow(0 1px 1px #0008)
+        }
+
+        .w .pc {
+            background: linear-gradient(90deg, #fff, #e6dfc8)
+        }
+
+        .b .pc {
+            background: linear-gradient(90deg, #4a4a4a, #151515)
+        }
+
+        .gwrap {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: flex-start
+        }
+
+        .brow {
+            display: flex;
+            gap: 10px;
+            align-items: stretch
+        }
+
+        .ev {
+            width: 14px;
+            border-radius: 7px;
+            overflow: hidden;
+            background: #111;
+            position: relative;
+            border: 1px solid var(--ln)
+        }
+
+        .ev i {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 50%;
+            background: #eee;
+            transition: height .4s
+        }
+
+        .board {
+            display: grid;
+            grid-template: repeat(8, 1fr)/repeat(8, 1fr);
+            aspect-ratio: 1;
+            width: min(88vw, 66vh, 640px);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px #0008, 0 0 0 6px #1d2a20
+        }
+
+        .sq {
+            position: relative;
+            cursor: pointer;
+            background: var(--lt)
+        }
+
+        .sq.d {
+            background: var(--dk)
+        }
+
+        .sq .pw {
+            position: absolute;
+            inset: 6%;
+            width: auto;
+            height: auto
+        }
+
+        .sq::before,
+        .sq::after {
+            position: absolute;
+            font: bold 10px Verdana, sans-serif;
+            color: #33443a;
+            opacity: .7;
+            pointer-events: none
+        }
+
+        .sq::before {
+            content: attr(data-r);
+            top: 2px;
+            left: 3px
+        }
+
+        .sq::after {
+            content: attr(data-f);
+            right: 3px;
+            bottom: 1px
+        }
+
+        .sq.d::before,
+        .sq.d::after {
+            color: #e3ecda
+        }
+
+        .sq.lm {
+            box-shadow: inset 0 0 0 100px rgba(255, 214, 0, .32)
+        }
+
+        .sq.sel {
+            box-shadow: inset 0 0 0 100px rgba(32, 168, 75, .5)
+        }
+
+        .sq.hn {
+            box-shadow: inset 0 0 0 100px rgba(255, 140, 0, .6)
+        }
+
+        .sq.ck {
+            box-shadow: inset 0 0 24px 10px rgba(235, 30, 30, .85)
+        }
+
+        .dot {
+            position: absolute;
+            inset: 36%;
+            border-radius: 50%;
+            background: rgba(20, 40, 25, .4);
+            pointer-events: none
+        }
+
+        .dot.c {
+            inset: 5%;
+            background: none;
+            border: 5px solid rgba(20, 40, 25, .4)
+        }
+
+        .pbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 4px 8px 28px;
+            font-weight: bold
+        }
+
+        .chip {
+            width: 24px;
+            height: 24px
+        }
+
+        .pbar.on .nm::after {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--g);
+            margin-left: 8px
+        }
+
+        .side {
+            width: min(92vw, 330px);
+            background: var(--pn);
+            border: 1px solid var(--ln);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        .stat {
+            font: bold 1.1rem "Times New Roman", serif
+        }
+
+        .fb {
+            min-height: 20px;
+            font: 13px Verdana, sans-serif;
+            color: #9aa79c
+        }
+
+        .fb.g {
+            color: #5fd07f
+        }
+
+        .fb.y {
+            color: #f2c94c
+        }
+
+        .fb.r {
+            color: #ff7b7b
+        }
+
+        .ml {
+            height: 190px;
+            overflow: auto;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            display: grid;
+            grid-template-columns: 34px 1fr 1fr;
+            align-content: start;
+            font: 13px Verdana, sans-serif;
+            background: #0e140f;
+            border-radius: 10px;
+            padding: 8px
+        }
+
+        .ml li {
+            padding: 2px 4px
+        }
+
+        .ml .n {
+            color: #6f7f72
+        }
+
+        .btns,
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px
+        }
+
+        .btn {
+            display: inline-block;
+            background: #1d2a20;
+            color: #e8ece8;
+            border: 1px solid var(--ln);
+            border-radius: 10px;
+            padding: 9px 14px;
+            font: 14px Georgia, serif;
+            cursor: pointer;
+            text-decoration: none
+        }
+
+        .btn:hover,
+        .btn:focus-visible {
+            border-color: var(--g);
+            outline: 0
+        }
+
+        .btn.p,
+        .btn.on {
+            background: var(--g);
+            border-color: var(--g);
+            color: #fff
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: #000b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9990;
+            padding: 16px
+        }
+
+        .box {
+            background: var(--pn);
+            border: 1px solid var(--ln);
+            border-radius: 18px;
+            padding: 24px;
+            width: min(100%, 410px);
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        .seg {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin: 4px 0 12px
+        }
+
+        input {
+            width: 100%;
+            padding: 11px;
+            border-radius: 10px;
+            border: 1px solid var(--ln);
+            background: #0c110d;
+            color: #fff;
+            font: 15px Georgia, serif;
+            margin: 4px 0
+        }
+
+        .er {
+            color: #ff7b7b;
+            min-height: 18px;
+            font-size: 13px;
+            margin: 2px 0
+        }
+
+        .sp {
+            width: 34px;
+            height: 34px;
+            border: 4px solid #2a3a2d;
+            border-top-color: var(--g);
+            border-radius: 50%;
+            animation: rot 1s linear infinite;
+            margin: 10px auto
+        }
+
+        @keyframes rot {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .pcb {
+            width: 64px;
+            height: 64px;
+            padding: 4px;
+            background: var(--lt)
+        }
+
+        @media (prefers-reduced-motion:reduce) {
+            * {
+                transition: none !important;
+                animation: none !important
+            }
+        }
+
+        /* ==========================================
+       PICHISOFT - ESTADO DE SESIÓN
+       ========================================== */
+
+        #pichisoft-session-status {
+            position: fixed;
+            top: 52px;
+            right: 20px;
+            z-index: 9999;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 8px 16px;
+
+            background: #000;
+            color: #20a84b;
+
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 22px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+            font: 14px/1.3 Georgia, serif;
+            text-align: left;
+
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
+        }
+
+        #pichisoft-session-status.hidden {
+            opacity: 0;
+            transform: translateY(-12px);
+        }
+
+        #pichisoft-session-status.success {
+            font-weight: bold;
+        }
+
+        #pichisoft-session-status .ps-check {
+            display: none;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        #pichisoft-session-status.success .ps-check {
+            display: inline-block;
+            animation: pichisoftCheck 0.8s cubic-bezier(.17, .89, .32, 1.49) forwards;
+        }
+
+        @keyframes pichisoftCheck {
+            0% {
+                opacity: 0;
+                transform: scale(0.2) rotate(-25deg);
+            }
+
+            60% {
+                opacity: 1;
+                transform: scale(1.25) rotate(8deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        #pichisoft-session-profile {
+            position: fixed;
+            top: 52px;
+            right: 20px;
+            z-index: 9998;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 5px 14px 5px 5px;
+
+            background: #000;
+            color: #fff;
+
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 25px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+            font-family: Georgia, serif;
+            text-align: left;
+
+            opacity: 0;
+            transform: translateY(-12px) scale(0.9);
+            transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
+            pointer-events: none;
+        }
+
+        #pichisoft-session-profile.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        #pichisoft-profile-picture img,
+        #pichisoft-profile-picture .profile-placeholder {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pichisoft-profile-picture .profile-placeholder {
+            background: #20a84b;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #pichisoft-profile-name {
+            font-size: 14px;
+            font-weight: bold;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Celular: título más chico para que no choque con el link "Pichisoft" */
+        @media (max-width: 600px) {
+            .header {
+                top: 16px;
+                left: 15px;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .byline {
+                font-size: 0.75rem;
+            }
+
+            #pichisoft-session-status,
+            #pichisoft-session-profile {
+                right: 10px;
+            }
+
+            #pichisoft-session-status {
+                font-size: 13px;
+                padding: 7px 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header"><span class="logo">PichonChess</span><span class="byline"> - By Pichisoft - </span></div>
+    <a class="plink" href="https://pichisoft.github.io/web/" target="_blank" rel="noopener">Pichisoft</a>
+
+    <main>
+        <section id="home">
+            <h1>Ajedrez para jugar, practicar y mejorar.</h1>
+            <p class="mu">Reglas completas: enroque, al paso, coronación, tablas y jaque mate.</p>
+            <div class="cards">
+                <div class="card" data-a="on" tabindex="0">
+                    <div class="ic"><i class="pw w"><b class="pc tq"></b></i></div>
+                    <h3>Jugar online</h3>
+                    <p>Buscá rival o invitá a alguien con un código de partida.</p>
+                </div>
+                <div class="card" data-a="cp" tabindex="0">
+                    <div class="ic"><i class="pw w"><b class="pc tn"></b></i></div>
+                    <h3>Contra la computadora</h3>
+                    <p>Cuatro niveles, de principiante a maestro.</p>
+                </div>
+                <div class="card" data-a="tr" tabindex="0">
+                    <div class="ic"><i class="pw w"><b class="pc tb"></b></i></div>
+                    <h3>Entrenar con un bot</h3>
+                    <p>Pistas, evaluación en vivo y un comentario sobre cada jugada tuya.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="game" class="off">
+            <div class="gwrap">
+                <div>
+                    <div class="pbar" id="ptop"></div>
+                    <div class="brow">
+                        <div class="ev off" id="ev"><i></i></div>
+                        <div class="board" id="board"></div>
+                    </div>
+                    <div class="pbar" id="pbot"></div>
+                </div>
+                <aside class="side">
+                    <div class="stat" id="stat"></div>
+                    <div class="fb" id="fb"></div>
+                    <ol class="ml" id="ml"></ol>
+                    <div class="btns">
+                        <button class="btn" data-a="fl">Girar tablero</button>
+                        <button class="btn" data-a="un" id="un">Deshacer</button>
+                        <button class="btn" data-a="hn" id="hn">Pista</button>
+                        <button class="btn" data-a="rq" id="rq">Rendirse</button>
+                        <button class="btn" data-a="mn">Salir</button>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <div class="modal off" id="modal">
+        <div class="box" id="mbox"></div>
+    </div>
+
+    <!-- ===== Pichisoft - Estado de sesión ===== -->
+    <div id="pichisoft-session-status" role="status" aria-live="polite">
+        <span class="ps-check">✓</span>
+        <span class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span>
+    </div>
+
+    <div id="pichisoft-session-profile">
+        <div id="pichisoft-profile-picture"></div>
+        <span id="pichisoft-profile-name"></span>
+    </div>
+
+    <script>
+        (function () {
+            /* Todo va dentro de esta función para no chocar con las variables de la app */
+            var CFG = {
+                apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+                authDomain: "pichisoft.firebaseapp.com",
+                projectId: "pichisoft",
+                storageBucket: "pichisoft.firebasestorage.app",
+                messagingSenderId: "690032082295",
+                appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+                measurementId: "G-K7HRKR8BJ1"
+            };
+            var V = "https://www.gstatic.com/firebasejs/12.3.0/";
+            var DUR_INICIO = 12000;   // "Iniciando sesión..."
+            var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+
+            var box = document.getElementById("pichisoft-session-status");
+            var txt = box.querySelector(".ps-text");
+            var prof = document.getElementById("pichisoft-session-profile");
+            var pic = document.getElementById("pichisoft-profile-picture");
+            var nameEl = document.getElementById("pichisoft-profile-name");
+            var t0 = Date.now();
+
+            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
+               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
+            async function comprobar() {
+                try {
+                    var m = await Promise.all([
+                        import(V + "firebase-app.js"),
+                        import(V + "firebase-auth.js"),
+                        import(V + "firebase-firestore.js")
+                    ]);
+                    var app = m[0].initializeApp(CFG);
+                    var auth = m[1].getAuth(app);
+                    var db = m[2].getFirestore(app);
+
+                    var user = await Promise.race([
+                        new Promise(function (res) {
+                            m[1].onAuthStateChanged(auth, function (u) {
+                                window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
+                                res(u);
+                            });
+                        }),
+                        wait(15000).then(function () { throw new Error("tiempo agotado"); })
+                    ]);
+
+                    var perfil = {};
+                    if (user) {
+                        try {
+                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+                            if (snap.exists()) perfil = snap.data();
+                        } catch (e) {
+                            console.error("Pichisoft: no se pudo leer el perfil", e);
+                        }
+                    }
+                    return { user: user, perfil: perfil };
+                } catch (e) {
+                    console.error("Pichisoft:", e);
+                    return { error: true };
+                }
+            }
+
+            async function aviso(texto) {
+                txt.textContent = texto;
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+            }
+
+            (async function () {
+                var r = await comprobar();
+                await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
+
+                if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
+                if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
+
+                box.classList.add("success");
+                txt.textContent = "Sesión iniciada";
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+
+                var nombre = r.perfil.username || "Usuario";
+                nameEl.textContent = nombre;
+                var foto = r.perfil.photo;
+                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
+                    var img = new Image();
+                    img.src = foto;
+                    img.alt = "Foto de perfil";
+                    pic.replaceChildren(img);
+                } else {
+                    var ph = document.createElement("div");
+                    ph.className = "profile-placeholder";
+                    ph.textContent = nombre.charAt(0).toUpperCase();
+                    pic.replaceChildren(ph);
+                }
+                await wait(450);
+                prof.classList.add("visible");
+            })();
+        })();</script>
+
+    <script>
+        (function () {
+            "use strict";
+            const $ = id => document.getElementById(id), V = "https://www.gstatic.com/firebasejs/12.3.0/";
+            const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+            /* ---- Piezas dibujadas con CSS (clip-path), sin emojis ---- */
+            const SH = {
+                p: "24 88 28 76 40 70 42 60 34 56 34 50 38 44 40 34 46 28 54 28 60 34 62 44 66 50 66 56 58 60 60 70 72 76 76 88",
+                n: "24 88 28 74 38 66 40 56 32 58 22 60 18 52 34 34 40 24 38 16 46 20 52 14 58 22 70 32 76 50 74 70 72 76 76 88",
+                b: "24 88 28 78 42 72 44 60 38 54 36 44 42 32 48 24 46 18 50 14 54 18 52 24 58 32 64 44 62 54 56 60 58 72 72 78 76 88",
+                r: "22 88 26 76 32 72 32 40 26 36 26 16 38 16 38 24 46 24 46 16 54 16 54 24 62 24 62 16 74 16 74 36 68 40 68 72 74 76 78 88",
+                q: "22 88 28 76 38 70 36 56 24 30 34 44 38 22 46 42 50 16 54 42 62 22 66 44 76 30 64 56 62 70 72 76 78 88",
+                k: "24 88 28 76 38 70 34 56 26 50 26 42 34 36 44 36 44 28 38 28 38 22 44 22 44 14 56 14 56 22 62 22 62 28 56 28 56 36 66 36 74 42 74 50 66 56 62 70 72 76 76 88"
+            };
+            const st = document.createElement('style');
+            st.textContent = Object.entries(SH).map(([k, v]) => `.pc.t${k}{clip-path:polygon(${v.split(' ').map((x, i) => x + '%' + (i % 2 ? ',' : ' ')).join('').slice(0, -1)})}`).join('');
+            document.head.appendChild(st);
+            const isW = p => p < 'a', pcs = p => `<i class="pw ${isW(p) ? 'w' : 'b'}"><b class="pc t${p.toLowerCase()}"></b></i>`;
+
+            /* ---- Motor de ajedrez ---- */
+            const D = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]], KN = [[-2, -1], [-2, 1], [2, -1], [2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2]];
+            const ins = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8, sq = i => "abcdefgh"[i & 7] + (8 - (i >> 3)), uci = m => sq(m.f) + sq(m.t) + (m.p || '');
+            const init = () => ({ b: ("rnbqkbnr" + "pppppppp" + ".".repeat(32) + "PPPPPPPP" + "RNBQKBNR").split(''), t: 'w', c: 'KQkq', ep: -1, hm: 0 });
+            const key = s => s.b.join('') + s.t + s.c + s.ep;
+            function att(b, x, byW) {
+                const r = x >> 3, c = x & 7, P = byW ? 'P' : 'p', N = byW ? 'N' : 'n', K = byW ? 'K' : 'k', B = byW ? 'B' : 'b', R = byW ? 'R' : 'r', Q = byW ? 'Q' : 'q', pr = r + (byW ? 1 : -1);
+                for (const dc of [-1, 1]) { const cc = c + dc; if (ins(pr, cc) && b[pr * 8 + cc] == P) return 1 }
+                for (const [dr, dc] of KN) if (ins(r + dr, c + dc) && b[(r + dr) * 8 + c + dc] == N) return 1;
+                for (let d = 0; d < 8; d++) { let rr = r + D[d][0], cc = c + D[d][1], f = 1; while (ins(rr, cc)) { const p = b[rr * 8 + cc]; if (p != '.') { if (p == Q || (d < 4 ? p == R : p == B) || (f && p == K)) return 1; break } rr += D[d][0]; cc += D[d][1]; f = 0 } } return 0
+            }
+            function gen(s) {
+                const m = [], w = s.t == 'w', b = s.b;
+                for (let i = 0; i < 64; i++) {
+                    const p = b[i]; if (p == '.' || isW(p) != w) continue; const r = i >> 3, c = i & 7, k = p.toLowerCase();
+                    const add = (t, o) => { if (k == 'p' && (t >> 3 == 0 || t >> 3 == 7)) for (const q of 'qrbn') m.push({ f: i, t, p: q }); else m.push({ f: i, t, ...o }) };
+                    if (k == 'p') {
+                        const d = w ? -1 : 1, o = i + 8 * d; if (b[o] == '.') { add(o); if (r == (w ? 6 : 1) && b[o + 8 * d] == '.') add(o + 8 * d, { dp: 1 }) }
+                        for (const dc of [-1, 1]) { const cc = c + dc; if (cc < 0 || cc > 7) continue; const t = o + dc, q = b[t]; if (q != '.' && isW(q) != w) add(t); else if (t == s.ep) add(t, { ep: 1 }) }
+                    }
+                    else if (k == 'n' || k == 'k') {
+                        for (const [dr, dc] of (k == 'n' ? KN : D)) { const rr = r + dr, cc = c + dc; if (!ins(rr, cc)) continue; const q = b[rr * 8 + cc]; if (q == '.' || isW(q) != w) add(rr * 8 + cc) }
+                        if (k == 'k') {
+                            const s0 = w ? 56 : 0; if (i == s0 + 4 && !att(b, i, !w)) {
+                                if (s.c.includes(w ? 'K' : 'k') && b[s0 + 5] == '.' && b[s0 + 6] == '.' && !att(b, s0 + 5, !w) && !att(b, s0 + 6, !w)) m.push({ f: i, t: s0 + 6, cs: 1, rf: s0 + 7, rt: s0 + 5 });
+                                if (s.c.includes(w ? 'Q' : 'q') && b[s0 + 1] == '.' && b[s0 + 2] == '.' && b[s0 + 3] == '.' && !att(b, s0 + 3, !w) && !att(b, s0 + 2, !w)) m.push({ f: i, t: s0 + 2, cs: 1, rf: s0, rt: s0 + 3 })
+                            }
+                        }
+                    }
+                    else for (const [dr, dc] of (k == 'b' ? D.slice(4) : k == 'r' ? D.slice(0, 4) : D)) { let rr = r + dr, cc = c + dc; while (ins(rr, cc)) { const q = b[rr * 8 + cc]; if (q == '.') add(rr * 8 + cc); else { if (isW(q) != w) add(rr * 8 + cc); break } rr += dr; cc += dc } }
+                }
+                return m
+            }
+            function make(s, m) {
+                const b = s.b.slice(), p = b[m.f], w = s.t == 'w'; let c = s.c, ep = -1; const hm = (p.toLowerCase() == 'p' || b[m.t] != '.') ? 0 : s.hm + 1;
+                b[m.t] = m.p ? (w ? m.p.toUpperCase() : m.p) : p; b[m.f] = '.';
+                if (m.ep) b[m.t + (w ? 8 : -8)] = '.'; if (m.dp) ep = (m.f + m.t) >> 1; if (m.cs) { b[m.rt] = b[m.rf]; b[m.rf] = '.' }
+                for (const i of [m.f, m.t]) { const x = { 0: 'q', 4: 'kq', 7: 'k', 56: 'Q', 60: 'KQ', 63: 'K' }[i]; if (x) for (const ch of x) c = c.replace(ch, '') }
+                return { b, t: w ? 'b' : 'w', c, ep, hm }
+            }
+            const kpos = s => s.b.indexOf(s.t == 'w' ? 'K' : 'k'), inChk = s => att(s.b, kpos(s), s.t != 'w');
+            const legal = s => gen(s).filter(m => { const n = make(s, m); return !att(n.b, n.b.indexOf(s.t == 'w' ? 'K' : 'k'), s.t != 'w') });
+            function san(s, m, n, L) {
+                const p = s.b[m.f], k = p.toUpperCase(); let t;
+                if (m.cs) t = m.t > m.f ? 'O-O' : 'O-O-O'; else {
+                    const cap = s.b[m.t] != '.' || m.ep, f = sq(m.f);
+                    t = (k == 'P' ? (cap ? f[0] : '') : k + (L.some(x => x != m && x.t == m.t && s.b[x.f] == p && x.p == m.p) ? f[0] : '')) + (cap ? 'x' : '') + sq(m.t) + (m.p ? '=' + m.p.toUpperCase() : '')
+                }
+                return t + (inChk(n) ? (legal(n).length ? '+' : '#') : '')
+            }
+
+            /* ---- IA ---- */
+            const val = p => ({ p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 })[p.toLowerCase()];
+            function ev(s) {
+                let sc = 0, qn = 0, kw = 0, kb = 0;
+                for (let i = 0; i < 64; i++) {
+                    const p = s.b[i]; if (p == '.') continue; const W = isW(p), k = p.toLowerCase(), r = i >> 3, c = i & 7, adv = W ? 7 - r : r, cen = 4 - Math.abs(3.5 - c) - Math.abs(3.5 - r); let v;
+                    if (k == 'p') v = 100 + adv * 8 + (c == 3 || c == 4 ? adv * 3 : 0); else if (k == 'n') v = 320 + cen * 9; else if (k == 'b') v = 330 + cen * 5;
+                    else if (k == 'r') v = 500 + (adv == 6 ? 15 : 0); else if (k == 'q') { v = 900 + cen * 2; qn++ } else { if (W) kw = i; else kb = i; continue }
+                    sc += W ? v : -v
+                }
+                const kt = (i, W) => { const r = i >> 3, c = i & 7, adv = W ? 7 - r : r; return qn ? (adv == 0 && (c < 3 || c > 5) ? 30 : -adv * 15) : (4 - Math.abs(3.5 - c) - Math.abs(3.5 - r)) * 10 };
+                sc += kt(kw, 1) - kt(kb, 0); return s.t == 'w' ? sc : -sc
+            }
+            let nodes = 0, DL = 0;
+            const ord = (s, L) => L.map(m => ({ m, k: (s.b[m.t] != '.' ? val(s.b[m.t]) * 10 - val(s.b[m.f]) : m.ep ? 900 : 0) + (m.p ? 800 : 0) })).sort((a, b) => b.k - a.k).map(x => x.m);
+            function qs(s, a, b, k) {
+                const e = ev(s); if (k == 0 || e >= b) return e; if (e > a) a = e;
+                for (const m of ord(s, gen(s).filter(m => s.b[m.t] != '.' || m.ep))) { const n = make(s, m); if (att(n.b, n.b.indexOf(s.t == 'w' ? 'K' : 'k'), s.t != 'w')) continue; const v = -qs(n, -b, -a, k - 1); if (v >= b) return v; if (v > a) a = v } return a
+            }
+            function ab(s, d, a, b) {
+                if ((++nodes & 511) == 0 && Date.now() > DL) throw 0; const L = legal(s); if (!L.length) return inChk(s) ? -99000 - d : 0; if (s.hm >= 100) return 0; if (d == 0) return qs(s, a, b, 3);
+                for (const m of ord(s, L)) { const v = -ab(make(s, m), d - 1, -b, -a); if (v >= b) return v; if (v > a) a = v } return a
+            }
+            function rs(s, d, ex, ms) {
+                DL = Date.now() + (ms || 1e9); let L = ord(s, legal(s)), out = null;
+                for (let i = 1; i <= d; i++) { try { let a = -1e6; const R = []; for (const m of L) { const v = -ab(make(s, m), i - 1, -1e6, ex ? 1e6 : -a); R.push({ m, v }); if (v > a) a = v } R.sort((x, y) => y.v - x.v); out = R; L = R.map(x => x.m) } catch (e) { break } } return out
+            }
+            const LV = [{ n: 'Principiante', d: 1, r: 200 }, { n: 'Intermedio', d: 2, r: 35 }, { n: 'Avanzado', d: 3, r: 8 }, { n: 'Maestro', d: 4, r: 0, ms: 2500 }];
+
+            /* ---- Estado de partida ---- */
+            let G = null, gid = 0, SEL = {}; const cur = () => G.S[G.S.length - 1];
+            function newG(mode, me, lv) { const s = init(); G = { id: ++gid, mode, me, lv, S: [s], K: [key(s)], M: [], N: [], L: legal(s), last: null, over: null, sel: -1, tg: [], flip: me == 'b', rank: null, hint: 0, busy: 0, fb: null, hn: null } }
+            function out() {
+                const s = cur(), L = G.L;
+                if (!L.length) return inChk(s) ? { r: s.t == 'w' ? 'b' : 'w', y: 'Jaque mate' } : { r: 'd', y: 'Rey ahogado' };
+                if (s.hm >= 100) return { r: 'd', y: 'Regla de los 50 movimientos' };
+                const ps = s.b.filter(x => x != '.' && x.toLowerCase() != 'k'); if (!ps.length || (ps.length == 1 && /[bBnN]/.test(ps[0]))) return { r: 'd', y: 'Material insuficiente' };
+                const k = G.K[G.K.length - 1]; if (G.K.filter(x => x == k).length >= 3) return { r: 'd', y: 'Triple repetición' }; return null
+            }
+            function push(m) { const s = cur(), n = make(s, m); G.N.push(san(s, m, n, G.L)); G.M.push(m); G.S.push(n); G.K.push(key(n)); G.L = legal(n); G.last = m; G.sel = -1; G.tg = []; G.hint = 0; G.rank = null; G.hn = null; G.over = out() }
+            function judge(m) {
+                const R = G.rank; if (!R) return; const x = R.find(r => uci(r.m) == uci(m)); if (!x) return; const l = R[0].v - x.v, s = cur(), b = R[0].m, bs = san(s, b, make(s, b), G.L);
+                G.fb = l <= 5 ? { t: 'Mejor jugada.', c: 'g' } : l < 40 ? { t: 'Buena jugada.', c: 'g' } : l < 120 ? { t: 'Imprecisión. Mejor era ' + bs + '.', c: 'y' } : l < 300 ? { t: 'Error. Mejor era ' + bs + '.', c: 'r' } : { t: 'Error grave. Mejor era ' + bs + '.', c: 'r' }
+            }
+            function played(m, rm) {
+                if (G.mode == 'train' && !rm) judge(m); push(m); if (G.mode == 'online' && !rm) send(); render();
+                if (G.over) fin(); else if (G.mode != 'online') { if (cur().t != G.me) bot(); else if (G.mode == 'train') analyze() }
+            }
+            function bot() { const id = G.id; G.busy = 1; render(); setTimeout(() => { if (!G || G.id != id) return; const l = LV[G.lv], R = rs(cur(), l.d, l.r > 0, l.ms), ok = R.filter(x => x.v >= R[0].v - l.r); G.busy = 0; played(ok[Math.random() * ok.length | 0].m, 1) }, 60) }
+            function analyze() { const id = G.id; setTimeout(() => { if (!G || G.id != id || G.over) return; G.rank = rs(cur(), 3, true); render() }, 30) }
+            function start(mode, lv, col) { const me = col == 'r' ? 'wb'[Math.random() * 2 | 0] : col; newG(mode, me, lv); G.col = col; show('game'); render(); if (cur().t != G.me) bot(); else if (mode == 'train') analyze() }
+            function onSq(i) {
+                if (!G || G.over || G.busy || cur().t != G.me) return; const p = cur().b[i];
+                if (G.sel >= 0) { const ms = G.L.filter(m => m.f == G.sel && m.t == i); if (ms.length) { if (ms.length > 1) return promo(ms); return played(ms[0]) } }
+                if (p != '.' && isW(p) == (G.me == 'w')) { G.sel = i; G.tg = G.L.filter(m => m.f == i).map(m => m.t) } else { G.sel = -1; G.tg = [] } render()
+            }
+            function promo(ms) { const c = G.me; modal('<h2>Coronación</h2><p class="mu">Elegí la pieza.</p><div class="row">' + ['q', 'r', 'b', 'n'].map(q => `<button class="btn pcb" data-a="pr" data-q="${q}">${pcs(c == 'w' ? q.toUpperCase() : q)}</button>`).join('') + '</div>'); A.pr = b => { close(); played(ms.find(x => x.p == b.dataset.q)) } }
+
+            /* ---- Render ---- */
+            function render() {
+                const s = cur(), kp = inChk(s) ? kpos(s) : -1; let h = '';
+                for (let d = 0; d < 64; d++) {
+                    const i = G.flip ? 63 - d : d, r = i >> 3, c = i & 7, p = s.b[i], L = G.last; let cl = 'sq ' + ((r + c) & 1 ? 'd' : 'l');
+                    if (L && (L.f == i || L.t == i)) cl += ' lm'; if (i == G.sel) cl += ' sel'; if (i == kp) cl += ' ck'; if (G.hn && G.hint && (G.hn.f == i || (G.hint > 1 && G.hn.t == i))) cl += ' hn';
+                    h += `<div class="${cl}" data-i="${i}"${d % 8 == 0 ? ` data-r="${8 - r}"` : ''}${d > 55 ? ` data-f="${'abcdefgh'[c]}"` : ''}>${p != '.' ? pcs(p) : ''}${G.tg.includes(i) ? `<em class="dot${p != '.' ? ' c' : ''}"></em>` : ''}</div>`
+                }
+                $('board').innerHTML = h;
+                const nm = c => G.mode == 'online' ? (c == 'w' ? G.wn : G.bn) || 'Rival' : c == G.me ? (ME.p ? ME.p.username : 'Vos') : (G.mode == 'train' ? 'Entrenador' : 'Computadora') + ' (' + LV[G.lv].n + ')';
+                const bar = (id, c) => { $(id).className = 'pbar' + (s.t == c && !G.over ? ' on' : ''); $(id).innerHTML = `<span class="chip">${pcs(c == 'w' ? 'K' : 'k')}</span><span class="nm">${esc(nm(c))}</span>` };
+                const bc = G.flip ? 'b' : 'w'; bar('pbot', bc); bar('ptop', bc == 'w' ? 'b' : 'w');
+                $('stat').textContent = G.over ? (G.over.r == 'd' ? 'Tablas' : (G.over.r == G.me ? 'Ganaste' : 'Perdiste')) + ' - ' + G.over.y : G.busy ? 'La computadora está pensando...' : (s.t == G.me ? 'Tu turno' : 'Turno del rival') + (inChk(s) ? ' - Jaque' : '');
+                $('fb').className = 'fb ' + (G.fb ? G.fb.c : ''); $('fb').textContent = G.fb ? G.fb.t : G.mode == 'train' ? 'Jugá: te comento qué tan buena fue cada jugada.' : '';
+                let l = ''; for (let i = 0; i < G.N.length; i += 2)l += `<li class="n">${i / 2 + 1}.</li><li>${G.N[i]}</li><li>${G.N[i + 1] || ''}</li>`; $('ml').innerHTML = l; $('ml').scrollTop = 1e6;
+                const tr = G.mode == 'train'; $('ev').classList.toggle('off', !tr); $('hn').classList.toggle('off', !tr); $('un').classList.toggle('off', G.mode == 'online'); $('rq').classList.toggle('off', !!G.over);
+                if (tr) { const e = $('ev'); e.style.transform = G.flip ? 'rotate(180deg)' : ''; if (G.rank) { const v = s.t == 'w' ? G.rank[0].v : -G.rank[0].v; e.firstChild.style.height = 50 + 50 * Math.tanh(v / 500) + '%' } }
+            }
+            function show(v) { $('home').classList.toggle('off', v != 'home'); $('game').classList.toggle('off', v != 'game') }
+            function modal(h) { $('mbox').innerHTML = h; $('modal').classList.remove('off') }
+            function close() { $('modal').classList.add('off') }
+            function fin() {
+                if (G.over && !G.shown) {
+                    G.shown = 1; const o = G.over, w = o.r == 'd' ? 'Tablas' : o.r == G.me ? 'Ganaste' : 'Perdiste';
+                    modal(`<h2>${w}</h2><p class="mu">${esc(o.y)}${o.r != 'd' ? ' - ganan las ' + (o.r == 'w' ? 'blancas' : 'negras') : ''}</p><div class="row">${G.mode != 'online' ? '<button class="btn p" data-a="rv">Revancha</button>' : ''}<button class="btn" data-a="x">Ver tablero</button><button class="btn" data-a="mn2">Menú</button></div>`)
+                }
+            }
+
+            /* ---- Online (Firebase de Pichisoft) ---- */
+            let FB, PF, ME = { ok: 0 };
+            const hashPw = async (pw, salt) => { const e = new TextEncoder(), k = await crypto.subtle.importKey('raw', e.encode(pw), 'PBKDF2', 0, ['deriveBits']), b = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: e.encode(salt), iterations: 150000, hash: 'SHA-256' }, k, 256); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('') };
+            const ready = (async () => {
+                PF = await new Promise(r => { let n = 0; const t = setInterval(() => { if (window.PichisoftFirebase || ++n > 80) { clearInterval(t); r(window.PichisoftFirebase) } }, 250) });
+                if (!PF || !PF.currentUser) return; ME.uid = PF.currentUser.uid;
+                try { FB = await import(V + "firebase-firestore.js"); const sn = await FB.getDoc(FB.doc(PF.db, 'pichonchess_users', ME.uid)); if (sn.exists()) ME.p = sn.data(); try { ME.ok = !!ME.p && sessionStorage.getItem('pc' + ME.uid) == '1' } catch (e) { } } catch (e) { ME.err = 1 }
+            })();
+            const GC = () => FB.collection(PF.db, 'pichonchess_games'), GD = id => FB.doc(PF.db, 'pichonchess_games', id);
+            const fail = () => modal('<h2>Sin conexión</h2><p class="mu">No se pudo comunicar con el servidor. Probá de nuevo en un momento.</p><button class="btn" data-a="x">Cerrar</button>');
+            async function online() {
+                modal('<div class="sp"></div><p class="mu" style="text-align:center">Conectando con Pichisoft...</p>'); await ready;
+                if (!ME.uid) return modal('<h2>Necesitás tu sesión de Pichisoft</h2><p class="mu">Para jugar online iniciá sesión en tu cuenta de Pichisoft y volvé a abrir PichonChess.</p><div class="row"><a class="btn p" href="https://pichisoft.github.io/web/" target="_blank" rel="noopener">Ir a Pichisoft</a><button class="btn" data-a="x">Cerrar</button></div>');
+                if (!FB || ME.err) return fail(); if (!ME.p) return reg(); if (!ME.ok) return login(); menuOn()
+            }
+            const reg = () => modal('<h2>Creá tu usuario</h2><p class="mu">Solo usuario y contraseña: el email ya lo tenemos por tu cuenta de Pichisoft.</p><input id="u" placeholder="Usuario" maxlength="16" autocomplete="off"><input id="pw" type="password" placeholder="Contraseña (mínimo 6)"><input id="pw2" type="password" placeholder="Repetí la contraseña"><p id="er" class="er"></p><div class="row"><button class="btn p" data-a="mk">Crear usuario</button><button class="btn" data-a="x">Cancelar</button></div>');
+            const login = () => modal(`<h2>Hola, ${esc(ME.p.username)}</h2><p class="mu">Ingresá tu contraseña de PichonChess.</p><input id="pw" type="password" placeholder="Contraseña"><p id="er" class="er"></p><div class="row"><button class="btn p" data-a="lg">Ingresar</button><button class="btn" data-a="x">Cancelar</button></div>`);
+            const menuOn = () => modal(`<h2>Jugar online</h2><p class="mu">Conectado como <b>${esc(ME.p.username)}</b></p><button class="btn p" data-a="qm">Buscar rival</button><button class="btn" data-a="pv">Crear partida privada</button><input id="cd" placeholder="Código de partida" autocomplete="off"><button class="btn" data-a="jn">Unirse con código</button><p id="er" class="er"></p><button class="btn" data-a="x">Cerrar</button>`);
+            function ok() { ME.ok = 1; try { sessionStorage.setItem('pc' + ME.uid, '1') } catch (e) { } menuOn() }
+            async function mkGame(pv) {
+                try {
+                    const r = await FB.addDoc(GC(), { w: ME.uid, wn: ME.p.username, b: null, bn: null, status: 'waiting', priv: !!pv, moves: [], result: null, why: null, t: FB.serverTimestamp() });
+                    watch(r.id, 'w'); modal(`<h2>${pv ? 'Partida privada' : 'Esperando rival'}</h2>${pv ? `<p class="mu">Pasale este código a tu rival:</p><input readonly value="${r.id}" onclick="this.select()">` : ''}<div class="sp"></div><button class="btn" data-a="cw">Cancelar</button>`)
+                } catch (e) { fail() }
+            }
+            function watch(id, me) {
+                newG('online', me, 0); const g = G; g.gid = id; g.un = FB.onSnapshot(GD(id), sn => {
+                    const d = sn.data(); if (!d || G !== g) return; g.wn = d.wn; g.bn = d.bn; if (d.status == 'waiting') return;
+                    if (!g.st) { g.st = 1; close(); show('game') }
+                    while (g.M.length < d.moves.length) { const m = g.L.find(x => uci(x) == d.moves[g.M.length]); if (!m) break; push(m) }
+                    if (!g.over && d.status == 'over' && d.result) g.over = { r: d.result, y: d.why || 'Fin' }; render(); fin()
+                })
+            }
+            function send() { const o = G.over; FB.updateDoc(GD(G.gid), { moves: G.M.map(uci), status: o ? 'over' : 'playing', result: o ? o.r : null, why: o ? o.y : null }).catch(() => { G.fb = { t: 'Sin conexión: la jugada no se envió.', c: 'r' }; render() }) }
+            function leave() { if (G && G.un) { G.un(); if (G.mode == 'online' && !G.st && G.me == 'w') FB.deleteDoc(GD(G.gid)).catch(() => { }) } G = null }
+            function setup(mode) { SEL = { mode, lv: 1, col: 'w' }; modal(`<h2>${mode == 'train' ? 'Entrenar con un bot' : 'Contra la computadora'}</h2><p class="mu">${mode == 'train' ? 'Tenés pista, barra de evaluación, deshacer y un comentario de cada jugada.' : 'Elegí la dificultad y tu color.'}</p><b>Nivel</b><div class="seg">${LV.map((l, i) => `<button class="btn${i == 1 ? ' on' : ''}" data-a="sg" data-g="lv" data-v="${i}">${l.n}</button>`).join('')}</div><b>Jugás con</b><div class="seg">${[['w', 'Blancas'], ['b', 'Negras'], ['r', 'Al azar']].map((c, i) => `<button class="btn${i == 0 ? ' on' : ''}" data-a="sg" data-g="col" data-v="${c[0]}">${c[1]}</button>`).join('')}</div><div class="row"><button class="btn p" data-a="go">Empezar</button><button class="btn" data-a="x">Cancelar</button></div>`) }
+
+            const A = {
+                x: close, on: online, cp: () => setup('cpu'), tr: () => setup('train'),
+                sg: b => { SEL[b.dataset.g] = b.dataset.g == 'lv' ? +b.dataset.v : b.dataset.v;[...b.parentNode.children].forEach(x => x.classList.toggle('on', x == b)) },
+                go: () => { close(); start(SEL.mode, SEL.lv, SEL.col) }, rv: () => { close(); start(G.mode, G.lv, G.col) },
+                mk: async () => {
+                    const u = $('u').value.trim(), p = $('pw').value, er = t => $('er').textContent = t;
+                    if (!/^[\w.-]{3,16}$/.test(u)) return er('Usuario: de 3 a 16 letras, números, _ . o -'); if (p.length < 6) return er('La contraseña necesita al menos 6 caracteres'); if (p != $('pw2').value) return er('Las contraseñas no coinciden');
+                    try {
+                        const salt = crypto.randomUUID(), hash = await hashPw(p, salt), db = PF.db;
+                        await FB.runTransaction(db, async tx => { const nr = FB.doc(db, 'pichonchess_names', u.toLowerCase()); if ((await tx.get(nr)).exists()) throw 'taken'; tx.set(nr, { uid: ME.uid }); tx.set(FB.doc(db, 'pichonchess_users', ME.uid), { username: u, salt, hash }) });
+                        ME.p = { username: u, salt, hash }; ok()
+                    } catch (e) { er(e == 'taken' ? 'Ese usuario ya existe. Probá con otro.' : 'No se pudo crear el usuario.') }
+                },
+                lg: async () => { try { if (await hashPw($('pw').value, ME.p.salt) == ME.p.hash) ok(); else $('er').textContent = 'Contraseña incorrecta' } catch (e) { $('er').textContent = 'No se pudo verificar la contraseña' } },
+                qm: async () => {
+                    modal('<h2>Buscando rival</h2><div class="sp"></div><button class="btn" data-a="cw">Cancelar</button>');
+                    try {
+                        const sn = await FB.getDocs(FB.query(GC(), FB.where('status', '==', 'waiting'), FB.where('priv', '==', false), FB.limit(15)));
+                        for (const d of sn.docs) {
+                            const x = d.data(), t = x.t && x.t.toMillis ? x.t.toMillis() : 0; if (x.w == ME.uid || Date.now() - t > 120000) continue;
+                            try { await FB.runTransaction(PF.db, async tx => { const y = await tx.get(d.ref); if (y.data().status != 'waiting') throw 0; tx.update(d.ref, { b: ME.uid, bn: ME.p.username, status: 'playing' }) }); return watch(d.id, 'b') } catch (e) { }
+                        }
+                        mkGame(0)
+                    } catch (e) { fail() }
+                },
+                pv: () => mkGame(1),
+                jn: async () => {
+                    const id = $('cd').value.trim(); if (!id) return; let me = 'b';
+                    try { await FB.runTransaction(PF.db, async tx => { const r = GD(id), y = await tx.get(r); if (!y.exists()) throw 'no'; const x = y.data(); if (x.w == ME.uid || x.b == ME.uid) { me = x.w == ME.uid ? 'w' : 'b'; return } if (x.status != 'waiting') throw 'full'; tx.update(r, { b: ME.uid, bn: ME.p.username, status: 'playing' }) }); watch(id, me) }
+                    catch (e) { $('er').textContent = e == 'no' ? 'No existe esa partida.' : e == 'full' ? 'Esa partida ya tiene dos jugadores.' : 'No se pudo unir a la partida.' }
+                },
+                cw: () => { leave(); close() }, fl: () => { G.flip = !G.flip; render() },
+                un: () => {
+                    if (!G || G.busy || G.mode == 'online') return; const n = cur().t == G.me ? 2 : 1; for (let i = 0; i < n && G.M.length; i++) { G.S.pop(); G.K.pop(); G.M.pop(); G.N.pop() }
+                    G.last = G.M[G.M.length - 1] || null; G.L = legal(cur()); G.over = null; G.shown = 0; G.sel = -1; G.tg = []; G.hint = 0; G.fb = null; G.rank = null; G.hn = null; render(); if (cur().t != G.me) bot(); else if (G.mode == 'train') analyze()
+                },
+                hn: () => { if (G && G.rank && !G.over) { G.hn = G.rank[0].m; G.hint = Math.min(2, G.hint + 1); render() } },
+                rq: () => modal('<h2>¿Rendirte?</h2><div class="row"><button class="btn p" data-a="rs">Sí, rendirme</button><button class="btn" data-a="x">Seguir jugando</button></div>'),
+                rs: () => {
+                    close(); if (!G || G.over) return; const w = G.me == 'w' ? 'b' : 'w'; G.over = { r: w, y: 'Abandono' };
+                    if (G.mode == 'online') FB.updateDoc(GD(G.gid), { status: 'over', result: w, why: 'Abandono' }).catch(() => { }); render(); fin()
+                },
+                mn: () => { if (G && G.mode == 'online' && !G.over) return A.rq(); A.mn2() },
+                mn2: () => { leave(); close(); show('home') }
+            };
+
+            document.addEventListener('click', e => {
+                const b = e.target.closest('[data-a]'); if (b && A[b.dataset.a]) return A[b.dataset.a](b);
+                const q = e.target.closest('#board .sq'); if (q && G) onSq(+q.dataset.i)
+            });
+            document.addEventListener('keydown', e => { if (e.key == 'Enter') { const c = e.target.closest && e.target.closest('.card'); if (c) c.click() } });
+        })();
+    </script>
+</body>
+
+</html>
