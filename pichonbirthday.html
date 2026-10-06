@@ -16,6 +16,18 @@
             min-height: 100%
         }
 
+        html,
+        body {
+            overscroll-behavior-y: contain;
+        }
+
+        /* evita que deslizar recargue la página */
+        .panel,
+        #md .box {
+            overscroll-behavior: contain;
+        }
+
+        /* el scroll no "se escapa" a la página */
         body {
             background: radial-gradient(1200px 600px at 50% -10%, #1b1b2b, #0b0b10 60%);
             color: #fff;
@@ -1308,7 +1320,25 @@
             O.forEach(o => { if (o === '-') return panel.append(mk('hr')); const b = mk('button', 'opt', '<i class="ic ' + o[1] + '"></i><span>' + o[0] + (o[2] ? '<small>' + o[2] + '</small>' : '') + '</span>'); b.onclick = () => { panel.classList.remove('on'); o[3]() }; panel.append(b) });
             $('#addBtn').onclick = e => { e.stopPropagation(); panel.classList.toggle('on') };
             document.addEventListener('click', e => { if (!panel.contains(e.target)) panel.classList.remove('on') });
+            /* Cerrar el listado deslizando (en vez de recargar la página) */
+            let ty = null;
+            panel.addEventListener('touchstart', e => { ty = e.touches[0].clientY }, { passive: true });
+            panel.addEventListener('touchmove', e => {
+                if (ty === null) return;
+                const dy = e.touches[0].clientY - ty;
+                const arriba = panel.scrollTop <= 0;
+                const abajo = panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 1;
+                if ((dy > 70 && arriba) || (dy < -70 && abajo)) { // deslizó hacia abajo o hacia arriba hasta el borde
+                    panel.classList.remove('on');
+                    ty = null;
+                }
+            }, { passive: true });
+            panel.addEventListener('touchend', () => { ty = null });
 
+            /* Aviso por si se intenta recargar/cerrar con cambios sin guardar */
+            addEventListener('beforeunload', e => {
+                if ($('#editor').classList.contains('on') && hi > 0) { e.preventDefault(); e.returnValue = '' }
+            });
             /* ---------- Modal ---------- */
             function modal(t, body, ok, okTxt) { md.querySelector('h3').textContent = t; md.querySelector('.bd').replaceChildren(body); const b = $('#mdOk'); b.style.display = ok ? '' : 'none'; b.textContent = okTxt || 'Aceptar'; b.onclick = () => { ok(); md.classList.remove('on') }; $('#mdNo').textContent = ok ? 'Cancelar' : 'Cerrar'; md.classList.add('on') }
             $('#mdNo').onclick = () => md.classList.remove('on');
