@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>PichonFood - By Pichisoft</title>
+    <title>PichonFood</title>
     <style>
         :root {
             --lime: #a3e635;
@@ -1225,7 +1225,7 @@
         const isAdmin = () => !!user && ADMINS.includes(user.uid);
         const sel = [], filt = [], open = new Set(), drafts = {};
         const toast = m => { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 5500) };
-        const need = () => user ? true : (toast("No se detectó tu sesión de Pichisoft. Iniciá sesión y abrí la app desde el mismo sitio (pichisoft.github.io)."), false);
+        const need = () => user ? true : (toast("No se detectó tu sesión de Pichisoft. Iniciá sesión y abrí la app desde el mismo sitio (pichisoft.github.io/web/)."), false);
 
         function ask(t, m, ok, no = "Cancelar") {
             return new Promise(res => {
