@@ -445,6 +445,37 @@
             }
         }
 
+        .ur {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--ln);
+            font-size: 14px
+        }
+
+        .ur .row {
+            flex-shrink: 0;
+            flex-wrap: nowrap
+        }
+
+        .ur .btn {
+            padding: 5px 9px;
+            font-size: 12px
+        }
+
+        .hubs {
+            max-height: 48vh;
+            overflow: auto;
+            margin: 6px 0
+        }
+
+        .hubs>b {
+            display: block;
+            margin-top: 10px
+        }
+
         .pcb {
             width: 64px;
             height: 64px;
@@ -997,7 +1028,7 @@
                     h += `<div class="${cl}" data-i="${i}"${d % 8 == 0 ? ` data-r="${8 - r}"` : ''}${d > 55 ? ` data-f="${'abcdefgh'[c]}"` : ''}>${p != '.' ? pcs(p) : ''}${G.tg.includes(i) ? `<em class="dot${p != '.' ? ' c' : ''}"></em>` : ''}</div>`
                 }
                 $('board').innerHTML = h;
-                const nm = c => G.mode == 'online' ? (c == 'w' ? G.wn : G.bn) || 'Rival' : c == G.me ? (ME.p ? ME.p.username : 'Vos') : (G.mode == 'train' ? 'Entrenador' : 'Computadora') + ' (' + LV[G.lv].n + ')';
+                const nm = c => G.mode == 'online' ? ((c == 'w' ? G.wn : G.bn) || 'Rival') + ' (' + ((c == 'w' ? G.we : G.be) || 1200) + ')' : c == G.me ? (ME.p ? ME.p.username : 'Vos') : (G.mode == 'train' ? 'Entrenador' : 'Computadora') + ' (' + LV[G.lv].n + ')';
                 const bar = (id, c) => { $(id).className = 'pbar' + (s.t == c && !G.over ? ' on' : ''); $(id).innerHTML = `<span class="chip">${pcs(c == 'w' ? 'K' : 'k')}</span><span class="nm">${esc(nm(c))}</span>` };
                 const bc = G.flip ? 'b' : 'w'; bar('pbot', bc); bar('ptop', bc == 'w' ? 'b' : 'w');
                 $('stat').textContent = G.over ? (G.over.r == 'd' ? 'Tablas' : (G.over.r == G.me ? 'Ganaste' : 'Perdiste')) + ' - ' + G.over.y : G.busy ? 'La computadora está pensando...' : (s.t == G.me ? 'Tu turno' : 'Turno del rival') + (inChk(s) ? ' - Jaque' : '');
@@ -1011,8 +1042,8 @@
             function close() { $('modal').classList.add('off') }
             function fin() {
                 if (G.over && !G.shown) {
-                    G.shown = 1; const o = G.over, w = o.r == 'd' ? 'Tablas' : o.r == G.me ? 'Ganaste' : 'Perdiste';
-                    modal(`<h2>${w}</h2><p class="mu">${esc(o.y)}${o.r != 'd' ? ' - ganan las ' + (o.r == 'w' ? 'blancas' : 'negras') : ''}</p><div class="row">${G.mode != 'online' ? '<button class="btn p" data-a="rv">Revancha</button>' : ''}<button class="btn" data-a="x">Ver tablero</button><button class="btn" data-a="mn2">Menú</button></div>`)
+                    G.shown = 1; if (G.mode == 'online') rate(); const o = G.over, w = o.r == 'd' ? 'Tablas' : o.r == G.me ? 'Ganaste' : 'Perdiste';
+                    modal(`<h2>${w}</h2><p class="mu">${esc(o.y)}${o.r != 'd' ? ' - ganan las ' + (o.r == 'w' ? 'blancas' : 'negras') : ''}</p>${G.eloD != null ? `<p>Elo: <b>${ME.p.elo}</b> (${G.eloD >= 0 ? '+' : ''}${G.eloD})</p>` : ''}<div class="row">${G.mode != 'online' ? '<button class="btn p" data-a="rv">Revancha</button>' : ''}<button class="btn" data-a="x">Ver tablero</button><button class="btn" data-a="mn2">Menú</button></div>`)
                 }
             }
 
@@ -1022,7 +1053,7 @@
             const ready = (async () => {
                 PF = await new Promise(r => { let n = 0; const t = setInterval(() => { if (window.PichisoftFirebase || ++n > 80) { clearInterval(t); r(window.PichisoftFirebase) } }, 250) });
                 if (!PF || !PF.currentUser) return; ME.uid = PF.currentUser.uid;
-                try { FB = await import(V + "firebase-firestore.js"); const sn = await FB.getDoc(FB.doc(PF.db, 'pichonchess_users', ME.uid)); if (sn.exists()) ME.p = sn.data(); try { ME.ok = !!ME.p && sessionStorage.getItem('pc' + ME.uid) == '1' } catch (e) { } } catch (e) { ME.err = 1 }
+                try { FB = await import(V + "firebase-firestore.js"); const sn = await FB.getDoc(FB.doc(PF.db, 'pichonchess_users', ME.uid)); if (sn.exists()) ME.p = sn.data(); try { ME.ok = !!ME.p && localStorage.getItem('pc' + ME.uid) == '1' } catch (e) { } } catch (e) { ME.err = 1 }
             })();
             const GC = () => FB.collection(PF.db, 'pichonchess_games'), GD = id => FB.doc(PF.db, 'pichonchess_games', id);
             const fail = () => modal('<h2>Sin conexión</h2><p class="mu">No se pudo comunicar con el servidor. Probá de nuevo en un momento.</p><button class="btn" data-a="x">Cerrar</button>');
@@ -1033,17 +1064,17 @@
             }
             const reg = () => modal('<h2>Creá tu usuario</h2><p class="mu">Solo usuario y contraseña: el email ya lo tenemos por tu cuenta de Pichisoft.</p><input id="u" placeholder="Usuario" maxlength="16" autocomplete="off"><input id="pw" type="password" placeholder="Contraseña (mínimo 6)"><input id="pw2" type="password" placeholder="Repetí la contraseña"><p id="er" class="er"></p><div class="row"><button class="btn p" data-a="mk">Crear usuario</button><button class="btn" data-a="x">Cancelar</button></div>');
             const login = () => modal(`<h2>Hola, ${esc(ME.p.username)}</h2><p class="mu">Ingresá tu contraseña de PichonChess.</p><input id="pw" type="password" placeholder="Contraseña"><p id="er" class="er"></p><div class="row"><button class="btn p" data-a="lg">Ingresar</button><button class="btn" data-a="x">Cancelar</button></div>`);
-            const menuOn = () => modal(`<h2>Jugar online</h2><p class="mu">Conectado como <b>${esc(ME.p.username)}</b></p><button class="btn p" data-a="qm">Buscar rival</button><button class="btn" data-a="pv">Crear partida privada</button><input id="cd" placeholder="Código de partida" autocomplete="off"><button class="btn" data-a="jn">Unirse con código</button><p id="er" class="er"></p><button class="btn" data-a="x">Cerrar</button>`);
-            function ok() { ME.ok = 1; try { sessionStorage.setItem('pc' + ME.uid, '1') } catch (e) { } menuOn() }
-            async function mkGame(pv) {
+            const menuOn = () => modal(`<h2>Jugar online</h2><p class="mu">Conectado como <b>${esc(ME.p.username)}</b> - ${ME.p.elo || 1200} Elo</p><button class="btn p" data-a="qm">Buscar rival</button><button class="btn" data-a="pv">Crear partida privada</button><button class="btn" data-a="hb" data-t="bs">Comunidad: usuarios, ranking y torneos</button><input id="cd" placeholder="Código de partida" autocomplete="off"><button class="btn" data-a="jn">Unirse con código</button><p id="er" class="er"></p><button class="btn" data-a="x">Cerrar</button>`);
+            function ok() { ME.ok = 1; try { localStorage.setItem('pc' + ME.uid, '1') } catch (e) { } menuOn() }
+            async function mkGame(pv, x) {
                 try {
-                    const r = await FB.addDoc(GC(), { w: ME.uid, wn: ME.p.username, b: null, bn: null, status: 'waiting', priv: !!pv, moves: [], result: null, why: null, t: FB.serverTimestamp() });
+                    const r = await FB.addDoc(GC(), { w: ME.uid, wn: ME.p.username, we: ME.p.elo || 1200, b: null, bn: null, status: 'waiting', priv: !!pv, moves: [], result: null, why: null, t: FB.serverTimestamp(), ...(x || {}) });
                     watch(r.id, 'w'); modal(`<h2>${pv ? 'Partida privada' : 'Esperando rival'}</h2>${pv ? `<p class="mu">Pasale este código a tu rival:</p><input readonly value="${r.id}" onclick="this.select()">` : ''}<div class="sp"></div><button class="btn" data-a="cw">Cancelar</button>`)
                 } catch (e) { fail() }
             }
             function watch(id, me) {
                 newG('online', me, 0); const g = G; g.gid = id; g.un = FB.onSnapshot(GD(id), sn => {
-                    const d = sn.data(); if (!d || G !== g) return; g.wn = d.wn; g.bn = d.bn; if (d.status == 'waiting') return;
+                    const d = sn.data(); if (!d || G !== g) return; g.wn = d.wn; g.bn = d.bn; g.we = d.we; g.be = d.be; if (d.status == 'waiting') return;
                     if (!g.st) { g.st = 1; close(); show('game') }
                     const pl = g.M.length, od = g.dr; g.dr = d.draw || null;
                     while (g.M.length < d.moves.length) { const m = g.L.find(x => uci(x) == d.moves[g.M.length]); if (!m) break; push(m) }
@@ -1061,8 +1092,60 @@
             function leave() { if (G && G.un) { G.un(); if (G.mode == 'online' && !G.st && G.me == 'w') FB.deleteDoc(GD(G.gid)).catch(() => { }) } G = null }
             function setup(mode) { SEL = { mode, lv: 1, col: 'w' }; modal(`<h2>${mode == 'train' ? 'Entrenar con un bot' : 'Contra la computadora'}</h2><p class="mu">${mode == 'train' ? 'Tenés pista, barra de evaluación, deshacer y un comentario de cada jugada.' : 'Elegí la dificultad y tu color.'}</p><b>Nivel</b><div class="seg">${LV.map((l, i) => `<button class="btn${i == 1 ? ' on' : ''}" data-a="sg" data-g="lv" data-v="${i}">${l.n}</button>`).join('')}</div><b>Jugás con</b><div class="seg">${[['w', 'Blancas'], ['b', 'Negras'], ['r', 'Al azar']].map((c, i) => `<button class="btn${i == 0 ? ' on' : ''}" data-a="sg" data-g="col" data-v="${c[0]}">${c[1]}</button>`).join('')}</div><div class="row"><button class="btn p" data-a="go">Empezar</button><button class="btn" data-a="x">Cancelar</button></div>`) }
 
+            /* ---- Elo, comunidad, favoritos y torneos ---- */
+            const UD = id => FB.doc(PF.db, 'pichonchess_users', id), TC = () => FB.collection(PF.db, 'pichonchess_tournaments'), TD = id => FB.doc(PF.db, 'pichonchess_tournaments', id);
+            function rate() {
+                if (G.rated || G.M.length < 4) return; G.rated = 1; const o = (G.me == 'w' ? G.be : G.we) || 1200, e = ME.p.elo || 1200, sc = G.over.r == 'd' ? .5 : G.over.r == G.me ? 1 : 0, d = Math.round(32 * (sc - 1 / (1 + Math.pow(10, (o - e) / 400)))), f = sc == 1 ? 'wins' : sc == 0 ? 'losses' : 'draws';
+                ME.p.elo = e + d; ME.p[f] = (ME.p[f] || 0) + 1; G.eloD = d; FB.updateDoc(UD(ME.uid), { elo: e + d, [f]: FB.increment(1) }).catch(() => { })
+            }
+            const urow = (u, b) => `<div class="ur"><span><b>${esc(u.username)}</b><br><span class="mu">${u.elo || 1200} Elo - ${u.wins || 0} G, ${u.draws || 0} E, ${u.losses || 0} P</span></span><span class="row">${b}</span></div>`;
+            const ubtn = id => id == ME.uid ? '' : `<button class="btn" data-a="fv" data-u="${id}">${(ME.p.fav || []).includes(id) ? 'Quitar' : 'Favorito'}</button><button class="btn p" data-a="ch" data-u="${id}">Retar</button>`;
+            async function joinG(id) { let me = 'b'; await FB.runTransaction(PF.db, async tx => { const r = GD(id), y = await tx.get(r); if (!y.exists()) throw 'no'; const x = y.data(); if (x.w == ME.uid || x.b == ME.uid) { me = x.w == ME.uid ? 'w' : 'b'; return } if (x.status != 'waiting') throw 'full'; tx.update(r, { b: ME.uid, bn: ME.p.username, be: ME.p.elo || 1200, status: 'playing' }) }); watch(id, me) }
+            async function tnHtml() {
+                const [a, b] = await Promise.all([FB.getDocs(FB.query(TC(), FB.where('status', '==', 'open'), FB.limit(10))), FB.getDocs(FB.query(TC(), FB.where('players', 'array-contains', ME.uid), FB.limit(10)))]), m = new Map();[...b.docs, ...a.docs].forEach(d => m.set(d.id, d.data()));
+                return '<input id="tn" placeholder="Nombre del torneo" maxlength="30"><button class="btn p" data-a="tc">Crear torneo</button><div class="hubs">' + ([...m].map(([id, t]) => { const mi = t.players.includes(ME.uid); return `<div class="ur"><span><b>${esc(t.name)}</b><br><span class="mu">${t.players.length} jugadores - ${t.status == 'open' ? 'abierto' : 'en juego'}</span></span><span class="row">${!mi && t.status == 'open' ? `<button class="btn p" data-a="tj" data-g="${id}">Unirme</button>` : ''}${mi && t.owner == ME.uid && t.status == 'open' && t.players.length >= 3 ? `<button class="btn" data-a="ts" data-g="${id}">Iniciar</button>` : ''}${mi ? `<button class="btn" data-a="tv" data-g="${id}">Ver</button>` : ''}</span></div>` }).join('') || '<p class="mu">No hay torneos todavía. Creá el primero.</p>') + '</div>'
+            }
+            async function hub(t) {
+                modal('<div class="sp"></div>'); let h = '';
+                try {
+                    if (t == 'bs') h = '<input id="q" placeholder="Buscar usuario" autocomplete="off"><button class="btn p" data-a="sr">Buscar</button><div id="rs" class="hubs"></div>';
+                    else if (t == 'rk') { const q = await FB.getDocs(FB.query(FB.collection(PF.db, 'pichonchess_users'), FB.orderBy('elo', 'desc'), FB.limit(10))); h = '<div class="hubs">' + q.docs.map((d, i) => urow(d.data(), '<b>' + (i + 1) + '</b>')).join('') + '</div>' }
+                    else if (t == 'fv') {
+                        const [us, iv] = await Promise.all([Promise.all((ME.p.fav || []).slice(0, 30).map(i => FB.getDoc(UD(i)))), FB.getDocs(FB.query(GC(), FB.where('inv', '==', ME.uid), FB.where('status', '==', 'waiting')))]);
+                        h = '<div class="hubs"><b>Desafíos recibidos</b>' + (iv.docs.filter(d => !d.data().tid).map(d => `<div class="ur"><span>${esc(d.data().wn)} te retó</span><button class="btn p" data-a="ac" data-g="${d.id}">Aceptar</button></div>`).join('') || '<p class="mu">Ninguno por ahora.</p>') + '<b>Favoritos</b>' + (us.filter(x => x.exists()).map(x => urow(x.data(), ubtn(x.id))).join('') || '<p class="mu">Buscá usuarios y tocá Favorito para guardarlos acá.</p>') + '</div>'
+                    }
+                    else h = await tnHtml()
+                } catch (e) { h = '<p class="er">No se pudo cargar. Probá de nuevo.</p>' }
+                modal('<h2>Comunidad</h2><div class="seg">' + [['bs', 'Buscar'], ['fv', 'Favoritos'], ['rk', 'Ranking'], ['tn', 'Torneos']].map(x => `<button class="btn${x[0] == t ? ' on' : ''}" data-a="hb" data-t="${x[0]}">${x[1]}</button>`).join('') + '</div>' + h + '<button class="btn" data-a="mo">Volver</button>')
+            }
+            async function tview(id) {
+                modal('<div class="sp"></div>'); let h;
+                try {
+                    const [ts, gs] = await Promise.all([FB.getDoc(TD(id)), FB.getDocs(FB.query(GC(), FB.where('tid', '==', id), FB.where('priv', '==', false)))]), t = ts.data(), P = t.players, N = t.pn, gl = gs.docs.map(d => ({ id: d.id, ...d.data() })), pt = P.map(() => 0), me = P.indexOf(ME.uid); let rows = '';
+                    for (let i = 0; i < P.length; i++)for (let j = i + 1; j < P.length; j++) {
+                        const g = gl.find(x => x.pk == i + '-' + j); let c = 'pendiente';
+                        if (!g) { if (t.status == 'run' && (i == me || j == me)) c = `<button class="btn p" data-a="tp" data-g="${id}" data-pk="${i}-${j}" data-o="${P[i == me ? j : i]}">Jugar</button>` }
+                        else if (g.status == 'over') { const wi = g.result == 'd' ? -1 : P.indexOf(g.result == 'w' ? g.w : g.b); if (wi < 0) { pt[i] += .5; pt[j] += .5 } else pt[wi]++; c = wi < 0 ? 'tablas' : 'ganó ' + esc(N[wi]) }
+                        else c = g.status == 'waiting' ? (g.inv == ME.uid ? `<button class="btn p" data-a="ac" data-g="${g.id}">Aceptar</button>` : 'esperando rival') : 'en juego';
+                        rows += `<div class="ur"><span>${esc(N[i])} vs ${esc(N[j])}</span><span>${c}</span></div>`
+                    }
+                    h = `<h2>${esc(t.name)}</h2><div class="hubs"><b>Posiciones</b>` + P.map((u, i) => [N[i], pt[i]]).sort((a, b) => b[1] - a[1]).map((x, i) => `<div class="ur"><span>${i + 1}. ${esc(x[0])}</span><b>${x[1]}</b></div>`).join('') + `<b>Partidas</b>${t.status == 'run' ? '' : '<p class="mu">Todavía no empezó. El creador lo inicia con 3 jugadores o más.</p>'}${rows}</div>`
+                } catch (e) { h = '<p class="er">No se pudo cargar el torneo.</p>' }
+                modal(h + '<div class="row"><button class="btn" data-a="tv" data-g="' + id + '">Actualizar</button><button class="btn" data-a="hb" data-t="tn">Volver</button></div>')
+            }
             const A = {
-                x: close, on: online, cp: () => setup('cpu'), tr: () => setup('train'),
+                x: close, hb: b => hub(b.dataset.t), mo: menuOn,
+                sr: async () => {
+                    const q = $('q').value.trim().toLowerCase(), o = $('rs'); if (q.length < 2) { o.innerHTML = '<p class="mu">Escribí al menos 2 letras.</p>'; return }
+                    try { const n = await FB.getDocs(FB.query(FB.collection(PF.db, 'pichonchess_users'), FB.where('lc', '>=', q), FB.where('lc', '<=', q + '\uf8ff'), FB.limit(8))); o.innerHTML = n.docs.map(d => urow(d.data(), ubtn(d.id))).join('') || '<p class="mu">No hay usuarios con ese nombre.</p>' } catch (e) { o.innerHTML = '<p class="er">No se pudo buscar.</p>' }
+                },
+                fv: async b => { const u = b.dataset.u, f = ME.p.fav || (ME.p.fav = []), h = f.includes(u); try { await FB.updateDoc(UD(ME.uid), { fav: h ? FB.arrayRemove(u) : FB.arrayUnion(u) }); if (h) f.splice(f.indexOf(u), 1); else f.push(u); b.textContent = h ? 'Favorito' : 'Quitar' } catch (e) { } },
+                ch: b => mkGame(1, { inv: b.dataset.u }), ac: async b => { try { await joinG(b.dataset.g) } catch (e) { hub('fv') } },
+                tc: async () => { const n = $('tn').value.trim(); if (n.length < 3) return; try { await FB.addDoc(TC(), { name: n, owner: ME.uid, players: [ME.uid], pn: [ME.p.username], status: 'open' }); hub('tn') } catch (e) { } },
+                tj: async b => { try { await FB.updateDoc(TD(b.dataset.g), { players: FB.arrayUnion(ME.uid), pn: FB.arrayUnion(ME.p.username) }); hub('tn') } catch (e) { } },
+                ts: async b => { try { await FB.updateDoc(TD(b.dataset.g), { status: 'run' }); hub('tn') } catch (e) { } },
+                tv: b => tview(b.dataset.g), tp: b => { const d = b.dataset; mkGame(0, { tid: d.g, pk: d.pk, inv: d.o }) },
+                on: online, cp: () => setup('cpu'), tr: () => setup('train'),
                 sg: b => { SEL[b.dataset.g] = b.dataset.g == 'lv' ? +b.dataset.v : b.dataset.v;[...b.parentNode.children].forEach(x => x.classList.toggle('on', x == b)) },
                 go: () => { close(); start(SEL.mode, SEL.lv, SEL.col) }, rv: () => { close(); start(G.mode, G.lv, G.col) },
                 mk: async () => {
@@ -1070,18 +1153,18 @@
                     if (!/^[\w.-]{3,16}$/.test(u)) return er('Usuario: de 3 a 16 letras, números, _ . o -'); if (p.length < 6) return er('La contraseña necesita al menos 6 caracteres'); if (p != $('pw2').value) return er('Las contraseñas no coinciden');
                     try {
                         const salt = crypto.randomUUID(), hash = await hashPw(p, salt), db = PF.db;
-                        await FB.runTransaction(db, async tx => { const nr = FB.doc(db, 'pichonchess_names', u.toLowerCase()); if ((await tx.get(nr)).exists()) throw 'taken'; tx.set(nr, { uid: ME.uid }); tx.set(FB.doc(db, 'pichonchess_users', ME.uid), { username: u, salt, hash }) });
-                        ME.p = { username: u, salt, hash }; ok()
+                        await FB.runTransaction(db, async tx => { const nr = FB.doc(db, 'pichonchess_names', u.toLowerCase()); if ((await tx.get(nr)).exists()) throw 'taken'; const pf = { username: u, lc: u.toLowerCase(), elo: 1200, wins: 0, losses: 0, draws: 0, fav: [] }; tx.set(nr, { uid: ME.uid }); tx.set(FB.doc(db, 'pichonchess_users', ME.uid), pf); tx.set(FB.doc(db, 'pichonchess_secrets', ME.uid), { salt, hash }); ME.p = pf });
+                        ok()
                     } catch (e) { er(e == 'taken' ? 'Ese usuario ya existe. Probá con otro.' : 'No se pudo crear el usuario.') }
                 },
-                lg: async () => { try { if (await hashPw($('pw').value, ME.p.salt) == ME.p.hash) ok(); else $('er').textContent = 'Contraseña incorrecta' } catch (e) { $('er').textContent = 'No se pudo verificar la contraseña' } },
+                lg: async () => { try { const sc = await FB.getDoc(FB.doc(PF.db, 'pichonchess_secrets', ME.uid)), x = sc.exists() ? sc.data() : ME.p; if (await hashPw($('pw').value, x.salt) == x.hash) ok(); else $('er').textContent = 'Contraseña incorrecta' } catch (e) { $('er').textContent = 'No se pudo verificar la contraseña' } },
                 qm: async () => {
                     modal('<h2>Buscando rival</h2><div class="sp"></div><button class="btn" data-a="cw">Cancelar</button>');
                     try {
                         const sn = await FB.getDocs(FB.query(GC(), FB.where('status', '==', 'waiting'), FB.where('priv', '==', false), FB.limit(15)));
                         for (const d of sn.docs) {
-                            const x = d.data(), t = x.t && x.t.toMillis ? x.t.toMillis() : 0; if (x.w == ME.uid || Date.now() - t > 120000) continue;
-                            try { await FB.runTransaction(PF.db, async tx => { const y = await tx.get(d.ref); if (y.data().status != 'waiting') throw 0; tx.update(d.ref, { b: ME.uid, bn: ME.p.username, status: 'playing' }) }); return watch(d.id, 'b') } catch (e) { }
+                            const x = d.data(), t = x.t && x.t.toMillis ? x.t.toMillis() : 0; if (x.w == ME.uid || x.tid || x.inv || Date.now() - t > 120000) continue;
+                            try { await FB.runTransaction(PF.db, async tx => { const y = await tx.get(d.ref); if (y.data().status != 'waiting') throw 0; tx.update(d.ref, { b: ME.uid, bn: ME.p.username, be: ME.p.elo || 1200, status: 'playing' }) }); return watch(d.id, 'b') } catch (e) { }
                         }
                         mkGame(0)
                     } catch (e) { fail() }
@@ -1089,7 +1172,7 @@
                 pv: () => mkGame(1),
                 jn: async () => {
                     const id = $('cd').value.trim(); if (!id) return; let me = 'b';
-                    try { await FB.runTransaction(PF.db, async tx => { const r = GD(id), y = await tx.get(r); if (!y.exists()) throw 'no'; const x = y.data(); if (x.w == ME.uid || x.b == ME.uid) { me = x.w == ME.uid ? 'w' : 'b'; return } if (x.status != 'waiting') throw 'full'; tx.update(r, { b: ME.uid, bn: ME.p.username, status: 'playing' }) }); watch(id, me) }
+                    try { await FB.runTransaction(PF.db, async tx => { const r = GD(id), y = await tx.get(r); if (!y.exists()) throw 'no'; const x = y.data(); if (x.w == ME.uid || x.b == ME.uid) { me = x.w == ME.uid ? 'w' : 'b'; return } if (x.status != 'waiting') throw 'full'; tx.update(r, { b: ME.uid, bn: ME.p.username, be: ME.p.elo || 1200, status: 'playing' }) }); watch(id, me) }
                     catch (e) { $('er').textContent = e == 'no' ? 'No existe esa partida.' : e == 'full' ? 'Esa partida ya tiene dos jugadores.' : 'No se pudo unir a la partida.' }
                 },
                 cw: () => { leave(); close() }, fl: () => { G.flip = !G.flip; render() },
