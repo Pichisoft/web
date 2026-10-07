@@ -125,6 +125,17 @@ body.prem .p-gear{display:flex}
 .c-x:hover::before,.c-x:hover::after{background:#111}
 .c-x:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
 
+/* Panel de contacto */
+.pml-ov{position:fixed;inset:0;z-index:130;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.pml-card{width:min(400px,100%);box-sizing:border-box;background:#141414;border:1px solid #3a3a3a;border-top:3px solid var(--gold);border-radius:14px;padding:26px 22px 20px;box-shadow:0 26px 70px rgba(0,0,0,.8);font-family:Verdana,"Open Sans",sans-serif;color:#fff;animation:pIn .25s ease}
+.pml-card h3{margin:0 0 10px;font-family:"Times New Roman",Times,serif;font-size:1.5rem;line-height:1.2}
+.pml-card p{margin:0 0 18px;font-size:.85rem;line-height:1.6;color:#bdbdbd;word-break:break-word}
+.pml-btn{display:block;width:100%;box-sizing:border-box;padding:13px 12px;margin-top:9px;border-radius:8px;background:#000;color:#fff;border:1px solid #4a4a4a;font:1rem Georgia,"Times New Roman",serif;cursor:pointer;transition:background-color .15s,color .15s}
+.pml-btn:hover{background:#fff;color:#000}
+.pml-no{background:#8c8c8c;color:#000;border-color:#8c8c8c}
+.pml-no:hover{background:#d2d2d2}
+.pml-btn:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+
 @media (max-width:600px){
   .p-gear{position:absolute;top:70px;right:10px;width:38px;height:38px}
   body.prem .titulo,body.prem .bienvenida{padding-right:46px}
@@ -192,7 +203,7 @@ body.prem .p-gear{display:flex}
     const CARTELES = [
         { id: 'reg', solo: 'invitado', html: 'Ya está disponible nuestra versión premium para PichonApps. ¿Quiere obtenerla? Hágase una cuenta, en esta misma app, apretando el botón "Registrarse".' },
         { id: 'tut', solo: 'premium', html: '¿Tiene una duda acerca de nuestras apps? <a data-b href="' + B + 'pichontutorial.html">Vea el tutorial de cada una.</a>' },
-        { id: 'con', html: '<a data-b href="https://mail.google.com/mail/?view=cm&fs=1&to=' + MAIL + '">¿Tiene una duda?→ Comuníquese con nosotros.</a>' }
+        { id: 'con', html: '<a data-b data-mail href="mailto:' + MAIL + '">¿Tiene una duda?→ Comuníquese con nosotros.</a>' }
     ];
 
     /* ------------------------------ ESTADO ------------------------------ */
@@ -379,6 +390,7 @@ body.prem .p-gear{display:flex}
             const d = document.createElement('div'); d.className = 'cartel'; d.dataset.id = c.id; d.innerHTML = c.html;
             /* Sin cuenta siempre pestaña nueva; con cuenta, según la opción */
             d.querySelectorAll('a[data-b]').forEach(a => { if (!prem || cfg.blank) { a.target = '_blank'; a.rel = 'noopener noreferrer'; } });
+            d.querySelectorAll('a[data-mail]').forEach(a => { a.onclick = e => { e.preventDefault(); elegirMail(); }; });
             const x = document.createElement('button'); x.className = 'c-x'; x.setAttribute('aria-label', 'Cerrar aviso'); x.title = 'Cerrar';
             x.onpointerdown = e => e.stopPropagation();
             x.onclick = () => { cerrados.add(c.id); delete pos[c.id]; d.remove(); reservar(); };
@@ -388,6 +400,33 @@ body.prem .p-gear{display:flex}
             else box.append(d);
         });
         reservar();
+    }
+
+    /* Panel para elegir cómo escribir al equipo (funciona en cualquier dispositivo) */
+    function elegirMail() {
+        if ($('#pMail')) return;
+        const gmail = 'https://mail.google.com/mail/?extsrc=mailto&url=' + encodeURIComponent('mailto:' + MAIL);
+        const o = document.createElement('div'); o.id = 'pMail'; o.className = 'pml-ov';
+        o.innerHTML = `<div class="pml-card" role="dialog" aria-modal="true" aria-labelledby="pmlT">
+      <h3 id="pmlT">Comuníquese con nosotros</h3>
+      <p>Escribinos a <b>${MAIL}</b>. Elegí cómo querés enviar el mensaje:</p>
+      <button class="pml-btn" id="pmlG">Abrir Gmail</button>
+      <button class="pml-btn" id="pmlM">Abrir mi app de mails</button>
+      <button class="pml-btn" id="pmlC">Copiar dirección</button>
+      <button class="pml-btn pml-no" id="pmlX">Cerrar</button>
+    </div>`;
+        document.body.append(o);
+        const esc = e => { if (e.key === 'Escape') cerrar(); };
+        const cerrar = () => { document.removeEventListener('keydown', esc); o.remove(); };
+        document.addEventListener('keydown', esc);
+        o.onclick = e => { if (e.target === o) cerrar(); };
+        o.querySelector('#pmlX').onclick = cerrar;
+        o.querySelector('#pmlG').onclick = () => { window.open(gmail, '_blank', 'noopener'); cerrar(); };
+        o.querySelector('#pmlM').onclick = () => { location.href = 'mailto:' + MAIL; cerrar(); };
+        o.querySelector('#pmlC').onclick = async e => {
+            try { await navigator.clipboard.writeText(MAIL); e.target.textContent = '¡Copiada!'; }
+            catch { e.target.textContent = MAIL; }
+        };
     }
 
     function moverCartel(e, d) {
