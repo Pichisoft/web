@@ -1296,8 +1296,7 @@
     <button class="btn" id="ok">Verificar</button><button class="btn" id="no">Cancelar</button>`, 'sem sem2');
             q(m, '#inf').textContent =
                 'Te enviamos un código de verificación a ' +
-                ocultarEmail(email) +
-                '. Si no lo ves, revisá spam.';
+                ocultarEmail(email) ;
             q(m, '#no').onclick = () => m.close();
             let intentos = 0;
             q(m, '#ok').onclick = async () => {
