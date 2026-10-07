@@ -146,6 +146,7 @@ body:not(.prem) .aviso{display:block}
         { n: 'PichonList', u: 'pichonlist' },
         { n: 'PichonMorse', u: 'pichonmorse', t: ['nuevo'] },
         { n: 'PichonOpinion', t: ['proximo'] },
+        { n: 'PichonPaint', u: 'pichonpaint', t: ['nuevo', 'beta'] },
         { n: 'PichonPass', u: 'pichonpass', t: ['actualizado', 'premium'] },
         { n: 'PichonRandom', u: 'pichonrandom' },
         { n: 'PichonSnake', u: 'pichonsnake' },
@@ -157,7 +158,7 @@ body:not(.prem) .aviso{display:block}
         { id: 'utiles', nombre: 'Apps útiles', apps: ['PichonTutorial', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonCalc', 'PichonCalendar', 'PichonAlarm'] },
         { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake'] },
         { id: 'azar', nombre: 'Apps de azar', apps: ['PichonDestiny', 'PichonRandom'] },
-        { id: 'divertidas', nombre: 'Apps divertidas', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonWatch'] }
+        { id: 'divertidas', nombre: 'Apps divertidas', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonPaint', 'PichonWatch'] }
     ];
     const has = (a, k) => a.t.includes(k);
     const GR = [
