@@ -90,7 +90,9 @@ body.vista-lista .lista,body.vista-lista .lista-p{display:flex;flex-direction:co
 body.vista-lista .lista:empty{min-height:46px;border-radius:10px}
 body.vista-lista .app{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:6px 10px;background:#202020;border-radius:10px;padding:11px 12px;font-size:.95rem}
 body.vista-lista .app:hover{transform:none;box-shadow:none;background:#242220}
-body.vista-lista .grip{position:relative;top:auto;left:auto;flex:none;width:14px;height:21px;margin-right:4px;opacity:1;background-size:7px 7px}
+body.vista-lista .grip{position:relative;top:auto;left:auto;flex:none;width:14px;height:21px;margin-right:4px;opacity:1;background:radial-gradient(circle,currentColor 1.6px,transparent 2.1px) 0 0/7px 7px}
+body.vista-lista .acc-b{padding:2px 16px 18px}
+body.vista-lista .flat{padding:6px 16px 18px}
 body.vista-lista .grip::before{inset:-8px -6px}
 body.vista-lista .app .app-l,body.vista-lista .app .app-l:visited{flex:1 1 auto;width:auto;flex-direction:row;align-items:center;gap:0;text-align:left}
 body.vista-lista .ico{display:none}
@@ -584,12 +586,12 @@ body.prem .p-gear{display:flex}
         o.innerHTML = `<div class="pm-panel" role="dialog" aria-modal="true" aria-label="Configuración">
       <button class="pm-back" id="cfgBack"><i class="pm-arr" aria-hidden="true"></i>Volver</button>
       <h2>Configuración</h2>
-      <div class="pm-view" role="radiogroup" aria-label="Cambiar vista">
-        <b>Cambiar vista</b>
-        <small>Elegí cómo querés ver las apps.</small>
-        <button type="button" class="pm-opt" role="radio" data-v="tarjetas"><span class="rd"></span><span><b>Tarjetas</b><small>Grilla con íconos, como el launcher de un celular.</small></span></button>
-        <button type="button" class="pm-opt" role="radio" data-v="lista"><span class="rd"></span><span><b>Lista ordenada</b><small>Apps ordenadas por categoría, en filas y sin grilla.</small></span></button>
-        <button type="button" class="pm-opt" role="radio" data-v="clasica"><span class="rd"></span><span><b>Vista original</b><small>La lista simple de siempre, la misma que ven los usuarios sin cuenta.</small></span></button>
+      <div class="pm-view" role="radiogroup" aria-label="Vista">
+        <b>Vista</b>
+        <small>Elegí cómo querés ver PichonApps.</small>
+        <button type="button" class="pm-opt" role="radio" data-v="clasica"><span class="rd"></span><span><b>Vista original</b><small>La de siempre: la lista simple que ven los usuarios sin cuenta.</small></span></button>
+        <button type="button" class="pm-opt" role="radio" data-v="lista"><span class="rd"></span><span><b>Vista de versión premium</b><small>Apps ordenadas por categorías, en filas y sin grilla.</small></span></button>
+        <button type="button" class="pm-opt" role="radio" data-v="tarjetas"><span class="rd"></span><span><b>Vista nueva para versión premium</b><small>Grilla de tarjetas con íconos, como el launcher de un celular.</small></span></button>
       </div>
       ${fila('orden', 'Ordenar apps', 'Agrupa las apps por categoría. Si lo desactivás, se muestran todas juntas.')}
       ${fila('blank', 'Abrir las apps en una pestaña nueva', 'Si lo desactivás, se abren en esta misma pestaña.')}
