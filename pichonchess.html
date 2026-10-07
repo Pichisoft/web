@@ -3,10 +3,11 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>PichonChess</title>
     <style>
         :root {
+            --bh: 100vh;
             --bg: #0e120f;
             --pn: #161c17;
             --ln: #27322a;
@@ -37,8 +38,8 @@
 
         .header {
             position: absolute;
-            top: 18px;
-            left: 24px;
+            top: calc(18px + env(safe-area-inset-top, 0px));
+            left: max(24px, env(safe-area-inset-left, 0px));
             max-width: calc(100% - 120px);
             display: flex;
             align-items: baseline;
@@ -58,8 +59,8 @@
 
         .plink {
             position: absolute;
-            top: 18px;
-            right: 20px;
+            top: calc(18px + env(safe-area-inset-top, 0px));
+            right: max(20px, env(safe-area-inset-right, 0px));
             font: 14px Verdana, sans-serif;
             color: #2f7bff;
             text-decoration: underline;
@@ -69,7 +70,7 @@
         main {
             max-width: 1100px;
             margin: 0 auto;
-            padding: 100px 16px 40px
+            padding: 100px max(16px, env(safe-area-inset-right, 0px)) calc(40px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))
         }
 
         h1,
@@ -191,7 +192,7 @@
             display: grid;
             grid-template: repeat(8, 1fr)/repeat(8, 1fr);
             aspect-ratio: 1;
-            width: min(88vw, 66vh, 640px);
+            width: min(88vw, calc(var(--bh) * .66), 640px);
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 20px 50px #0008, 0 0 0 6px #1d2a20
@@ -458,6 +459,74 @@
             }
         }
 
+        @supports (height:100dvh) {
+            :root {
+                --bh: 100dvh
+            }
+        }
+
+        html,
+        body,
+        .btn,
+        .card,
+        .sq {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        .board {
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none
+        }
+
+        .sq .pw {
+            cursor: grab
+        }
+
+        .ghost {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 9990;
+            pointer-events: none;
+            touch-action: none;
+            filter: drop-shadow(0 8px 10px #0009)
+        }
+
+        @media (orientation:landscape) and (max-height:520px) {
+            main {
+                padding-top: 52px;
+                padding-bottom: 12px
+            }
+
+            .board {
+                width: min(60vw, calc(var(--bh) - 120px))
+            }
+
+            .pbar {
+                padding: 2px 4px 2px 28px;
+                font-size: 13px
+            }
+
+            .chip {
+                width: 18px;
+                height: 18px
+            }
+
+            .side {
+                margin-top: 40px;
+                width: min(40vw, 300px);
+                padding: 12px;
+                gap: 8px
+            }
+
+            .ml {
+                height: 110px
+            }
+        }
+
         /* ==========================================
        PICHISOFT - ESTADO DE SESIÓN
        ========================================== */
@@ -665,6 +734,7 @@
                         <button class="btn" data-a="fl">Girar tablero</button>
                         <button class="btn" data-a="un" id="un">Deshacer</button>
                         <button class="btn" data-a="hn" id="hn">Pista</button>
+                        <button class="btn" data-a="dw" id="dw">Ofrecer tablas</button>
                         <button class="btn" data-a="rq" id="rq">Rendirse</button>
                         <button class="btn" data-a="mn">Salir</button>
                     </div>
@@ -899,7 +969,7 @@
                 const ps = s.b.filter(x => x != '.' && x.toLowerCase() != 'k'); if (!ps.length || (ps.length == 1 && /[bBnN]/.test(ps[0]))) return { r: 'd', y: 'Material insuficiente' };
                 const k = G.K[G.K.length - 1]; if (G.K.filter(x => x == k).length >= 3) return { r: 'd', y: 'Triple repetición' }; return null
             }
-            function push(m) { const s = cur(), n = make(s, m); G.N.push(san(s, m, n, G.L)); G.M.push(m); G.S.push(n); G.K.push(key(n)); G.L = legal(n); G.last = m; G.sel = -1; G.tg = []; G.hint = 0; G.rank = null; G.hn = null; G.over = out() }
+            function push(m) { const s = cur(), n = make(s, m); G.N.push(san(s, m, n, G.L)); G.M.push(m); G.S.push(n); G.K.push(key(n)); G.L = legal(n); G.last = m; G.sel = -1; G.tg = []; G.hint = 0; G.rank = null; G.hn = null; if (G.mode == 'cpu') G.fb = null; G.over = out() }
             function judge(m) {
                 const R = G.rank; if (!R) return; const x = R.find(r => uci(r.m) == uci(m)); if (!x) return; const l = R[0].v - x.v, s = cur(), b = R[0].m, bs = san(s, b, make(s, b), G.L);
                 G.fb = l <= 5 ? { t: 'Mejor jugada.', c: 'g' } : l < 40 ? { t: 'Buena jugada.', c: 'g' } : l < 120 ? { t: 'Imprecisión. Mejor era ' + bs + '.', c: 'y' } : l < 300 ? { t: 'Error. Mejor era ' + bs + '.', c: 'r' } : { t: 'Error grave. Mejor era ' + bs + '.', c: 'r' }
@@ -931,9 +1001,9 @@
                 const bar = (id, c) => { $(id).className = 'pbar' + (s.t == c && !G.over ? ' on' : ''); $(id).innerHTML = `<span class="chip">${pcs(c == 'w' ? 'K' : 'k')}</span><span class="nm">${esc(nm(c))}</span>` };
                 const bc = G.flip ? 'b' : 'w'; bar('pbot', bc); bar('ptop', bc == 'w' ? 'b' : 'w');
                 $('stat').textContent = G.over ? (G.over.r == 'd' ? 'Tablas' : (G.over.r == G.me ? 'Ganaste' : 'Perdiste')) + ' - ' + G.over.y : G.busy ? 'La computadora está pensando...' : (s.t == G.me ? 'Tu turno' : 'Turno del rival') + (inChk(s) ? ' - Jaque' : '');
-                $('fb').className = 'fb ' + (G.fb ? G.fb.c : ''); $('fb').textContent = G.fb ? G.fb.t : G.mode == 'train' ? 'Jugá: te comento qué tan buena fue cada jugada.' : '';
+                const dp = G.mode == 'online' && G.dr == G.me && !G.over; $('fb').className = 'fb ' + (dp ? 'y' : G.fb ? G.fb.c : ''); $('fb').textContent = dp ? 'Ofreciste tablas. Esperando respuesta...' : G.fb ? G.fb.t : G.mode == 'train' ? 'Jugá: te comento qué tan buena fue cada jugada.' : '';
                 let l = ''; for (let i = 0; i < G.N.length; i += 2)l += `<li class="n">${i / 2 + 1}.</li><li>${G.N[i]}</li><li>${G.N[i + 1] || ''}</li>`; $('ml').innerHTML = l; $('ml').scrollTop = 1e6;
-                const tr = G.mode == 'train'; $('ev').classList.toggle('off', !tr); $('hn').classList.toggle('off', !tr); $('un').classList.toggle('off', G.mode == 'online'); $('rq').classList.toggle('off', !!G.over);
+                const tr = G.mode == 'train'; $('ev').classList.toggle('off', !tr); $('hn').classList.toggle('off', !tr); $('un').classList.toggle('off', G.mode == 'online'); $('rq').classList.toggle('off', !!G.over); $('dw').classList.toggle('off', !!G.over);
                 if (tr) { const e = $('ev'); e.style.transform = G.flip ? 'rotate(180deg)' : ''; if (G.rank) { const v = s.t == 'w' ? G.rank[0].v : -G.rank[0].v; e.firstChild.style.height = 50 + 50 * Math.tanh(v / 500) + '%' } }
             }
             function show(v) { $('home').classList.toggle('off', v != 'home'); $('game').classList.toggle('off', v != 'game') }
@@ -975,11 +1045,19 @@
                 newG('online', me, 0); const g = G; g.gid = id; g.un = FB.onSnapshot(GD(id), sn => {
                     const d = sn.data(); if (!d || G !== g) return; g.wn = d.wn; g.bn = d.bn; if (d.status == 'waiting') return;
                     if (!g.st) { g.st = 1; close(); show('game') }
+                    const pl = g.M.length, od = g.dr; g.dr = d.draw || null;
                     while (g.M.length < d.moves.length) { const m = g.L.find(x => uci(x) == d.moves[g.M.length]); if (!m) break; push(m) }
-                    if (!g.over && d.status == 'over' && d.result) g.over = { r: d.result, y: d.why || 'Fin' }; render(); fin()
+                    if (!g.over && d.status == 'over' && d.result) g.over = { r: d.result, y: d.why || 'Fin' };
+                    if (d.moves.length != pl) g.fb = null;
+                    if (!g.over) {
+                        if (od == g.me && !g.dr && d.moves.length == pl && d.status == 'playing') g.fb = { t: 'Tu rival rechazó las tablas.', c: 'r' };
+                        if (g.dr && g.dr != g.me && g.dr != od) { g.dm = 1; modal('<h2>Tu rival ofrece tablas</h2><p class="mu">¿Aceptás?</p><div class="row"><button class="btn p" data-a="da">Aceptar</button><button class="btn" data-a="dd">Rechazar</button></div>') }
+                        else if (!g.dr && g.dm) { g.dm = 0; close() }
+                    }
+                    render(); fin()
                 })
             }
-            function send() { const o = G.over; FB.updateDoc(GD(G.gid), { moves: G.M.map(uci), status: o ? 'over' : 'playing', result: o ? o.r : null, why: o ? o.y : null }).catch(() => { G.fb = { t: 'Sin conexión: la jugada no se envió.', c: 'r' }; render() }) }
+            function send() { const o = G.over; FB.updateDoc(GD(G.gid), { moves: G.M.map(uci), status: o ? 'over' : 'playing', result: o ? o.r : null, why: o ? o.y : null, draw: null }).catch(() => { G.fb = { t: 'Sin conexión: la jugada no se envió.', c: 'r' }; render() }) }
             function leave() { if (G && G.un) { G.un(); if (G.mode == 'online' && !G.st && G.me == 'w') FB.deleteDoc(GD(G.gid)).catch(() => { }) } G = null }
             function setup(mode) { SEL = { mode, lv: 1, col: 'w' }; modal(`<h2>${mode == 'train' ? 'Entrenar con un bot' : 'Contra la computadora'}</h2><p class="mu">${mode == 'train' ? 'Tenés pista, barra de evaluación, deshacer y un comentario de cada jugada.' : 'Elegí la dificultad y tu color.'}</p><b>Nivel</b><div class="seg">${LV.map((l, i) => `<button class="btn${i == 1 ? ' on' : ''}" data-a="sg" data-g="lv" data-v="${i}">${l.n}</button>`).join('')}</div><b>Jugás con</b><div class="seg">${[['w', 'Blancas'], ['b', 'Negras'], ['r', 'Al azar']].map((c, i) => `<button class="btn${i == 0 ? ' on' : ''}" data-a="sg" data-g="col" data-v="${c[0]}">${c[1]}</button>`).join('')}</div><div class="row"><button class="btn p" data-a="go">Empezar</button><button class="btn" data-a="x">Cancelar</button></div>`) }
 
@@ -1025,10 +1103,38 @@
                     close(); if (!G || G.over) return; const w = G.me == 'w' ? 'b' : 'w'; G.over = { r: w, y: 'Abandono' };
                     if (G.mode == 'online') FB.updateDoc(GD(G.gid), { status: 'over', result: w, why: 'Abandono' }).catch(() => { }); render(); fin()
                 },
+                dw: () => {
+                    if (!G || G.over || G.busy) return;
+                    if (G.mode == 'online') { if (G.dr == G.me) return; FB.updateDoc(GD(G.gid), { draw: G.me }).catch(() => { G.fb = { t: 'No se pudo enviar la oferta.', c: 'r' }; render() }); return }
+                    const s = cur(), b = s.t == G.me ? -ev(s) : ev(s);
+                    if (G.M.length >= 10 && b <= 20) { G.over = { r: 'd', y: 'Tablas por acuerdo' }; render(); fin() } else { G.fb = { t: 'La computadora rechazó las tablas.', c: 'r' }; render() }
+                },
+                da: () => { close(); G.dm = 0; G.over = { r: 'd', y: 'Tablas por acuerdo' }; FB.updateDoc(GD(G.gid), { status: 'over', result: 'd', why: 'Tablas por acuerdo', draw: null }).catch(() => { }); render(); fin() },
+                dd: () => { close(); G.dm = 0; FB.updateDoc(GD(G.gid), { draw: null }).catch(() => { }) },
                 mn: () => { if (G && G.mode == 'online' && !G.over) return A.rq(); A.mn2() },
                 mn2: () => { leave(); close(); show('home') }
             };
 
+            /* Arrastrar y soltar piezas (mouse y táctil) */
+            let DR = null; const bd = $('board');
+            bd.addEventListener('pointerdown', e => {
+                if (e.button || !G || G.over || G.busy || cur().t != G.me) return; const q = e.target.closest('.sq'); if (!q) return;
+                const i = +q.dataset.i, p = cur().b[i]; if (p == '.' || isW(p) != (G.me == 'w')) return;
+                onSq(i); const w = bd.querySelector(`[data-i="${i}"]`).getBoundingClientRect().width, g = document.createElement('div');
+                g.className = 'ghost'; g.style.width = g.style.height = w + 'px'; g.innerHTML = pcs(p);
+                DR = { i, g, x: e.clientX, y: e.clientY, mv: 0, id: e.pointerId }; bd.setPointerCapture(e.pointerId); e.preventDefault()
+            });
+            bd.addEventListener('pointermove', e => {
+                if (!DR || e.pointerId != DR.id) return;
+                if (!DR.mv && Math.hypot(e.clientX - DR.x, e.clientY - DR.y) > 6) { DR.mv = 1; document.body.appendChild(DR.g); const o = bd.querySelector(`[data-i="${DR.i}"] .pw`); if (o) o.style.opacity = '.3' }
+                if (DR.mv) { const w = DR.g.offsetWidth; DR.g.style.transform = `translate(${e.clientX - w / 2}px,${e.clientY - w / 2}px)` }
+            });
+            const endDrag = e => {
+                if (!DR || e.pointerId != DR.id) return; const d = DR; DR = null; d.g.remove(); if (!d.mv) return;
+                const el = e.type == 'pointerup' && document.elementFromPoint(e.clientX, e.clientY), q = el && el.closest('#board .sq');
+                if (q && +q.dataset.i != d.i) onSq(+q.dataset.i); else render()
+            };
+            bd.addEventListener('pointerup', endDrag); bd.addEventListener('pointercancel', endDrag);
             document.addEventListener('click', e => {
                 const b = e.target.closest('[data-a]'); if (b && A[b.dataset.a]) return A[b.dataset.a](b);
                 const q = e.target.closest('#board .sq'); if (q && G) onSq(+q.dataset.i)
