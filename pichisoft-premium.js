@@ -16,9 +16,10 @@
 [hidden]{display:none!important}
 .badge-prem{display:none;vertical-align:middle;margin-left:10px;padding:4px 10px;border-radius:6px;font:bold 13px Verdana,"Open Sans",sans-serif;letter-spacing:.06em;color:#ffe08a;text-shadow:0 1px 1px rgba(0,0,0,.55);background:linear-gradient(135deg,#b9bec3,#7c8288 55%,#aeb3b8);box-shadow:inset 0 1px 0 rgba(255,255,255,.35);user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}
 body.prem .badge-prem{display:inline-block}
-body.prem #dirClasico{display:none}
+body.prem:not(.vista-orig) #dirClasico{display:none}
 #pPremium{display:none;max-width:840px;padding-bottom:50px}
 body.prem #pPremium{display:block}
+body.prem.vista-orig #pPremium{display:none}
 .bienvenida{font-family:Verdana,"Open Sans",sans-serif;color:#fff;font-size:1em;line-height:1.65;margin:.4em 0 1.4em;max-width:760px}
 
 .p-search{display:flex;align-items:center;background:linear-gradient(#1c1c1c,#141414);border:1px solid var(--line);border-radius:14px;padding:0 16px;margin:0 0 18px;transition:border-color .2s,box-shadow .2s}
@@ -78,7 +79,7 @@ body.arrastrando{cursor:grabbing;user-select:none;-webkit-user-select:none}
 .app a.app-l:hover{background:none;color:var(--gold2)}
 .app .app-l.off{color:#8d8d8d}
 .app .app-l.off .ico{filter:grayscale(1);opacity:.55}
-.ico{position:relative;display:flex;align-items:center;justify-content:center;flex:none;width:60px;height:60px;border-radius:17px;overflow:hidden;font:bold 1.7rem Georgia,"Times New Roman",serif;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.35);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 6px 14px rgba(0,0,0,.4)}
+.ico{position:relative;display:flex;align-items:center;justify-content:center;flex:none;width:56px;height:56px;border-radius:16px;overflow:hidden;font:bold 1.7rem Georgia,"Times New Roman",serif;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.35);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 6px 14px rgba(0,0,0,.4)}
 .ico img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none}
 .nm{display:block;font-size:.78rem;line-height:1.2;font-weight:bold;word-break:break-word}
 .nm small{display:block;font-size:.62rem;font-weight:normal;color:#9a9a9a}
@@ -166,8 +167,9 @@ body.prem .p-gear{display:flex}
     /* ------------------------------ DATOS ------------------------------ */
     const B = 'https://pichisoft.github.io/web/';
     const MAIL = 'contacto@pichisoft.cc';
-    /* Carpeta de los íconos: B + 'img/pichoncalc.png', etc. (o poné i:'ruta' en una app). Si no existe, se usa la inicial. */
-    const IMG = B + 'img/';
+    /* Logo de todas las apps: se toma del ícono de la pestaña (<link rel="icon">) de la página.
+       Si alguna app necesita otro, poné i:'ruta/imagen.png' en esa app dentro de APPS. */
+    const LOGO = (document.querySelector('link[rel~="icon"]') || {}).href || '';
     const TAGS = {
         nuevo: ['NUEVO', 'et-nuevo'], actualizado: ['ACTUALIZADO', 'et-actualizado'], beta: ['BETA', 'et-beta'],
         cancelado: ['CANCELADO', 'et-cancelado'], ultimos: ['ÚLTIMOS 10 DÍAS PARA USARLA', 'et-ultimos'],
@@ -224,7 +226,7 @@ body.prem .p-gear{display:flex}
     ];
 
     /* ------------------------------ ESTADO ------------------------------ */
-    let cfg = { orden: true, blank: true, buscador: true, carteles: true };
+    let cfg = { orden: true, blank: true, buscador: true, carteles: true, clasica: false };
     let lay = { cats: {}, flat: [] };
     const abierto = {};
     const cerrados = new Set(), pos = {};
@@ -286,12 +288,12 @@ body.prem .p-gear{display:flex}
         } else { l = document.createElement('span'); l.title = 'Próximamente'; }
         l.className = 'app-l' + (a.u ? '' : ' off');
 
-        /* Ícono: imagen (a.i, o IMG + url + .png) y, si no existe, una inicial sobre un color propio de cada app */
+        /* Ícono: el logo de Pichisoft (o a.i) y, si no se puede cargar, una inicial sobre un color propio de cada app */
         const ic = document.createElement('span'); ic.className = 'ico'; ic.setAttribute('aria-hidden', 'true');
         const h = hue(a.n);
         ic.style.background = 'linear-gradient(145deg,hsl(' + h + ',68%,58%),hsl(' + ((h + 35) % 360) + ',62%,36%))';
         ic.textContent = a.n.charAt(6).toUpperCase();
-        const src = a.i || (a.u ? IMG + a.u + '.png' : '');
+        const src = a.i || LOGO;
         if (src) {
             const im = document.createElement('img'); im.alt = ''; im.loading = 'lazy'; im.draggable = false;
             im.onload = () => { ic.style.background = '#1a1a1a'; ic.style.color = 'transparent'; ic.style.textShadow = 'none'; };
@@ -345,7 +347,17 @@ body.prem .p-gear{display:flex}
         return w;
     }
 
+    /* Vista original (lista simple de index.html): sin cuenta es la única; con cuenta se elige en Configuración */
+    function aplicarVista(prem) {
+        document.body.classList.toggle('vista-orig', !!prem && !!cfg.clasica);
+        document.querySelectorAll('#dirClasico a').forEach(a => {
+            if (!prem || cfg.blank) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+            else { a.removeAttribute('target'); a.removeAttribute('rel'); }
+        });
+    }
+
     function render() {
+        aplicarVista(true);
         const root = $('#pBody'); root.innerHTML = '';
         $('#pSearch').hidden = !cfg.buscador;
         if (!cfg.buscador) $('#pQ').value = '';
@@ -546,6 +558,7 @@ body.prem .p-gear{display:flex}
         o.innerHTML = `<div class="pm-panel" role="dialog" aria-modal="true" aria-label="Configuración">
       <button class="pm-back" id="cfgBack"><i class="pm-arr" aria-hidden="true"></i>Volver</button>
       <h2>Configuración</h2>
+      ${fila('clasica', 'Cambiar vista', 'Activado: se muestra la vista original de PichonApps (lista simple). Desactivado: vista con tarjetas.')}
       ${fila('orden', 'Ordenar apps', 'Agrupa las apps por categoría. Si lo desactivás, se muestran todas juntas.')}
       ${fila('blank', 'Abrir las apps en una pestaña nueva', 'Si lo desactivás, se abren en esta misma pestaña.')}
       ${fila('buscador', 'Mostrar barra de búsqueda', 'Buscá una app escribiendo solo lo que va después de "Pichon".')}
@@ -571,8 +584,8 @@ body.prem .p-gear{display:flex}
     function renderPremium() {
         const u = Pichisoft.user;
         document.body.classList.toggle('prem', !!u);
-        if (!u) { cerrarConfig(); renderCarteles(); return; }
-        cfg = Object.assign({ orden: true, blank: true, buscador: true, carteles: true }, getD('cfg', {}));
+        if (!u) { cerrarConfig(); aplicarVista(false); renderCarteles(); return; }
+        cfg = Object.assign({ orden: true, blank: true, buscador: true, carteles: true, clasica: false }, getD('cfg', {}));
         cargarLay(); render();
     }
 
