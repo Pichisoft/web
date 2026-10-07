@@ -1,9 +1,9 @@
 /* =====================================================================
    PICHONAPPS PREMIUM  ·  by Pichisoft
    Se carga con UNA línea al final del <body> de PichonApps:
-       <script src="pichonapps-premium.js"></script>
-   Solo se activa para usuarios con cuenta. Sin cuenta, la página queda
-   como estaba y se muestra el aviso abajo a la derecha.
+       <script src="pichisoft-premium.js"></script>
+   Con cuenta: versión premium completa. Sin cuenta: la página queda
+   como estaba, más los carteles de aviso (registro y contacto).
    Todos los íconos están dibujados con CSS (no hay emojis).
    ===================================================================== */
 (function () {
@@ -20,8 +20,6 @@ body.prem #dirClasico{display:none}
 #pPremium{display:none;max-width:840px;padding-bottom:50px}
 body.prem #pPremium{display:block}
 .bienvenida{font-family:Verdana,"Open Sans",sans-serif;color:#fff;font-size:1em;line-height:1.65;margin:.4em 0 1.4em;max-width:760px}
-.bienvenida a,.bienvenida a:visited{color:#fff;font-weight:bold;text-decoration:underline;padding:0}
-.bienvenida a:hover{background:none;color:#fff;text-decoration-thickness:2px}
 
 .p-search{display:flex;align-items:center;background:linear-gradient(#1c1c1c,#141414);border:1px solid var(--line);border-radius:14px;padding:0 16px;margin:0 0 18px;transition:border-color .2s,box-shadow .2s}
 .p-search:focus-within{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,.16)}
@@ -112,8 +110,20 @@ body.prem .p-gear{display:flex}
 .pm-reset{margin-top:22px;width:100%;background:none;border:1px solid var(--line);color:var(--gold2);border-radius:10px;padding:12px;font:inherit;font-size:.85rem;cursor:pointer}
 .pm-reset:hover{background:rgba(212,175,55,.1)}
 
-.aviso{display:none;position:fixed;right:14px;bottom:14px;z-index:40;max-width:min(320px,calc(100vw - 28px));font:.78rem/1.5 Verdana,"Open Sans",sans-serif;color:#fff;background:rgba(20,20,20,.92);border:1px solid #3a3a3a;border-radius:10px;padding:10px 12px}
-body:not(.prem) .aviso{display:block}
+/* ===== Carteles de aviso (arrastrables, con X hecha en CSS) ===== */
+#pCart{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:8px;padding:0 12px 12px;pointer-events:none}
+.cartel{position:relative;pointer-events:auto;box-sizing:border-box;max-width:min(330px,calc(100vw - 24px));padding:11px 40px 11px 14px;font:.78rem/1.5 Verdana,"Open Sans",sans-serif;color:#fff;background:rgba(20,20,20,.95);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.5);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;animation:pIn .25s ease}
+.cartel.suelto{position:fixed;margin:0;z-index:55}
+.cartel.arr{cursor:grabbing;border-color:var(--gold);box-shadow:0 16px 34px rgba(0,0,0,.65)}
+.cartel a,.cartel a:visited{color:#4da3ff;text-decoration:underline;font-weight:bold;padding:0}
+.cartel a:hover{background:none;color:#8cc4ff}
+.c-x{position:absolute;top:8px;right:8px;width:24px;height:24px;padding:0;border:1.5px solid var(--gold);border-radius:50%;background:none;cursor:pointer;transition:transform .3s,background .2s}
+.c-x::before,.c-x::after{content:"";position:absolute;left:50%;top:50%;width:10px;height:2px;margin:-1px 0 0 -5px;border-radius:2px;background:var(--gold2);transition:background .2s}
+.c-x::before{transform:rotate(45deg)}
+.c-x::after{transform:rotate(-45deg)}
+.c-x:hover{transform:rotate(90deg);background:var(--gold)}
+.c-x:hover::before,.c-x:hover::after{background:#111}
+.c-x:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
 
 @media (max-width:600px){
   .p-gear{position:absolute;top:70px;right:10px;width:38px;height:38px}
@@ -121,12 +131,15 @@ body:not(.prem) .aviso{display:block}
   .badge-prem{font-size:11px;margin:6px 0 0}
   .bienvenida{font-size:.95rem}
   .pm-panel{padding:14px 18px 26px}
+  .c-x{width:28px;height:28px}
+  .cartel{font-size:.76rem}
 }
-@media (prefers-reduced-motion:reduce){.acc-b,.pm-ov,.pm-panel,.p-gear{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){.acc-b,.pm-ov,.pm-panel,.p-gear,.cartel,.c-x{animation:none!important;transition:none!important}}
 `;
 
     /* ------------------------------ DATOS ------------------------------ */
     const B = 'https://pichisoft.github.io/web/';
+    const MAIL = 'contacto@pichisoft.cc';
     const TAGS = {
         nuevo: ['NUEVO', 'et-nuevo'], actualizado: ['ACTUALIZADO', 'et-actualizado'], beta: ['BETA', 'et-beta'],
         cancelado: ['CANCELADO', 'et-cancelado'], ultimos: ['ÚLTIMOS 10 DÍAS PARA USARLA', 'et-ultimos'],
@@ -175,10 +188,18 @@ body:not(.prem) .aviso{display:block}
         [[], a => !a.t.length]
     ];
 
+    /* Carteles de aviso: "solo" limita quién lo ve (invitado = sin cuenta, premium = con cuenta) */
+    const CARTELES = [
+        { id: 'reg', solo: 'invitado', html: 'Ya está disponible nuestra versión premium para PichonApps. ¿Quiere obtenerla? Hágase una cuenta, en esta misma app, apretando el botón "Registrarse".' },
+        { id: 'tut', solo: 'premium', html: '¿Tiene una duda acerca de nuestras apps? <a data-b href="' + B + 'pichontutorial.html">Vea el tutorial de cada una.</a>' },
+        { id: 'con', html: '<a data-b href="mailto:' + MAIL + '">¿Tiene una duda?→ Comuníquese con nosotros.</a>' }
+    ];
+
     /* ------------------------------ ESTADO ------------------------------ */
-    let cfg = { orden: true, blank: true, buscador: true };
+    let cfg = { orden: true, blank: true, buscador: true, carteles: true };
     let lay = { cats: {}, flat: [] };
     const abierto = {};
+    const cerrados = new Set(), pos = {};
     const getD = (k, d) => { try { const v = Pichisoft.getData('PichonApps', k, d); return v == null ? d : v; } catch { return d; } };
     const setD = (k, v) => { try { Pichisoft.setData('PichonApps', k, v); } catch (e) { console.error(e); } };
 
@@ -200,7 +221,7 @@ body:not(.prem) .aviso{display:block}
         const ul = document.querySelector('ul'); ul.id = 'dirClasico';
         ul.insertAdjacentHTML('afterend', `
 <div id="pPremium">
-  <p class="bienvenida">¡Hola! Bienvenido a PichonApps, nuestro directorio de aplicaciones y juegos que tanto te gustan de Pichisoft. ¿Tiene una duda acerca de nuestras apps? <a id="linkTut" href="${B}pichontutorial.html">Vea el tutorial de cada una</a>.</p>
+  <p class="bienvenida">¡Hola! Bienvenido a PichonApps, nuestro directorio de aplicaciones y juegos que tanto te gustan de Pichisoft.</p>
   <div class="p-search" id="pSearch">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
     <span class="p-pre">Pichon</span>
@@ -211,7 +232,7 @@ body:not(.prem) .aviso{display:block}
 </div>`);
         document.body.insertAdjacentHTML('beforeend', `
 <button class="p-gear" id="pGear" aria-label="Configuración" title="Configuración"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
-<div class="aviso">Ya está disponible nuestra versión premium para PichonApps. ¿Quiere obtenerla? Hágase una cuenta, en esta misma app, apretando el botón "Registrarse".</div>`);
+<div id="pCart"></div>`);
         $('#pGear').onclick = abrirConfig;
         $('#pQ').oninput = e => {
             if (/^pichon/i.test(e.target.value)) e.target.value = e.target.value.replace(/^pichon\s*/i, '');
@@ -276,8 +297,7 @@ body:not(.prem) .aviso{display:block}
         const root = $('#pBody'); root.innerHTML = '';
         $('#pSearch').hidden = !cfg.buscador;
         if (!cfg.buscador) $('#pQ').value = '';
-        const t = $('#linkTut');
-        if (cfg.blank) { t.target = '_blank'; t.rel = 'noopener noreferrer'; } else { t.removeAttribute('target'); t.removeAttribute('rel'); }
+        renderCarteles();
         if (cfg.orden) {
             const sub = acc('Apps ordenadas según su prefijo', [prefijos()], 'pre', 'sub');
             root.append(acc('Apps ordenadas', [...CATS.map(catEl), sub], 'ord'));
@@ -342,6 +362,52 @@ body:not(.prem) .aviso{display:block}
         addEventListener('pointermove', mv); addEventListener('pointerup', fin); addEventListener('pointercancel', fin);
     }
 
+    /* ------------------------------ CARTELES ------------------------------ */
+    /* Deja espacio abajo para que los carteles apilados no tapen las apps */
+    function reservar() {
+        const b = $('#pCart');
+        document.body.style.paddingBottom = b && b.children.length ? (b.offsetHeight + 16) + 'px' : '';
+    }
+
+    function renderCarteles() {
+        document.querySelectorAll('.cartel').forEach(c => c.remove());
+        const prem = !!Pichisoft.user, box = $('#pCart');
+        if (!box) return;
+        if (prem && !cfg.carteles) { reservar(); return; }
+        CARTELES.forEach(c => {
+            if ((c.solo === 'invitado' && prem) || (c.solo === 'premium' && !prem) || cerrados.has(c.id)) return;
+            const d = document.createElement('div'); d.className = 'cartel'; d.dataset.id = c.id; d.innerHTML = c.html;
+            /* Sin cuenta siempre pestaña nueva; con cuenta, según la opción */
+            d.querySelectorAll('a[data-b]').forEach(a => { if (!prem || cfg.blank) { a.target = '_blank'; a.rel = 'noopener noreferrer'; } });
+            const x = document.createElement('button'); x.className = 'c-x'; x.setAttribute('aria-label', 'Cerrar aviso'); x.title = 'Cerrar';
+            x.onpointerdown = e => e.stopPropagation();
+            x.onclick = () => { cerrados.add(c.id); delete pos[c.id]; d.remove(); reservar(); };
+            d.append(x);
+            d.onpointerdown = e => moverCartel(e, d);
+            if (pos[c.id]) { d.classList.add('suelto'); d.style.left = pos[c.id].l + 'px'; d.style.top = pos[c.id].t + 'px'; document.body.append(d); }
+            else box.append(d);
+        });
+        reservar();
+    }
+
+    function moverCartel(e, d) {
+        if (e.button > 0 || e.target.closest('a,button')) return;
+        const r = d.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top, w = r.width, h = r.height;
+        if (!d.classList.contains('suelto')) { d.classList.add('suelto'); d.style.width = w + 'px'; document.body.append(d); reservar(); }
+        d.classList.add('arr');
+        try { d.setPointerCapture(e.pointerId); } catch { }
+        const mv = ev => {
+            const l = Math.min(Math.max(ev.clientX - dx, 0), innerWidth - w), t = Math.min(Math.max(ev.clientY - dy, 0), innerHeight - h);
+            d.style.left = l + 'px'; d.style.top = t + 'px'; pos[d.dataset.id] = { l, t };
+        };
+        const fin = () => {
+            d.classList.remove('arr');
+            d.removeEventListener('pointermove', mv); d.removeEventListener('pointerup', fin); d.removeEventListener('pointercancel', fin);
+        };
+        mv(e);
+        d.addEventListener('pointermove', mv); d.addEventListener('pointerup', fin); d.addEventListener('pointercancel', fin);
+    }
+
     /* ---------------------------- CONFIGURACIÓN ---------------------------- */
     function cerrarConfig() {
         const o = $('#pCfg'); if (!o) return;
@@ -403,6 +469,7 @@ body:not(.prem) .aviso{display:block}
       ${fila('orden', 'Ordenar apps', 'Agrupa las apps por categoría. Si lo desactivás, se muestran todas juntas.')}
       ${fila('blank', 'Abrir las apps en una pestaña nueva', 'Si lo desactivás, se abren en esta misma pestaña.')}
       ${fila('buscador', 'Mostrar barra de búsqueda', 'Buscá una app escribiendo solo lo que va después de "Pichon".')}
+      ${fila('carteles', 'Mostrar carteles de aviso', 'Muestra los avisos flotantes, que podés arrastrar y cerrar con la X. Si lo desactivás, no vuelven a aparecer.')}
       <button class="pm-reset" id="cfgReset">Restablecer el orden de las apps</button>
     </div>`;
         document.body.append(o);
@@ -411,7 +478,11 @@ body:not(.prem) .aviso{display:block}
         o.querySelector('#cfgBack').onclick = cerrarConfig;
         o.querySelectorAll('.sw').forEach(s => {
             s.checked = !!cfg[s.dataset.k];
-            s.onchange = () => { cfg[s.dataset.k] = s.checked; setD('cfg', cfg); render(); };
+            s.onchange = () => {
+                cfg[s.dataset.k] = s.checked; setD('cfg', cfg);
+                if (s.dataset.k === 'carteles' && s.checked) cerrados.clear(); /* al reactivar, vuelven todos */
+                render();
+            };
         });
         o.querySelector('#cfgReset').onclick = confirmarReset;
     }
@@ -420,10 +491,20 @@ body:not(.prem) .aviso{display:block}
     function renderPremium() {
         const u = Pichisoft.user;
         document.body.classList.toggle('prem', !!u);
-        if (!u) { cerrarConfig(); return; }
-        cfg = Object.assign({ orden: true, blank: true, buscador: true }, getD('cfg', {}));
+        if (!u) { cerrarConfig(); renderCarteles(); return; }
+        cfg = Object.assign({ orden: true, blank: true, buscador: true, carteles: true }, getD('cfg', {}));
         cargarLay(); render();
     }
+
+    /* Mantiene los carteles sueltos dentro de la pantalla al rotar o redimensionar */
+    addEventListener('resize', () => {
+        document.querySelectorAll('.cartel.suelto').forEach(d => {
+            const r = d.getBoundingClientRect();
+            d.style.left = Math.max(0, Math.min(r.left, innerWidth - r.width)) + 'px';
+            d.style.top = Math.max(0, Math.min(r.top, innerHeight - r.height)) + 'px';
+        });
+        reservar();
+    });
 
     inyectar();
     const rcOriginal = window.renderCuenta;
