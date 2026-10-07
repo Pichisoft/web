@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+    <title>PichonPaint - By Pichisoft</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+            background: #d9d6cf;
+            overscroll-behavior: none;
+            font-family: Georgia, serif;
+            -webkit-user-select: none;
+            user-select: none
+        }
+
+        #stage {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            touch-action: none;
+            cursor: crosshair
+        }
+
+        #board {
+            position: absolute;
+            transform-origin: 0 0;
+            background: #fff;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, .15), 0 10px 40px rgba(0, 0, 0, .2)
+        }
+
+        #board canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%
+        }
+
+        #pv {
+            pointer-events: none
+        }
+
+        #stage.t-text {
+            cursor: text
+        }
+
+        #stage.t-hand,
+        #stage.pan {
+            cursor: grab
+        }
+
+        .header {
+            position: fixed;
+            top: 20px;
+            left: 24px;
+            z-index: 20;
+            pointer-events: none;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            background: rgba(255, 255, 255, .82);
+            padding: 2px 10px;
+            border-radius: 8px
+        }
+
+        .logo {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            color: #000;
+            font-size: 2rem
+        }
+
+        .byline {
+            font-family: "Times New Roman", Times, serif;
+            font-style: italic;
+            color: #888;
+            font-size: .95rem
+        }
+
+        #toolbar {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+            z-index: 30;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+            width: max-content;
+            max-width: calc(100vw - 16px);
+            max-height: 46vh;
+            overflow: auto;
+            padding: 8px 10px;
+            background: #000;
+            color: #fff;
+            border-radius: 22px;
+            border: 1px solid rgba(34, 197, 94, .25);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .3)
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 5px 6px
+        }
+
+        .sep {
+            width: 1px;
+            height: 24px;
+            background: #333
+        }
+
+        #toolbar button,
+        #toolbar select {
+            font: inherit;
+            font-size: 14px;
+            color: #fff;
+            background: #1c1c1c;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 6px 10px;
+            cursor: pointer;
+            min-height: 36px;
+            min-width: 36px
+        }
+
+        #toolbar button:hover:not(:disabled) {
+            background: #2a2a2a
+        }
+
+        #toolbar button:disabled {
+            opacity: .35;
+            cursor: default
+        }
+
+        #toolbar button.on {
+            background: #20a84b;
+            border-color: #20a84b
+        }
+
+        #toolbar :focus-visible {
+            outline: 2px solid #20a84b;
+            outline-offset: 2px
+        }
+
+        #save {
+            background: #20a84b !important;
+            border-color: #20a84b !important;
+            font-weight: bold
+        }
+
+        #sws {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-width: 320px;
+            justify-content: center
+        }
+
+        #toolbar .sw {
+            width: 22px;
+            height: 22px;
+            min-width: 0;
+            min-height: 0;
+            padding: 0;
+            border-radius: 50%;
+            border: 2px solid #444
+        }
+
+        #toolbar .sw.on {
+            border-color: #fff;
+            transform: scale(1.2)
+        }
+
+        #color,
+        #color2 {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border: 0;
+            background: none;
+            cursor: pointer
+        }
+
+        #toolbar .sw.on2 {
+            box-shadow: 0 0 0 2px #20a84b
+        }
+
+        #size {
+            width: 90px;
+            accent-color: #20a84b
+        }
+
+        #zl {
+            font-size: 13px;
+            min-width: 44px;
+            text-align: center
+        }
+
+        #toast {
+            position: fixed;
+            left: 50%;
+            transform: translate(-50%, -8px);
+            top: 84px;
+            z-index: 40;
+            background: #000;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity .4s, transform .4s;
+            pointer-events: none;
+            max-width: calc(100vw - 20px);
+            text-align: center
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0)
+        }
+
+        /* ==========================================
+       PICHISOFT - ESTADO DE SESIÓN
+       ========================================== */
+
+        #pichisoft-session-status {
+            position: fixed;
+            top: 52px;
+            right: 20px;
+            z-index: 9999;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 8px 16px;
+
+            background: #000;
+            color: #20a84b;
+
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 22px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+            font: 14px/1.3 Georgia, serif;
+            text-align: left;
+
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
+        }
+
+        #pichisoft-session-status.hidden {
+            opacity: 0;
+            transform: translateY(-12px);
+        }
+
+        #pichisoft-session-status.success {
+            font-weight: bold;
+        }
+
+        #pichisoft-session-status .ps-check {
+            display: none;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        #pichisoft-session-status.success .ps-check {
+            display: inline-block;
+            animation: pichisoftCheck 0.8s cubic-bezier(.17, .89, .32, 1.49) forwards;
+        }
+
+        @keyframes pichisoftCheck {
+            0% {
+                opacity: 0;
+                transform: scale(0.2) rotate(-25deg);
+            }
+
+            60% {
+                opacity: 1;
+                transform: scale(1.25) rotate(8deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        #pichisoft-session-profile {
+            position: fixed;
+            top: 52px;
+            right: 20px;
+            z-index: 9998;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 5px 14px 5px 5px;
+
+            background: #000;
+            color: #fff;
+
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 25px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+            font-family: Georgia, serif;
+            text-align: left;
+
+            opacity: 0;
+            transform: translateY(-12px) scale(0.9);
+            transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
+            pointer-events: none;
+        }
+
+        #pichisoft-session-profile.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        #pichisoft-profile-picture img,
+        #pichisoft-profile-picture .profile-placeholder {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pichisoft-profile-picture .profile-placeholder {
+            background: #20a84b;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #pichisoft-profile-name {
+            font-size: 14px;
+            font-weight: bold;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Celular: título más chico para que no choque con el link "Pichisoft" */
+        @media (max-width: 600px) {
+            .header {
+                top: 16px;
+                left: 15px;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .byline {
+                font-size: 0.75rem;
+            }
+
+            #pichisoft-session-status,
+            #pichisoft-session-profile {
+                right: 10px;
+            }
+
+            #pichisoft-session-status {
+                font-size: 13px;
+                padding: 7px 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header"><span class="logo">PichonPaint</span><span class="byline"> - By Pichisoft - </span></div>
+
+    <div id="stage">
+        <div id="board"><canvas id="cv" aria-label="Lienzo compartido"></canvas><canvas id="pv"></canvas></div>
+    </div>
+
+    <div id="toolbar" role="toolbar" aria-label="Herramientas">
+        <div class="row" id="tools"></div>
+        <div class="row">
+            <span id="sws"></span>
+            <input type="color" id="color" value="#e11d48" title="Color principal (clic izquierdo)"
+                aria-label="Color principal">
+            <button id="swap" title="Intercambiar colores (X)">⇄</button>
+            <input type="color" id="color2" value="#ffffff" title="Color secundario (clic derecho)"
+                aria-label="Color secundario">
+            <input type="range" id="size" min="1" max="80" value="8" title="Grosor / tamaño de texto"
+                aria-label="Grosor">
+            <button id="fillb" title="Formas: contorno o sólido">◻ Contorno</button>
+            <select id="font" title="Tipografía del texto" aria-label="Tipografía">
+                <option value="Arial, sans-serif">Sans</option>
+                <option value="Georgia, serif">Serif</option>
+                <option value="'Courier New', monospace">Mono</option>
+                <option value="'Comic Sans MS', cursive">Cómic</option>
+            </select>
+        </div>
+        <div class="row">
+            <button id="undo" title="Deshacer (Ctrl+Z)" disabled>↩ Deshacer</button>
+            <button id="redo" title="Rehacer (Ctrl+Y)" disabled>↪ Rehacer</button>
+            <span class="sep"></span>
+            <button id="zo" title="Alejar (-)">−</button><span id="zl">100%</span>
+            <button id="zi" title="Acercar (+)">+</button><button id="zf" title="Ajustar a pantalla (0)">⤢</button>
+            <span class="sep"></span>
+            <button id="dl" title="Descargar la imagen como PNG">⬇ Descargar</button>
+            <button id="save" title="Guardar para todos (Ctrl+S)" disabled>💾 Guardar</button>
+        </div>
+    </div>
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <!-- ===== Pichisoft - Estado de sesión ===== -->
+    <div id="pichisoft-session-status" role="status" aria-live="polite">
+        <span class="ps-check">✓</span>
+        <span class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span>
+    </div>
+
+    <div id="pichisoft-session-profile">
+        <div id="pichisoft-profile-picture"></div>
+        <span id="pichisoft-profile-name"></span>
+    </div>
+
+    <script>
+        (function () {
+            /* Todo va dentro de esta función para no chocar con las variables de la app */
+            var CFG = {
+                apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+                authDomain: "pichisoft.firebaseapp.com",
+                projectId: "pichisoft",
+                storageBucket: "pichisoft.firebasestorage.app",
+                messagingSenderId: "690032082295",
+                appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+                measurementId: "G-K7HRKR8BJ1"
+            };
+            var V = "https://www.gstatic.com/firebasejs/12.3.0/";
+            var DUR_INICIO = 12000;   // "Iniciando sesión..."
+            var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+
+            var box = document.getElementById("pichisoft-session-status");
+            var txt = box.querySelector(".ps-text");
+            var prof = document.getElementById("pichisoft-session-profile");
+            var pic = document.getElementById("pichisoft-profile-picture");
+            var nameEl = document.getElementById("pichisoft-profile-name");
+            var t0 = Date.now();
+
+            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
+               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
+            async function comprobar() {
+                try {
+                    var m = await Promise.all([
+                        import(V + "firebase-app.js"),
+                        import(V + "firebase-auth.js"),
+                        import(V + "firebase-firestore.js")
+                    ]);
+                    var app = m[0].initializeApp(CFG);
+                    var auth = m[1].getAuth(app);
+                    var db = m[2].getFirestore(app);
+
+                    var user = await Promise.race([
+                        new Promise(function (res) {
+                            m[1].onAuthStateChanged(auth, function (u) {
+                                window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
+                                res(u);
+                            });
+                        }),
+                        wait(15000).then(function () { throw new Error("tiempo agotado"); })
+                    ]);
+
+                    var perfil = {};
+                    if (user) {
+                        try {
+                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+                            if (snap.exists()) perfil = snap.data();
+                        } catch (e) {
+                            console.error("Pichisoft: no se pudo leer el perfil", e);
+                        }
+                    }
+                    return { user: user, perfil: perfil };
+                } catch (e) {
+                    console.error("Pichisoft:", e);
+                    return { error: true };
+                }
+            }
+
+            async function aviso(texto) {
+                txt.textContent = texto;
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+            }
+
+            (async function () {
+                var r = await comprobar();
+                await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
+
+                if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
+                if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
+
+                box.classList.add("success");
+                txt.textContent = "Sesión iniciada";
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+
+                var nombre = r.perfil.username || "Usuario";
+                nameEl.textContent = nombre;
+                var foto = r.perfil.photo;
+                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
+                    var img = new Image();
+                    img.src = foto;
+                    img.alt = "Foto de perfil";
+                    pic.replaceChildren(img);
+                } else {
+                    var ph = document.createElement("div");
+                    ph.className = "profile-placeholder";
+                    ph.textContent = nombre.charAt(0).toUpperCase();
+                    pic.replaceChildren(ph);
+                }
+                await wait(450);
+                prof.classList.add("visible");
+            })();
+        })();
+    </script>
+
+    <!-- ===== PichonPaint ===== -->
+    <script type="module">
+        const V = "https://www.gstatic.com/firebasejs/12.3.0/";
+        const { doc, getDoc, setDoc, onSnapshot, serverTimestamp } = await import(V + "firebase-firestore.js");
+
+        const W = 1600, H = 1000, REF = ["pichonpaint", "canvas"];   // lienzo compartido de tamaño fijo
+        const $ = id => document.getElementById(id);
+        const cv = $("cv"), pv = $("pv"), board = $("board"), stage = $("stage");
+        const ctx = cv.getContext("2d", { willReadFrequently: true }), pctx = pv.getContext("2d");
+        cv.width = pv.width = W; cv.height = pv.height = H;
+
+        let base = null, strokes = [], redo = [], cur = null, tool = "brush", color = "#e11d48", color2 = "#ffffff";
+        let fillOn = false, db = null, saving = false, z = 1, tx = 0, ty = 0, bl = 0, bt = 0, space = false;
+        const size = () => +$("size").value;
+
+        /* ---------- Vista: ajustar, zoom y desplazamiento ---------- */
+        function fit() {
+            const s = Math.min(innerWidth / W, innerHeight / H), w = W * s, h = H * s;
+            board.style.width = w + "px"; board.style.height = h + "px";
+            bl = (innerWidth - w) / 2; bt = (innerHeight - h) / 2; view();
+        }
+        function view() {
+            board.style.left = bl + "px"; board.style.top = bt + "px";
+            board.style.transform = `translate(${tx}px,${ty}px) scale(${z})`;
+            $("zl").textContent = Math.round(z * 100) + "%";
+        }
+        function zoomTo(mx, my, nz, fx = mx, fy = my, o = { z, tx, ty }) {   // zoom anclado a un punto
+            nz = Math.min(16, Math.max(.4, nz));
+            const ux = (mx - bl - o.tx) / o.z, uy = (my - bt - o.ty) / o.z;
+            z = nz; tx = fx - bl - ux * nz; ty = fy - bt - uy * nz; view();
+        }
+        const zoomBtn = k => zoomTo(innerWidth / 2, innerHeight / 2, z * k);
+        const resetView = () => { z = 1; tx = ty = 0; view(); };
+        addEventListener("resize", fit); fit();
+        stage.addEventListener("wheel", e => {
+            e.preventDefault(); zoomTo(e.clientX, e.clientY, z * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0015)));
+        }, { passive: false });
+        $("zi").onclick = () => zoomBtn(1.25); $("zo").onclick = () => zoomBtn(.8); $("zf").onclick = resetView;
+
+        /* ---------- Dibujo ---------- */
+        function style(c, s) {
+            c.lineCap = c.lineJoin = "round"; c.strokeStyle = c.fillStyle = s.t === "e" ? "#fff" : s.c; c.lineWidth = s.w;
+        }
+        function flood(c, x, y, hex) {                        // balde de pintura
+            x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= W || y >= H) return;
+            const im = c.getImageData(0, 0, W, H), d = im.data, n = parseInt(hex.slice(1), 16);
+            const R = n >> 16, G = n >> 8 & 255, B = n & 255, i0 = (y * W + x) * 4, tr = d[i0], tg = d[i0 + 1], tb = d[i0 + 2];
+            if (Math.abs(tr - R) + Math.abs(tg - G) + Math.abs(tb - B) < 6) return;
+            const seen = new Uint8Array(W * H), st = [y * W + x];
+            while (st.length) {
+                const p = st.pop(); if (seen[p]) continue; seen[p] = 1; const i = p * 4;
+                if (Math.abs(d[i] - tr) + Math.abs(d[i + 1] - tg) + Math.abs(d[i + 2] - tb) > 60) continue;
+                d[i] = R; d[i + 1] = G; d[i + 2] = B; d[i + 3] = 255;
+                const px = p % W;
+                if (px > 0) st.push(p - 1); if (px < W - 1) st.push(p + 1); if (p >= W) st.push(p - W); if (p < W * H - W) st.push(p + W);
+            }
+            c.putImageData(im, 0, 0);
+        }
+        function drawStroke(c, s) {
+            style(c, s); const p = s.p, a = p[0], b = p[p.length - 1];
+            if (s.t === "b" || s.t === "e") {
+                c.beginPath(); c.moveTo(a.x, a.y); p.forEach(q => c.lineTo(q.x, q.y)); if (p.length === 1) c.lineTo(a.x, a.y); c.stroke();
+            } else if (s.t === "l") { c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke(); }
+            else if (s.t === "r") {
+                c.beginPath(); c.rect(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+                if (s.fill) c.fill(); c.stroke();
+            } else if (s.t === "o") {
+                c.beginPath(); c.ellipse((a.x + b.x) / 2, (a.y + b.y) / 2, Math.abs(a.x - b.x) / 2, Math.abs(a.y - b.y) / 2, 0, 0, 7);
+                if (s.fill) c.fill(); c.stroke();
+            } else if (s.t === "x") {
+                c.font = `${s.sz}px ${s.f}`; c.textBaseline = "top";
+                s.txt.split("\n").forEach((l, i) => c.fillText(l, a.x, a.y + i * s.sz * 1.2));
+            } else if (s.t === "f") flood(c, a.x, a.y, s.c);
+        }
+        function paint(c, img, list) {
+            c.fillStyle = "#fff"; c.fillRect(0, 0, W, H);
+            if (img) c.drawImage(img, 0, 0, W, H);
+            list.forEach(s => drawStroke(c, s));
+        }
+        const redraw = () => paint(ctx, base, strokes);
+        const preview = () => { pctx.clearRect(0, 0, W, H); drawStroke(pctx, cur); };
+        function cancelCur() { if (cur) { cur = null; pctx.clearRect(0, 0, W, H); redraw(); } }
+        function commit(s, draw) { if (draw) drawStroke(ctx, s); strokes.push(s); redo = []; sync(); }
+        function sample(p) {
+            const d = ctx.getImageData(Math.min(W - 1, Math.max(0, p.x | 0)), Math.min(H - 1, Math.max(0, p.y | 0)), 1, 1).data;
+            return "#" + [d[0], d[1], d[2]].map(n => n.toString(16).padStart(2, "0")).join("");
+        }
+
+        /* ---------- Mouse, dedo y lápiz ---------- */
+        const ptrs = new Map(); let g = null, pan = null;
+        const pt = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; };
+        const KIND = { brush: "b", eraser: "e", line: "l", rect: "r", ellipse: "o" };
+
+        stage.addEventListener("pointerdown", e => {
+            stage.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (ptrs.size === 2) {                               // dos dedos: zoom y desplazamiento
+                cancelCur(); const [a, b] = [...ptrs.values()];
+                g = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, z, tx, ty }; pan = null; return;
+            }
+            if (ptrs.size > 2) return;
+            if (tool === "hand" || space || e.button === 1) { pan = { x: e.clientX, y: e.clientY, tx, ty }; return; }
+            if (e.button !== 0 && e.button !== 2) return;
+            const col = e.button === 2 ? color2 : color, p = pt(e);
+            if (tool === "picker" || tool === "fill" || tool === "text") {
+                ptrs.delete(e.pointerId);
+                if (p.x < 0 || p.y < 0 || p.x >= W || p.y >= H) return;
+                if (tool === "picker") { pickColor(sample(p), true, e.button === 2); setTool("brush"); }
+                else if (tool === "fill") commit({ t: "f", c: col, p: [p] }, true);
+                else setTimeout(() => {
+                    const txt = prompt("Texto (podés usar varias líneas con Enter):");
+                    if (txt) commit({ t: "x", c: col, p: [p], txt, sz: Math.max(14, size() * 4), f: $("font").value }, true);
+                }, 0);
+                return;
+            }
+            cur = { t: KIND[tool], c: col, w: size(), fill: fillOn, p: [p] };
+            if (cur.t === "b" || cur.t === "e") drawStroke(ctx, cur); else { cur.p[1] = p; preview(); }
+        });
+        stage.addEventListener("pointermove", e => {
+            if (!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (g && ptrs.size === 2) {
+                const [a, b] = [...ptrs.values()];
+                zoomTo(g.mx, g.my, g.z * Math.hypot(a.x - b.x, a.y - b.y) / g.d, (a.x + b.x) / 2, (a.y + b.y) / 2, g); return;
+            }
+            if (pan) { tx = pan.tx + e.clientX - pan.x; ty = pan.ty + e.clientY - pan.y; view(); return; }
+            if (!cur) return;
+            if (cur.t === "b" || cur.t === "e") {
+                const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+                for (const ev of (evs.length ? evs : [e])) {
+                    const p = pt(ev), l = cur.p[cur.p.length - 1]; cur.p.push(p);
+                    style(ctx, cur); ctx.beginPath(); ctx.moveTo(l.x, l.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+                }
+            } else { cur.p[1] = pt(e); preview(); }
+        });
+        function up(e) {
+            ptrs.delete(e.pointerId); if (ptrs.size < 2) g = null; if (!ptrs.size) pan = null;
+            if (!cur) return;
+            const s = cur; cur = null; pctx.clearRect(0, 0, W, H);
+            commit(s, s.t !== "b" && s.t !== "e");
+        }
+        stage.addEventListener("contextmenu", e => e.preventDefault());
+        stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", up);
+
+        /* ---------- Herramientas y colores ---------- */
+        const TOOLS = [["brush", "✏️", "Pincel (B)"], ["eraser", "🧽", "Goma (E)"], ["line", "╱", "Línea (L)"], ["rect", "▭", "Rectángulo (R)"],
+        ["ellipse", "◯", "Elipse (O)"], ["fill", "🪣", "Balde de relleno (F)"], ["text", "🔤", "Texto (T)"], ["picker", "💧", "Gotero (I)"], ["hand", "✋", "Mano: mover (H o Espacio)"]];
+        TOOLS.forEach(([id, ic, tt]) => {
+            const b = document.createElement("button"); b.id = "t-" + id; b.textContent = ic; b.title = tt; b.setAttribute("aria-label", tt);
+            b.onclick = () => setTool(id); $("tools").appendChild(b);
+        });
+        function setTool(t) {
+            tool = t; TOOLS.forEach(([id]) => $("t-" + id).classList.toggle("on", id === t)); stage.className = "t-" + t;
+        }
+        const PAL = ["#000000", "#4b5563", "#9ca3af", "#ffffff", "#7f1d1d", "#e11d48", "#f97316", "#facc15", "#a3e635", "#22c55e", "#14b8a6",
+            "#0ea5e9", "#2563eb", "#6366f1", "#a855f7", "#ec4899", "#78350f", "#b45309", "#d6a97a", "#fcd5b5", "#fecdd3", "#fed7aa",
+            "#fef08a", "#bbf7d0", "#a5f3fc", "#bfdbfe", "#ddd6fe", "#fbcfe8"];
+        PAL.forEach(c => {
+            const b = document.createElement("button"); b.className = "sw"; b.style.background = c; b.dataset.c = c;
+            b.setAttribute("aria-label", "Color " + c); b.title = "Clic: principal · Clic derecho: secundario";
+            b.onclick = () => pickColor(c, false); b.oncontextmenu = e => { e.preventDefault(); pickColor(c, false, true); };
+            $("sws").appendChild(b);
+        });
+        function pickColor(c, fromPicker, second) {
+            if (second) color2 = c; else color = c;
+            $("color").value = color; $("color2").value = color2;
+            [...$("sws").children].forEach(b => { b.classList.toggle("on", b.dataset.c === color); b.classList.toggle("on2", b.dataset.c === color2); });
+            if (!fromPicker && !second && (tool === "eraser" || tool === "hand" || tool === "picker")) setTool("brush");
+        }
+        $("color").oninput = e => pickColor(e.target.value, false);
+        $("color2").oninput = e => pickColor(e.target.value, false, true);
+        $("swap").onclick = () => { [color, color2] = [color2, color]; pickColor(color, true); };
+        $("fillb").onclick = () => { fillOn = !fillOn; $("fillb").classList.toggle("on", fillOn); $("fillb").textContent = fillOn ? "◼ Sólido" : "◻ Contorno"; };
+
+        function sync() {
+            $("undo").disabled = !strokes.length; $("redo").disabled = !redo.length; $("save").disabled = !strokes.length || saving;
+        }
+        function undo() { if (strokes.length) { redo.push(strokes.pop()); redraw(); sync(); } }
+        function redoFn() { if (redo.length) { strokes.push(redo.pop()); redraw(); sync(); } }
+        $("undo").onclick = undo; $("redo").onclick = redoFn;
+        $("dl").onclick = () => cv.toBlob(blob => {            // incluye también lo que todavía no guardaste
+            const u = URL.createObjectURL(blob), a = document.createElement("a");
+            a.href = u; a.download = "pichonpaint-" + new Date().toISOString().slice(0, 10) + ".png";
+            document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+            toast("✓ Imagen descargada");
+        }, "image/png");
+
+        addEventListener("keydown", e => {
+            if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName) && !(e.ctrlKey || e.metaKey)) return;
+            const k = e.key.toLowerCase();
+            if (e.ctrlKey || e.metaKey) {
+                if (k === "z") { e.preventDefault(); e.shiftKey ? redoFn() : undo(); }
+                else if (k === "y") { e.preventDefault(); redoFn(); }
+                else if (k === "s") { e.preventDefault(); save(); }
+            } else if (e.code === "Space") { e.preventDefault(); space = true; stage.classList.add("pan"); }
+            else {
+                const m = { b: "brush", e: "eraser", l: "line", r: "rect", o: "ellipse", f: "fill", t: "text", i: "picker", h: "hand" };
+                if (m[k]) setTool(m[k]); else if (k === "+" || k === "=") zoomBtn(1.25); else if (k === "-") zoomBtn(.8); else if (k === "0") resetView(); else if (k === "x") $("swap").click();
+            }
+        });
+        addEventListener("keyup", e => { if (e.code === "Space") { space = false; stage.classList.remove("pan"); } });
+
+        let tt;
+        function toast(msg, ms = 3000) {
+            const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), ms);
+        }
+        setTool("brush"); pickColor(color, true);
+
+        /* ---------- Compartir (Firestore) ---------- */
+        const loadImg = src => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
+        function encode(c) {
+            for (let q = 0.92; q > 0.25; q -= 0.1) { const d = c.toDataURL("image/jpeg", q); if (d.length < 1000000) return d; }
+            return c.toDataURL("image/jpeg", 0.25);                 // Firestore: máx. ~1 MB por documento
+        }
+        async function save() {
+            if (!strokes.length || saving) return;
+            if (!db) return toast("Sin conexión: todavía no se puede guardar");
+            saving = true; sync(); toast("Guardando...", 8000);
+            try {
+                const ref = doc(db, ...REF), snap = await getDoc(ref);   // trae lo último de otros y le suma tus trazos
+                const img = snap.exists() ? await loadImg(snap.data().data) : null;
+                const tmp = document.createElement("canvas"); tmp.width = W; tmp.height = H;
+                paint(tmp.getContext("2d", { willReadFrequently: true }), img, strokes);
+                await setDoc(ref, { data: encode(tmp), updatedAt: serverTimestamp() });
+                base = tmp; strokes = []; redo = []; redraw();
+                toast("✓ Guardado: ya lo ve todo el mundo");
+            } catch (e) { console.error(e); toast("No se pudo guardar. Probá de nuevo.", 4000); }
+            saving = false; sync();
+        }
+        $("save").onclick = save;
+        addEventListener("beforeunload", e => { if (strokes.length) { e.preventDefault(); e.returnValue = ""; } });
+
+        db = await new Promise(res => {                           // espera a que el script de sesión deje listo Firestore
+            let n = 0;
+            const i = setInterval(() => {
+                if (window.PichisoftFirebase && window.PichisoftFirebase.db) { clearInterval(i); res(window.PichisoftFirebase.db); }
+                else if (++n > 250) { clearInterval(i); res(null); }
+            }, 100);
+        });
+        redraw();
+        if (db) {
+            onSnapshot(doc(db, ...REF), async snap => {            // carga inicial + cambios en vivo de otros
+                if (!snap.exists() || snap.metadata.hasPendingWrites) return;
+                try { base = await loadImg(snap.data().data); if (!cur) redraw(); } catch (e) { console.error(e); }
+            }, e => { console.error(e); toast("No se pudo leer el lienzo compartido", 4000); });
+        } else toast("Sin conexión con Pichisoft: podés dibujar, pero no guardar", 5000);
+    </script>
+</body>
+
+</html>
