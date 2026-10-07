@@ -724,7 +724,7 @@
 
 <body>
     <div class="header"><span class="logo">PichonChess</span><span class="byline"> - By Pichisoft - </span></div>
-    <a class="plink" href="https://pichisoft.github.io/web/" target="_blank" rel="noopener">Pichisoft</a>
+    <a class="plink" href="https://pichisoft.cc" target="_blank" rel="noopener">Pichisoft</a>
 
     <main>
         <section id="home">
@@ -1061,7 +1061,7 @@
             const fail = () => modal('<h2>Sin conexión</h2><p class="mu">No se pudo comunicar con el servidor. Probá de nuevo en un momento.</p><button class="btn" data-a="x">Cerrar</button>');
             async function online() {
                 modal('<div class="sp"></div><p class="mu" style="text-align:center">Conectando con Pichisoft...</p>'); await ready;
-                if (!ME.uid) return modal('<h2>Necesitás tu sesión de Pichisoft</h2><p class="mu">Para jugar online iniciá sesión en tu cuenta de Pichisoft y volvé a abrir PichonChess.</p><div class="row"><a class="btn p" href="https://pichisoft.github.io/web/" target="_blank" rel="noopener">Ir a Pichisoft</a><button class="btn" data-a="x">Cerrar</button></div>');
+                if (!ME.uid) return modal('<h2>Necesitás tu sesión de Pichisoft</h2><p class="mu">Para jugar online iniciá sesión en tu cuenta de Pichisoft y volvé a abrir PichonChess.</p><div class="row"><a class="btn p" href="https://pichisoft.cc" target="_blank" rel="noopener">Ir a Pichisoft</a><button class="btn" data-a="x">Cerrar</button></div>');
                 if (!FB || ME.err) return fail(); if (!ME.p) return reg(); if (!ME.ok) return login(); menuOn()
             }
             const reg = () => modal('<h2>Creá tu usuario</h2><p class="mu">Solo usuario y contraseña: el email ya lo tenemos por tu cuenta de Pichisoft.</p><input id="u" placeholder="Usuario" maxlength="16" autocomplete="off"><input id="pw" type="password" placeholder="Contraseña (mínimo 6)"><input id="pw2" type="password" placeholder="Repetí la contraseña"><p id="er" class="er"></p><div class="row"><button class="btn p" data-a="mk">Crear usuario</button><button class="btn" data-a="x">Cancelar</button></div>');
