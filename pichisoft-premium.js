@@ -63,22 +63,27 @@ body.prem #pPremium{display:block}
 .ci-divertidas::before{inset:1px;border:2px solid var(--gold);border-radius:50%;background:radial-gradient(circle,var(--gold) 1.5px,transparent 2px) 3px 4px/5px 5px no-repeat,radial-gradient(circle,var(--gold) 1.5px,transparent 2px) 9px 4px/5px 5px no-repeat}
 .ci-divertidas::after{left:6px;top:11px;width:6px;height:3px;border:2px solid var(--gold);border-top:0;border-radius:0 0 8px 8px}
 
-.lista,.lista-p{display:flex;flex-direction:column;gap:7px}
-.lista:empty{min-height:46px;border:1px dashed #4a4326;border-radius:10px;align-items:center;justify-content:center}
+.lista,.lista-p{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.lista:empty{display:flex;min-height:80px;border:1px dashed #4a4326;border-radius:14px;align-items:center;justify-content:center}
 .lista:empty::after{content:"Soltá una app acá";color:#7a7355;font-size:.78rem}
-.app{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;background:#202020;border:1px solid #2d2d2d;border-radius:10px;padding:11px 12px;font-size:.95rem;user-select:none;-webkit-user-select:none;transition:border-color .15s,background .15s}
-.app:hover{border-color:var(--gold);background:#242220}
+.app{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;background:linear-gradient(180deg,#232323,#191919);border:1px solid #2d2d2d;border-radius:16px;padding:16px 8px 10px;user-select:none;-webkit-user-select:none;transition:border-color .15s,transform .15s,box-shadow .15s}
+.app:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:0 10px 22px rgba(0,0,0,.45)}
 .app.moviendo{opacity:.3}
-.app.ghost{position:fixed;z-index:200;pointer-events:none;border-color:var(--gold);box-shadow:0 16px 34px rgba(0,0,0,.65);margin:0}
+.app.ghost{position:fixed;z-index:200;pointer-events:none;border-color:var(--gold);box-shadow:0 16px 34px rgba(0,0,0,.65);margin:0;transform:none}
 body.arrastrando{cursor:grabbing;user-select:none;-webkit-user-select:none}
-.grip{position:relative;flex:none;width:14px;height:21px;margin-right:4px;cursor:grab;touch-action:none;color:#8a7a3c;background:radial-gradient(circle,currentColor 1.6px,transparent 2.1px) 0 0/7px 7px}
-.grip::before{content:"";position:absolute;inset:-8px -6px}
-.grip:hover{color:var(--gold2)}
-.app .app-l,.app .app-l:visited{flex:1 1 auto;min-width:0;padding:0;color:#f5f5f5}
+.grip{position:absolute;top:7px;left:7px;width:12px;height:12px;cursor:grab;touch-action:none;color:#8a7a3c;opacity:.75;z-index:2;background:radial-gradient(circle,currentColor 1.3px,transparent 1.8px) 0 0/6px 6px}
+.grip::before{content:"";position:absolute;inset:-9px}
+.grip:hover{color:var(--gold2);opacity:1}
+.app .app-l,.app .app-l:visited{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;min-width:0;padding:0;color:#f5f5f5;text-align:center;text-decoration:none}
 .app a.app-l:hover{background:none;color:var(--gold2)}
 .app .app-l.off{color:#8d8d8d}
-.tags{display:flex;flex-wrap:wrap;gap:4px}
-.tags .etiqueta{margin:0;font-size:.62rem;padding:3px 7px;white-space:nowrap}
+.app .app-l.off .ico{filter:grayscale(1);opacity:.55}
+.ico{position:relative;display:flex;align-items:center;justify-content:center;flex:none;width:60px;height:60px;border-radius:17px;overflow:hidden;font:bold 1.7rem Georgia,"Times New Roman",serif;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.35);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 6px 14px rgba(0,0,0,.4)}
+.ico img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none}
+.nm{display:block;font-size:.78rem;line-height:1.2;font-weight:bold;word-break:break-word}
+.nm small{display:block;font-size:.62rem;font-weight:normal;color:#9a9a9a}
+.tags{display:flex;flex-wrap:wrap;justify-content:center;gap:3px}
+.tags .etiqueta{margin:0;font-size:.52rem;padding:2px 5px;white-space:nowrap;border-radius:5px}
 .et-proximo{background:rgb(28,65,167)}
 .grp{margin-top:16px}
 .grp-h{margin:0 0 8px}
@@ -144,13 +149,25 @@ body.prem .p-gear{display:flex}
   .pm-panel{padding:14px 18px 26px}
   .c-x{width:28px;height:28px}
   .cartel{font-size:.76rem}
+  .acc-b{padding:2px 10px 14px}
+  .flat{padding:6px 10px 14px}
+  .lista,.lista-p{grid-template-columns:repeat(4,1fr);gap:8px}
+  .app{padding:14px 3px 8px;border-radius:14px;gap:6px}
+  .grip{top:5px;left:5px}
+  .ico{width:48px;height:48px;border-radius:14px;font-size:1.4rem}
+  .nm{font-size:.66rem}
+  .nm small{font-size:.54rem}
+  .tags .etiqueta{font-size:.46rem;padding:2px 4px}
 }
+@media (max-width:340px){.lista,.lista-p{grid-template-columns:repeat(3,1fr)}}
 @media (prefers-reduced-motion:reduce){.acc-b,.pm-ov,.pm-panel,.p-gear,.cartel,.c-x{animation:none!important;transition:none!important}}
 `;
 
     /* ------------------------------ DATOS ------------------------------ */
     const B = 'https://pichisoft.github.io/web/';
     const MAIL = 'contacto@pichisoft.cc';
+    /* Carpeta de los íconos: B + 'img/pichoncalc.png', etc. (o poné i:'ruta' en una app). Si no existe, se usa la inicial. */
+    const IMG = B + 'img/';
     const TAGS = {
         nuevo: ['NUEVO', 'et-nuevo'], actualizado: ['ACTUALIZADO', 'et-actualizado'], beta: ['BETA', 'et-beta'],
         cancelado: ['CANCELADO', 'et-cancelado'], ultimos: ['ÚLTIMOS 10 DÍAS PARA USARLA', 'et-ultimos'],
@@ -252,6 +269,10 @@ body.prem .p-gear{display:flex}
         document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarConfig(); });
     }
 
+    /* Etiquetas más cortas para que entren en la tarjeta (el texto completo queda en el tooltip) */
+    const CORTO = { premium: 'PREMIUM', ultimos: 'ÚLTIMOS DÍAS', actcancelada: 'ACT. CANCELADA', mantenimiento: 'MANTENIMIENTO' };
+    const hue = n => [...n].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+
     function item(a, drag) {
         const d = document.createElement('div'); d.className = 'app'; d.dataset.n = a.n;
         if (drag) {
@@ -263,10 +284,30 @@ body.prem .p-gear{display:flex}
             l = document.createElement('a'); l.href = B + a.u + '.html';
             if (cfg.blank) { l.target = '_blank'; l.rel = 'noopener noreferrer'; }
         } else { l = document.createElement('span'); l.title = 'Próximamente'; }
-        l.className = 'app-l' + (a.u ? '' : ' off'); l.textContent = a.n; d.append(l);
+        l.className = 'app-l' + (a.u ? '' : ' off');
+
+        /* Ícono: imagen (a.i, o IMG + url + .png) y, si no existe, una inicial sobre un color propio de cada app */
+        const ic = document.createElement('span'); ic.className = 'ico'; ic.setAttribute('aria-hidden', 'true');
+        const h = hue(a.n);
+        ic.style.background = 'linear-gradient(145deg,hsl(' + h + ',68%,58%),hsl(' + ((h + 35) % 360) + ',62%,36%))';
+        ic.textContent = a.n.charAt(6).toUpperCase();
+        const src = a.i || (a.u ? IMG + a.u + '.png' : '');
+        if (src) {
+            const im = document.createElement('img'); im.alt = ''; im.loading = 'lazy'; im.draggable = false;
+            im.onload = () => { ic.style.background = '#1a1a1a'; ic.style.color = 'transparent'; ic.style.textShadow = 'none'; };
+            im.onerror = () => im.remove();
+            im.src = src; ic.append(im);
+        }
+        const nm = document.createElement('span'); nm.className = 'nm';
+        nm.innerHTML = '<small>Pichon</small>'; nm.append(a.n.slice(6));
+        l.append(ic, nm); d.append(l);
+
         if (a.t.length) {
             const t = document.createElement('span'); t.className = 'tags';
-            a.t.forEach(k => { const s = document.createElement('span'); s.className = 'etiqueta ' + TAGS[k][1]; s.textContent = TAGS[k][0]; t.append(s); });
+            a.t.forEach(k => {
+                const s = document.createElement('span'); s.className = 'etiqueta ' + TAGS[k][1];
+                s.textContent = CORTO[k] || TAGS[k][0]; s.title = TAGS[k][0]; t.append(s);
+            });
             d.append(t);
         }
         return d;
@@ -358,7 +399,7 @@ body.prem .p-gear{display:flex}
             const o = t.closest('.app');
             if (o && o !== el && o.parentNode.classList.contains('lista')) {
                 const b = o.getBoundingClientRect();
-                o.parentNode.insertBefore(el, ev.clientY < b.top + b.height / 2 ? o : o.nextSibling); return;
+                o.parentNode.insertBefore(el, ev.clientX < b.left + b.width / 2 ? o : o.nextSibling); return;
             }
             const c = t.closest('.cat'); if (!c) return;
             const l = c.querySelector('.lista'), otros = [...l.querySelectorAll('.app')].filter(x => x !== el);
