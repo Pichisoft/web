@@ -85,6 +85,19 @@ body.arrastrando{cursor:grabbing;user-select:none;-webkit-user-select:none}
 .nm small{display:block;font-size:.62rem;font-weight:normal;color:#9a9a9a}
 .tags{display:flex;flex-wrap:wrap;justify-content:center;gap:3px}
 .tags .etiqueta{margin:0;font-size:.52rem;padding:2px 5px;white-space:nowrap;border-radius:5px}
+/* Vista en lista (la de antes de las tarjetas): mismas categorías y paneles, sin grillas */
+body.vista-lista .lista,body.vista-lista .lista-p{display:flex;flex-direction:column;gap:7px}
+body.vista-lista .lista:empty{min-height:46px;border-radius:10px}
+body.vista-lista .app{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:6px 10px;background:#202020;border-radius:10px;padding:11px 12px;font-size:.95rem}
+body.vista-lista .app:hover{transform:none;box-shadow:none;background:#242220}
+body.vista-lista .grip{position:relative;top:auto;left:auto;flex:none;width:14px;height:21px;margin-right:4px;opacity:1;background-size:7px 7px}
+body.vista-lista .grip::before{inset:-8px -6px}
+body.vista-lista .app .app-l,body.vista-lista .app .app-l:visited{flex:1 1 auto;width:auto;flex-direction:row;align-items:center;gap:0;text-align:left}
+body.vista-lista .ico{display:none}
+body.vista-lista .nm{font-size:.95rem;font-weight:normal}
+body.vista-lista .nm small{display:inline;font-size:inherit;font-weight:inherit;color:inherit}
+body.vista-lista .tags{justify-content:flex-start;gap:4px}
+body.vista-lista .tags .etiqueta{font-size:.62rem;padding:3px 7px}
 .et-proximo{background:rgb(28,65,167)}
 .grp{margin-top:16px}
 .grp-h{margin:0 0 8px}
@@ -113,6 +126,17 @@ body.prem .p-gear{display:flex}
 .sw:checked{background:linear-gradient(135deg,#f1d98a,#b8901f)}
 .sw:checked::after{left:23px;background:#fff}
 .sw:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+.pm-view{padding:17px 0;border-bottom:1px solid #272727}
+.pm-view>b{font-size:.92rem}
+.pm-view>small{display:block;color:#9a9a9a;font-size:.72rem;line-height:1.45;margin:4px 0 6px;font-weight:normal}
+.pm-opt{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;text-align:left;background:#161616;border:1px solid #2b2b2b;border-radius:10px;padding:11px 12px;margin-top:8px;color:#fff;font:inherit;cursor:pointer;transition:border-color .15s,background .15s}
+.pm-opt:hover{border-color:#4a4326}
+.pm-opt b{font-size:.84rem}
+.pm-opt small{display:block;color:#9a9a9a;font-size:.68rem;line-height:1.4;margin-top:2px;font-weight:normal}
+.pm-opt .rd{flex:none;width:16px;height:16px;box-sizing:border-box;border-radius:50%;border:2px solid #5a5a5a}
+.pm-opt.on{border-color:var(--gold);background:rgba(212,175,55,.08)}
+.pm-opt.on .rd{border-color:var(--gold);background:radial-gradient(circle,var(--gold) 3.5px,transparent 4px)}
+.pm-opt:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
 .pm-reset{margin-top:22px;width:100%;background:none;border:1px solid var(--line);color:var(--gold2);border-radius:10px;padding:12px;font:inherit;font-size:.85rem;cursor:pointer}
 .pm-reset:hover{background:rgba(212,175,55,.1)}
 
@@ -226,7 +250,7 @@ body.prem .p-gear{display:flex}
     ];
 
     /* ------------------------------ ESTADO ------------------------------ */
-    let cfg = { orden: true, blank: true, buscador: true, carteles: true, clasica: false };
+    let cfg = { orden: true, blank: true, buscador: true, carteles: true, vista: 'tarjetas' };
     let lay = { cats: {}, flat: [] };
     const abierto = {};
     const cerrados = new Set(), pos = {};
@@ -308,7 +332,7 @@ body.prem .p-gear{display:flex}
             const t = document.createElement('span'); t.className = 'tags';
             a.t.forEach(k => {
                 const s = document.createElement('span'); s.className = 'etiqueta ' + TAGS[k][1];
-                s.textContent = CORTO[k] || TAGS[k][0]; s.title = TAGS[k][0]; t.append(s);
+                s.textContent = cfg.vista === 'lista' ? TAGS[k][0] : (CORTO[k] || TAGS[k][0]); s.title = TAGS[k][0]; t.append(s);
             });
             d.append(t);
         }
@@ -347,9 +371,11 @@ body.prem .p-gear{display:flex}
         return w;
     }
 
-    /* Vista original (lista simple de index.html): sin cuenta es la única; con cuenta se elige en Configuración */
+    /* Vistas: 'tarjetas' (grilla), 'lista' (categorías en filas, sin grilla) y 'clasica' (la lista simple de
+       index.html). Sin cuenta solo existe la clásica; con cuenta se elige en Configuración. */
     function aplicarVista(prem) {
-        document.body.classList.toggle('vista-orig', !!prem && !!cfg.clasica);
+        document.body.classList.toggle('vista-orig', !!prem && cfg.vista === 'clasica');
+        document.body.classList.toggle('vista-lista', !!prem && cfg.vista === 'lista');
         document.querySelectorAll('#dirClasico a').forEach(a => {
             if (!prem || cfg.blank) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
             else { a.removeAttribute('target'); a.removeAttribute('rel'); }
@@ -411,7 +437,7 @@ body.prem .p-gear{display:flex}
             const o = t.closest('.app');
             if (o && o !== el && o.parentNode.classList.contains('lista')) {
                 const b = o.getBoundingClientRect();
-                o.parentNode.insertBefore(el, ev.clientX < b.left + b.width / 2 ? o : o.nextSibling); return;
+                o.parentNode.insertBefore(el, (cfg.vista === 'lista' ? ev.clientY < b.top + b.height / 2 : ev.clientX < b.left + b.width / 2) ? o : o.nextSibling); return;
             }
             const c = t.closest('.cat'); if (!c) return;
             const l = c.querySelector('.lista'), otros = [...l.querySelectorAll('.app')].filter(x => x !== el);
@@ -558,7 +584,13 @@ body.prem .p-gear{display:flex}
         o.innerHTML = `<div class="pm-panel" role="dialog" aria-modal="true" aria-label="Configuración">
       <button class="pm-back" id="cfgBack"><i class="pm-arr" aria-hidden="true"></i>Volver</button>
       <h2>Configuración</h2>
-      ${fila('clasica', 'Cambiar vista', 'Activado: se muestra la vista original de PichonApps (lista simple). Desactivado: vista con tarjetas.')}
+      <div class="pm-view" role="radiogroup" aria-label="Cambiar vista">
+        <b>Cambiar vista</b>
+        <small>Elegí cómo querés ver las apps.</small>
+        <button type="button" class="pm-opt" role="radio" data-v="tarjetas"><span class="rd"></span><span><b>Tarjetas</b><small>Grilla con íconos, como el launcher de un celular.</small></span></button>
+        <button type="button" class="pm-opt" role="radio" data-v="lista"><span class="rd"></span><span><b>Lista ordenada</b><small>Apps ordenadas por categoría, en filas y sin grilla.</small></span></button>
+        <button type="button" class="pm-opt" role="radio" data-v="clasica"><span class="rd"></span><span><b>Vista original</b><small>La lista simple de siempre, la misma que ven los usuarios sin cuenta.</small></span></button>
+      </div>
       ${fila('orden', 'Ordenar apps', 'Agrupa las apps por categoría. Si lo desactivás, se muestran todas juntas.')}
       ${fila('blank', 'Abrir las apps en una pestaña nueva', 'Si lo desactivás, se abren en esta misma pestaña.')}
       ${fila('buscador', 'Mostrar barra de búsqueda', 'Buscá una app escribiendo solo lo que va después de "Pichon".')}
@@ -577,6 +609,13 @@ body.prem .p-gear{display:flex}
                 render();
             };
         });
+        const marcar = () => o.querySelectorAll('.pm-opt').forEach(b => {
+            const on = b.dataset.v === cfg.vista; b.classList.toggle('on', on); b.setAttribute('aria-checked', on);
+        });
+        o.querySelectorAll('.pm-opt').forEach(b => {
+            b.onclick = () => { cfg.vista = b.dataset.v; setD('cfg', cfg); marcar(); render(); };
+        });
+        marcar();
         o.querySelector('#cfgReset').onclick = confirmarReset;
     }
 
@@ -585,7 +624,12 @@ body.prem .p-gear{display:flex}
         const u = Pichisoft.user;
         document.body.classList.toggle('prem', !!u);
         if (!u) { cerrarConfig(); aplicarVista(false); renderCarteles(); return; }
-        cfg = Object.assign({ orden: true, blank: true, buscador: true, carteles: true, clasica: false }, getD('cfg', {}));
+        const sv = getD('cfg', {});
+        cfg = Object.assign({ orden: true, blank: true, buscador: true, carteles: true, vista: 'tarjetas' }, sv);
+        if (!sv.vista && sv.clasica) cfg.vista = 'clasica'; /* migra opciones anteriores */
+        if (!sv.vista && sv.lista) cfg.vista = 'lista';
+        delete cfg.clasica; delete cfg.lista;
+        if (!['tarjetas', 'lista', 'clasica'].includes(cfg.vista)) cfg.vista = 'tarjetas';
         cargarLay(); render();
     }
 
