@@ -191,7 +191,7 @@ body.prem .p-gear{display:flex}
 `;
 
     /* ------------------------------ DATOS ------------------------------ */
-    const B = 'https://pichisoft.github.io/web/';
+    const B = 'https://pichisoft.cc';
     const MAIL = 'contacto@pichisoft.cc';
     /* Logo de todas las apps: se toma del ícono de la pestaña (<link rel="icon">) de la página.
        Si alguna app necesita otro, poné i:'ruta/imagen.png' en esa app dentro de APPS. */
