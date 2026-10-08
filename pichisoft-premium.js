@@ -209,7 +209,7 @@ body.prem .p-gear{display:flex}
         { n: 'PichonBirthday', u: 'pichonbirthday', t: ['nuevo'] },
         { n: 'PichonCalc', u: 'pichoncalc' },
         { n: 'PichonCalendar', u: 'pichoncalendar' },
-        {n: 'PichonChess', u: 'pichonchess', t: ['nuevo', 'beta'] },
+        { n: 'PichonChess', u: 'pichonchess', t: ['nuevo', 'beta'] },
         { n: 'PichonDestiny', u: 'pichondestiny' },
         { n: 'PichonDocs', u: 'pichondocs' },
         { n: 'PichonFood', u: 'pichonfood', t: ['nuevo'] },
@@ -310,7 +310,8 @@ body.prem .p-gear{display:flex}
         }
         let l;
         if (a.u) {
-            l = document.createElement('a'); l.href = B + a.u + '.html';
+            l = document.createElement('a');// Por esto:
+            l.href = B + '/' + a.u + '.html';
             if (cfg.blank) { l.target = '_blank'; l.rel = 'noopener noreferrer'; }
         } else { l = document.createElement('span'); l.title = 'Próximamente'; }
         l.className = 'app-l' + (a.u ? '' : ' off');
