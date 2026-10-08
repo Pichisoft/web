@@ -226,7 +226,7 @@ body.prem .p-gear{display:flex}
     const CATS = [
         { id: 'utiles', nombre: 'Herramientas', apps: ['PichonTutorial', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonCalc', 'PichonCalendar', 'PichonAlarm'] },
         { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake'] },
-        { id: 'azar', nombre: 'A1zar', apps: ['PichonDestiny', 'PichonRandom'] },
+        { id: 'azar', nombre: 'Azar', apps: ['PichonDestiny', 'PichonRandom'] },
         { id: 'divertidas', nombre: 'Diversión', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonPaint', 'PichonWatch'] }
     ];
     const has = (a, k) => a.t.includes(k);
