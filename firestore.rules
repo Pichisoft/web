@@ -21,6 +21,208 @@ service cloud.firestore {
 
       allow create: if request.auth != null && request.resource.data.authorId == request.auth.uid && !('prize' in request.resource.data);
 
+      allow update: if (request.auth != null && request.auth.uid in ['XIY1FfjUDodaSBSGema6NgixKRs1'] && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prize','prizeAt'])) || (request.auth != null && resource.data.authorId == request.auth.uid && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['prize','prizeAt','authorId'])) || (request.auth != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes','ratings','comments']));
+
+      allow delete: if request.auth != null && resource.data.authorId == request.auth.uid;
+    }
+
+    // ==========================================
+    // PICHONCHESS
+    // ==========================================
+
+    match /pichonchess_users/{uid} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['username', 'lc', 'elo', 'wins', 'losses', 'draws', 'fav'])
+        && request.resource.data.lc == request.resource.data.username.lower()
+        && request.resource.data.elo == 1200
+        && request.resource.data.username is string
+        && request.resource.data.username.size() >= 3
+        && request.resource.data.username.size() <= 16
+        && request.resource.data.fav.size() == 0;
+
+      allow update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['elo', 'wins', 'losses', 'draws', 'fav', 'rg'])
+        && request.resource.data.get('elo', 1200) - resource.data.get('elo', 1200) <= 20
+        && request.resource.data.get('elo', 1200) - resource.data.get('elo', 1200) >= -20
+        && request.resource.data.get('wins', 0) - resource.data.get('wins', 0) >= 0
+        && request.resource.data.get('losses', 0) - resource.data.get('losses', 0) >= 0
+        && request.resource.data.get('draws', 0) - resource.data.get('draws', 0) >= 0
+        && (request.resource.data.get('wins', 0) - resource.data.get('wins', 0))
+           + (request.resource.data.get('losses', 0) - resource.data.get('losses', 0))
+           + (request.resource.data.get('draws', 0) - resource.data.get('draws', 0)) <= 1
+        && request.resource.data.get('fav', []).size() <= 50
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['elo', 'wins', 'losses', 'draws'])
+            || request.resource.data.get('rg', '') != resource.data.get('rg', ''));
+    }
+
+    match /pichonchess_names/{name} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/pichonchess_users/$(request.auth.uid)).data.username.lower() == name;
+    }
+
+    match /pichonchess_games/{gameId} {
+      allow get: if request.auth != null;
+      allow list: if request.auth != null && (resource.data.priv == false || resource.data.get('inv', null) == request.auth.uid);
+
+      allow create: if request.auth != null
+        && request.resource.data.w == request.auth.uid
+        && request.resource.data.b == null
+        && request.resource.data.status == 'waiting'
+        && request.resource.data.moves.size() == 0;
+
+      allow update: if request.auth != null && (
+
+        // 1) Unirse como negras
+        (resource.data.status == 'waiting'
+          && resource.data.w != request.auth.uid
+          && (resource.data.get('inv', null) == null || resource.data.inv == request.auth.uid)
+          && request.resource.data.b == request.auth.uid
+          && request.resource.data.status == 'playing'
+          && request.resource.data.lt == request.time
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['b', 'bn', 'be', 'status', 'lt']))
+
+        // 2) Jugar
+        || (resource.data.status == 'playing'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['moves', 'status', 'result', 'why', 'draw', 'tw', 'tb', 'lt'])
+          && request.resource.data.get('draw', null) == null
+          && request.resource.data.moves.size() == resource.data.moves.size() + 1
+          && request.resource.data.moves[0:resource.data.moves.size()] == resource.data.moves
+          && request.resource.data.status in ['playing', 'over']
+          && request.auth.uid == (resource.data.moves.size() % 2 == 0 ? resource.data.w : resource.data.b)
+          && (resource.data.get('tc', null) == null
+              || (request.resource.data.lt == request.time
+                  && (resource.data.moves.size() % 2 == 0
+                      ? (request.resource.data.tb == resource.data.tb
+                         && request.resource.data.tw <= resource.data.tw - (request.time.toMillis() - resource.data.lt.toMillis()) + resource.data.tc[1] * 1000 + 5000)
+                      : (request.resource.data.tw == resource.data.tw
+                         && request.resource.data.tb <= resource.data.tb - (request.time.toMillis() - resource.data.lt.toMillis()) + resource.data.tc[1] * 1000 + 5000)))))
+
+        // 3) Rendirse (o perder por tiempo propio)
+        || (resource.data.status == 'playing'
+          && request.auth.uid in [resource.data.w, resource.data.b]
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'result', 'why'])
+          && request.resource.data.status == 'over'
+          && request.resource.data.result == (request.auth.uid == resource.data.w ? 'b' : 'w'))
+
+        // 4) Ofrecer / retirar / rechazar tablas
+        || (resource.data.status == 'playing'
+          && request.auth.uid in [resource.data.w, resource.data.b]
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['draw'])
+          && (request.resource.data.draw == null
+              || request.resource.data.draw == (request.auth.uid == resource.data.w ? 'w' : 'b')))
+
+        // 5) Aceptar tablas
+        || (resource.data.status == 'playing'
+          && request.auth.uid in [resource.data.w, resource.data.b]
+          && resource.data.get('draw', null) == (request.auth.uid == resource.data.w ? 'b' : 'w')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'result', 'why', 'draw'])
+          && request.resource.data.status == 'over'
+          && request.resource.data.result == 'd'
+          && request.resource.data.get('draw', null) == null)
+
+        // 6) Ganar por tiempo
+        || (resource.data.status == 'playing'
+          && resource.data.get('tc', null) != null
+          && request.auth.uid == (resource.data.moves.size() % 2 == 0 ? resource.data.b : resource.data.w)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'result', 'why'])
+          && request.resource.data.status == 'over'
+          && request.resource.data.result == (request.auth.uid == resource.data.w ? 'w' : 'b')
+          && request.time.toMillis() - resource.data.lt.toMillis() >= (resource.data.moves.size() % 2 == 0 ? resource.data.tw : resource.data.tb) - 1000)
+
+        // 7) Revancha
+        || (resource.data.status == 'over'
+          && request.auth.uid in [resource.data.w, resource.data.b]
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rm', 'rn'])
+          && (request.resource.data.get('rm', null) == (request.auth.uid == resource.data.w ? 'w' : 'b')
+              || request.resource.data.get('rn', null) != null))
+      );
+
+      allow delete: if request.auth != null
+        && resource.data.w == request.auth.uid
+        && resource.data.status == 'waiting';
+    }
+
+    match /pichonchess_tournaments/{tid} {
+      allow read: if request.auth != null;
+
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['name', 'owner', 'type', 'tc', 'players', 'pn', 'status', 'rounds', 'rd', 'pairs', 'startAt', 'endAt'])
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.players == [request.auth.uid]
+        && request.resource.data.pn.size() == 1
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 3
+        && request.resource.data.name.size() <= 30
+        && request.resource.data.tc.size() == 2
+        && ((request.resource.data.type == 'arena'
+              && request.resource.data.status == 'run'
+              && math.abs(request.resource.data.get('startAt', 0) - request.time.toMillis()) < 300000
+              && request.resource.data.get('endAt', 0) - request.resource.data.get('startAt', 0) >= 600000
+              && request.resource.data.get('endAt', 0) - request.resource.data.get('startAt', 0) <= 10800000)
+            || (request.resource.data.type == 'swiss'
+              && request.resource.data.status == 'open'
+              && request.resource.data.get('rounds', 0) in [3, 5, 7, 9]
+              && request.resource.data.get('rd', -1) == 0
+              && request.resource.data.get('pairs', [1]).size() == 0));
+
+      allow update: if request.auth != null && (
+
+        // Unirse
+        ((resource.data.status == 'open' || (resource.data.get('type', '') == 'arena' && request.time.toMillis() < resource.data.get('endAt', 0)))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['players', 'pn'])
+          && request.resource.data.players.size() == resource.data.players.size() + 1
+          && request.resource.data.players.size() <= 100
+          && request.resource.data.pn.size() == request.resource.data.players.size()
+          && request.resource.data.players[0:resource.data.players.size()] == resource.data.players
+          && request.resource.data.players[resource.data.players.size()] == request.auth.uid)
+
+        // Suizo: el creador arma la ronda siguiente
+        || (resource.data.owner == request.auth.uid
+          && resource.data.get('type', '') == 'swiss'
+          && resource.data.status in ['open', 'run']
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'rd', 'pairs'])
+          && request.resource.data.status == 'run'
+          && request.resource.data.rd == resource.data.rd + 1
+          && request.resource.data.rd <= resource.data.rounds
+          && request.resource.data.pairs.size() > resource.data.pairs.size()
+          && request.resource.data.pairs[0:resource.data.pairs.size()] == resource.data.pairs)
+
+        // Suizo: el creador lo finaliza
+        || (resource.data.owner == request.auth.uid
+          && resource.data.status == 'run'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+          && request.resource.data.status == 'done')
+      );
+    }
+
+  }
+}rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /gifts/{giftId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /data/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    match /recipes/{recipeId} {
+      allow read: if true;
+
+      allow create: if request.auth != null && request.resource.data.authorId == request.auth.uid && !('prize' in request.resource.data);
+
       allow update: if (request.auth != null && request.auth.uid in ['PEGA_AQUI_TU_UID'] && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prize','prizeAt'])) || (request.auth != null && resource.data.authorId == request.auth.uid && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['prize','prizeAt','authorId'])) || (request.auth != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes','ratings','comments']));
 
       allow delete: if request.auth != null && resource.data.authorId == request.auth.uid;
