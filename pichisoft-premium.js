@@ -224,10 +224,10 @@ body.prem .p-gear{display:flex}
     APPS.forEach(a => a.t = a.t || []);
     const MAP = Object.fromEntries(APPS.map(a => [a.n, a]));
     const CATS = [
-        { id: 'utiles', nombre: 'Apps útiles', apps: ['PichonTutorial', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonCalc', 'PichonCalendar', 'PichonAlarm'] },
+        { id: 'utiles', nombre: 'Herramientas', apps: ['PichonTutorial', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonCalc', 'PichonCalendar', 'PichonAlarm'] },
         { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake'] },
-        { id: 'azar', nombre: 'Apps de azar', apps: ['PichonDestiny', 'PichonRandom'] },
-        { id: 'divertidas', nombre: 'Apps divertidas', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonPaint', 'PichonWatch'] }
+        { id: 'azar', nombre: 'A1zar', apps: ['PichonDestiny', 'PichonRandom'] },
+        { id: 'divertidas', nombre: 'Diversión', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonPaint', 'PichonWatch'] }
     ];
     const has = (a, k) => a.t.includes(k);
     const GR = [
