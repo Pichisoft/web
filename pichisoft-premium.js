@@ -249,7 +249,7 @@ body.prem .p-gear{display:flex}
     /* Carteles de aviso: "solo" limita quién lo ve (invitado = sin cuenta, premium = con cuenta) */
     const CARTELES = [
         { id: 'reg', solo: 'invitado', html: 'Ya está disponible nuestra versión premium para PichonApps. ¿Quiere obtenerla? Hágase una cuenta, en esta misma app, apretando el botón "Registrarse".' },
-{ id: 'tut', solo: 'premium', html: '¿Tiene una duda acerca de nuestras apps? <a data-b href="' + B + 'pichontutorial.html">Vea el tutorial de cada una.</a>' },
+{ id: 'tut', solo: 'premium', html: '¿Tiene una duda acerca de nuestras apps? <a data-b href="' + B + '/pichontutorial.html">Vea el tutorial de cada una.</a>' },
         { id: 'con', html: '<a data-mail href="#" role="button">¿Tiene una duda?→ Comuníquese con nosotros.</a>' }
     ];
 
