@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PichonRules</title>
+    <link rel="icon" type="image/png" href="data:image/png;base64,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">
+    <style>
+        /* ===== Colores: modo oscuro por defecto, modo claro con data-theme="light" ===== */
+        :root {
+            --bg: #0d0d0d;
+            --text: #ffffff;
+            --muted: #9a9a9a;
+            --panel: #1a1a1a;
+            --border: #333;
+            --link: #4d8dff;
+        }
+
+        :root[data-theme="light"] {
+            --bg: #f5f5f5;
+            --text: #111111;
+            --muted: #666666;
+            --panel: #ffffff;
+            --border: #ccc;
+            --link: #0b3fd1;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: Arial, sans-serif;
+            transition: background .3s, color .3s;
+            padding: 110px 20px 40px;
+        }
+
+        /* ===== Encabezado (arriba a la izquierda) ===== */
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .title-row {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            font-size: 2rem;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .byline {
+            font-size: 1rem;
+            font-style: italic;
+            font-weight: normal;
+            color: var(--muted);
+            margin-left: 6px;
+        }
+
+        #theme-toggle {
+            background: var(--panel);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: .85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Iconos dibujados en CSS (sin emojis) */
+        #theme-toggle .ico {
+            display: inline-block;
+            flex: none;
+        }
+
+        /* Sol: círculo con rayos punteados (se muestra en modo claro) */
+        #theme-toggle[data-next="dark"] .ico {
+            width: 8px;
+            height: 8px;
+            margin: 3px;
+            border-radius: 50%;
+            background: currentColor;
+            outline: 2px dotted currentColor;
+            outline-offset: 2px;
+        }
+
+        /* Luna: media luna con sombra interna (se muestra en modo oscuro) */
+        #theme-toggle[data-next="light"] .ico {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            box-shadow: inset -4px -2px 0 0 currentColor;
+        }
+
+        /* ===== Transición al cambiar de tema ===== */
+        details,
+        #theme-toggle,
+        .logo,
+        .byline,
+        .rule-title {
+            transition: background-color .5s ease, color .5s ease, border-color .5s ease;
+        }
+
+        #theme-toggle .ico {
+            transition: transform .6s ease;
+        }
+
+        #theme-toggle.girando .ico {
+            transform: rotate(360deg);
+        }
+
+        /* Revelado circular desde el botón (View Transitions) */
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation: none;
+            mix-blend-mode: normal;
+        }
+
+        /* ===== Link Pichisoft (arriba a la derecha) ===== */
+        .pichisoft-link {
+            position: fixed;
+            top: 14px;
+            right: 20px;
+            z-index: 10000;
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            color: #1e5eff;
+            text-decoration: underline;
+            text-decoration-color: #1e5eff;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* white-space: pre-line => respeta espacios y saltos de línea tal cual en el código */
+        .content {
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+
+        .welcome {
+            font-family: Verdana, Geneva, sans-serif;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 24px;
+        }
+
+        /* ===== Paneles desplegables ===== */
+        details {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            padding: 0 16px;
+        }
+
+        details>summary {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 14px 0;
+        }
+
+        details[open]>summary {
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+
+        .panel-body {
+            padding-bottom: 16px;
+        }
+
+        .arial-bold {
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .rule-title {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            font-size: 1.9rem;
+            margin: 20px 0 8px;
+        }
+
+        /* Para bloques con listas/tablas: anula los saltos de línea del .content */
+        .normal {
+            white-space: normal;
+        }
+
+        .panel-body a {
+            color: var(--link);
+        }
+
+        /* Panel anidado (para usar dentro de Información general) */
+        details details {
+            background: transparent;
+        }
+
+        details details>summary {
+            font-size: 1rem;
+        }
+
+        /* ==========================================
+     PICHISOFT - ESTADO DE SESIÓN
+     ========================================== */
+
+        #pichisoft-session-status {
+            position: fixed;
+            top: 52px;
+            right: 20px;
+            z-index: 9999;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 8px 16px;
+
+            background: #000;
+            color: #20a84b;
+
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 22px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+            font: 14px/1.3 Georgia, serif;
+            text-align: left;
+
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
+        }
+
+        #pichisoft-session-status.hidden {
+            opacity: 0;
+            transform: translateY(-12px);
+        }
+
+        #pichisoft-session-status.success {
+            font-weight: bold;
+        }
+
+        #pichisoft-session-status .ps-check {
+            display: none;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        #pichisoft-session-status.success .ps-check {
+            display: inline-block;
+            animation: pichisoftCheck 0.8s cubic-bezier(.17, .89, .32, 1.49) forwards;
+        }
+
+        @keyframes pichisoftCheck {
+            0% {
+                opacity: 0;
+                transform: scale(0.2) rotate(-25deg);
+            }
+
+            60% {
+                opacity: 1;
+                transform: scale(1.25) rotate(8deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        #pichisoft-session-profile {
+            position: fixed;
+            top: 52px;
+            right: 20px;
+            z-index: 9998;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 5px 14px 5px 5px;
+
+            background: #000;
+            color: #fff;
+
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 25px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+            font-family: Georgia, serif;
+            text-align: left;
+
+            opacity: 0;
+            transform: translateY(-12px) scale(0.9);
+            transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
+            pointer-events: none;
+        }
+
+        #pichisoft-session-profile.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        #pichisoft-profile-picture img,
+        #pichisoft-profile-picture .profile-placeholder {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pichisoft-profile-picture .profile-placeholder {
+            background: #20a84b;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #pichisoft-profile-name {
+            font-size: 14px;
+            font-weight: bold;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Celular: título más chico para que no choque con el link "Pichisoft" */
+        @media (max-width: 600px) {
+            .header {
+                top: 16px;
+                left: 15px;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .byline {
+                font-size: 0.75rem;
+            }
+
+            body {
+                padding-top: 100px;
+            }
+
+            #pichisoft-session-status,
+            #pichisoft-session-profile {
+                right: 10px;
+            }
+
+            #pichisoft-session-status {
+                font-size: 13px;
+                padding: 7px 14px;
+            }
+        }
+        .final {
+    font-family: Verdana, Geneva, sans-serif;
+    font-weight: bold;
+    font-size: 1rem;
+    margin-top: 28px;
+}
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== Encabezado ===== -->
+    <header class="header">
+        <div class="title-row">
+            <h1 class="logo">PichonRules</h1>
+            <span class="byline"> - By Pichisoft - </span>
+        </div>
+        <button id="theme-toggle" type="button"><span class="ico" aria-hidden="true"></span><span id="theme-label">Modo
+                oscuro</span></button>
+    </header>
+
+    <!-- Link arriba a la derecha -->
+    <a class="pichisoft-link" href="https://pichisoft.cc" target="_blank" rel="noopener">Pichisoft</a>
+
+    <main>
+
+        <!-- ===== BIENVENIDA (Verdana, negrita) ===== -->
+        <div class="content welcome">¡Hola, pichisofter! Bienvenido a PichonRules. 
+            Esta aplicación trata de las reglas de <i>todo</i> Pichisoft en sí. Si tiene una duda, <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">comuníquese con nosotros</a>.
+
+            <h2>Equipo Pichisoft ——Desde 2026——</h2>
+        </div>
+
+        <!-- ===== PANEL 1: tipo de norma (copiá todo este bloque <details> para agregar más) ===== -->
+        <details>
+            <summary>1. Cuenta y registro</summary>
+            <div class="panel-body">
+
+                <!-- NORMA: copiá estas dos líneas (título + texto) por cada norma nueva -->
+                <div class="rule-title">Tu email</div>
+                <div class="content arial-bold">El email que uses para tu cuenta, debe ser <i>tuyo</i>: si pusiste un email que no sea tuyo, no podrás crearte la cuenta, pero, si lo haces, ten en cuenta que podríamos banearte por <i>spam</i>.</div>
+
+                <div class="rule-title">Tu nombre de usuario</div>
+                <div class="content arial-bold">Que tu nombre de usuario sea <i>único</i>: evita usar un nombre de usuario que tenga contenido ofensivo. Además, evita usar nombres de usuarios similares a el de un administrador del equipo.</div>
+
+                 <div class="rule-title">Tu foto de perfil</div>
+                <div class="content arial-bold">Evita usar una foto de perfil que tenga contenido ofensivo o específico que vaya en contra de un jugador. Además. no uses una foto de perfil similar o igual a la de un administrador del equipo. <i>Nota: no pasa nada si usas una foto de perfil común, que sea igual o similar a la de un usuario/administrador: solamente evita usar la foto de perfil del <a href="https://github.com/pichisoft" target="_blank" rel="noopener">administrador de Pichisoft</a>.</i></div>
+           
+                 <div class="rule-title">Tu contraseña</div>
+                <div class="content arial-bold">Recuerda que no tenemos acceso a tu contraseña, solo podemos restablecer la misma. Solo puede pedir 5 veces el restablecimiento de su contraseña: recuerda guardar su contraseña en un lugar seguro.</div>
+           
+           
+           
+            </div>
+        </details>
+
+        <!-- ===== PANEL 2: tipo de norma (copiá todo este bloque <details> para agregar más) ===== -->
+        <details>
+            <summary>2. Contacto</summary>
+            <div class="panel-body">
+
+                <!-- NORMA: copiá estas dos líneas (título + texto) por cada norma nueva -->
+                <div class="rule-title">Spam</div>
+                <div class="content arial-bold">Al contactar al <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Equipo Pichisoft</a>, no envíe mensajes que no tengan significado, o que tengan contenido ofensivo.</div>
+
+                <div class="rule-title">Emails</div>
+                <div class="content arial-bold">Evite enviar emails repititivos, como por ejemplo, preguntar una y otra vez algo que ya fue explicado por nuestro equipo.</div>
+
+            </div>
+        </details>
+
+        <!-- ===== PANEL 3: tipo de norma (copiá todo este bloque <details> para agregar más) ===== -->
+        <details>
+            <summary>3. Sus derechos</summary>
+            <div class="panel-body">
+
+                <!-- NORMA: copiá estas dos líneas (título + texto) por cada norma nueva -->
+                <div class="rule-title">Modificación de normas</div>
+                <div class="content arial-bold">Si usted hizo algo en contra de una norma que fue modificada, eliminada o agregada, no realizaremos nada al respecto: una norma es irretroactiva, y no te banearíamos si cometió algo en contra de una norma modificada, eliminada o agregada. ¿Fue baneado por cometer algo que no estaba en las normas actuales antes de que seas baneado? <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Comuníquese con nosotros.</a></div>
+
+                <div class="rule-title">Infracción de normas de otros usuarios</div>
+                <div class="content arial-bold">Si vio a un usuario cometer una infracción, sin importar si le afectó a usted o no, tiene todo el derecho a comunicarse con nosotros, decirnos su nombre de usuario, y nuestro equipo verá qué hacer al respecto.</div>
+
+                 <div class="rule-title">Baneo</div>
+                <div class="content arial-bold">No se quede de brazos cruzados si fue baneado sin alguna razón o por algo que no haya hecho: <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Infórmenos</a>.</div>
+       
+            </div>
+        </details>
+   <details>
+            <summary>4. Acoso de infracción</summary>
+            <div class="panel-body">
+
+                <!-- NORMA: copiá estas dos líneas (título + texto) por cada norma nueva -->
+                <div class="rule-title">Si fue acosado</div>
+                <div class="content arial-bold">Si fue acosado por un usuario, no dude en <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">comunicarse con nosotros</a>, para que podamos banear al otro usuario.</div>
+
+                <div class="rule-title">Acoso a otros usuarios</div>
+                <div class="content arial-bold">Si vio a un usuario cometer una infracción, no va a servir de nada si lo acosa: simplemente infórmenos de que un usuario está rompiendo las reglas.</div>
+       
+            </div>
+        </details>
+   <details>
+            <summary>5. Juegos y aplicaciones online</summary>
+            <div class="panel-body">
+
+                <!-- NORMA: copiá estas dos líneas (título + texto) por cada norma nueva -->
+                <div class="rule-title">Juego limpio</div>
+                <div class="content arial-bold">Al jugar en nuestros juegos online, recuerde jugar limpio: no haga tiempo, no se burle del otro jugador, y no juegue partidas que no sean privadas contra el mismo jugador, porque podría ser una forma de farmear puntos de experiencia.</div>
+
+                <div class="rule-title">Aplicaciones</div>
+                <div class="content arial-bold">Por favor, al usar aplicaciones donde se permitan comentar (por ejemplo, PichonFood) evite hacer comentarios ofensivos.</div>
+       
+            </div>
+        </details>
+ <!-- ===== TEXTO FINAL ===== -->
+<div class="content final">
+¿Tiene una duda?; ¿Quiere sugerir una norma nueva?; ¿Quiere que editemos una regla?; ¿Quiere que eliminemos una regla? → <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Comuníquese con nosotros</a>.
+
+<h1>Equipo Pichisoft ——Desde 2026——</h1>
+</div>
+    </main>
+
+    <!-- ===== Cambio de tema oscuro / claro ===== -->
+    <script>
+        (function () {
+            var root = document.documentElement;
+            var btn = document.getElementById("theme-toggle");
+            var label = document.getElementById("theme-label");
+
+            function aplicar(tema) {
+                if (tema === "light") {
+                    root.setAttribute("data-theme", "light");
+                    btn.setAttribute("data-next", "dark");
+                    label.textContent = "Modo claro";
+                } else {
+                    root.removeAttribute("data-theme");
+                    btn.setAttribute("data-next", "light");
+                    label.textContent = "Modo oscuro";
+                }
+                try { localStorage.setItem("pichonrules-tema", tema); } catch (e) { }
+            }
+
+            var guardado = null;
+            try { guardado = localStorage.getItem("pichonrules-tema"); } catch (e) { }
+            aplicar(guardado === "light" ? "light" : "dark");
+
+            btn.addEventListener("click", function () {
+                var nuevo = root.getAttribute("data-theme") === "light" ? "dark" : "light";
+                btn.classList.add("girando");
+                setTimeout(function () { btn.classList.remove("girando"); }, 600);
+
+                var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                if (!document.startViewTransition || reduce) { aplicar(nuevo); return; }
+
+                /* Círculo que se expande desde el botón */
+                var r = btn.getBoundingClientRect();
+                var x = r.left + r.width / 2, y = r.top + r.height / 2;
+                var radio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+                document.startViewTransition(function () { aplicar(nuevo); }).ready.then(function () {
+                    root.animate(
+                        { clipPath: ["circle(0px at " + x + "px " + y + "px)", "circle(" + radio + "px at " + x + "px " + y + "px)"] },
+                        { duration: 700, easing: "ease-in-out", pseudoElement: "::view-transition-new(root)" }
+                    );
+                });
+            });
+        })();
+    </script>
+
+    <!-- ===== Pichisoft - Estado de sesión ===== -->
+    <div id="pichisoft-session-status" role="status" aria-live="polite">
+        <span class="ps-check">✓</span>
+        <span class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span>
+    </div>
+
+    <div id="pichisoft-session-profile">
+        <div id="pichisoft-profile-picture"></div>
+        <span id="pichisoft-profile-name"></span>
+    </div>
+
+    <script>
+        (function () {
+            /* Todo va dentro de esta función para no chocar con las variables de la app */
+            var CFG = {
+                apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+                authDomain: "pichisoft.firebaseapp.com",
+                projectId: "pichisoft",
+                storageBucket: "pichisoft.firebasestorage.app",
+                messagingSenderId: "690032082295",
+                appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+                measurementId: "G-K7HRKR8BJ1"
+            };
+            var V = "https://www.gstatic.com/firebasejs/12.3.0/";
+            var DUR_INICIO = 12000;   // "Iniciando sesión..."
+            var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+
+            var box = document.getElementById("pichisoft-session-status");
+            var txt = box.querySelector(".ps-text");
+            var prof = document.getElementById("pichisoft-session-profile");
+            var pic = document.getElementById("pichisoft-profile-picture");
+            var nameEl = document.getElementById("pichisoft-profile-name");
+            var t0 = Date.now();
+
+            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
+               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
+            async function comprobar() {
+                try {
+                    var m = await Promise.all([
+                        import(V + "firebase-app.js"),
+                        import(V + "firebase-auth.js"),
+                        import(V + "firebase-firestore.js")
+                    ]);
+                    var app = m[0].initializeApp(CFG);
+                    var auth = m[1].getAuth(app);
+                    var db = m[2].getFirestore(app);
+
+                    var user = await Promise.race([
+                        new Promise(function (res) {
+                            m[1].onAuthStateChanged(auth, function (u) {
+                                window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
+                                res(u);
+                            });
+                        }),
+                        wait(15000).then(function () { throw new Error("tiempo agotado"); })
+                    ]);
+
+                    var perfil = {};
+                    if (user) {
+                        try {
+                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+                            if (snap.exists()) perfil = snap.data();
+                        } catch (e) {
+                            console.error("Pichisoft: no se pudo leer el perfil", e);
+                        }
+                    }
+                    return { user: user, perfil: perfil };
+                } catch (e) {
+                    console.error("Pichisoft:", e);
+                    return { error: true };
+                }
+            }
+
+            async function aviso(texto) {
+                txt.textContent = texto;
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+            }
+
+            (async function () {
+                var r = await comprobar();
+                await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
+
+                if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
+                if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
+
+                box.classList.add("success");
+                txt.textContent = "Sesión iniciada";
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+
+                var nombre = r.perfil.username || "Usuario";
+                nameEl.textContent = nombre;
+                var foto = r.perfil.photo;
+                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
+                    var img = new Image();
+                    img.src = foto;
+                    img.alt = "Foto de perfil";
+                    pic.replaceChildren(img);
+                } else {
+                    var ph = document.createElement("div");
+                    ph.className = "profile-placeholder";
+                    ph.textContent = nombre.charAt(0).toUpperCase();
+                    pic.replaceChildren(ph);
+                }
+                await wait(450);
+                prof.classList.add("visible");
+            })();
+        })();
+    </script>
+
+</body>
+
+</html>
