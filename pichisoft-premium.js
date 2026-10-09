@@ -205,6 +205,7 @@ body.prem .p-gear{display:flex}
     /* Para ponerle un prefijo a una app, agregá su clave en "t": ej. t:['beta'] */
     const APPS = [
         { n: 'PichonTutorial', u: 'pichontutorial' },
+        { n: 'PichonInfo', u: 'pichoninfo', t: ['nuevo'] },
         { n: 'PichonAlarm', u: 'pichonalarm' },
         { n: 'PichonBirthday', u: 'pichonbirthday', t: ['nuevo'] },
         { n: 'PichonCalc', u: 'pichoncalc' },
@@ -225,7 +226,7 @@ body.prem .p-gear{display:flex}
     APPS.forEach(a => a.t = a.t || []);
     const MAP = Object.fromEntries(APPS.map(a => [a.n, a]));
     const CATS = [
-        { id: 'utiles', nombre: 'Herramientas', apps: ['PichonTutorial', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonCalc', 'PichonCalendar', 'PichonAlarm'] },
+        { id: 'utiles', nombre: 'Herramientas', apps: ['PichonTutorial', 'PichonInfo', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonCalc', 'PichonCalendar', 'PichonAlarm'] },
         { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake', 'PichonChess'] },
         { id: 'azar', nombre: 'Azar', apps: ['PichonDestiny', 'PichonRandom'] },
         { id: 'divertidas', nombre: 'Diversión', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonPaint', 'PichonWatch'] }
