@@ -64,6 +64,18 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/pichonchess_users/$(request.auth.uid)).data.username.lower() == name;
     }
 
+    // Estilos guardados de cada jugador (sincronizados entre dispositivos)
+    match /pichonchess_styles/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['cf', 'styles'])
+        && request.resource.data.cf is map
+        && request.resource.data.styles is list
+        && request.resource.data.styles.size() <= 30;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // PARTIDAS: regla simple SOLO PARA PROBAR
     match /pichonchess_games/{gameId} {
       allow get: if request.auth != null;
       allow list: if request.auth != null && (resource.data.priv == false || resource.data.get('inv', null) == request.auth.uid);
@@ -74,72 +86,9 @@ service cloud.firestore {
         && request.resource.data.status == 'waiting'
         && request.resource.data.moves.size() == 0;
 
-      allow update: if request.auth != null && (
-
-        // 1) Unirse como negras
-        (resource.data.status == 'waiting'
-          && resource.data.w != request.auth.uid
-          && (resource.data.get('inv', null) == null || resource.data.inv == request.auth.uid)
-          && request.resource.data.b == request.auth.uid
-          && request.resource.data.status == 'playing'
-          && request.resource.data.lt == request.time
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['b', 'bn', 'be', 'status', 'lt']))
-
-        // 2) Jugar
-        || (resource.data.status == 'playing'
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['moves', 'status', 'result', 'why', 'draw', 'tw', 'tb', 'lt'])
-          && request.resource.data.get('draw', null) == null
-          && request.resource.data.moves.size() == resource.data.moves.size() + 1
-          && request.resource.data.moves[0:resource.data.moves.size()] == resource.data.moves
-          && request.resource.data.status in ['playing', 'over']
-          && request.auth.uid == (resource.data.moves.size() % 2 == 0 ? resource.data.w : resource.data.b)
-          && (resource.data.get('tc', null) == null
-              || (request.resource.data.lt == request.time
-                  && (resource.data.moves.size() % 2 == 0
-                      ? (request.resource.data.tb == resource.data.tb
-                         && request.resource.data.tw <= resource.data.tw + resource.data.tc[1] * 1000)
-                      : (request.resource.data.tw == resource.data.tw
-                         && request.resource.data.tb <= resource.data.tb + resource.data.tc[1] * 1000)))))
-
-        // 3) Rendirse (o perder por tiempo propio)
-        || (resource.data.status == 'playing'
-          && request.auth.uid in [resource.data.w, resource.data.b]
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'result', 'why'])
-          && request.resource.data.status == 'over'
-          && request.resource.data.result == (request.auth.uid == resource.data.w ? 'b' : 'w'))
-
-        // 4) Ofrecer / retirar / rechazar tablas
-        || (resource.data.status == 'playing'
-          && request.auth.uid in [resource.data.w, resource.data.b]
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['draw'])
-          && (request.resource.data.draw == null
-              || request.resource.data.draw == (request.auth.uid == resource.data.w ? 'w' : 'b')))
-
-        // 5) Aceptar tablas
-        || (resource.data.status == 'playing'
-          && request.auth.uid in [resource.data.w, resource.data.b]
-          && resource.data.get('draw', null) == (request.auth.uid == resource.data.w ? 'b' : 'w')
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'result', 'why', 'draw'])
-          && request.resource.data.status == 'over'
-          && request.resource.data.result == 'd'
-          && request.resource.data.get('draw', null) == null)
-
-        // 6) Ganar por tiempo
-        || (resource.data.status == 'playing'
-          && resource.data.get('tc', null) != null
-          && request.auth.uid == (resource.data.moves.size() % 2 == 0 ? resource.data.b : resource.data.w)
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'result', 'why'])
-          && request.resource.data.status == 'over'
-          && request.resource.data.result == (request.auth.uid == resource.data.w ? 'w' : 'b')
-          && request.time.toMillis() - resource.data.lt.toMillis() >= (resource.data.moves.size() % 2 == 0 ? resource.data.tw : resource.data.tb) - 1000)
-
-        // 7) Revancha
-        || (resource.data.status == 'over'
-          && request.auth.uid in [resource.data.w, resource.data.b]
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rm', 'rn'])
-          && (request.resource.data.get('rm', null) == (request.auth.uid == resource.data.w ? 'w' : 'b')
-              || request.resource.data.get('rn', null) != null))
-      );
+      allow update: if request.auth != null
+        && (request.auth.uid in [resource.data.w, resource.data.b]
+            || (resource.data.status == 'waiting' && request.resource.data.b == request.auth.uid));
 
       allow delete: if request.auth != null
         && resource.data.w == request.auth.uid
