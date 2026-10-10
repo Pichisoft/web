@@ -85,7 +85,7 @@ service cloud.firestore {
           && request.resource.data.lt == request.time
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['b', 'bn', 'be', 'status', 'lt']))
 
-        // 2) Jugar (margen de reloj: 15000 ms)
+        // 2) Jugar
         || (resource.data.status == 'playing'
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['moves', 'status', 'result', 'why', 'draw', 'tw', 'tb', 'lt'])
           && request.resource.data.get('draw', null) == null
@@ -97,9 +97,9 @@ service cloud.firestore {
               || (request.resource.data.lt == request.time
                   && (resource.data.moves.size() % 2 == 0
                       ? (request.resource.data.tb == resource.data.tb
-                         && request.resource.data.tw <= resource.data.tw - (request.time.toMillis() - resource.data.lt.toMillis()) + resource.data.tc[1] * 1000 + 15000)
+                         && request.resource.data.tw <= resource.data.tw + resource.data.tc[1] * 1000)
                       : (request.resource.data.tw == resource.data.tw
-                         && request.resource.data.tb <= resource.data.tb - (request.time.toMillis() - resource.data.lt.toMillis()) + resource.data.tc[1] * 1000 + 15000)))))
+                         && request.resource.data.tb <= resource.data.tb + resource.data.tc[1] * 1000)))))
 
         // 3) Rendirse (o perder por tiempo propio)
         || (resource.data.status == 'playing'
