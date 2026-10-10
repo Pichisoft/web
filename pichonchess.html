@@ -671,6 +671,21 @@
             box-shadow: 0 0 0 2px var(--ln), 4px 4px 0 var(--g)
         }
 
+        .sty {
+            max-height: 190px;
+            overflow: auto;
+            margin: 2px 0 8px
+        }
+
+        .sty .ur>.btn {
+            flex: 1;
+            text-align: left;
+            margin-right: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
         .er {
             color: #ff6b6b;
             min-height: 18px;
@@ -995,7 +1010,8 @@
 </head>
 
 <body>
-    <div class="header"><span class="logo">Pichon<em>Chess</em></span><span class="byline"> - By Pichisoft - </span></div>
+    <div class="header"><span class="logo">Pichon<em>Chess</em></span><span class="byline"> - By Pichisoft - </span>
+    </div>
     <div class="topr">
         <button class="btn" data-a="st" style="padding:5px 11px;font-size:13px">Estilo</button>
         <a class="plink" href="https://pichisoft.cc" target="_blank" rel="noopener">Pichisoft</a>
@@ -1006,7 +1022,8 @@
             <div class="hero">
                 <div>
                     <h1>Ajedrez para jugar, practicar y <mark>mejorar</mark>.</h1>
-                    <p class="mu">Reglas completas, relojes, Elo, arenas y torneos suizos. Y el tablero lo dejás a tu gusto.</p>
+                    <p class="mu">Reglas completas, relojes, Elo, arenas y torneos suizos. Y el tablero lo dejás a tu
+                        gusto.</p>
                     <button class="btn p" data-a="st">Personalizar tablero y piezas</button>
                 </div>
                 <div class="strip" id="strip"></div>
@@ -1322,14 +1339,25 @@
             ];
             const DEF = { bt: 0, ps: 0, pc: 0, ac: 0, pg: 0, cb: null, cp: null, coord: 1, dots: 1, snd: 1 };
             let CF = { ...DEF }; try { Object.assign(CF, JSON.parse(lsG('pcCfg') || '{}')) } catch (e) { }
-            const saveCfg = () => lsS('pcCfg', JSON.stringify(CF));
+            let DIRTY = 0, STM = 0;
+            function pushRemote() {
+                if (!ME.uid || !FB || !PF) return; clearTimeout(STM);
+                STM = setTimeout(() => {
+                    try { FB.setDoc(FB.doc(PF.db, 'pichonchess_styles', ME.uid), JSON.parse(JSON.stringify({ cf: CF, styles: STY }))).catch(e => console.error('PichonChess: no se pudo sincronizar el estilo', e && e.code)) } catch (e) { }
+                }, 700)
+            }
+            const saveCfg = () => { lsS('pcCfg', JSON.stringify(CF)); DIRTY = 1; pushRemote() };
+            let STY = []; try { STY = JSON.parse(lsG('pcStyles') || '[]'); if (!Array.isArray(STY)) STY = [] } catch (e) { STY = [] }
+            const saveSty = () => { lsS('pcStyles', JSON.stringify(STY)); DIRTY = 1; pushRemote() };
+            const lookOf = c => ({ bt: c.bt, ps: c.ps, pc: c.pc, ac: c.ac, pg: c.pg, cb: c.cb, cp: c.cp, coord: c.coord, dots: c.dots });
+            const styHtml = () => STY.length ? STY.map((s, i) => `<div class="ur"><button class="btn${JSON.stringify(lookOf(CF)) == JSON.stringify(s.cf) ? ' on' : ''}" data-a="sap" data-i="${i}">${esc(s.n)}</button><span class="row"><button class="btn" data-a="sup" data-i="${i}">Actualizar</button><button class="btn" data-a="sdl" data-i="${i}">Borrar</button></span></div>`).join('') : '<p class="mu">Todavía no guardaste ningún estilo.</p>';
             const rgb = h => { h = h.replace('#', ''); if (h.length == 3) h = h.split('').map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)) };
             const hexc = a => '#' + a.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
             const shade = (h, f) => hexc(rgb(h).map(v => f < 0 ? v * (1 + f) : v + (255 - v) * f));
             const lum = h => { const [r, g, b] = rgb(h); return (.299 * r + .587 * g + .114 * b) / 255 };
             const curBoard = () => CF.bt == 99 && CF.cb ? CF.cb : (BT[CF.bt] || BT[0]).c;
             const curPieces = () => { if (CF.pc == 99 && CF.cp) return CF.cp; const p = PCOL[CF.pc] || PCOL[0]; return [p.w, p.b] };
-            const stripHtml = () => { let h = ''; ['rnbqkbnr', 'RNBQKBNR'].forEach((row, r) => [...row].forEach((p, c) => { h += `<div class="sq ${(r + c) & 1 ? 'd' : 'l'}">${pcs(p)}</div>` })); return h };
+            const stripHtml = () => { let h = '';['rnbqkbnr', 'RNBQKBNR'].forEach((row, r) => [...row].forEach((p, c) => { h += `<div class="sq ${(r + c) & 1 ? 'd' : 'l'}">${pcs(p)}</div>` })); return h };
             function fillHome() {
                 document.querySelectorAll('.ic[data-p]').forEach(e => e.innerHTML = pcs(e.dataset.p));
                 const s = $('strip'); if (s) s.innerHTML = stripHtml(); const p = $('prev'); if (p) p.innerHTML = stripHtml()
@@ -1343,7 +1371,7 @@
                 ['--bg', '--bg2', '--pn', '--pn2', '--ln', '--tx', '--mu', '--btn', '--inp'].forEach((k, i) => set(k, g.v[i]));
                 set('--g', a[0]); set('--gt', a[1]);
                 document.body.classList.toggle('nocoord', !CF.coord); document.body.classList.toggle('nodots', !CF.dots);
-                fillHome(); if (G && !$('game').classList.contains('off')) render()
+                fillHome(); const y = $('sty'); if (y) y.innerHTML = styHtml(); if (G && !$('game').classList.contains('off')) render()
             }
             function syncCC() { const B = curBoard(), P = curPieces(), m = { cb0: B[0], cb1: B[1], cp0: P[0], cp1: P[1] }; document.querySelectorAll('[data-cc]').forEach(i => { i.value = m[i.dataset.cc] }) }
             const seg = (k, arr, sel, fn) => `<div class="seg">${arr.map((x, i) => `<button class="btn${sel == i ? ' on' : ''}" data-a="cfg" data-k="${k}" data-v="${i}">${fn(x)}</button>`).join('')}</div>`;
@@ -1351,6 +1379,8 @@
             function openSet() {
                 const B = curBoard(), P = curPieces();
                 modal(`<h2>Personalizar</h2><div class="strip prev" id="prev">${stripHtml()}</div>
+<b>Mis estilos</b><div class="sty" id="sty">${styHtml()}</div>
+<div class="row" style="margin-bottom:12px"><input id="sn" placeholder="Nombre para guardar el estilo actual" maxlength="20" autocomplete="off" style="flex:1;min-width:0"><button class="btn p" data-a="ssv">Guardar</button></div>
 <b>Tablero</b>${seg('bt', BT, CF.bt, x => `<i class="bsw" style="background:linear-gradient(90deg,${x.c[0]} 50%,${x.c[1]} 50%)"></i>${x.n}`)}
 <div class="row cc"><label>Casilla clara <input type="color" data-cc="cb0" value="${B[0]}"></label><label>Casilla oscura <input type="color" data-cc="cb1" value="${B[1]}"></label></div>
 <b>Forma de las piezas</b>${seg('ps', PSTY, CF.ps, x => x)}
@@ -1531,6 +1561,14 @@
                     if (G === g) { g.fb = { t: 'La jugada no se pudo enviar (' + ((e && e.code) || 'error') + '). Reintentá.', c: 'r' }; render() }
                 })
             }
+            ready.then(async () => {
+                if (!ME.uid || !FB) return;
+                try {
+                    const sn = await FB.getDoc(FB.doc(PF.db, 'pichonchess_styles', ME.uid));
+                    if (sn.exists() && !DIRTY) { const d = sn.data(); CF = { ...DEF, ...(d.cf || {}) }; STY = Array.isArray(d.styles) ? d.styles : []; lsS('pcCfg', JSON.stringify(CF)); lsS('pcStyles', JSON.stringify(STY)); applyCfg() }
+                    else if (DIRTY || STY.length || JSON.stringify(lookOf(CF)) != JSON.stringify(lookOf(DEF))) pushRemote()
+                } catch (e) { console.error('PichonChess: no se pudo leer el estilo guardado', e && e.code) }
+            });
             function leave() { if (G && G.un) { G.un(); if (G.mode == 'online' && !G.st && G.me == 'w') FB.deleteDoc(GD(G.gid)).catch(() => { }) } clearSave(); G = null }
             ready.then(async () => {
                 if (!ME.uid || !FB || !ME.p || G) return; const sv = lsG('pcg' + ME.uid); if (!sv) return; const [id, me] = sv.split(':');
@@ -1641,7 +1679,11 @@
 
             const A = {
                 st: openSet,
-                cfg: b => { const k = b.dataset.k, v = +b.dataset.v; CF[k] = v; saveCfg(); [...b.parentNode.children].forEach(x => x.classList.toggle('on', x == b)); applyCfg(); syncCC() },
+                ssv: () => { const i = $('sn'), n = (i.value.trim() || 'Estilo ' + (STY.length + 1)).slice(0, 20); if (STY.length >= 30) return; STY.push({ n, cf: lookOf(CF) }); saveSty(); i.value = ''; applyCfg() },
+                sap: b => { const s = STY[+b.dataset.i]; if (!s) return; Object.assign(CF, s.cf); saveCfg(); applyCfg(); const sc = $('mbox').scrollTop; openSet(); $('mbox').scrollTop = sc },
+                sup: b => { const s = STY[+b.dataset.i]; if (!s) return; s.cf = lookOf(CF); saveSty(); applyCfg() },
+                sdl: b => { const s = STY[+b.dataset.i]; if (!s || !confirm('¿Borrar el estilo "' + s.n + '"?')) return; STY.splice(+b.dataset.i, 1); saveSty(); applyCfg() },
+                cfg: b => { const k = b.dataset.k, v = +b.dataset.v; CF[k] = v; saveCfg();[...b.parentNode.children].forEach(x => x.classList.toggle('on', x == b)); applyCfg(); syncCC() },
                 tg: b => { const k = b.dataset.k; CF[k] = CF[k] ? 0 : 1; saveCfg(); b.classList.toggle('on', !!CF[k]); applyCfg() },
                 rst: () => { CF = { ...DEF }; saveCfg(); applyCfg(); openSet() },
                 x: close, hb: b => hub(b.dataset.t), mo: menuOn,
@@ -1743,6 +1785,7 @@
                 saveCfg(); applyCfg()
             });
             document.addEventListener('keydown', e => {
+                if (e.key == 'Enter' && e.target.id == 'sn') { A.ssv(); return }
                 if (e.key == 'Enter') { const c = e.target.closest && e.target.closest('.card'); if (c) c.click() }
                 if (G && !$('game').classList.contains('off') && !/INPUT/.test(e.target.tagName)) {
                     const n = G.M.length, v = G.vw != null ? G.vw : n; let k = null;
