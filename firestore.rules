@@ -75,8 +75,13 @@ service cloud.firestore {
       allow delete: if request.auth != null && request.auth.uid == uid;
     }
 
-    // PARTIDAS: regla simple SOLO PARA PROBAR
+    // PARTIDAS (también se pueden espectar las públicas)
     match /pichonchess_games/{gameId} {
+
+      function gdata() {
+        return get(/databases/$(database)/documents/pichonchess_games/$(gameId)).data;
+      }
+
       allow get: if request.auth != null;
       allow list: if request.auth != null && (resource.data.priv == false || resource.data.get('inv', null) == request.auth.uid);
 
@@ -93,6 +98,31 @@ service cloud.firestore {
       allow delete: if request.auth != null
         && resource.data.w == request.auth.uid
         && resource.data.status == 'waiting';
+
+      // CHAT de la partida
+      match /chat/{mid} {
+        // Lo leen los jugadores y, si la partida es pública, cualquiera con sesión
+        allow read: if request.auth != null
+          && (gdata().get('priv', false) == false
+              || request.auth.uid in [gdata().get('w', ''), gdata().get('b', '')]);
+
+        // Se puede escribir como jugador (w/b) o como espectador (s) en partidas públicas.
+        // Los mensajes no se pueden editar ni borrar.
+        allow create: if request.auth != null
+          && request.resource.data.keys().hasOnly(['u', 'n', 'r', 't', 'ts'])
+          && request.resource.data.u == request.auth.uid
+          && request.resource.data.n is string
+          && request.resource.data.n == get(/databases/$(database)/documents/pichonchess_users/$(request.auth.uid)).data.username
+          && request.resource.data.t is string
+          && request.resource.data.t.size() > 0
+          && request.resource.data.t.size() <= 200
+          && request.resource.data.ts == request.time
+          && ((request.resource.data.r == 'w' && gdata().get('w', '') == request.auth.uid)
+              || (request.resource.data.r == 'b' && gdata().get('b', '') == request.auth.uid)
+              || (request.resource.data.r == 's' && gdata().get('priv', false) == false));
+
+        allow update, delete: if false;
+      }
     }
 
     match /pichonchess_tournaments/{tid} {
