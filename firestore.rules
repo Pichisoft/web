@@ -3,17 +3,44 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ==========================================
+    // ADMIN DE PICHISOFT
+    // Para agregar más admins, sumá su UID a esta lista
+    // (y también al array ADMINS de pichonusers.html)
+    // ==========================================
+        function isAdmin() {
+      return request.auth != null && request.auth.uid in ['XIY1FfjUDodaSBSGema6NgixKRs1', 'n0XOUeFku1SxKWbrPWsA0V86kfc2'];
+    }
+
     match /gifts/{giftId} {
       allow read: if true;
       allow write: if request.auth != null;
     }
 
+    // Perfil de cada usuario (el admin puede leer todos, para PichonUsers)
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth != null && request.auth.uid == userId;
 
       match /data/{docId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+    }
+
+    // Cuentas inhabilitadas (solo el admin escribe; cada usuario puede leer la suya)
+    match /admin_flags/{uid} {
+      allow get: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow list, write: if isAdmin();
+    }
+
+    // Mensajes privados del admin hacia los usuarios
+    match /messages/{id} {
+      allow create: if isAdmin();
+      allow read: if request.auth != null && (isAdmin() || resource.data.to == request.auth.uid);
+      allow update: if request.auth != null
+        && resource.data.to == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow delete: if isAdmin() || (request.auth != null && resource.data.to == request.auth.uid);
     }
 
     match /recipes/{recipeId} {
