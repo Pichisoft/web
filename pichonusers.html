@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PichonUsers</title>
+    <style>
+        html {
+            background: #222;
+            color: whitesmoke;
+            font-family: Verdana, "Open Sans", "Helvetica Neue", sans-serif;
+            font-size: 16px
+        }
+
+        body {
+            margin: 0;
+            padding: 18px;
+            max-width: 980px;
+            margin: auto
+        }
+
+        .titulo {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            font-size: 2.2rem;
+            color: #fff;
+            margin: .2em 0
+        }
+
+        .by {
+            font-family: Verdana, sans-serif;
+            font-size: 1rem;
+            font-weight: normal;
+            font-style: italic;
+            color: #bbb
+        }
+
+        a {
+            color: #fff
+        }
+
+        .bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin: 14px 0
+        }
+
+        input,
+        textarea,
+        select {
+            background: #222;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 6px;
+            padding: 10px;
+            font: inherit;
+            font-size: .9rem;
+            box-sizing: border-box
+        }
+
+        #q {
+            flex: 1;
+            min-width: 180px
+        }
+
+        .btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #666;
+            border-radius: 6px;
+            padding: 9px 14px;
+            font: inherit;
+            font-size: .85rem;
+            cursor: pointer
+        }
+
+        .btn:hover {
+            background: #fff;
+            color: #222
+        }
+
+        .btn.red {
+            border-color: #a33
+        }
+
+        .btn:disabled {
+            opacity: .5;
+            cursor: default
+        }
+
+        #cnt {
+            color: #999;
+            font-size: .85rem
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 12px
+        }
+
+        .u {
+            background: #161616;
+            border: 1px solid #333;
+            border-radius: 14px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .u.off {
+            border-color: #7a2a2a
+        }
+
+        .top {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            min-width: 0
+        }
+
+        .av {
+            flex: none;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            overflow: hidden
+        }
+
+        .av img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .info {
+            min-width: 0
+        }
+
+        .nom {
+            font-weight: bold;
+            word-break: break-word
+        }
+
+        .mail {
+            font-size: .8rem;
+            color: #bbb;
+            word-break: break-all
+        }
+
+        .uid {
+            font-family: monospace;
+            font-size: .72rem;
+            color: #999;
+            word-break: break-all;
+            cursor: pointer;
+            user-select: all
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: .65rem;
+            padding: 2px 6px;
+            border-radius: 5px;
+            margin-left: 6px;
+            background: #7a2a2a;
+            vertical-align: middle
+        }
+
+        .acts {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        .ov {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 10
+        }
+
+        .box {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            width: min(480px, 100%);
+            box-sizing: border-box
+        }
+
+        .box textarea {
+            width: 100%;
+            min-height: 140px;
+            resize: vertical
+        }
+
+        .err {
+            color: #ff7b7b;
+            font-size: .8rem;
+            min-height: 1.2em
+        }
+
+        #den {
+            text-align: center;
+            margin-top: 20vh;
+            font-family: Georgia, serif
+        }
+    </style>
+</head>
+
+<body>
+    <div id="den" hidden>Acceso denegado.<br><br><a href="/">Volver a PichonApps</a></div>
+    <div id="app" hidden>
+        <h1 class="titulo">PichonUsers <span class="by">- By Pichisoft -</span></h1>
+        <div class="bar">
+            <input id="q" type="text" placeholder="Buscar por usuario, email o UID…" autocomplete="off">
+            <button class="btn" id="rec">Actualizar</button>
+            <a class="btn" href="/" style="text-decoration:none">PichonApps</a>
+        </div>
+        <div id="cnt"></div><br>
+        <div class="grid" id="lista"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+        /* ADMINS con acceso a PichonUsers.
+           Para agregar más: sumá su UID de Firebase acá, ej: ['XIY1...', 'OTRO_UID'],
+           y también en la función isAdmin() de las reglas de Firestore (si no, no podrán leer los datos). */
+        const ADMINS = ['XIY1FfjUDodaSBSGema6NgixKRs1'];
+
+        const app = initializeApp({
+            apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8", authDomain: "pichisoft.firebaseapp.com",
+            projectId: "pichisoft", storageBucket: "pichisoft.firebasestorage.app",
+            messagingSenderId: "690032082295", appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572"
+        });
+        const auth = getAuth(app), db = getFirestore(app);
+        const $ = s => document.querySelector(s);
+        const okFoto = f => (typeof f === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(f)) ? f : '';
+        let users = [], flags = {}, yo = null;
+
+        onAuthStateChanged(auth, async u => {
+            if (!u || !ADMINS.includes(u.uid)) { $('#app').hidden = true; $('#den').hidden = false; return; }
+            yo = u; $('#den').hidden = true; $('#app').hidden = false;
+            cargar();
+        });
+
+        async function cargar() {
+            $('#cnt').textContent = 'Cargando…';
+            try {
+                const [us, fl] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'admin_flags'))]);
+                users = us.docs.map(d => ({ uid: d.id, ...d.data() }));
+                users.sort((a, b) => String(a.username).toLowerCase().localeCompare(String(b.username).toLowerCase()));
+                flags = {}; fl.docs.forEach(d => flags[d.id] = !!d.data().disabled);
+                pintar();
+            } catch (e) { $('#cnt').textContent = 'Error: ' + e.message + ' (¿actualizaste las reglas de Firestore?)'; }
+        }
+
+        function pintar() {
+            const t = $('#q').value.trim().toLowerCase(), L = $('#lista'); L.innerHTML = '';
+            const v = users.filter(u => !t || [u.username, u.email, u.uid].some(x => String(x || '').toLowerCase().includes(t)));
+            $('#cnt').textContent = v.length + ' de ' + users.length + ' usuarios';
+            v.forEach(u => {
+                const off = flags[u.uid], c = document.createElement('div'); c.className = 'u' + (off ? ' off' : '');
+                const top = document.createElement('div'); top.className = 'top';
+                const av = document.createElement('div'); av.className = 'av';
+                if (okFoto(u.photo)) { const i = document.createElement('img'); i.src = u.photo; i.alt = ''; av.append(i); }
+                else av.textContent = String(u.username || '?')[0].toUpperCase();
+                const inf = document.createElement('div'); inf.className = 'info';
+                const n = document.createElement('div'); n.className = 'nom'; n.textContent = u.username || '(sin nombre)';
+                if (off) { const g = document.createElement('span'); g.className = 'tag'; g.textContent = 'INHABILITADA'; n.append(g); }
+                const m = document.createElement('div'); m.className = 'mail'; m.textContent = u.email || '';
+                const id = document.createElement('div'); id.className = 'uid'; id.textContent = u.uid; id.title = 'Click para copiar';
+                id.onclick = () => navigator.clipboard && navigator.clipboard.writeText(u.uid);
+                inf.append(n, m, id); top.append(av, inf);
+                const ac = document.createElement('div'); ac.className = 'acts';
+                const b1 = document.createElement('button'); b1.className = 'btn'; b1.textContent = 'Enviar mensaje'; b1.onclick = () => msg(u);
+                ac.append(b1);
+                if (!ADMINS.includes(u.uid)) {
+                    const b2 = document.createElement('button'); b2.className = 'btn red'; b2.textContent = off ? 'Habilitar cuenta' : 'Inhabilitar cuenta';
+                    b2.onclick = async () => {
+                        if (!confirm((off ? 'Habilitar' : 'Inhabilitar') + ' la cuenta de ' + u.username + '?')) return;
+                        b2.disabled = true;
+                        try { await setDoc(doc(db, 'admin_flags', u.uid), { disabled: !off, at: Date.now() }); flags[u.uid] = !off; pintar(); }
+                        catch (e) { alert('Error: ' + e.message); b2.disabled = false; }
+                    };
+                    ac.append(b2);
+                }
+                c.append(top, ac); L.append(c);
+            });
+        }
+
+        function msg(u) {
+            const o = document.createElement('div'); o.className = 'ov';
+            o.innerHTML = '<div class="box"><h3 style="font-family:Times New Roman,serif;margin:0 0 10px">Mensaje para <span id="nn"></span></h3><textarea id="t" maxlength="450" placeholder="Escribí el mensaje (máx. 450 caracteres)…"></textarea><div class="err" id="e"></div><button class="btn" id="s">Enviar</button> <button class="btn" id="c">Cancelar</button></div>';
+            o.querySelector('#nn').textContent = u.username;
+            document.body.append(o);
+            o.querySelector('#c').onclick = () => o.remove();
+            o.onclick = e => { if (e.target === o) o.remove(); };
+            o.querySelector('#s').onclick = async e => {
+                const t = o.querySelector('#t').value.trim(); if (!t) { o.querySelector('#e').textContent = 'Escribí un mensaje.'; return; }
+                e.target.disabled = true;
+                try { await addDoc(collection(db, 'messages'), { to: u.uid, text: t, at: Date.now(), read: false, from: yo.uid }); o.remove(); alert('Mensaje enviado.'); }
+                catch (x) { o.querySelector('#e').textContent = x.message; e.target.disabled = false; }
+            };
+        }
+        $('#q').oninput = pintar; $('#rec').onclick = cargar;
+    </script>
+</body>
+
+</html>
