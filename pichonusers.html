@@ -255,7 +255,7 @@
         let users = [], flags = {}, yo = null;
 
         onAuthStateChanged(auth, async u => {
-             if (!u || !ADMINS.includes(u.uid)) { $('#app').hidden = true; $('#den').hidden = false; if (u) $('#den').insertAdjacentHTML('afterbegin', 'Tu UID: ' + u.uid + '<br><br>'); return; }
+             if (!u || !ADMINS.includes(u.uid)) { $('#app').hidden = true; $('#den').hidden = false; return; }
             yo = u; $('#den').hidden = true; $('#app').hidden = false;
             cargar();
         });
