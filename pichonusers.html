@@ -243,8 +243,7 @@
         /* ADMINS con acceso a PichonUsers.
            Para agregar más: sumá su UID de Firebase acá, ej: ['XIY1...', 'OTRO_UID'],
            y también en la función isAdmin() de las reglas de Firestore (si no, no podrán leer los datos). */
-        const ADMINS = ['XIY1FfjUDodaSBSGema6NgixKRs1'];
-
+      const ADMINS = ['XIY1FfjUDodaSBSGema6NgixKRs1', 'n0XOUeFku1SxKWbrPWsA0V86kfc2'];
         const app = initializeApp({
             apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8", authDomain: "pichisoft.firebaseapp.com",
             projectId: "pichisoft", storageBucket: "pichisoft.firebasestorage.app",
@@ -256,7 +255,7 @@
         let users = [], flags = {}, yo = null;
 
         onAuthStateChanged(auth, async u => {
-            if (!u || !ADMINS.includes(u.uid)) { $('#app').hidden = true; $('#den').hidden = false; return; }
+             if (!u || !ADMINS.includes(u.uid)) { $('#app').hidden = true; $('#den').hidden = false; if (u) $('#den').insertAdjacentHTML('afterbegin', 'Tu UID: ' + u.uid + '<br><br>'); return; }
             yo = u; $('#den').hidden = true; $('#app').hidden = false;
             cargar();
         });
