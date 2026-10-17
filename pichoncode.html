@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PichonCode - By Pichisoft</title>
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            background: #1e1e1e;
+            color: #ccc;
+            font: 13px/1.4 "Segoe UI", system-ui, sans-serif;
+            overflow: hidden
+        }
+
+        button,
+        select,
+        input {
+            font: inherit;
+            color: inherit
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 28px;
+            z-index: 10000;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            padding: 5px 10px 0;
+            pointer-events: none
+        }
+
+        .logo {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            color: #fff;
+            font-size: 1.05rem;
+            line-height: 1
+        }
+
+        .byline {
+            color: #888;
+            font-style: italic;
+            font-size: .72rem
+        }
+
+        .plink {
+            position: fixed;
+            top: 0;
+            right: 12px;
+            height: 28px;
+            line-height: 28px;
+            z-index: 10000;
+            color: #3b82f6;
+            text-decoration: underline;
+            text-decoration-color: #3b82f6;
+            font-size: 13px
+        }
+
+        #app {
+            position: fixed;
+            inset: 28px 0 0 0;
+            display: flex;
+            flex-direction: column
+        }
+
+        #bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-items: center;
+            padding: 3px 8px;
+            background: #333;
+            border-bottom: 1px solid #252526
+        }
+
+        #bar button,
+        #bar select {
+            background: #3c3c3c;
+            border: 1px solid #4a4a4a;
+            border-radius: 3px;
+            padding: 2px 8px;
+            cursor: pointer
+        }
+
+        #bar button:hover {
+            background: #505050
+        }
+
+        #bar .run {
+            background: #16825d;
+            border-color: #16825d;
+            color: #fff
+        }
+
+        #main {
+            flex: 1;
+            display: flex;
+            min-height: 0
+        }
+
+        #side {
+            width: 250px;
+            background: #252526;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #333;
+            min-width: 0
+        }
+
+        #side.off {
+            display: none
+        }
+
+        .stabs {
+            display: flex;
+            border-bottom: 1px solid #333
+        }
+
+        .stabs button {
+            flex: 1;
+            background: none;
+            border: 0;
+            padding: 6px;
+            cursor: pointer;
+            color: #999;
+            border-bottom: 2px solid transparent
+        }
+
+        .stabs button.on {
+            color: #fff;
+            border-color: #3b82f6
+        }
+
+        .sbtn {
+            display: flex;
+            gap: 4px;
+            padding: 4px 8px
+        }
+
+        .sbtn button {
+            background: none;
+            border: 0;
+            cursor: pointer;
+            padding: 2px 6px;
+            color: #ccc;
+            border-radius: 3px
+        }
+
+        .sbtn button:hover {
+            background: #3a3a3a
+        }
+
+        #tree,
+        #sres {
+            flex: 1;
+            overflow: auto;
+            padding-bottom: 20px
+        }
+
+        .it {
+            display: flex;
+            align-items: center;
+            padding: 2px 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            gap: 4px
+        }
+
+        .it:hover {
+            background: #2a2d2e
+        }
+
+        .it.on {
+            background: #37373d;
+            color: #fff
+        }
+
+        .it .n {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .it .a {
+            display: none
+        }
+
+        .it:hover .a {
+            display: inline
+        }
+
+        .it .a i {
+            font-style: normal;
+            padding: 0 3px;
+            opacity: .7
+        }
+
+        .it .a i:hover {
+            opacity: 1
+        }
+
+        #sres {
+            display: none
+        }
+
+        #sq {
+            margin: 6px 8px;
+            padding: 4px 6px;
+            background: #3c3c3c;
+            border: 1px solid #555;
+            border-radius: 3px;
+            display: none
+        }
+
+        .rf {
+            padding: 4px 8px;
+            color: #fff;
+            font-weight: bold
+        }
+
+        .rl {
+            padding: 1px 8px 1px 18px;
+            cursor: pointer;
+            color: #aaa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .rl:hover {
+            background: #2a2d2e
+        }
+
+        #cwrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0
+        }
+
+        #tabs {
+            display: flex;
+            overflow-x: auto;
+            background: #252526;
+            min-height: 32px
+        }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 10px;
+            cursor: pointer;
+            background: #2d2d2d;
+            border-right: 1px solid #1e1e1e;
+            white-space: nowrap;
+            color: #999
+        }
+
+        .tab.on {
+            background: #1e1e1e;
+            color: #fff;
+            border-top: 1px solid #3b82f6
+        }
+
+        .tab b {
+            font-weight: normal;
+            opacity: .6;
+            padding: 0 3px;
+            border-radius: 3px
+        }
+
+        .tab b:hover {
+            background: #444;
+            opacity: 1
+        }
+
+        #ed {
+            flex: 1;
+            min-height: 0
+        }
+
+        #panel {
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid #3b3b3b;
+            background: #1e1e1e
+        }
+
+        #panel.off {
+            display: none
+        }
+
+        .ptabs {
+            display: flex;
+            gap: 2px;
+            background: #252526;
+            align-items: center
+        }
+
+        .ptabs button {
+            background: none;
+            border: 0;
+            padding: 4px 12px;
+            cursor: pointer;
+            color: #999;
+            border-bottom: 2px solid transparent
+        }
+
+        .ptabs button.on {
+            color: #fff;
+            border-color: #3b82f6
+        }
+
+        #con {
+            flex: 1;
+            overflow: auto;
+            padding: 6px 10px;
+            font: 12px Consolas, monospace;
+            white-space: pre-wrap
+        }
+
+        #con .e {
+            color: #f48771
+        }
+
+        #con .w {
+            color: #cca700
+        }
+
+        #con .i {
+            color: #75beff
+        }
+
+        #prev {
+            flex: 1;
+            border: 0;
+            background: #fff;
+            display: none
+        }
+
+        #status {
+            height: 22px;
+            background: #007acc;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0 10px;
+            font-size: 12px
+        }
+
+        #status span {
+            cursor: default
+        }
+
+        #lock {
+            position: fixed;
+            inset: 0;
+            z-index: 20000;
+            background: #111;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-align: center;
+            padding: 20px
+        }
+
+        #lock h1 {
+            font: bold 2rem "Times New Roman", serif;
+            color: #fff;
+            margin: 0
+        }
+
+        #lock p {
+            margin: 0;
+            color: #aaa;
+            max-width: 420px
+        }
+
+        #lock a {
+            background: #3b82f6;
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 6px;
+            display: none
+        }
+
+        #lock.deny a {
+            display: inline-block
+        }
+
+        /* ==========================================
+   PICHISOFT - ESTADO DE SESIÓN (compacto, arriba a la izquierda del link)
+   ========================================== */
+        #pichisoft-session-status {
+            position: fixed;
+            top: 3px;
+            right: 90px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            max-width: calc(100vw - 230px);
+            box-sizing: border-box;
+            padding: 2px 10px;
+            background: #000;
+            color: #20a84b;
+            border: 1px solid rgba(34, 197, 94, .25);
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+            font: 12px/1.3 Georgia, serif;
+            text-align: left;
+            white-space: nowrap;
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity .6s ease, transform .6s ease;
+            pointer-events: none
+        }
+
+        #pichisoft-session-status.hidden {
+            opacity: 0;
+            transform: translateY(-8px)
+        }
+
+        #pichisoft-session-status.success {
+            font-weight: bold
+        }
+
+        #pichisoft-session-status .ps-check {
+            display: none;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 1
+        }
+
+        #pichisoft-session-status.success .ps-check {
+            display: inline-block;
+            animation: pichisoftCheck .8s cubic-bezier(.17, .89, .32, 1.49) forwards
+        }
+
+        @keyframes pichisoftCheck {
+            0% {
+                opacity: 0;
+                transform: scale(.2) rotate(-25deg)
+            }
+
+            60% {
+                opacity: 1;
+                transform: scale(1.25) rotate(8deg)
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0)
+            }
+        }
+
+        #pichisoft-session-profile {
+            position: fixed;
+            top: 2px;
+            right: 90px;
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            max-width: calc(100vw - 230px);
+            box-sizing: border-box;
+            padding: 2px 10px 2px 2px;
+            background: #000;
+            color: #fff;
+            border: 1px solid rgba(34, 197, 94, .25);
+            border-radius: 16px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+            font-family: Georgia, serif;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(-8px) scale(.9);
+            transition: opacity .7s ease, transform .7s cubic-bezier(.17, .89, .32, 1.3);
+            pointer-events: none
+        }
+
+        #pichisoft-session-profile.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1)
+        }
+
+        #pichisoft-profile-picture img,
+        #pichisoft-profile-picture .profile-placeholder {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        #pichisoft-profile-picture .profile-placeholder {
+            background: #20a84b;
+            color: #fff;
+            font-size: 11px;
+            font-weight: bold
+        }
+
+        #pichisoft-profile-name {
+            font-size: 12px;
+            font-weight: bold;
+            max-width: 110px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        @media (max-width:600px) {
+            .header {
+                padding: 6px 6px 0;
+                gap: 5px
+            }
+
+            .logo {
+                font-size: .9rem
+            }
+
+            .byline {
+                display: none
+            }
+
+            .plink {
+                right: 8px;
+                font-size: 12px
+            }
+
+            #pichisoft-session-status,
+            #pichisoft-session-profile {
+                right: 66px;
+                max-width: calc(100vw - 150px)
+            }
+
+            #pichisoft-session-status {
+                font-size: 11px;
+                padding: 2px 8px
+            }
+
+            #side {
+                position: absolute;
+                z-index: 50;
+                top: 0;
+                bottom: 0;
+                height: 100%
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header"><span class="logo">PichonCode</span><span class="byline"> - By Pichisoft - </span></div>
+    <a class="plink" href="https://pichisoft.cc" target="_blank" rel="noopener">Pichisoft</a>
+
+    <div id="pichisoft-session-status" role="status" aria-live="polite"><span class="ps-check">✓</span><span
+            class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span></div>
+    <div id="pichisoft-session-profile">
+        <div id="pichisoft-profile-picture"></div><span id="pichisoft-profile-name"></span>
+    </div>
+
+    <div id="lock">
+        <h1>PichonCode</h1>
+        <p id="lockmsg">Verificando tu cuenta de Pichisoft...</p><a href="https://pichisoft.cc">Iniciar sesión en
+            Pichisoft</a>
+    </div>
+
+    <div id="app">
+        <div id="bar">
+            <button class="run" onclick="run()" title="Ctrl+Enter">▶ Ejecutar</button>
+            <button onclick="saveNow()" title="Ctrl+S">💾 Guardar</button>
+            <button onclick="fmt()" title="Shift+Alt+F">Formatear</button>
+            <button onclick="ed.trigger('k','editor.action.quickCommand')" title="F1">Paleta</button>
+            <button onclick="document.getElementById('up').click()">Subir</button>
+            <button onclick="zip()">ZIP</button>
+            <select id="theme" onchange="setOpt()">
+                <option value="vs-dark">Oscuro</option>
+                <option value="vs">Claro</option>
+                <option value="hc-black">Alto contraste</option>
+            </select>
+            <button onclick="fs(-1)">A−</button><button onclick="fs(1)">A+</button>
+            <button onclick="tg('wrap')">Ajuste</button><button onclick="tg('mini')">Minimapa</button>
+            <button onclick="side.classList.toggle('off')" title="Ctrl+B">☰</button>
+            <button onclick="panel.classList.toggle('off')" title="Ctrl+J">▭</button>
+            <input type="file" id="up" multiple hidden>
+        </div>
+        <div id="main">
+            <div id="side">
+                <div class="stabs"><button id="t1" class="on" onclick="sv(1)">Archivos</button><button id="t2"
+                        onclick="sv(2)">Buscar</button></div>
+                <div class="sbtn" id="sb1"><button onclick="newFile()">＋ Archivo</button><button onclick="newFile(1)">＋
+                        Carpeta</button></div>
+                <input id="sq" placeholder="Buscar en el proyecto..." oninput="search()">
+                <div id="tree"></div>
+                <div id="sres"></div>
+            </div>
+            <div id="cwrap">
+                <div id="tabs"></div>
+                <div id="ed"></div>
+                <div id="panel">
+                    <div class="ptabs"><button id="p1" class="on" onclick="pv(1)">Consola</button><button id="p2"
+                            onclick="pv(2)">Vista previa</button><button
+                            onclick="document.getElementById('con').innerHTML=''"
+                            style="margin-left:auto">Limpiar</button></div>
+                    <div id="con"></div><iframe id="prev" sandbox="allow-scripts allow-modals allow-forms"></iframe>
+                </div>
+            </div>
+        </div>
+        <div id="status"><span id="sp">Ln 1, Col 1</span><span id="sl">Texto</span><span>Espacios:
+                2</span><span>UTF-8</span><span id="ss" style="margin-left:auto">Listo</span></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+    <script>
+        var $ = function (i) { return document.getElementById(i) }, side = $('side'), panel = $('panel');
+        var BASE = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min', M = {}, open = [], active = null, ed, mon, uid = null, FB = null, fold = {}, opt = { theme: 'vs-dark', size: 14, wrap: false, mini: true }, timer;
+        var DEF = { 'index.html': '<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="UTF-8">\n  <title>Mi proyecto</title>\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n  <h1>¡Hola, PichonCode!</h1>\n  <script src="script.js"><\/script>\n</body>\n</html>', 'style.css': 'body {\n  font-family: sans-serif;\n  background: #111;\n  color: #fff;\n  text-align: center;\n}', 'script.js': 'console.log("Hola desde PichonCode");\ndocument.querySelector("h1").addEventListener("click", () => alert("¡Funciona!"));' };
+        window.MonacoEnvironment = { getWorkerUrl: function () { return URL.createObjectURL(new Blob(["self.MonacoEnvironment={baseUrl:'" + BASE + "/'};importScripts('" + BASE + "/vs/base/worker/workerMain.js');"], { type: 'text/javascript' })) } };
+        require.config({ paths: { vs: BASE + '/vs' } });
+
+        /* ===== Sesión de Pichisoft (acceso solo con cuenta) ===== */
+        (function () {
+            var CFG = { apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8", authDomain: "pichisoft.firebaseapp.com", projectId: "pichisoft", storageBucket: "pichisoft.firebasestorage.app", messagingSenderId: "690032082295", appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572", measurementId: "G-K7HRKR8BJ1" };
+            var V = "https://www.gstatic.com/firebasejs/12.3.0/", DUR_INICIO = 12000, DUR_MENSAJE = 6000;
+            var box = $("pichisoft-session-status"), txt = box.querySelector(".ps-text"), prof = $("pichisoft-session-profile"), pic = $("pichisoft-profile-picture"), nameEl = $("pichisoft-profile-name"), t0 = Date.now();
+            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms) }) }
+            function deny(msg) { $('lock').classList.add('deny'); $('lockmsg').textContent = msg }
+            async function comprobar() {
+                try {
+                    var m = await Promise.all([import(V + "firebase-app.js"), import(V + "firebase-auth.js"), import(V + "firebase-firestore.js")]);
+                    var app = m[0].initializeApp(CFG), auth = m[1].getAuth(app), db = m[2].getFirestore(app);
+                    var user = await Promise.race([new Promise(function (res) { m[1].onAuthStateChanged(auth, function (u) { window.PichisoftFirebase = { auth: auth, db: db, currentUser: u, fs: m[2] }; res(u) }) }), wait(15000).then(function () { throw new Error("tiempo agotado") })]);
+                    var perfil = {};
+                    if (user) {
+                        try { var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid)); if (snap.exists()) perfil = snap.data() } catch (e) { console.error("Pichisoft: no se pudo leer el perfil", e) }
+                        try { var fl = await m[2].getDoc(m[2].doc(db, "admin_flags", user.uid)); if (fl.exists()) { return { user: user, perfil: perfil, blocked: true } } } catch (e) { }
+                    }
+                    return { user: user, perfil: perfil };
+                } catch (e) { console.error("Pichisoft:", e); return { error: true } }
+            }
+            async function aviso(t) { txt.textContent = t; await wait(DUR_MENSAJE); box.classList.add("hidden") }
+            (async function () {
+                var r = await comprobar();
+                if (r.error) deny("No se pudo comprobar tu sesión de Pichisoft. Revisá tu conexión y recargá.");
+                else if (!r.user) deny("PichonCode es solo para usuarios con cuenta de Pichisoft. Iniciá sesión y volvé.");
+                else if (r.blocked) deny("Tu cuenta de Pichisoft está inhabilitada.");
+                else { uid = r.user.uid; FB = window.PichisoftFirebase; boot() }
+                await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
+                if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
+                if (!r.user || r.blocked) return aviso("No tenés una sesión válida en Pichisoft");
+                box.classList.add("success"); txt.textContent = "Sesión iniciada"; await wait(DUR_MENSAJE); box.classList.add("hidden");
+                var nombre = r.perfil.username || "Usuario"; nameEl.textContent = nombre; var foto = r.perfil.photo;
+                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) { var img = new Image(); img.src = foto; img.alt = "Foto de perfil"; pic.replaceChildren(img) }
+                else { var ph = document.createElement("div"); ph.className = "profile-placeholder"; ph.textContent = nombre.charAt(0).toUpperCase(); pic.replaceChildren(ph) }
+                await wait(450); prof.classList.add("visible");
+            })();
+        })();
+
+        /* ===== Editor ===== */
+        async function loadFiles() {
+            var f = null;
+            try { var s = await FB.fs.getDoc(FB.fs.doc(FB.db, 'users', uid, 'data', 'pichoncode')); if (s.exists()) f = s.data() } catch (e) { console.error(e) }
+            try { var l = JSON.parse(localStorage.getItem('pc_' + uid) || 'null'); if (l && (!f || (l.updated || 0) > (f.updated || 0))) f = l } catch (e) { }
+            if (f && f.files && Object.keys(f.files).length) { if (f.opts) Object.assign(opt, f.opts); return f.files }
+            return DEF;
+        }
+        function boot() {
+            require(['vs/editor/editor.main'], async function () {
+                mon = monaco; var files = await loadFiles();
+                ed = mon.editor.create($('ed'), { model: null, automaticLayout: true, theme: opt.theme, fontSize: opt.size, wordWrap: opt.wrap ? 'on' : 'off', minimap: { enabled: opt.mini }, tabSize: 2, bracketPairColorization: { enabled: true }, smoothScrolling: true, cursorSmoothCaretAnimation: 'on', formatOnPaste: true, fontLigatures: true, scrollBeyondLastLine: false });
+                for (var p in files) mk(p, files[p]);
+                var ks = Object.keys(M); open = ks.slice(0, 3); act(ks.includes('index.html') ? 'index.html' : ks[0]);
+                $('theme').value = opt.theme; mon.editor.setTheme(opt.theme);
+                ed.onDidChangeCursorPosition(function (e) { $('sp').textContent = 'Ln ' + e.position.lineNumber + ', Col ' + e.position.column });
+                ed.addCommand(mon.KeyMod.CtrlCmd | mon.KeyCode.KeyS, saveNow);
+                ed.addCommand(mon.KeyMod.CtrlCmd | mon.KeyCode.Enter, run);
+                ed.addCommand(mon.KeyMod.CtrlCmd | mon.KeyCode.KeyB, function () { side.classList.toggle('off') });
+                ed.addCommand(mon.KeyMod.CtrlCmd | mon.KeyCode.KeyJ, function () { panel.classList.toggle('off') });
+                $('lock').style.display = 'none'; tree();
+            });
+        }
+        function mk(p, c) { var m = mon.editor.createModel(c, undefined, mon.Uri.file('/' + p)); m.onDidChangeContent(function () { sched() }); M[p] = m }
+        function act(p) { active = p; if (p && !open.includes(p)) open.push(p); ed.setModel(p ? M[p] : null); if (p) $('sl').textContent = M[p].getLanguageId(); tabs(); tree(); if (p) ed.focus() }
+        function tabs() { var h = ''; open.forEach(function (p) { h += '<div class="tab' + (p === active ? ' on' : '') + '" onclick="act(\'' + esc(p) + '\')">' + nm(p) + '<b onclick="event.stopPropagation();closeT(\'' + esc(p) + '\')">×</b></div>' }); $('tabs').innerHTML = h }
+        function closeT(p) { open = open.filter(function (x) { return x !== p }); if (active === p) act(open[open.length - 1] || null); else tabs() }
+        function nm(p) { return esc(p.split('/').pop()) }
+        function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/'/g, '&#39;').replace(/"/g, '&quot;') }
+        function tree() {
+            var root = {}; Object.keys(M).sort().forEach(function (p) { var n = root, pr = p.split('/'); pr.forEach(function (s, i) { if (i == pr.length - 1) n[s] = p; else n = n[s] = (typeof n[s] === 'object' ? n[s] : {}) }) });
+            function R(n, d, pre) {
+                var h = '', k = Object.keys(n).sort(function (a, b) { var fa = typeof n[a] === 'object', fb = typeof n[b] === 'object'; return fa == fb ? a.localeCompare(b) : fa ? -1 : 1 });
+                k.forEach(function (s) {
+                    var v = n[s], pad = 'padding-left:' + (8 + d * 14) + 'px';
+                    if (typeof v === 'object') { var fp = pre + s, c = fold[fp]; h += '<div class="it" style="' + pad + '" onclick="fold[\'' + esc(fp) + '\']=!fold[\'' + esc(fp) + '\'];tree()"><span>' + (c ? '▸' : '▾') + '</span><span class="n">📁 ' + esc(s) + '</span><span class="a"><i onclick="event.stopPropagation();delDir(\'' + esc(fp) + '\')">🗑</i></span></div>'; if (!c) h += R(v, d + 1, fp + '/') }
+                    else h += '<div class="it' + (v === active ? ' on' : '') + '" style="' + pad + '" onclick="act(\'' + esc(v) + '\')"><span class="n">' + ic(s) + ' ' + esc(s) + '</span><span class="a"><i onclick="event.stopPropagation();ren(\'' + esc(v) + '\')">✎</i><i onclick="event.stopPropagation();del(\'' + esc(v) + '\')">🗑</i></span></div>'
+                });
+                return h
+            }
+            $('tree').innerHTML = R(root, 0, '');
+        }
+        function ic(s) { var e = s.split('.').pop(); return ({ js: '🟨', ts: '🔷', html: '🌐', css: '🎨', json: '🧾', py: '🐍', md: '📝' })[e] || '📄' }
+        function newFile(dir) { var p = prompt(dir ? 'Nombre de la carpeta (se crea con un archivo .gitkeep):' : 'Ruta del archivo (ej: src/app.js):'); if (!p) return; p = p.trim().replace(/^\/+/, ''); if (dir) p = p.replace(/\/+$/, '') + '/.gitkeep'; if (M[p]) return act(p); mk(p, ''); act(p); sched() }
+        function ren(p) { var n = prompt('Nuevo nombre/ruta:', p); if (!n || n === p || M[n]) return; var c = M[p].getValue(); M[p].dispose(); delete M[p]; mk(n, c); open = open.map(function (x) { return x === p ? n : x }); act(active === p ? n : active); sched() }
+        function del(p) { if (!confirm('¿Eliminar ' + p + '?')) return; M[p].dispose(); delete M[p]; closeT(p); tree(); sched() }
+        function delDir(d) { if (!confirm('¿Eliminar la carpeta ' + d + ' y todo su contenido?')) return; Object.keys(M).filter(function (p) { return p.indexOf(d + '/') === 0 }).forEach(function (p) { M[p].dispose(); delete M[p]; open = open.filter(function (x) { return x !== p }) }); act(open.includes(active) ? active : open[0] || null); sched() }
+        function data() { var f = {}; for (var p in M) f[p] = M[p].getValue(); return f }
+        function sched() { clearTimeout(timer); $('ss').textContent = 'Sin guardar...'; timer = setTimeout(saveNow, 1500) }
+        async function saveNow() {
+            var f = data(), o = { files: f, opts: opt, updated: Date.now() };
+            try { localStorage.setItem('pc_' + uid, JSON.stringify(o)) } catch (e) { }
+            if (JSON.stringify(f).length > 900000) { $('ss').textContent = '⚠ Proyecto muy grande para la nube (guardado local)'; return }
+            try { $('ss').textContent = 'Guardando...'; await FB.fs.setDoc(FB.fs.doc(FB.db, 'users', uid, 'data', 'pichoncode'), o); $('ss').textContent = '✓ Guardado en tu cuenta' }
+            catch (e) { console.error(e); $('ss').textContent = '⚠ Solo guardado local' }
+        }
+        function fmt() { ed.getAction('editor.action.formatDocument').run() }
+        function setOpt() { opt.theme = $('theme').value; mon.editor.setTheme(opt.theme); sched() }
+        function fs(d) { opt.size = Math.max(9, Math.min(32, opt.size + d)); ed.updateOptions({ fontSize: opt.size }); sched() }
+        function tg(k) { opt[k] = !opt[k]; ed.updateOptions({ wordWrap: opt.wrap ? 'on' : 'off', minimap: { enabled: opt.mini } }); sched() }
+        function sv(n) { $('t1').classList.toggle('on', n == 1); $('t2').classList.toggle('on', n == 2); $('tree').style.display = n == 1 ? '' : 'none'; $('sb1').style.display = n == 1 ? '' : 'none'; $('sq').style.display = n == 2 ? 'block' : 'none'; $('sres').style.display = n == 2 ? 'block' : 'none'; if (n == 2) $('sq').focus() }
+        function search() {
+            var q = $('sq').value.toLowerCase(), h = ''; if (q.length < 2) { $('sres').innerHTML = ''; return }
+            Object.keys(M).forEach(function (p) { var ls = M[p].getValue().split('\n'), r = ''; ls.forEach(function (l, i) { if (l.toLowerCase().indexOf(q) > -1) r += '<div class="rl" onclick="goto(\'' + esc(p) + '\',' + (i + 1) + ')">' + (i + 1) + ': ' + esc(l.trim().slice(0, 80)) + '</div>' }); if (r) h += '<div class="rf">' + esc(p) + '</div>' + r });
+            $('sres').innerHTML = h || '<div class="rl">Sin resultados</div>';
+        }
+        function goto(p, l) { act(p); ed.revealLineInCenter(l); ed.setPosition({ lineNumber: l, column: 1 }) }
+        function pv(n) { $('p1').classList.toggle('on', n == 1); $('p2').classList.toggle('on', n == 2); $('con').style.display = n == 1 ? '' : 'none'; $('prev').style.display = n == 2 ? 'block' : 'none' }
+        function log(t, a) { var d = document.createElement('div'); d.className = t; d.textContent = a; $('con').appendChild(d); $('con').scrollTop = 1e9 }
+        window.addEventListener('message', function (e) { if (e.source === $('prev').contentWindow && e.data && e.data.pc) log(e.data.t, e.data.a) });
+        var HOOK = '<script>(function(){function s(a){return Array.prototype.map.call(a,function(x){try{return typeof x==="object"?JSON.stringify(x):String(x)}catch(e){return String(x)}}).join(" ")}["log","info","warn","error"].forEach(function(k){var o=console[k];console[k]=function(){parent.postMessage({pc:1,t:k==="error"?"e":k==="warn"?"w":k==="info"?"i":"",a:s(arguments)},"*");o.apply(console,arguments)}});window.onerror=function(m,u,l){parent.postMessage({pc:1,t:"e",a:m+" (línea "+l+")"},"*")};window.addEventListener("unhandledrejection",function(e){parent.postMessage({pc:1,t:"e",a:"Promesa rechazada: "+e.reason},"*")})})();<\/script>';
+        function inl(c) { return c.replace(/<\/script/gi, '<\\/script') }
+        function run() {
+            if (!active) return; var p = active, c = M[p].getValue(), h;
+            if (/\.html?$/i.test(p)) {
+                h = c.replace(/<link[^>]*href=["']([^"']+)["'][^>]*>/gi, function (m, f) { f = f.replace(/^\.?\//, ''); return M[f] && /\.css$/i.test(f) ? '<style>' + M[f].getValue() + '</style>' : m })
+                    .replace(/<script([^>]*?)src=["']([^"']+)["']([^>]*)><\/script>/gi, function (m, a, f, b) { f = f.replace(/^\.?\//, ''); return M[f] ? '<script' + a + b + '>' + inl(M[f].getValue()) + '<\/script>' : m });
+            } else if (/\.(m?js)$/i.test(p)) h = '<body><script>' + inl(c) + '<\/script></body>';
+            else if (/\.css$/i.test(p) && M['index.html']) return act('index.html'), run();
+            else return log('w', 'Solo se pueden ejecutar archivos HTML y JavaScript.');
+            $('panel').classList.remove('off'); log('i', '▶ Ejecutando ' + p + '...'); pv(2); $('prev').srcdoc = HOOK + h;
+        }
+        $('up').onchange = function (e) { Array.prototype.forEach.call(e.target.files, function (f) { var r = new FileReader(); r.onload = function () { var p = f.name; if (M[p]) M[p].setValue(r.result); else mk(p, r.result); tree(); sched() }; r.readAsText(f) }); e.target.value = '' };
+        function zip() { var z = new JSZip(), f = data(); for (var p in f) z.file(p, f[p]); z.generateAsync({ type: 'blob' }).then(function (b) { var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'pichoncode-proyecto.zip'; a.click() }) }
+        document.addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); if (ed) saveNow() } });
+        window.addEventListener('beforeunload', function (e) { if ($('ss').textContent.indexOf('Sin guardar') > -1) { e.preventDefault(); e.returnValue = '' } });
+        pv(1);
+    </script>
+</body>
+
+</html>
