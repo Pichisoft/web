@@ -1330,7 +1330,8 @@
         </div>
         <div id="status" class="card">
             <span class="chip" id="ss"><i class="pip"></i><span>Listo</span></span>
-            <span class="chip" id="sprob"><i class="pip"></i><span>0 errores, 0 avisos</span></span>
+            <span class="chip click" id="sprob" onclick="showPanel();pv(3)"><i class="pip"></i><span>0 errores, 0
+                    avisos</span></span>
             <div class="sp"></div>
             <span class="chip click" id="sp" onclick="act2('editor.action.gotoLine')">Ln 1, Col 1</span>
             <span class="chip click" id="st-tab" onclick="opt.tab=opt.tab==2?4:2;apply()">Espacios: 2</span>
@@ -1388,17 +1389,17 @@
         function rs() {
             var seg = function (k, a) { return '<div class="seg">' + a.map(function (x) { return '<button data-s="' + k + '" data-v="' + x[0] + '" class="' + (opt[k] == x[0] ? 'on' : '') + '">' + x[1] + '</button>' }).join('') + '</div>' },
             tg = function (k, l) { return '<div class="row"><span>' + l + '</span><button data-s="' + k + '" data-t="1" class="sw' + (opt[k] ? ' on' : '') + '"></button></div>' };
-            $('ps').innerHTML = '<div class="row"><span>Tema</span>' + seg('theme', [['noche', 'Noche'], ['papel', 'Papel'], ['contraste', 'Contraste']]) + '</div><div class="row"><span>Tamaño de letra</span><div class="seg"><button data-s="size" data-d="-1">−</button><button class="on">' + opt.size + '</button><button data-s="size" data-d="1">+</button></div></div><div class="row"><span>Tabulación</span>' + seg('tab', [[2, '2'], [4, '4'], [8, '8']]) + '</div>' + tg('auto', 'Autoguardado') + tg('mini', 'Minimapa') + tg('wrap', 'Ajuste de línea') + tg('ln', 'Números de línea') + tg('ws', 'Mostrar espacios')
+            $('ps').innerHTML = '<div class="row"><span>Tema</span>' + seg('theme', [['noche', 'Noche'], ['papel', 'Papel'], ['contraste', 'Contraste']]) + '</div><div class="row"><span>Tamaño de letra</span><div class="seg"><button data-s="size" data-d="-1">−</button><button class="on">' + opt.size + '</button><button data-s="size" data-d="1">+</button></div></div><div class="row"><span>Tabulación</span>' + seg('tab', [[2, '2'], [4, '4'], [8, '8']]) + '</div>' + tg('autosave', 'Guardado automático') + tg('fmt', 'Formatear al guardar') + tg('autotag', 'Cerrar etiquetas automáticamente') + tg('autopair', 'Cerrar paréntesis y comillas') + tg('mini', 'Minimapa') + tg('wrap', 'Ajuste de línea') + tg('ln', 'Números de línea') + tg('ws', 'Mostrar espacios')
         }
         function shortcuts() {
-            var K = [['Guardar', 'Ctrl+S'], ['Abrir archivo', 'Ctrl+P'], ['Paleta de comandos', 'F1'], ['Ejecutar', 'Ctrl+Enter'], ['Nuevo archivo', 'Alt+N'], ['Cerrar pestaña', 'Alt+W'], ['Barra lateral', 'Ctrl+B'], ['Panel inferior', 'Ctrl+J'], ['Buscar en proyecto', 'Ctrl+Shift+F'], ['Buscar / Reemplazar', 'Ctrl+F / Ctrl+H'], ['Ir a línea', 'Ctrl+G'], ['Comentar línea', 'Ctrl+/'], ['Duplicar línea', 'Shift+Alt+↓'], ['Mover línea', 'Alt+↑ / Alt+↓'], ['Multicursor', 'Alt+Clic'], ['Formatear', 'Shift+Alt+F']];
+            var K = [['Guardar', 'Ctrl+S'], ['Abrir archivo', 'Ctrl+P'], ['Paleta de comandos', 'F1 / Ctrl+Shift+P'], ['Ejecutar', 'Ctrl+Enter'], ['Nuevo archivo', 'Alt+N'], ['Cerrar pestaña', 'Alt+W'], ['Barra lateral', 'Ctrl+B'], ['Panel inferior', 'Ctrl+J'], ['Buscar en proyecto', 'Ctrl+Shift+F'], ['Buscar / Reemplazar', 'Ctrl+F / Ctrl+H'], ['Ir a línea', 'Ctrl+G'], ['Comentar línea', 'Ctrl+/'], ['Duplicar línea', 'Shift+Alt+↓'], ['Mover línea', 'Alt+↑ / Alt+↓'], ['Multicursor', 'Alt+Clic'], ['Formatear', 'Shift+Alt+F']];
             dlg({ t: 'Atajos de teclado', html: '<div class="ksc">' + K.map(function (k) { return '<span>' + k[0] + '</span><kbd class="k">' + k[1] + '</kbd>' }).join('') + '</div>', ok: 'Cerrar', no: false })
         }
         function about() { dlg({ t: 'PichonCode', m: 'Editor de código en el navegador, hecho por Pichisoft. Motor de edición Monaco, ejecución de HTML, JavaScript y Python (Pyodide), y proyecto guardado en tu cuenta.', ok: 'Cerrar', no: false }) }
 
         /* ===== Estado ===== */
-        var M = {}, open = [], active = null, ed, mon, uid = null, FB = null, fold = {}, D = new Set(), timer, py = null;
-        var opt = { theme: 'noche', size: 14, tab: 2, wrap: false, mini: true, ln: true, ws: false, auto: true };
+        var M = {}, open = [], active = null, ed, mon, uid = null, FB = null, fold = {}, D = new Set(), timer, py = null, PD = false, LT = {};
+        var opt = { theme: 'noche', size: 14, tab: 2, wrap: false, mini: true, ln: true, ws: false, autosave: false, autotag: true, autopair: true, fmt: false };
         var DEF = { 'index.html': '<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="UTF-8">\n  <title>Mi proyecto</title>\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n  <h1>¡Hola, PichonCode!</h1>\n  <script src="script.js"><\/script>\n</body>\n</html>', 'style.css': 'body {\n  font-family: sans-serif;\n  background: #111;\n  color: #fff;\n  text-align: center;\n}', 'script.js': 'console.log("Hola desde PichonCode");\ndocument.querySelector("h1").addEventListener("click", () => console.log("¡Funciona!"));', 'main.py': 'nombre = "PichonCode"\nprint(f"Hola desde {nombre}")\nfor i in range(3):\n    print(i * 2)' };
         var TPL = { html: '<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="UTF-8">\n  <title>Nuevo</title>\n</head>\n<body>\n  \n</body>\n</html>', py: 'print("Hola")\n' };
         window.MonacoEnvironment = { getWorkerUrl: function () { var b = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min'; return URL.createObjectURL(new Blob(["self.MonacoEnvironment={baseUrl:'" + b + "/'};importScripts('" + b + "/vs/base/worker/workerMain.js');"], { type: 'text/javascript' })) } };
@@ -1453,9 +1454,29 @@
         function boot() {
             require(['vs/editor/editor.main'], async function () {
                 mon = monaco; var files = await loadFiles();
+                try { Object.assign(opt, JSON.parse(localStorage.getItem('pco_' + uid) || '{}')) } catch (e) { }
+                try {
+                    var tsL = mon.languages.typescript, dg = { noSemanticValidation: false, noSyntaxValidation: false, noSuggestionDiagnostics: true };
+                    [tsL.javascriptDefaults, tsL.typescriptDefaults].forEach(function (d) { d.setDiagnosticsOptions(dg); d.setEagerModelSync(true); d.setCompilerOptions({ allowNonTsExtensions: true, allowJs: true, checkJs: true, noEmit: true, target: tsL.ScriptTarget.ES2020, lib: ['es2020', 'dom', 'dom.iterable'] }) });
+                    mon.languages.json.jsonDefaults.setDiagnosticsOptions({ validate: true, allowComments: false });
+                    mon.languages.css.cssDefaults.setOptions({ validate: true })
+                } catch (x) { console.error(x) }
+                function snip(l, a) { mon.languages.registerCompletionItemProvider(l, { provideCompletionItems: function () { return { suggestions: a.map(function (x) { return { label: x[0], kind: mon.languages.CompletionItemKind.Snippet, detail: x[2] || 'Snippet', insertText: x[1], insertTextRules: mon.languages.CompletionItemInsertTextRule.InsertAsSnippet } }) } } }) }
+                snip('html', [['html5', '<!DOCTYPE html>\n<html lang="es">\n<head>\n\t<meta charset="UTF-8">\n\t<meta name="viewport" content="width=device-width, initial-scale=1">\n\t<title>${1:Título}</title>\n</head>\n<body>\n\t$0\n</body>\n</html>', 'Plantilla HTML5'], ['link:css', '<link rel="stylesheet" href="${1:style.css}">'], ['script:src', '<script src="${1:script.js}"><\/script>']]);
+                snip('javascript', [['log', 'console.log($1);'], ['fn', 'function ${1:nombre}(${2}) {\n\t$0\n}'], ['afn', 'const ${1:nombre} = (${2}) => {\n\t$0\n};'], ['fori', 'for (let ${1:i} = 0; ${1:i} < ${2:n}; ${1:i}++) {\n\t$0\n}'], ['foreach', '${1:arr}.forEach((${2:item}) => {\n\t$0\n});'], ['fetch', 'const res = await fetch(${1:url});\nconst data = await res.json();'], ['tryc', 'try {\n\t$0\n} catch (err) {\n\tconsole.error(err);\n}']]);
+                snip('python', [['def', 'def ${1:nombre}(${2}):\n\t${0:pass}'], ['ifmain', 'if __name__ == "__main__":\n\t${0:main()}'], ['for', 'for ${1:i} in range(${2:n}):\n\t$0'], ['class', 'class ${1:Nombre}:\n\tdef __init__(self${2}):\n\t\t$0'], ['try', 'try:\n\t$0\nexcept Exception as e:\n\tprint(e)']]);
                 mon.editor.defineTheme('pichon-noche', { base: 'vs-dark', inherit: true, rules: [{ token: 'comment', foreground: '6b6688', fontStyle: 'italic' }, { token: 'keyword', foreground: 'ffb454' }, { token: 'string', foreground: '5eead4' }, { token: 'number', foreground: 'f78fb3' }, { token: 'type', foreground: 'a5b4fc' }], colors: { 'editor.background': '#1a1925', 'editor.lineHighlightBackground': '#232136', 'editorLineNumber.foreground': '#4b4866', 'editorLineNumber.activeForeground': '#ffb454', 'editorCursor.foreground': '#ffb454', 'editor.selectionBackground': '#ffb45333', 'editorIndentGuide.background1': '#2e2c42' } });
                 mon.editor.defineTheme('pichon-papel', { base: 'vs', inherit: true, rules: [{ token: 'comment', foreground: '9a8f78', fontStyle: 'italic' }, { token: 'keyword', foreground: 'c2410c' }, { token: 'string', foreground: '0f766e' }, { token: 'number', foreground: 'be185d' }, { token: 'type', foreground: '4338ca' }], colors: { 'editor.background': '#fbf6ea', 'editor.lineHighlightBackground': '#f1e9d5', 'editorLineNumber.foreground': '#b8ab8e', 'editorLineNumber.activeForeground': '#c2410c', 'editorCursor.foreground': '#c2410c', 'editor.selectionBackground': '#c2410c22' } });
                 ed = mon.editor.create($('ed'), { model: null, automaticLayout: true, fontFamily: "'JetBrains Mono',Consolas,monospace", bracketPairColorization: { enabled: true }, guides: { bracketPairs: true }, smoothScrolling: true, cursorSmoothCaretAnimation: 'on', cursorBlinking: 'smooth', formatOnPaste: true, scrollBeyondLastLine: false, mouseWheelZoom: true, stickyScroll: { enabled: true }, padding: { top: 10 }, linkedEditing: true, renderLineHighlight: 'all' });
+                var VOIDT = /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i;
+                ed.onDidType(function (ch) {
+                    if (ch != '>' || !opt.autotag || !active || !/^(html?|xhtml|xml|svg|php|vue|jsx|tsx|svelte)$/.test(ext(active))) return;
+                    var pos = ed.getPosition(), m = ed.getModel(), pre = m.getValueInRange({ startLineNumber: Math.max(1, pos.lineNumber - 20), startColumn: 1, endLineNumber: pos.lineNumber, endColumn: pos.column });
+                    var x = /<([A-Za-z][\w:.-]*)(?:\s(?:"[^"]*"|'[^']*'|[^'">])*)?>$/.exec(pre);
+                    if (!x || /\/>$/.test(pre) || VOIDT.test(x[1]) || /\w/.test(pre.charAt(x.index - 1) || '')) return;
+                    if (m.getLineContent(pos.lineNumber).slice(pos.column - 1).indexOf('</' + x[1]) === 0) return;
+                    ed.executeEdits('autotag', [{ range: new mon.Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column), text: '</' + x[1] + '>' }]); ed.setPosition(pos)
+                });
                 for (var p in files) mk(p, files[p]);
                 var ks = Object.keys(M); open = ks.slice(0, 3);
                 ed.onDidChangeCursorSelection(function (e) { var s = e.selection, n = ed.getModel() ? ed.getModel().getValueInRange(s).length : 0; $('sp').textContent = 'Ln ' + s.positionLineNumber + ', Col ' + s.positionColumn + (n ? ' (' + n + ' sel.)' : '') });
@@ -1463,11 +1484,11 @@
                 $('lock').style.display = 'none'; apply(); act(ks.indexOf('index.html') > -1 ? 'index.html' : ks[0]); probs();
             })
         }
-        function mk(p, c) { var m = mon.editor.createModel(c, undefined, mon.Uri.file('/' + p)); m.updateOptions({ tabSize: opt.tab, insertSpaces: true }); m.onDidChangeContent(function () { if (!D.has(p)) { D.add(p); tabs() } sched() }); M[p] = m }
+        function mk(p, c) { var m = mon.editor.createModel(c, undefined, mon.Uri.file('/' + p)); m.updateOptions({ tabSize: opt.tab, insertSpaces: true }); m.onDidChangeContent(function () { if (!D.has(p)) { D.add(p); tabs() } sched(); lintLater(p) }); M[p] = m; setTimeout(function () { lint(p) }, 0) }
         function apply() {
             var t = opt.theme; mon.editor.setTheme(t == 'noche' ? 'pichon-noche' : t == 'papel' ? 'pichon-papel' : 'hc-black'); document.body.classList.toggle('light', t == 'papel');
-            ed.updateOptions({ fontSize: opt.size, tabSize: opt.tab, wordWrap: opt.wrap ? 'on' : 'off', minimap: { enabled: opt.mini }, lineNumbers: opt.ln ? 'on' : 'off', renderWhitespace: opt.ws ? 'all' : 'none' });
-            mon.editor.getModels().forEach(function (m) { m.updateOptions({ tabSize: opt.tab }) }); $('st-tab').textContent = 'Espacios: ' + opt.tab; sched()
+            ed.updateOptions({ fontSize: opt.size, tabSize: opt.tab, wordWrap: opt.wrap ? 'on' : 'off', minimap: { enabled: opt.mini }, lineNumbers: opt.ln ? 'on' : 'off', renderWhitespace: opt.ws ? 'all' : 'none', autoClosingBrackets: opt.autopair ? 'languageDefined' : 'never', autoClosingQuotes: opt.autopair ? 'languageDefined' : 'never' });
+            mon.editor.getModels().forEach(function (m) { m.updateOptions({ tabSize: opt.tab }) }); $('st-tab').textContent = 'Espacios: ' + opt.tab; saveOpts()
         }
         function act(p) { active = p; if (p && open.indexOf(p) < 0) open.push(p); ed.setModel(p ? M[p] : null); $('wel').style.display = p ? 'none' : 'flex'; $('sl').textContent = p ? M[p].getLanguageId() : 'Texto'; tabs(); tree(); crumb(); if (p) ed.focus() }
         function act2(a) { if (!ed) return; ed.focus(); ed.trigger('m', a, null) }
@@ -1502,18 +1523,72 @@
         async function delDir(d) { if (!await dlg({ t: 'Eliminar carpeta', m: 'Se va a eliminar <b>' + esc(d) + '</b> con todo su contenido.', ok: 'Eliminar', danger: 1 })) return; Object.keys(M).filter(function (p) { return p.indexOf(d + '/') === 0 }).forEach(function (p) { M[p].dispose(); delete M[p]; D.delete(p); open = open.filter(function (x) { return x !== p }) }); act(open.indexOf(active) > -1 ? active : open[0] || null); sched(); toast('Carpeta eliminada') }
         function data() { var f = {}; for (var p in M) f[p] = M[p].getValue(); return f }
         function setSt(t, c) { $('ss').className = 'chip ' + (c || ''); $('ss').lastElementChild.textContent = t }
-        function sched() { clearTimeout(timer); if (!ed) return; if (!opt.auto) { setSt('Sin guardar', 'warn'); return } setSt('Sin guardar...', 'warn'); timer = setTimeout(saveNow, 1500) }
+        function sched() { if (!ed) return; PD = true; clearTimeout(timer); setSt('Sin guardar', 'warn'); if (opt.autosave) { setSt('Sin guardar...', 'warn'); timer = setTimeout(saveNow, 1500) } }
+        function saveOpts() { try { localStorage.setItem('pco_' + uid, JSON.stringify(opt)) } catch (e) { } }
+        /* ===== Detección de errores propia (HTML y Python); JS/TS/CSS/JSON usan los analizadores de Monaco ===== */
+        function lint(p) { var m = M[p]; if (!m || !mon) return; var e = ext(p), r = e == 'py' ? lintPy(m) : /^html?$/.test(e) ? lintHtml(m) : null; if (r) mon.editor.setModelMarkers(m, 'pichon', r) }
+        function lintLater(p) { clearTimeout(LT[p]); LT[p] = setTimeout(function () { lint(p) }, 400) }
+        function lintHtml(m) {
+            var t = m.getValue(), mks = [], st = [], x, OPT = /^(li|p|td|th|tr|option|dt|dd|thead|tbody|tfoot|colgroup)$/, VD = /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/,
+                re =/<!--[\s\S]*?-->|<![^>]*>|<(script|style|textarea|title)\b((?:"[^"]*"|'[^']*'|[^'">])*)>([\s\S]*?)<\/\1\s*>|<(\/?)([A-Za-z][\w:-]*)((?:"[^"]*"|'[^']*'|[^'"<>])*)(>?)/gi;
+                    function add(i, l, msg, sev) { var a = m.getPositionAt(i), b = m.getPositionAt(i + l); mks.push({ severity: sev || 8, message: msg, startLineNumber: a.lineNumber, startColumn: a.column, endLineNumber: b.lineNumber, endColumn: b.column }) }
+            while ((x = re.exec(t))) {
+                if (x[5] === undefined) continue;
+                var cl = x[4] == '/', n = x[5].toLowerCase(), rest = x[6];
+                if (!x[7]) { add(x.index, x[0].length, 'La etiqueta <' + n + '> no se cerró con ">"'); continue }
+                if (cl) {
+                    var k = st.length - 1; while (k >= 0 && st[k].n != n) k--;
+                    if (k < 0) add(x.index, x[0].length, 'Etiqueta de cierre </' + n + '> sin su apertura');
+                    else { for (var j = st.length - 1; j > k; j--)if (!OPT.test(st[j].n)) add(st[j].i, st[j].l, 'Falta cerrar <' + st[j].n + '> antes de </' + n + '>'); st.length = k }
+                }
+                else if (!VD.test(n) && !/\/\s*$/.test(rest)) st.push({ n: n, i: x.index, l: n.length + 1 });
+                else if (n == 'img' && !/\balt\s*=/i.test(rest)) add(x.index, x[0].length, 'La imagen no tiene atributo alt', 4)
+            }
+            st.forEach(function (o) { if (!OPT.test(o.n)) add(o.i, o.l, 'Falta cerrar <' + o.n + '>') });
+            return mks
+        }
+        function lintPy(m) {
+            var L = m.getLinesContent(), mks = [], br = [], tri = null, pend = null, PR = { ')': '(', ']': '[', '}': '{' };
+            function add(l, a, b, msg, sev) { mks.push({ severity: sev || 8, message: msg, startLineNumber: l, startColumn: a, endLineNumber: l, endColumn: b }) }
+            for (var i = 0; i < L.length; i++) {
+                var ln = L[i], n = i + 1, code = '', q = null, j = 0, cont = br.length > 0 || tri !== null;
+                if (tri) { var e = ln.indexOf(tri); if (e < 0) continue; code = ' '.repeat(e + 3); j = e + 3; tri = null }
+                for (; j < ln.length; j++) {
+                    var ch = ln[j];
+                    if (q) { if (ch == '\\') { code += '  '; j++; continue } if (ch == q) q = null; code += ' '; continue }
+                    if (ch == '#') break;
+                    if (ch == '"' || ch == "'") { var t3 = ch + ch + ch; if (ln.substr(j, 3) == t3) { var e2 = ln.indexOf(t3, j + 3); if (e2 < 0) { tri = t3; code += ' '.repeat(ln.length - j); break } code += ' '.repeat(e2 + 3 - j); j = e2 + 2; continue } q = ch; code += ' '; continue }
+                    if ('([{'.indexOf(ch) > -1) br.push({ c: ch, l: n, k: j + 1 });
+                    else if (')]}'.indexOf(ch) > -1) { var o = br.pop(); if (!o || o.c != PR[ch]) add(n, j + 1, j + 2, 'Sobra o no coincide "' + ch + '"') }
+                    code += ch
+                }
+                if (q && !/\\$/.test(ln)) add(n, 1, ln.length + 1, 'Cadena de texto sin cerrar');
+                var t = code.trim(); if (!t || cont) continue;
+                var ind = ln.match(/^[ \t]*/)[0];
+                if (/ \t|\t /.test(ind)) add(n, 1, ind.length + 1, 'Mezcla de tabs y espacios en la indentación', 4);
+                if (pend) { if (ind.length <= pend.i) add(pend.n, 1, pend.len, 'Se esperaba un bloque indentado después de ":"'); pend = null }
+                if (/^print\s+[^\s(=,.\[]/.test(ln.trim())) add(n, 1, ln.length + 1, 'En Python 3 print es una función: usá print(...)');
+                if (br.length == 0 && /^(async\s+def|def|class|if|elif|else|for|while|try|except|finally|with)\b/.test(t)) {
+                    if (/:$/.test(t)) pend = { n: n, i: ind.length, len: ln.length + 1 }; else if (t.indexOf(':') < 0) add(n, 1, ln.length + 1, 'Falta ":" al final de la línea')
+                }
+            }
+            if (pend) add(pend.n, 1, pend.len, 'Se esperaba un bloque indentado después de ":"');
+            br.forEach(function (o) { add(o.l, o.k, o.k + 1, 'Falta cerrar "' + o.c + '"') });
+            if (tri) add(L.length, 1, (L[L.length - 1] || '').length + 1, 'Cadena de triple comilla sin cerrar');
+            return mks
+        }
         async function saveNow(manual) {
+            if (opt.fmt && ed && ed.getModel()) { try { await ed.getAction('editor.action.formatDocument').run() } catch (e) { } }
             var f = data(), o = { files: f, opts: opt, updated: Date.now() };
             try { localStorage.setItem('pc_' + uid, JSON.stringify(o)) } catch (e) { }
-            D.clear(); tabs();
+            D.clear(); PD = false; clearTimeout(timer); tabs();
             if (JSON.stringify(f).length > 900000) { setSt('Solo local (proyecto muy grande)', 'warn'); toast('El proyecto es muy grande para la nube; se guardó solo en este navegador', 'err'); return }
             try { setSt('Guardando...'); await FB.fs.setDoc(FB.fs.doc(FB.db, 'users', uid, 'data', 'pichoncode'), o); setSt('Guardado en tu cuenta', 'ok'); if (manual === 1) toast('Proyecto guardado en tu cuenta', 'ok') }
             catch (e) { console.error(e); setSt('Solo guardado local', 'warn'); toast('No se pudo guardar en la nube', 'err') }
         }
         function probs() {
             if (!mon) return; var ms = mon.editor.getModelMarkers({}), er = ms.filter(function (m) { return m.severity == 8 }), wr = ms.filter(function (m) { return m.severity == 4 });
-            $('sprob').className = 'chip ' + (er.length ? 'err' : wr.length ? 'warn' : 'ok'); $('sprob').lastElementChild.textContent = er.length + ' errores, ' + wr.length + ' avisos';
+            $('sprob').className = 'chip click ' + (er.length ? 'err' : wr.length ? 'warn' : 'ok'); $('sprob').lastElementChild.textContent = er.length + ' errores, ' + wr.length + ' avisos';
             var b = $('bd'); b.style.display = er.length ? '' : 'none'; b.textContent = er.length;
             $('prob').innerHTML = er.concat(wr).slice(0, 200).map(function (m) { return '<div class="pr' + (m.severity == 4 ? ' w' : '') + '" data-p="' + esc(m.resource.path.slice(1)) + '" data-l="' + m.startLineNumber + '">' + ic('alert') + '<span>' + esc(m.message) + '</span><span class="mut">' + esc(m.resource.path.slice(1)) + ':' + m.startLineNumber + '</span></div>' }).join('') || '<div class="mut">Sin problemas detectados.</div>'
         }
@@ -1598,11 +1673,12 @@
             var c = e.ctrlKey || e.metaKey, k = e.key.toLowerCase(), f = null;
             if (c && !e.shiftKey && !e.altKey) f = ({ s: function () { saveNow(1) }, p: quick, b: tgSide, j: tgPanel, enter: run })[k];
             else if (c && e.shiftKey && k == 'f') f = function () { showSide(); sv(2) };
+            else if (c && e.shiftKey && k == 'p') f = function () { act2('editor.action.quickCommand') };
             else if (e.altKey && !c && k == 'w') f = function () { if (active) closeT(active) };
             else if (e.altKey && !c && k == 'n') f = function () { newFile() };
             if (f && ed && !$('ov').classList.contains('show')) { e.preventDefault(); e.stopPropagation(); f() }
         }, true);
-        window.addEventListener('beforeunload', function (e) { if (D.size) { e.preventDefault(); e.returnValue = '' } });
+        window.addEventListener('beforeunload', function (e) { if (D.size || PD) { e.preventDefault(); e.returnValue = '' } });
         pv(1);
     </script>
 </body>
