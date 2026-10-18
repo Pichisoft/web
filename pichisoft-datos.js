@@ -20,7 +20,6 @@
     var V = "https://www.gstatic.com/firebasejs/12.3.0/";
     var rawSet = Storage.prototype.setItem, rawRemove = Storage.prototype.removeItem;
     var pend = {}, timers = {}, lastPush = {};
-    var borrarNube = {};
     function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
     function id(k) { return encodeURIComponent(k); }
 
@@ -38,6 +37,8 @@
             if (!user) return;                       // sin cuenta: solo LocalStorage
             var uid = user.uid;
             function ref(k) { return F.doc(db, "users", uid, "data", id(k)); }
+
+            /* 0) Borrados pendientes (si la app borró una clave y no se llegó a borrar en la nube) */
             for (var b = 0; b < KEYS.length; b++) {
                 var bk = KEYS[b];
                 var marcaBorrado = "ps_borrar_nube__" + bk;
@@ -53,6 +54,7 @@
                     rawRemove.call(localStorage, marcaBorrado);
                 }
             }
+
             /* 1) Al abrir: si la nube tiene datos, mandan esos; si está vacía, sube lo que hay en este dispositivo */
             var cambio = false;
             for (var i = 0; i < KEYS.length; i++) {
@@ -80,26 +82,31 @@
                 var v = pend[k]; delete pend[k]; lastPush[k] = v;
                 F.setDoc(ref(k), { v: v, t: Date.now() }).catch(function (e) { console.warn("Pichisoft: no se pudo guardar " + k, e); });
             }
-            Storage.prototype.removeItem = function (k) {
-                rawRemove.call(this, k);
 
+            // Intercepta setItem: guarda en local y programa la subida a la nube
+            Storage.prototype.setItem = function (k, v) {
+                rawSet.call(this, k, v);
                 if (this === localStorage && KEYS.indexOf(k) > -1) {
-                    delete pend[k];
-
-                    rawSet.call(
-                        localStorage,
-                        "ps_borrar_nube__" + k,
-                        "1"
-                    );
-
-                    F.deleteDoc(ref(k)).catch(function () { });
+                    rawRemove.call(localStorage, "ps_borrar_nube__" + k);   // si se vuelve a guardar, ya no hay que borrar la nube
+                    pend[k] = String(v);
+                    clearTimeout(timers[k]);
+                    timers[k] = setTimeout(function () { flush(k); }, 1500);   // espera 1,5 s sin cambios y sube
                 }
             };
 
+            // Intercepta removeItem: borra en local y en la nube
             Storage.prototype.removeItem = function (k) {
                 rawRemove.call(this, k);
-                if (this === localStorage && KEYS.indexOf(k) > -1) { delete pend[k]; F.deleteDoc(ref(k)).catch(function () { }); }
+                if (this === localStorage && KEYS.indexOf(k) > -1) {
+                    delete pend[k];
+                    clearTimeout(timers[k]);
+                    rawSet.call(localStorage, "ps_borrar_nube__" + k, "1");
+                    F.deleteDoc(ref(k)).then(function () {
+                        rawRemove.call(localStorage, "ps_borrar_nube__" + k);
+                    }).catch(function () { });
+                }
             };
+
             function flushAll() { Object.keys(pend).forEach(flush); }
             document.addEventListener("visibilitychange", function () { if (document.hidden) flushAll(); });
             window.addEventListener("pagehide", flushAll);
