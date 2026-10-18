@@ -219,6 +219,7 @@ body.prem .p-gear{display:flex}
         { n: 'PichonList', u: 'pichonlist' },
         { n: 'PichonMorse', u: 'pichonmorse' },
         { n: 'PichonOpinion', t: ['proximo'] },
+         { n: 'PichonOlympus', t: ['proximo'] },
         { n: 'PichonPaint', u: 'pichonpaint', t: ['nuevo', 'beta'] },
         { n: 'PichonPass', u: 'pichonpass' },
         { n: 'PichonRandom', u: 'pichonrandom' },
