@@ -1631,6 +1631,19 @@
             de.setModel({ original: mo, modified: mm }); function done() { de.dispose(); mo.dispose(); mm.dispose(); shut() } $('dY').onclick = done; CANCEL = done; ov.onclick = function (e) { if (e.target === ov) done() }
         }
         function markSaved(f) { D.forEach(function (p) { if (M[p] && M[p].getValue() === f[p]) D.delete(p) }); PD = Object.keys(M).some(function (p) { return M[p].getValue() !== f[p] }); if (!PD) clearTimeout(timer); SV = Object.assign({}, f); tabs() }
+        function dirtyNow() { return Object.keys(M).some(function (p) { return M[p].getValue() !== SV[p] }) }
+        function afterPatch() { PD = dirtyNow(); if (PD) sched(); else { clearTimeout(timer); setSt('Guardado en tu cuenta', 'ok') } tabs(); tree(); probs() }
+        /* aplica borrados/renombres directo sobre lo guardado (nube y copia local) sin guardar tus otras ediciones */
+        async function patch(sf, sa, dl) {
+            function ap(d) { d.files = d.files || {}; d.assets = d.assets || {}; dl.forEach(function (x) { delete d.files[x]; delete d.assets[x] }); Object.assign(d.files, sf); Object.assign(d.assets, sa) }
+            var now = Date.now(), k = 'pc_' + uid + '_' + P.id, l = lsGet(k);
+            dl.forEach(function (x) { delete SV[x]; D.delete(x) }); Object.keys(sf).forEach(function (x) { SV[x] = sf[x] });
+            if (l) { ap(l); l.updated = now; try { localStorage.setItem(k, JSON.stringify(l)) } catch (e) { } }
+            var d = await fsGet('pc_' + P.id); if (!d) return;
+            ap(d); d.updated = now; var sync = (d.rev || 0) <= (P.rev || 0); d.rev = (d.rev || 0) + 1;
+            try { await FB.fs.setDoc(fsRef('pc_' + P.id), d); if (sync) { P.rev = d.rev; if (l) { l.rev = d.rev; try { localStorage.setItem(k, JSON.stringify(l)) } catch (e) { } } } }
+            catch (e) { console.error(e); toast('No se pudo borrar en la nube; quedó aplicado en este navegador', 'err') }
+        }
         async function saveNow(manual) {
             if (!P) return;
             if (opt.fmt && FOC && FOC.getModel()) { try { await FOC.getAction('editor.action.formatDocument').run() } catch (e) { } }
@@ -1731,7 +1744,7 @@
             if (on && !ed2) { ed2 = mon.editor.create($('ed2'), EO); wire(ed2); apply() }
             if (on) { A2 = A1 && M[A1] ? A1 : (open.filter(function (x) { return M[x] })[0] || null); ed2.setModel(A2 ? M[A2] : null) }
             else if (FOC === ed2) { FOC = ed; active = A1 }
-            tabs(); crumb()
+            tabs(); crumb(); probs()
         }
         function dropHS(p) { (HS[p] || []).forEach(function (h) { h.m.dispose() }); delete HS[p] }
         function inlineJs(p) {
@@ -1792,7 +1805,7 @@
             if (FOC === ed2) { A2 = p; ed2.setModel(p ? M[p] : null) } else { A1 = p; ed.setModel(asset || !p ? null : M[p]) }
             var iv = $('imgv'); iv.style.display = asset ? 'flex' : 'none'; if (asset) iv.firstChild.src = A[p];
             $('wel').style.display = open.length ? 'none' : 'flex';
-            $('sl').textContent = !p ? 'Texto' : asset ? 'Imagen' : M[p].getLanguageId(); tabs(); tree(); crumb(); saveTabs(); if (p && !asset) FOC.focus()
+            $('sl').textContent = !p ? 'Texto' : asset ? 'Imagen' : M[p].getLanguageId(); tabs(); tree(); crumb(); saveTabs(); probs(); if (p && !asset) FOC.focus()
         }
         function act2(a) { if (!FOC) return; FOC.focus(); FOC.trigger('m', a, null) }
         function tabs() { $('tabs').innerHTML = open.map(function (p) { return '<div class="tab' + (p === active ? ' on' : (ed2 && $('edwrap').classList.contains('split') && p === (FOC === ed2 ? A1 : A2) ? ' on2' : '')) + '" data-p="' + esc(p) + '">' + fic(p) + '<span>' + esc(p.split('/').pop()) + '</span>' + (D.has(p) ? '<u class="dot"></u>' : '') + '<b data-x="1">' + ic('x') + '</b></div>' }).join(''); crumb() }
@@ -1826,9 +1839,9 @@
             var p = await dlg({ t: dir ? 'Nueva carpeta' : 'Nuevo archivo', m: dir ? 'Escribí el nombre (podés anidar con /).' : 'Escribí la ruta, por ejemplo src/app.js', inp: typeof pre == 'string' ? pre : '', ok: 'Crear' }); if (!p) return; p = p.trim().replace(/^\/+/, ''); if (!p) return; if (dir) p = p.replace(/\/+$/, '') + '/.gitkeep';
             if (M[p] || A[p] !== undefined) { act(p); return } mk(p, dir ? '' : (TPL[ext(p)] || '')); if (!dir) act(p); else { tree(); toast('Carpeta creada', 'ok') } sched()
         }
-        async function ren(p) { var n = await dlg({ t: 'Renombrar', m: 'Nueva ruta o nombre para ' + esc(p), inp: p, ok: 'Renombrar' }); if (!n || n === p) return; n = n.trim(); if (M[n] || A[n] !== undefined) { toast('Ya existe ' + n, 'err'); return } if (M[p]) { var c = M[p].getValue(); dropHS(p); M[p].dispose(); delete M[p]; mk(n, c) } else { A[n] = A[p]; delete A[p] } if (A1 === p) A1 = n; if (A2 === p) A2 = n; open = open.map(function (x) { return x === p ? n : x }); act(active === p ? n : active); sched() }
-        async function del(p) { if (!await dlg({ t: 'Eliminar archivo', m: 'Se va a eliminar <b>' + esc(p) + '</b>. Esta acción no se puede deshacer.', ok: 'Eliminar', danger: 1 })) return; if (M[p]) { dropHS(p); M[p].dispose(); delete M[p] } else delete A[p]; D.delete(p); closeT(p); tree(); sched(); toast('Archivo eliminado') }
-        async function delDir(d) { if (!await dlg({ t: 'Eliminar carpeta', m: 'Se va a eliminar <b>' + esc(d) + '</b> con todo su contenido.', ok: 'Eliminar', danger: 1 })) return; Object.keys(M).concat(Object.keys(A)).filter(function (p) { return p.indexOf(d + '/') === 0 }).forEach(function (p) { if (M[p]) { dropHS(p); M[p].dispose(); delete M[p] } else delete A[p]; D.delete(p); open = open.filter(function (x) { return x !== p }) }); if (ed2 && !M[A2]) { A2 = null; ed2.setModel(null) } act(open.indexOf(active) > -1 ? active : open[0] || null); sched(); toast('Carpeta eliminada') }
+        async function ren(p) { var n = await dlg({ t: 'Renombrar', m: 'Nueva ruta o nombre para ' + esc(p), inp: p, ok: 'Renombrar' }); if (!n || n === p) return; n = n.trim(); if (M[n] || A[n] !== undefined) { toast('Ya existe ' + n, 'err'); return } if (M[p]) { var c = M[p].getValue(); dropHS(p); M[p].dispose(); delete M[p]; mk(n, c) } else { A[n] = A[p]; delete A[p] } if (A1 === p) A1 = n; if (A2 === p) A2 = n; open = open.map(function (x) { return x === p ? n : x }); act(active === p ? n : active); var sf = {}, sa = {}; if (M[n]) sf[n] = M[n].getValue(); else sa[n] = A[n]; await patch(sf, sa, [p]); afterPatch() }
+        async function del(p) { if (!await dlg({ t: 'Eliminar archivo', m: 'Se va a eliminar <b>' + esc(p) + '</b>. Esta acción no se puede deshacer.', ok: 'Eliminar', danger: 1 })) return; if (M[p]) { dropHS(p); M[p].dispose(); delete M[p] } else delete A[p]; D.delete(p); closeT(p); tree(); await patch({}, {}, [p]); afterPatch(); toast('Archivo eliminado') }
+        async function delDir(d) { if (!await dlg({ t: 'Eliminar carpeta', m: 'Se va a eliminar <b>' + esc(d) + '</b> con todo su contenido.', ok: 'Eliminar', danger: 1 })) return; var rm = Object.keys(M).concat(Object.keys(A)).filter(function (p) { return p.indexOf(d + '/') === 0 }); rm.forEach(function (p) { if (M[p]) { dropHS(p); M[p].dispose(); delete M[p] } else delete A[p]; D.delete(p); open = open.filter(function (x) { return x !== p }) }); if (ed2 && !M[A2]) { A2 = null; ed2.setModel(null) } act(open.indexOf(active) > -1 ? active : open[0] || null); await patch({}, {}, rm); afterPatch(); toast('Carpeta eliminada') }
         function data() { var f = {}; for (var p in M) f[p] = M[p].getValue(); return f }
         function setSt(t, c) { $('ss').className = 'chip ' + (c || ''); $('ss').lastElementChild.textContent = t }
         function sched() { if (!ed) return; PD = true; clearTimeout(timer); setSt('Sin guardar', 'warn'); if (opt.autosave) { setSt('Sin guardar...', 'warn'); timer = setTimeout(saveNow, 1500) } }
@@ -1885,13 +1898,19 @@
             if (tri) add(L.length, 1, (L[L.length - 1] || '').length + 1, 'Cadena de triple comilla sin cerrar');
             return mks
         }
+        var PS = 'file';
         function probs() {
-            if (!mon) return; var ms = mon.editor.getModelMarkers({}).filter(function (m) { return m.resource.path.indexOf('/__pc/') !== 0 }), er = ms.filter(function (m) { return m.severity == 8 }), wr = ms.filter(function (m) { return m.severity == 4 });
-            $('sprob').className = 'chip click ' + (er.length ? 'err' : wr.length ? 'warn' : 'ok'); $('sprob').lastElementChild.textContent = er.length + ' errores, ' + wr.length + ' avisos';
+            if (!mon) return;
+            var vis = [A1]; if (ed2 && $('edwrap').classList.contains('split')) vis.push(A2);
+            var all = mon.editor.getModelMarkers({}).filter(function (m) { return M[m.resource.path.slice(1)] && m.severity >= 4 }),
+                ms = PS == 'file' ? all.filter(function (m) { return vis.indexOf(m.resource.path.slice(1)) > -1 }) : all,
+                er = ms.filter(function (m) { return m.severity == 8 }), wr = ms.filter(function (m) { return m.severity == 4 }), oth = all.length - ms.length;
+            $('sprob').className = 'chip click ' + (er.length ? 'err' : wr.length ? 'warn' : 'ok'); $('sprob').lastElementChild.textContent = er.length + ' errores, ' + wr.length + ' avisos' + (oth ? ' (+' + oth + ' en otros archivos)' : '');
             var b = $('bd'); b.style.display = er.length ? '' : 'none'; b.textContent = er.length;
-            $('prob').innerHTML = er.concat(wr).slice(0, 200).map(function (m) { return '<div class="pr' + (m.severity == 4 ? ' w' : '') + '" data-p="' + esc(m.resource.path.slice(1)) + '" data-l="' + m.startLineNumber + '">' + ic('alert') + '<span>' + esc(m.message) + '</span><span class="mut">' + esc(m.resource.path.slice(1)) + ':' + m.startLineNumber + '</span></div>' }).join('') || '<div class="mut">Sin problemas detectados.</div>'
+            var sc = '<div class="seg" style="width:max-content;margin-bottom:8px"><button data-sc="file" class="' + (PS == 'file' ? 'on' : '') + '">Archivo actual</button><button data-sc="all" class="' + (PS == 'all' ? 'on' : '') + '">Todo el proyecto</button></div>';
+            $('prob').innerHTML = sc + (er.concat(wr).slice(0, 200).map(function (m) { var f = m.resource.path.slice(1); return '<div class="pr' + (m.severity == 4 ? ' w' : '') + '" data-p="' + esc(f) + '" data-l="' + m.startLineNumber + '">' + ic('alert') + '<span>' + esc(m.message) + '</span><span class="mut">' + esc(f) + ':' + m.startLineNumber + '</span></div>' }).join('') || '<div class="mut">' + (PS == 'file' ? 'Sin problemas en el archivo actual.' + (oth ? ' Hay ' + oth + ' en otros archivos.' : '') : 'Sin problemas detectados.') + '</div>')
         }
-        $('prob').onclick = function (e) { var r = e.target.closest('.pr'); if (r) goto(r.dataset.p, +r.dataset.l) };
+        $('prob').onclick = function (e) { var c = e.target.closest('[data-sc]'); if (c) { PS = c.dataset.sc; probs(); return } var r = e.target.closest('.pr'); if (r) goto(r.dataset.p, +r.dataset.l) };
         /* ===== Barra lateral y panel ===== */
         function sv(n) {
             $('sh1').style.display = n == 1 ? '' : 'none'; $('sh2').style.display = n == 2 ? '' : 'none'; $('tree').style.display = n == 1 ? '' : 'none'; $('sbox').style.display = n == 2 ? 'flex' : 'none'; $('sres').style.display = n == 2 ? 'block' : 'none';
