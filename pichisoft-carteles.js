@@ -135,7 +135,7 @@ Hemos creado la versión premium para PichonApps, en la que, puedas ordenar las 
         premiumPass: {
             activo: true,
             max: 0,
-            enfriamiento: 1 * HORA,      // vuelve a salir recién a la hora (cambialo o ponelo en 0)
+            enfriamiento: 0,      // vuelve a salir recién a la hora (cambialo o ponelo en 0)
             final: 30 * SEG,
             pantallas: [
                 {
