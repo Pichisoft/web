@@ -28,7 +28,7 @@
         /* Tiempo mínimo entre DOS carteles cualquiera (se cuenta desde que empieza el primero).
            Evita que, por ejemplo, el cartel de PichonApps y el de PichonPass salgan seguidos.
            Poné 0 para no limitar. */
-        ESPERA_GLOBAL: 40 * SEG,
+        ESPERA_GLOBAL: 0,
 
         /* Cuánto se queda el cartel en su pantalla final cuando el anuncio termina
            (en ese tiempo ya se puede cerrar con la X). Se cambia por anuncio con "final". */
