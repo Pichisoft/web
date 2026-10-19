@@ -107,7 +107,7 @@
                 },
                 {
                     titulo: 'Versión premium',
-                    texto: `Create una app de Pichisoft, y empieza a ver lo que realmente se siente usar una aplicación sin anuncios, funciones premium, ni estilos que combinen con nuestra personalidad: apreta el botón "Registrarse", create una cuenta (o si ya tienes una, inicia sesión) y disfruta de Pichisoft.`,
+                    texto: `Create una cuenta de Pichisoft, y empieza a ver lo que realmente se siente usar una aplicación sin anuncios, con funciones premium, y con estilos que combinen con nuestra personalidad: apreta el botón "Registrarse", create una cuenta (o si ya tienes una, inicia sesión) y disfruta de Pichisoft.`,
                     dur: 6 * SEG
                 }
             ],
@@ -116,7 +116,7 @@
                 efecto: 'brillo',
                 texto: `
 ¿Quieres que las apps estén ordenadas, que las puedas buscar por su nombre, y que puedas cambiar de interfaz?
-Hemos creado la versión premium para PichonApps, en la que, puedas ordenar las apps por tipo de app (herramientas, juegos, diversión...) y por tipo de prefijo (apps nuevas, actualizadas, en mantenimiento...). Y eso no es lo <strong>único</strong>: también puedes configurar para que las apps se abran en una nueva pestaña o en la misma, e incluso, con cuenta de Pichisoft, desbloqueas la versión premium para las aplicaciones que la tienen. Create una app de Pichisoft, y empieza a ver lo que realmente se siente usar una aplicación sin anuncios, funciones premium, ni estilos que combinen con nuestra personalidad: apreta el botón "Registrarse", create una cuenta (o si ya tienes una, inicia sesión) y disfruta de Pichisoft.
+Hemos creado la versión premium para PichonApps, en la que, puedas ordenar las apps por tipo de app (herramientas, juegos, diversión...) y por tipo de prefijo (apps nuevas, actualizadas, en mantenimiento...). Y eso no es lo <strong>único</strong>: también puedes configurar para que las apps se abran en una nueva pestaña o en la misma, e incluso, con cuenta de Pichisoft, desbloqueas la versión premium para las aplicaciones que la tienen. Create una cuenta de Pichisoft, y empieza a ver lo que realmente se siente usar una aplicación sin anuncios, con funciones premium, y con estilos que combinen con nuestra personalidad: apreta el botón "Registrarse", create una cuenta (o si ya tienes una, inicia sesión) y disfruta de Pichisoft.
 
 — Equipo Pichisoft.
 `
