@@ -88,27 +88,27 @@
             activo: true,
             max: 0,
             enfriamiento: 0,
-            final: 30 * SEG,
+            final: 40 * SEG,
             pantallas: [
                 {
                     titulo: 'Versión premium',
                     texto: `¿Quieres que las apps estén ordenadas, que las puedas buscar por su nombre, y que puedas cambiar de interfaz?`,
-                    dur: 7 * SEG
+                    dur: 6 * SEG
                 },
                 {
                     titulo: 'Versión premium',
                     texto: `Hemos creado la versión premium para PichonApps, en la que, puedas ordenar las apps por tipo de app (herramientas, juegos, diversión...) y por tipo de prefijo (apps nuevas, actualizadas, en mantenimiento...).`,
-                    dur: 6 * SEG
+                    dur: 8 * SEG
                 },
                 {
                     titulo: 'Versión premium',
                     texto: `Y eso no es lo <strong>único</strong>: también puedes configurar para que las apps se abran en una nueva pestaña o en la misma, e incluso, con cuenta de Pichisoft, desbloqueas la versión premium para las aplicaciones que la tienen.`,
-                    dur: 6 * SEG
+                    dur: 8 * SEG
                 },
                 {
                     titulo: 'Versión premium',
                     texto: `Create una cuenta de Pichisoft, y empieza a ver lo que realmente se siente usar una aplicación sin anuncios, con funciones premium, y con estilos que combinen con nuestra personalidad: apreta el botón "Registrarse", create una cuenta (o si ya tienes una, inicia sesión) y disfruta de Pichisoft.`,
-                    dur: 6 * SEG
+                    dur: 8 * SEG
                 }
             ],
             pantallaFinal: {
@@ -156,7 +156,7 @@ Hemos creado la versión premium para PichonApps, en la que, puedas ordenar las 
                 {
                     titulo: 'Versión premium',
                     texto: `Ya tenemos la versión premium de PichonPass. Para obtenerla, acceda a <a href="https://pichisoft.cc">pichisoft.cc</a> y hágase una cuenta, apretando el botón "Registrarse", o en caso de que ya tenga cuenta: "Iniciar sesión".`,
-                    dur: 6 * SEG
+                    dur: 8 * SEG
                 },
                 {
                     titulo: 'Versión premium',
