@@ -1986,29 +1986,27 @@
         /* ===== Archivos ===== */
         var IMGX = /^(png|jpe?g|gif|webp|ico|bmp|avif)$/;
         var LIVEWIN = null;
-        function goLive() {
-            if (!M || !Object.keys(M).length) return toast('No hay archivos para mostrar', 'err');
-            // Elige qué página abrir: el HTML activo, o index.html, o el primer .html que exista
-            var p = (active && /\.html?$/i.test(active) && M[active]) ? active
-                : M['index.html'] ? 'index.html'
-                    : Object.keys(M).filter(function (x) { return /\.html?$/i.test(x) })[0];
-            if (!p) return toast('No hay ningún archivo HTML para abrir', 'err');
-            // Ventana abierta en el mismo clic (evita el bloqueo de popups)
-            LIVEWIN = window.open('', 'pichoncode_live');
-            if (!LIVEWIN) return toast('El navegador bloqueó la pestaña nueva. Permití los popups.', 'err');
-            renderLive(p);
-            LIVEP = p;
-            toast('Go Live: ' + p, 'ok');
-        }
-        var LIVEP = null;
-        function renderLive(p) {
-            if (!LIVEWIN || LIVEWIN.closed || !M[p]) return;
-            // Sin HOOK de consola: es una página limpia, como en producción
-            var html = bld(p).replace(HOOK, '');
-            LIVEWIN.document.open();
-            LIVEWIN.document.write(html);
-            LIVEWIN.document.close();
-        }
+       var LIVEWIN = null, LIVEP = null, LIVEU = null;
+function liveUrl(p) {
+    if (LIVEU) URL.revokeObjectURL(LIVEU);
+    LIVEU = URL.createObjectURL(new Blob([bld(p).replace(HOOK, '')], { type: 'text/html' }));
+    return LIVEU;
+}
+function goLive() {
+    if (!M || !Object.keys(M).length) return toast('No hay archivos para mostrar', 'err');
+    var p = (active && /\.html?$/i.test(active) && M[active]) ? active
+        : M['index.html'] ? 'index.html'
+        : Object.keys(M).filter(function (x) { return /\.html?$/i.test(x) })[0];
+    if (!p) return toast('No hay ningún archivo HTML para abrir', 'err');
+    LIVEP = p;
+    LIVEWIN = window.open(liveUrl(p), 'pichoncode_live');
+    if (!LIVEWIN) return toast('El navegador bloqueó la pestaña nueva. Permití los popups.', 'err');
+    toast('Go Live: ' + p, 'ok');
+}
+function renderLive(p) {
+    if (!LIVEWIN || LIVEWIN.closed || !M[p]) return;
+    LIVEWIN.location.replace(liveUrl(p));
+}
         async function readFiles(L) {
             var n = 0; for (var i = 0; i < L.length; i++) {
                 var f = L[i], e = ext(f.name);
