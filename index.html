@@ -649,8 +649,9 @@
     <h1 class="titulo">PichonApps <span class="by">- By Pichisoft -</span></h1>
     <h3>Directorio de apps</h3>
     <ul>
-       <li>
-            <a target="_blank" rel="noopener noreferrer" href="https://pichisoft.cc/pichontutorial.html">PichonTutorial</a>
+        <li>
+            <a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.cc/pichontutorial.html">PichonTutorial</a>
             <span class="etiqueta et-cancelado">ELIMINADA</span>
             <span class="etiqueta et-ultimos">DISPONIBLE HASTA EL 31 DE OCTUBRE DE 2026</span>
         </li>
@@ -680,7 +681,7 @@
                 href="https://pichisoft.cc/pichondestiny.html">PichonDestiny</a></li>
         <li><a target="_blank" rel="noopener noreferrer" href="https://pichisoft.cc/pichondocs.html">PichonDocs</a></li>
         <li><a target="_blank" rel="noopener noreferrer" href="https://pichisoft.cc/pichonfood.html">PichonFood</a></li>
-          <li class="nuevo"><a target="_blank" rel="noopener noreferrer"
+        <li class="nuevo"><a target="_blank" rel="noopener noreferrer"
                 href="https://pichisoft.cc/pichongames.html">PichonGames</a></li>
         <li><a target="_blank" rel="noopener noreferrer" href="https://pichisoft.cc/pichonlist.html">PichonList</a></li>
         <li><a target="_blank" rel="noopener noreferrer" href="https://pichisoft.cc/pichonmorse.html">PichonMorse</a>
@@ -1350,6 +1351,7 @@
                     document.querySelectorAll('.ov').forEach(o => o.remove());
                     renderCuenta();
 
+
                 }).catch(error => {
                     console.error('Error cargando perfil desde Firestore:', error);
 
@@ -1757,46 +1759,46 @@
                 renderCuenta();
             };
         }
-        function renderCuenta() {
-            const box = document.getElementById('cuenta'), u = Pichisoft.user;
-            box.innerHTML = '';
-            if (!u) {
-                const b = document.createElement('button');
-                b.className = 'btn'; b.style.margin = 0; b.textContent = 'Registrarse';
-                b.onclick = pantallaBienvenida; box.appendChild(b); return;
-            }
-            const t = document.createElement('div');
-            t.style.textAlign = 'right';
+       function renderCuenta() {
+    const box = document.getElementById('cuenta'), u = Pichisoft.user;
+    box.innerHTML = '';
+    if (!u) {
+        const b = document.createElement('button');
+        b.className = 'btn'; b.style.margin = 0; b.textContent = 'Registrarse';
+        b.setAttribute('data-sin-anuncio', '');
+        b.onclick = pantallaBienvenida; box.appendChild(b); return;
+    }
+    const t = document.createElement('div');
+    t.style.textAlign = 'right';
 
-            const n = document.createElement('div');
-            n.className = 'nom';
-            n.textContent = u.name;
+    const n = document.createElement('div');
+    n.className = 'nom';
+    n.textContent = u.name;
 
-            const acciones = document.createElement('div');
-            acciones.className = 'cuenta-acciones';
+    const acciones = document.createElement('div');
+    acciones.className = 'cuenta-acciones';
 
-            const editar = document.createElement('button');
-            editar.className = 'cuenta-accion';
-            editar.textContent = 'Editar perfil';
-            editar.onclick = editarPerfil;
+    const editar = document.createElement('button');
+    editar.className = 'cuenta-accion';
+    editar.textContent = 'Editar perfil';
+    editar.onclick = editarPerfil;
 
-            const s = document.createElement('button');
-            s.className = 'cuenta-accion';
-            s.textContent = 'Cerrar sesión';
-            s.onclick = confirmarCerrarSesion;
+    const s = document.createElement('button');
+    s.className = 'cuenta-accion';
+    s.textContent = 'Cerrar sesión';
+    s.onclick = confirmarCerrarSesion;
 
-            acciones.append(editar, s);
-            t.append(n, acciones);
-            const w = document.createElement('div'); w.className = 'avwrap';
-            const a = document.createElement('div'); a.className = 'av';
-            if (okFoto(u.photo)) { const i = document.createElement('img'); i.src = u.photo; a.appendChild(i); }
-            else a.textContent = u.name[0].toUpperCase();
-            const l = document.createElement('button'); l.className = 'lapiz'; l.textContent = '✎'; l.title = 'Cambiar foto';
-            l.onclick = () => elegirFoto(f => { API.setPhoto(sesionK(), f); renderCuenta(); }, 'Cambiar foto de perfil');
-            w.append(a, l);
-            box.append(t, w);
-        }
-
+    acciones.append(editar, s);
+    t.append(n, acciones);
+    const w = document.createElement('div'); w.className = 'avwrap';
+    const a = document.createElement('div'); a.className = 'av';
+    if (okFoto(u.photo)) { const i = document.createElement('img'); i.src = u.photo; a.appendChild(i); }
+    else a.textContent = u.name[0].toUpperCase();
+    const l = document.createElement('button'); l.className = 'lapiz'; l.textContent = '✎'; l.title = 'Cambiar foto';
+    l.onclick = () => elegirFoto(f => { API.setPhoto(sesionK(), f); renderCuenta(); }, 'Cambiar foto de perfil');
+    w.append(a, l);
+    box.append(t, w);
+}
         /* ---------- Inicio ---------- */
         renderCuenta();
         if (!Pichisoft.user && !LS.get('ps_seen', 0)) pantallaBienvenida();
