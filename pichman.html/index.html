@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PichMan Series: El Rescate del Pichón</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="game-wrap">
+        <canvas id="game" width="1100" height="700"></canvas>
+        <div class="hud">
+            <div class="hud-top">
+                <div class="hud-player"><span class="badge">PICHMAN</span>RESCATE DEL PICHON</div>
+                <div class="hud-objective" id="objective">OBJETIVOS</div>
+                <div class="hud-timer" id="missionTimer">10:00</div>
+                <div class="hud-money">$ <span id="money">200</span></div>
+            </div>
+            <div class="hud-rush hidden" id="rushTimer">⏱️ 0:48</div>
+            <div class="hud-code hidden" id="codeDisplay">CÓDIGO: · · · · · · · ·</div>
+            <div class="hud-left">
+                <div class="health-bar">
+                    <div class="health-fill" id="hpFill"></div>
+                </div>
+                <div class="health-block">
+                    <div class="health-num" id="hp">100</div>
+                    <div class="health-label">VIDA</div>
+                </div>
+            </div>
+            <div class="shop-hint hidden" id="shopHint">E — Entrar en la PichShop</div>
+            <div class="hud-bottom-center">
+                <div class="weapon-line" id="selectedItemLine">
+                    <span class="key" id="selKey">—</span>
+                    <span class="weapon-name" id="selName">SIN ARMA</span>
+                    <span class="ammo" id="selCount">—</span>
+                </div>
+                <div class="gadgets" id="gadgetsRow">
+                    <span class="slot" data-slot="knife" title="Cuchillo (F)">F 🔪</span>
+                    <span class="slot" data-slot="stone" title="Piedra (R)">R 🪨 <span id="stoneCount">10</span></span>
+                    <span class="slot" data-slot="pistol" title="Pistola (1)">1 🔫 <span
+                            id="pistolCount">—</span></span>
+                    <span class="slot" data-slot="frag" title="Granada Frag (2)">2 💣 <span
+                            id="fragCount">0</span></span>
+                    <span class="slot" data-slot="smoke" title="Granada Humo (3)">3 💨 <span
+                            id="smokeCount">0</span></span>
+                    <span class="slot" data-slot="ham" title="Jamón (4)">4 🍖 <span id="hamCount">0</span></span>
+                    <span class="slot" data-slot="choripan" title="Choripán (5)">5 🌭 <span
+                            id="choripanCount">0</span></span>
+                    <span class="slot" data-slot="roastbeef" title="Roast Beef (6)">6 🥩 <span
+                            id="roastbeefCount">0</span></span>
+                    <span class="slot" data-slot="parrillada" title="Parrillada (7)">7 🍢 <span
+                            id="parrilladaCount">0</span></span>
+                    <span class="slot" data-slot="mine" title="Mina (8)">8 💥 <span id="mineCount">0</span></span>
+                    <span class="slot" data-slot="lighter" title="Encendedor+Nafta (9)">9 🔥 <span
+                            id="lighterCount">0</span></span>
+                    <span class="slot" data-slot="nails" title="Clavos (0)">0 🔩 <span id="nailsCount">0</span></span>
+                    <span class="slot" data-slot="rc_car" title="Auto RC (P)">P 🚗 <span id="rcCarCount">0</span></span>
+                </div>
+            </div>
+            <div class="hud-help" id="helpBtn" title="Ver controles">?</div>
+        </div>
+        <div class="shop-overlay hidden" id="shopOverlay">
+            <div class="shop-panel">
+                <div class="shop-header">
+                    <h2>ARMERÍA</h2>
+                    <div class="shop-money">FONDOS: <span id="shopMoney">$200</span></div>
+                </div>
+                <div class="shop-items" id="shopItems"></div>
+                <button class="shop-close" id="shopClose">CERRAR [E]</button>
+            </div>
+        </div>
+        <div class="help-overlay hidden" id="helpOverlay">
+            <div class="help-panel">
+                <h2>CONTROLES</h2>
+                <div class="help-grid">
+                    <div><strong>WASD</strong> Caminar (sigiloso)</div>
+                    <div><strong>SHIFT</strong> Correr (hace ruido)</div>
+                    <div><strong>Mouse</strong> Apuntar</div>
+                    <div><strong>Click</strong> Usar ítem</div>
+                    <div><strong>Scroll</strong> Cambiar ítem</div>
+                    <div><strong>Espacio</strong> Patada</div>
+                    <div><strong>F</strong> Cuchillo</div>
+                    <div><strong>Q</strong> Arrastrar cuerpo</div>
+                    <div><strong>R</strong> Piedra</div>
+                    <div><strong>E</strong> Tienda / Interactuar</div>
+                    <div><strong>Backspace</strong> Borrar dígito</div>
+                </div>
+                <button class="shop-close" id="helpClose">CERRAR</button>
+            </div>
+        </div>
+        <div class="overlay" id="overlay">
+            <div class="panel">
+                <h1 id="ovTitle">PichMan Series:<br><strong><em>El Rescate del Pichón</em></strong></h1>
+                <p id="ovText">
+                    <strong>MISIÓN:</strong> Eliminá al Objetivo, recolectá los 8 documentos, tomá la bandera y rescatá
+                    al
+                    Pichón.<br>
+                    <strong>WASD</strong> caminar (sigiloso) · <strong>SHIFT</strong> correr (te detectarán)<br>
+                    <strong>Mouse</strong> apuntar · <strong>Scroll</strong> seleccionar ítem · <strong>Click</strong>
+                    usar
+                    ítem<br>
+                    <strong>Espacio</strong> patada · <strong>F</strong> cuchillo · <strong>R</strong> lanzar piedra ·
+                    <strong>Q</strong> arrastrar<br>
+                    <strong>E</strong> tienda / interactuar<br><br>
+                    <strong>Tenés 10 minutos para completar la misión.</strong>
+                </p>
+                <button id="ovBtn">Iniciar Misión: Rescate del Pichón</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carga del script del juego -->
+    <script src="game.js"></script>
+
+    <!-- Diagnóstico opcional: si game.js falla, mostralo en consola -->
+    <script>
+        window.addEventListener('error', function (e) {
+            console.error('❌ Error cargando game.js:', e.message, 'en', e.filename, 'línea', e.lineno);
+        });
+    </script>
+    <!-- ===== Pichisoft - Estado de sesión ===== -->
+    <div id="pichisoft-session-status" role="status" aria-live="polite">
+        <span class="ps-check">✓</span>
+        <span class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span>
+    </div>
+
+    <div id="pichisoft-session-profile">
+        <div id="pichisoft-profile-picture"></div>
+        <span id="pichisoft-profile-name"></span>
+    </div>
+
+    <script>
+        (function () {
+            /* Todo va dentro de esta función para no chocar con las variables de la app */
+            var CFG = {
+                apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+                authDomain: "pichisoft.firebaseapp.com",
+                projectId: "pichisoft",
+                storageBucket: "pichisoft.firebasestorage.app",
+                messagingSenderId: "690032082295",
+                appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+                measurementId: "G-K7HRKR8BJ1"
+            };
+            var V = "https://www.gstatic.com/firebasejs/12.3.0/";
+            var DUR_INICIO = 12000;   // "Iniciando sesión..."
+            var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+
+            var box = document.getElementById("pichisoft-session-status");
+            var txt = box.querySelector(".ps-text");
+            var prof = document.getElementById("pichisoft-session-profile");
+            var pic = document.getElementById("pichisoft-profile-picture");
+            var nameEl = document.getElementById("pichisoft-profile-name");
+            var t0 = Date.now();
+
+            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
+               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
+            async function comprobar() {
+                try {
+                    var m = await Promise.all([
+                        import(V + "firebase-app.js"),
+                        import(V + "firebase-auth.js"),
+                        import(V + "firebase-firestore.js")
+                    ]);
+                    var app = m[0].initializeApp(CFG);
+                    var auth = m[1].getAuth(app);
+                    var db = m[2].getFirestore(app);
+
+                    var user = await Promise.race([
+                        new Promise(function (res) {
+                            m[1].onAuthStateChanged(auth, function (u) {
+                                window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
+                                res(u);
+                            });
+                        }),
+                        wait(15000).then(function () { throw new Error("tiempo agotado"); })
+                    ]);
+
+                    var perfil = {};
+                    if (user) {
+                        try {
+                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+                            if (snap.exists()) perfil = snap.data();
+                        } catch (e) {
+                            console.error("Pichisoft: no se pudo leer el perfil", e);
+                        }
+                    }
+                    return { user: user, perfil: perfil };
+                } catch (e) {
+                    console.error("Pichisoft:", e);
+                    return { error: true };
+                }
+            }
+
+            async function aviso(texto) {
+                txt.textContent = texto;
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+            }
+
+            (async function () {
+                var r = await comprobar();
+                await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
+
+                if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
+                if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
+
+                box.classList.add("success");
+                txt.textContent = "Sesión iniciada";
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+
+                var nombre = r.perfil.username || "Usuario";
+                nameEl.textContent = nombre;
+                var foto = r.perfil.photo;
+                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
+                    var img = new Image();
+                    img.src = foto;
+                    img.alt = "Foto de perfil";
+                    pic.replaceChildren(img);
+                } else {
+                    var ph = document.createElement("div");
+                    ph.className = "profile-placeholder";
+                    ph.textContent = nombre.charAt(0).toUpperCase();
+                    pic.replaceChildren(ph);
+                }
+                await wait(450);
+                prof.classList.add("visible");
+            })();
+        })(); 
+    </script>
+
+    <div class="header">
+        <span class="title">PichMan</span>
+        <span class="credit">- By Pichisoft und MofetaStudios- </span>
+    </div>
+       <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
+            href="https://pichisoft.cc" target="_blank"
+            style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
+
+</body>
+
+
+</html>
