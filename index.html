@@ -7,7 +7,7 @@
     <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.emailjs.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.googleapis.com https://api.mymemory.translated.net ws://127.0.0.1:5500; base-uri 'self'; form-action 'self'">
     <title>PichonApps</title>
-   <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <style>
         html {
             background-color: #222;
@@ -683,6 +683,8 @@
         <li class="nuevo"><a target="_blank" rel="noopener noreferrer"
                 href="https://pichisoft.cc/pichongames.html">PichonGames</a></li>
         <li><a target="_blank" rel="noopener noreferrer" href="https://pichisoft.cc/pichonlist.html">PichonList</a></li>
+        <li class="nuevo"><a target="_blank" rel="noopener noreferrer"
+                href="https://pichisoft.cc/pichman.html">PichMan</a></li>
         <li><a target="_blank" rel="noopener noreferrer" href="https://pichisoft.cc/pichonmorse.html">PichonMorse</a>
         </li>
         <li class="proximo"><a target="_blank" rel="noopener noreferrer"
@@ -1758,46 +1760,46 @@
                 renderCuenta();
             };
         }
-       function renderCuenta() {
-    const box = document.getElementById('cuenta'), u = Pichisoft.user;
-    box.innerHTML = '';
-    if (!u) {
-        const b = document.createElement('button');
-        b.className = 'btn'; b.style.margin = 0; b.textContent = 'Registrarse';
-        b.setAttribute('data-sin-anuncio', '');
-        b.onclick = pantallaBienvenida; box.appendChild(b); return;
-    }
-    const t = document.createElement('div');
-    t.style.textAlign = 'right';
+        function renderCuenta() {
+            const box = document.getElementById('cuenta'), u = Pichisoft.user;
+            box.innerHTML = '';
+            if (!u) {
+                const b = document.createElement('button');
+                b.className = 'btn'; b.style.margin = 0; b.textContent = 'Registrarse';
+                b.setAttribute('data-sin-anuncio', '');
+                b.onclick = pantallaBienvenida; box.appendChild(b); return;
+            }
+            const t = document.createElement('div');
+            t.style.textAlign = 'right';
 
-    const n = document.createElement('div');
-    n.className = 'nom';
-    n.textContent = u.name;
+            const n = document.createElement('div');
+            n.className = 'nom';
+            n.textContent = u.name;
 
-    const acciones = document.createElement('div');
-    acciones.className = 'cuenta-acciones';
+            const acciones = document.createElement('div');
+            acciones.className = 'cuenta-acciones';
 
-    const editar = document.createElement('button');
-    editar.className = 'cuenta-accion';
-    editar.textContent = 'Editar perfil';
-    editar.onclick = editarPerfil;
+            const editar = document.createElement('button');
+            editar.className = 'cuenta-accion';
+            editar.textContent = 'Editar perfil';
+            editar.onclick = editarPerfil;
 
-    const s = document.createElement('button');
-    s.className = 'cuenta-accion';
-    s.textContent = 'Cerrar sesión';
-    s.onclick = confirmarCerrarSesion;
+            const s = document.createElement('button');
+            s.className = 'cuenta-accion';
+            s.textContent = 'Cerrar sesión';
+            s.onclick = confirmarCerrarSesion;
 
-    acciones.append(editar, s);
-    t.append(n, acciones);
-    const w = document.createElement('div'); w.className = 'avwrap';
-    const a = document.createElement('div'); a.className = 'av';
-    if (okFoto(u.photo)) { const i = document.createElement('img'); i.src = u.photo; a.appendChild(i); }
-    else a.textContent = u.name[0].toUpperCase();
-    const l = document.createElement('button'); l.className = 'lapiz'; l.textContent = '✎'; l.title = 'Cambiar foto';
-    l.onclick = () => elegirFoto(f => { API.setPhoto(sesionK(), f); renderCuenta(); }, 'Cambiar foto de perfil');
-    w.append(a, l);
-    box.append(t, w);
-}
+            acciones.append(editar, s);
+            t.append(n, acciones);
+            const w = document.createElement('div'); w.className = 'avwrap';
+            const a = document.createElement('div'); a.className = 'av';
+            if (okFoto(u.photo)) { const i = document.createElement('img'); i.src = u.photo; a.appendChild(i); }
+            else a.textContent = u.name[0].toUpperCase();
+            const l = document.createElement('button'); l.className = 'lapiz'; l.textContent = '✎'; l.title = 'Cambiar foto';
+            l.onclick = () => elegirFoto(f => { API.setPhoto(sesionK(), f); renderCuenta(); }, 'Cambiar foto de perfil');
+            w.append(a, l);
+            box.append(t, w);
+        }
         /* ---------- Inicio ---------- */
         renderCuenta();
         if (!Pichisoft.user && !LS.get('ps_seen', 0)) pantallaBienvenida();
