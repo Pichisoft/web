@@ -198,7 +198,7 @@ body.prem .p-gear{display:flex}
     const LOGO = (document.querySelector('link[rel~="icon"]') || {}).href || '';
     const TAGS = {
         nuevo: ['NUEVO', 'et-nuevo'], actualizado: ['ACTUALIZADO', 'et-actualizado'], beta: ['BETA', 'et-beta'],
-        cancelado: ['ELIMINADA' /*en realidad es 'CANCELADO', lo cambié temporalmente para pichontutorial*/ , 'et-cancelado'], ultimos: ['DISPONIBLE HASTA EL 31 DE OCTUBRE DE 2026', 'et-ultimos'],
+        cancelado: ['ELIMINADA' /*en realidad es 'CANCELADO', lo cambié temporalmente para pichontutorial*/, 'et-cancelado'], ultimos: ['DISPONIBLE HASTA EL 31 DE OCTUBRE DE 2026', 'et-ultimos'],
         actcancelada: ['ACTUALIZACIÓN CANCELADA', 'et-act-cancelada'], mantenimiento: ['EN MANTENIMIENTO', 'et-mantenimiento'],
         premium: ['VERSIÓN PREMIUM', 'et-premium'], proximo: ['PRÓXIMAMENTE', 'et-proximo']
     };
@@ -218,6 +218,7 @@ body.prem .p-gear{display:flex}
         { n: 'PichonFood', u: 'pichonfood' },
         { n: 'PichonGames', u: 'pichongames', t: ['nuevo'] },
         { n: 'PichonList', u: 'pichonlist' },
+        { n: 'PichonMan', u: 'pichman', t: ['nuevo'] },
         { n: 'PichonMorse', u: 'pichonmorse' },
         { n: 'PichonOlympus', t: ['proximo'] },
         { n: 'PichonOpinion', t: ['proximo'] },
@@ -231,7 +232,7 @@ body.prem .p-gear{display:flex}
     const MAP = Object.fromEntries(APPS.map(a => [a.n, a]));
     const CATS = [
         { id: 'utiles', nombre: 'Herramientas', apps: ['PichonTutorial', 'PichonInfo', 'PichonRules', 'PichonCode', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonCalc', 'PichonCalendar', 'PichonAlarm'] },
-        { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake', 'PichonChess', 'PichonGames'] },
+        { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake', 'PichonChess', 'PichonGames', 'PichMan'] },
         { id: 'azar', nombre: 'Azar', apps: ['PichonDestiny', 'PichonRandom'] },
         { id: 'divertidas', nombre: 'Diversión', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonPaint', 'PichonWatch'] }
     ];
