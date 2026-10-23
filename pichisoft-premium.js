@@ -106,6 +106,7 @@ body.vista-lista .tags .etiqueta{font-size:.62rem;padding:3px 7px}
 .grp-h .etiqueta{margin:0 6px 0 0;font-size:.74rem}
 .grp-h.txt{font-size:.85rem;color:#aaa}
 .p-no{color:#bbb;font-family:Verdana,sans-serif;font-size:.9rem;padding:20px 4px}
+.linkdemail{color:rgb(0,247,255)!important;text-decoration:underline!important}.linkdemail:hover{color:rgb(0,183,255)!important;background-color:#000000!important}
 
 .p-gear{display:none;position:fixed;top:82px;right:16px;z-index:50;width:42px;height:42px;padding:0;border-radius:50%;background:#1c1c1c;border:1px solid var(--line);color:var(--gold2);cursor:pointer;align-items:center;justify-content:center;transition:transform .3s,border-color .2s}
 body.prem .p-gear{display:flex}
@@ -291,7 +292,7 @@ body.prem .p-gear{display:flex}
     <input id="pQ" type="text" inputmode="search" autocomplete="off" spellcheck="false" placeholder="Destiny, Calc, Snake…" aria-label="Buscar apps de Pichon">
   </div>
   <div id="pBody"></div>
-  <p class="p-no" id="pNo" hidden>No encontramos ninguna app con ese nombre.</p>
+  <p class="p-no" id="pNo" hidden>No encontramos ninguna app con ese nombre. ¿Quiere sugerir una? <a class="linkdemail"href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Cuéntenos</a>.</p>
 </div>`);
         document.body.insertAdjacentHTML('beforeend', `
 <button class="p-gear" id="pGear" aria-label="Configuración" title="Configuración"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
