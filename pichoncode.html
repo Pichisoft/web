@@ -1325,6 +1325,22 @@
                 height: 190px
             }
         }
+        /* grip del panel: sin selección de texto */
+#grip{top:0;height:8px;touch-action:none;user-select:none;-webkit-user-select:none}
+body.drag{user-select:none;-webkit-user-select:none;cursor:ns-resize}
+body.drag iframe{pointer-events:none}
+
+/* vista previa a pantalla completa */
+#pmin{display:none}
+#panel.full{position:fixed;inset:0;height:auto!important;z-index:14000;border:0;border-radius:0;background:#fff}
+#panel.full .ptabs,#panel.full #con,#panel.full #rrow,#panel.full #prob,#panel.full #grip{display:none!important}
+#panel.full #prev{display:block!important;width:100%;height:100%}
+#panel.full #pmin{display:block;position:absolute;top:10px;right:10px;width:30px;height:30px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(11,10,16,.65);backdrop-filter:blur(4px);opacity:.55;transition:.2s;z-index:7}
+#pmin:hover{opacity:1;background:rgba(11,10,16,.92)}
+#pmin::before,#pmin::after{content:"";position:absolute;width:6px;height:6px;border:0 solid #fff}
+#pmin::before{top:8px;left:8px;border-right-width:2px;border-bottom-width:2px}
+#pmin::after{bottom:8px;right:8px;border-left-width:2px;border-top-width:2px}
+body.pfull #topband,body.pfull .header,body.pfull .plink,body.pfull #pichisoft-session-status,body.pfull #pichisoft-session-profile{display:none}
     </style>
 </head>
 
@@ -1404,7 +1420,7 @@
                     </div>
                 </div>
                 <div id="panel" class="card">
-                    <div id="grip"></div>
+                  <div id="grip"></div><button id="pmin" title="Salir de pantalla completa (Esc)" onclick="minPrev()"></button>
                     <div class="ptabs"><button class="pt on" id="p1" onclick="pv(1)"><i
                                 class="ic i-term"></i>Consola</button><button class="pt" id="p2" onclick="pv(2)"><i
                                 class="ic i-globe"></i>Vista previa</button><button class="pt" id="p3"
@@ -1412,7 +1428,7 @@
                                 style="display:none"></span></button>
                         <div class="sp"></div><button class="ib" title="Limpiar consola"
                             onclick="$('con').innerHTML=''"><i class="ic i-trash"></i></button><button class="ib"
-                            title="Ampliar panel" onclick="$('panel').classList.toggle('max')"><i
+                          title="Vista previa a pantalla completa" onclick="maxPrev()"><i
                                 class="ic i-expand"></i></button><button class="ib" title="Cerrar panel"
                             onclick="tgPanel()"><i class="ic i-x"></i></button>
                     </div>
@@ -1649,8 +1665,15 @@
             try { await FB.fs.setDoc(fsRef('pc_' + P.id), d); if (sync) { P.rev = d.rev; if (l) { l.rev = d.rev; try { localStorage.setItem(k, JSON.stringify(l)) } catch (e) { } } } }
             catch (e) { console.error(e); toast('No se pudo borrar en la nube; quedó aplicado en este navegador', 'err') }
         }
-        async function saveNow(manual) {
-            if (!P) return;
+        function busy(m) { var d = document.createElement('div'); d.className = 'toast'; d.textContent = m; $('toasts').appendChild(d); return function () { d.classList.add('out'); setTimeout(function () { d.remove() }, 400) } }
+async function saveNow(manual) {
+    var end = manual === 1 ? busy('Guardando...') : null;
+    setSt('Guardando...', 'warn');
+    await new Promise(function (r) { setTimeout(r, 40) }); // deja pintar el cartel antes del trabajo pesado
+    try { await saveCore(manual) } finally { if (end) end() }
+}
+      async function saveCore(manual) {
+    if (!P) return;
             if (opt.fmt && FOC && FOC.getModel()) { try { await FOC.getAction('editor.action.formatDocument').run() } catch (e) { } }
             var f = data(), o = { name: P.name, files: f, assets: A, updated: Date.now(), rev: (P.rev || 0) + 1 };
             setSt('Guardando...');
@@ -1933,7 +1956,12 @@
         function showPanel() { $('panel').style.display = '' }
         $('rail').onclick = function (e) { var b = e.target.closest('[data-r]'); if (!b) return; var r = b.dataset.r; if (r == 'f') { showSide(); sv(1) } else if (r == 's') { showSide(); sv(2) } else if (r == 'c') act2('editor.action.quickCommand'); else { showPanel(); pv(1) } };
         function pv(n) { [1, 2, 3].forEach(function (i) { $('p' + i).classList.toggle('on', i == n) }); $('con').style.display = n == 1 ? '' : 'none'; $('rrow').style.display = n == 1 ? 'flex' : 'none'; $('prev').style.display = n == 2 ? 'block' : 'none'; $('prob').style.display = n == 3 ? 'block' : 'none' }
-        (function () { var g = $('grip'), y, h; g.onmousedown = function (e) { y = e.clientY; h = $('panel').offsetHeight; document.onmousemove = function (m) { $('panel').style.height = Math.max(80, Math.min(window.innerHeight - 250, h + y - m.clientY)) + 'px' }; document.onmouseup = function () { document.onmousemove = document.onmouseup = null } } })();
+       (function () {
+    var g = $('grip'), y, h, on = false;
+    g.onpointerdown = function (e) { e.preventDefault(); on = true; y = e.clientY; h = $('panel').offsetHeight; g.setPointerCapture(e.pointerId); document.body.classList.add('drag') };
+    g.onpointermove = function (e) { if (!on) return; $('panel').style.height = Math.max(80, Math.min(window.innerHeight - 250, h + y - e.clientY)) + 'px' };
+    g.onpointerup = g.onpointercancel = function (e) { on = false; document.body.classList.remove('drag'); try { g.releasePointerCapture(e.pointerId) } catch (x) { } };
+})();
         /* ===== Búsqueda ===== */
         function search() {
             var q = $('sq').value.toLowerCase(), h = '', n = 0, f = 0; if (q.length < 2) { $('sres').innerHTML = ''; return }
@@ -1953,13 +1981,14 @@
         var HOOK = '<script>(function(){function s(a){return Array.prototype.map.call(a,function(x){try{return typeof x==="object"?JSON.stringify(x):String(x)}catch(e){return String(x)}}).join(" ")}["log","info","warn","error"].forEach(function(k){var o=console[k];console[k]=function(){parent.postMessage({pc:1,t:k==="error"?"e":k==="warn"?"w":k==="info"?"i":"",a:s(arguments)},"*");o.apply(console,arguments)}});window.onerror=function(m,u,l){parent.postMessage({pc:1,t:"e",a:m+" (línea "+l+")"},"*")};window.addEventListener("unhandledrejection",function(e){parent.postMessage({pc:1,t:"e",a:"Promesa rechazada: "+e.reason},"*")});window.addEventListener("message",function(e){if(e.data&&e.data.pcEval!=null){try{console.log((0,eval)(e.data.pcEval))}catch(x){console.error(x)}}})})();<\/script>';
         function inl(c) { return c.replace(/<\/script/gi, '<\\/script') }
         var IMP = /(\b(?:from|import)\s*\(?\s*)(['"])(\.{1,2}\/[^'"]+)\2/g;
-        function norm(f) { return f.replace(/^\.?\//, '') }
+        var CURP = '';
+function norm(f) { return resP(CURP, f) }
         function res(from, s) { var o = []; from.split('/').slice(0, -1).concat(s.split('/')).forEach(function (x) { if (x == '..') o.pop(); else if (x && x != '.') o.push(x) }); var r = o.join('/'); return M[r] ? r : M[r + '.js'] ? r + '.js' : M[r + '/index.js'] ? r + '/index.js' : r }
         function modules(code, from, map) { return code.replace(IMP, function (m, a, q, s) { var r = res(from, s); if (M[r] && !map[r]) { map[r] = 1; map[r] = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(modules(M[r].getValue(), r, map)) } return a + q + 'pc:/' + r + q }) }
         function inject(c, s) { var r = [/<head[^>]*>/i, /<html[^>]*>/i, /<!doctype[^>]*>/i], x; for (var i = 0; i < 3; i++)if ((x = r[i].exec(c))) return c.slice(0, x.index + x[0].length) + s + c.slice(x.index + x[0].length); return s + c }
         function assets(c) { return c.replace(/(\b(?:src|href|poster)=["'])([^"'#?:]+)(["'])/gi, function (m, a, f, b) { f = norm(f); return A[f] !== undefined ? a + A[f] + b : m }).replace(/url\(\s*["']?([^"')]+?)["']?\s*\)/gi, function (m, f) { f = norm(f); return A[f] !== undefined ? 'url(' + A[f] + ')' : m }) }
         function bld(p) {
-            var c = M[p].getValue(), map = {};
+           var c = M[p].getValue(), map = {}; CURP = p;
             if (/\.html?$/i.test(p)) {
                 c = c.replace(/<link[^>]*href=["']([^"']+)["'][^>]*>/gi, function (m, f) { f = norm(f); return M[f] && /\.css$/i.test(f) ? '<style>' + M[f].getValue() + '</style>' : m })
                     .replace(/<script([^>]*?)src=["']([^"']+)["']([^>]*)><\/script>/gi, function (m, a, f, b) { f = norm(f); if (!M[f]) return m; var mod = /type\s*=\s*["']module["']/i.test(a + b), code = M[f].getValue(); return '<script' + a + b + '>' + inl(mod ? modules(code, f, map) : code) + '<\/script>' })
@@ -1974,24 +2003,55 @@
             showPanel(); pv(1); log('i', 'Ejecutando Python...');
             try { if (!py) { log('i', 'Cargando Python por primera vez, puede tardar unos segundos...'); await loadJs('https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js'); py = await loadPyodide({ stdout: function (t) { log('', t) }, stderr: function (t) { log('e', t) } }) } await py.runPythonAsync(code) } catch (e) { log('e', String(e.message || e)) }
         }
-        function run() {
-            if (!active || !M[active]) return toast('Abrí un archivo de texto para ejecutarlo'); var p = active, e = ext(p);
-            if (e == 'py') return runPy(M[p].getValue());
-            if (e == 'css' && M['index.html']) { active = 'index.html'; p = active }
-            else if (!/^(html?|m?js)$/.test(e)) return toast('Se pueden ejecutar archivos HTML, JavaScript y Python', 'err');
-            showPanel(); log('i', 'Ejecutando ' + p + '...'); pv(/^m?js$/.test(e) ? 1 : 2); PV = /\.html?$/i.test(p) ? p : null; $('prev').srcdoc = bld(p)
-        }
+      function run() {
+    if (!active || !M[active]) return toast('Abrí un archivo de texto para ejecutarlo'); var p = active, e = ext(p);
+    if (e == 'py') return runPy(M[p].getValue());
+    if (!/^(html?|css|m?js)$/.test(e)) return toast('Se pueden ejecutar archivos HTML, JavaScript y Python', 'err');
+    var h = null;
+    if (/^html?$/.test(e)) h = p;
+    else {
+        var fn = p.split('/').pop();
+        h = Object.keys(M).filter(function (x) { return /\.html?$/i.test(x) && M[x].getValue().indexOf(fn) > -1 })[0] || (M['index.html'] ? 'index.html' : null);
+        if (!h && e == 'css') return toast('No hay ningún HTML para ver este CSS', 'err')
+    }
+    showPanel();
+    if (h) { log('i', 'Ejecutando ' + h + '...'); PV = h; $('prev').srcdoc = bld(h); pv(2) }
+    else { log('i', 'Ejecutando ' + p + '...'); PV = null; $('prev').srcdoc = bld(p); pv(1) }
+}
+        function maxPrev() {
+    var pn = $('panel'); if (pn.classList.contains('full')) return minPrev();
+    showPanel();
+    if (!PV) { var h = (active && /\.html?$/i.test(active) && M[active]) ? active : M['index.html'] ? 'index.html' : Object.keys(M).filter(function (x) { return /\.html?$/i.test(x) })[0]; if (h) { PV = h; $('prev').srcdoc = bld(h) } }
+    pv(2); pn.classList.add('full'); document.body.classList.add('pfull');
+    if (pn.requestFullscreen) pn.requestFullscreen().catch(function () { })
+}
+function minPrev() {
+    $('panel').classList.remove('full'); document.body.classList.remove('pfull');
+    if (document.fullscreenElement) document.exitFullscreen().catch(function () { });
+    pv(2)
+}
+document.addEventListener('fullscreenchange', function () { if (!document.fullscreenElement && $('panel').classList.contains('full')) minPrev() });
         function newTab() { if (!active) return; var u = URL.createObjectURL(new Blob([bld(/\.html?$/i.test(active) ? active : (M['index.html'] ? 'index.html' : active))], { type: 'text/html' })); NATIVE_OPEN(u, '_blank') || toast('El navegador bloqueó la nueva pestaña', 'err') }
         $('rp').onkeydown = function (e) { if (e.key != 'Enter' || !this.value.trim()) return; var c = this.value; this.value = ''; log('i', '> ' + c); var f = $('prev'); if (!f.srcdoc) { f.srcdoc = HOOK; setTimeout(function () { f.contentWindow.postMessage({ pcEval: c }, '*') }, 300) } else f.contentWindow.postMessage({ pcEval: c }, '*') };
         /* ===== Archivos ===== */
         var IMGX = /^(png|jpe?g|gif|webp|ico|bmp|avif)$/;
         var LIVEWIN = null;
         var LIVEWIN = null, LIVEP = null, LIVEU = null;
-        function liveUrl(p) {
-            if (LIVEU) URL.revokeObjectURL(LIVEU);
-            LIVEU = URL.createObjectURL(new Blob([bld(p).replace(HOOK, '')], { type: 'text/html' }));
-            return LIVEU;
-        }
+      var LIVENAV = '<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(!a||e.defaultPrevented||e.ctrlKey||e.metaKey||e.shiftKey)return;var h=a.getAttribute("href");if(!h||/^(#|[a-z][a-z0-9+.-]*:|[/][/])/i.test(h))return;if(a.target&&a.target!=="_self")return;if(window.opener&&window.opener.pcLiveNav&&window.opener.pcLiveNav(h))e.preventDefault()});<\/script>';
+function liveUrl(p) {
+    if (LIVEU) URL.revokeObjectURL(LIVEU);
+    LIVEU = URL.createObjectURL(new Blob([bld(p).replace(HOOK, function () { return LIVENAV })], { type: 'text/html' }));
+    return LIVEU;
+}
+function resP(from, s) { var o = s[0] == '/' ? [] : from.split('/').slice(0, -1); s.split('/').forEach(function (x) { if (x == '..') o.pop(); else if (x && x != '.') o.push(x) }); var r = o.join('/'); return s.slice(-1) == '/' ? r + '/' : r }
+window.pcLiveNav = function (h) {
+    if (!LIVEP || !LIVEWIN || LIVEWIN.closed) return false;
+    var q = h.split('#')[0].split('?')[0]; if (!q) return false; try { q = decodeURIComponent(q) } catch (e) { }
+    var r = resP(LIVEP, q), C = (r == '' || r.slice(-1) == '/') ? [r + 'index.html'] : [r, r + '.html', r + '/index.html'];
+    var c = C.filter(function (x) { return M[x] && /\.html?$/i.test(x) })[0];
+    if (!c) { toast('No existe ' + q + ' en el proyecto', 'err'); return true }
+    LIVEP = c; renderLive(c); return true
+};
         function goLive() {
             if (!M || !Object.keys(M).length) return toast('No hay archivos para mostrar', 'err');
             var p = (active && /\.html?$/i.test(active) && M[active]) ? active
@@ -2042,7 +2102,7 @@
         document.addEventListener('mousedown', function (e) { if (!e.target.closest('#menu') && !e.target.closest('#menus')) closeMenu() });
         /* ===== Atajos globales ===== */
         document.addEventListener('keydown', function (e) {
-            if (e.key == 'Escape') { closeMenu(); if (CANCEL) CANCEL(); return }
+           if (e.key == 'Escape') { if ($('panel').classList.contains('full')) { minPrev(); return } closeMenu(); if (CANCEL) CANCEL(); return }
             var c = e.ctrlKey || e.metaKey, k = e.key.toLowerCase(), f = null;
             if (c && !e.shiftKey && !e.altKey) f = ({ s: function () { saveNow(1) }, p: quick, b: tgSide, j: tgPanel, enter: run, '\\': tgSplit })[k];
             else if (c && e.shiftKey && k == 'f') f = function () { showSide(); sv(2) };
