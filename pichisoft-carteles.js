@@ -205,7 +205,7 @@ Ya disponible, PichonPass —Versión premium—.
        ================================================================= */
     const DISPARADORES = [
         /* PICHONAPPS · cada 5 clics (apps o botones). Para contar CUALQUIER clic: selector:'body' */
-        { nombre: 'apps-clics', activo: true, tipo: 'click', si: '#cuenta', selector: 'body', anuncios: ['premiumApps'], cada: 2 },
+        { nombre: 'apps-clics', activo: true, tipo: 'click', si: '#cuenta', selector: 'body', anuncios: ['premiumApps'], cada: 4 },
 
         /* PICHONAPPS · al entrar (apagado: poné activo:true si también lo querés al entrar) */
         { nombre: 'apps-entrada', activo: true, tipo: 'entrada', si: '#cuenta', anuncios: ['premiumApps'], retraso: 1500 },
