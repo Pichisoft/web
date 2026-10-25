@@ -170,7 +170,7 @@ body.prem .p-gear{display:flex}
 .pml-btn:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
 
 @media (max-width:600px){
-  .p-gear{position:absolute;top:70px;right:10px;width:38px;height:38px}
+  .p-gear{position:fixed;top:70px;right:10px;width:38px;height:38px}
   body.prem .titulo,body.prem .bienvenida{padding-right:46px}
   .badge-prem{font-size:11px;margin:6px 0 0}
   .bienvenida{font-size:.95rem}
@@ -233,7 +233,7 @@ body.prem .p-gear{display:flex}
     const MAP = Object.fromEntries(APPS.map(a => [a.n, a]));
     const CATS = [
         { id: 'utiles', nombre: 'Herramientas', apps: ['PichonTutorial', 'PichonInfo', 'PichonRules', 'PichonCode', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonCalc', 'PichonCalendar', 'PichonAlarm'] },
-      { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake', 'PichonChess', 'PichonGames', 'PichonMan'] },
+        { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake', 'PichonChess', 'PichonGames', 'PichonMan'] },
         { id: 'azar', nombre: 'Azar', apps: ['PichonDestiny', 'PichonRandom'] },
         { id: 'divertidas', nombre: 'Diversión', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonPaint', 'PichonWatch'] }
     ];
@@ -272,7 +272,7 @@ body.prem .p-gear{display:flex}
         CATS.forEach(c => {
             cats[c.id] = ((sv.cats && sv.cats[c.id]) || []).filter(n => MAP[n] && !usadas.has(n) && usadas.add(n));
         });
-      CATS.forEach(c => c.apps.forEach(n => { if (MAP[n] && !usadas.has(n)) { usadas.add(n); cats[c.id].push(n); } }));
+        CATS.forEach(c => c.apps.forEach(n => { if (MAP[n] && !usadas.has(n)) { usadas.add(n); cats[c.id].push(n); } }));
         const fu = new Set(), flat = (sv.flat || []).filter(n => MAP[n] && !fu.has(n) && fu.add(n));
         APPS.forEach(a => { if (!fu.has(a.n)) flat.push(a.n); });
         lay = { cats, flat };
@@ -302,7 +302,22 @@ body.prem .p-gear{display:flex}
             if (/^pichon/i.test(e.target.value)) e.target.value = e.target.value.replace(/^pichon\s*/i, '');
             filtrar();
         };
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarConfig(); });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') cerrarConfig();
+
+            // Si la barra de búsqueda está activa y visible en la configuración
+            if (cfg.buscador) {
+                const esCtrlK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k';
+                const esBarra = e.key === '/' && document.activeElement !== $('#pQ');
+
+                if (esCtrlK || esBarra) {
+                    e.preventDefault();
+                    $('#pQ').focus();
+                    $('#pQ').select(); // Opcional: selecciona el texto actual para sobrescribir rápido
+                }
+            }
+        });
+
     }
 
     /* Etiquetas más cortas para que entren en la tarjeta (el texto completo queda en el tooltip) */
@@ -364,7 +379,7 @@ body.prem .p-gear{display:flex}
         const h = document.createElement('div'); h.className = 'cat-h';
         h.innerHTML = '<i class="ci ci-' + c.id + '" aria-hidden="true"></i><span>' + c.nombre + '</span>';
         const l = document.createElement('div'); l.className = 'lista'; l.dataset.cat = c.id;
-lay.cats[c.id].forEach(n => MAP[n] && l.append(item(MAP[n], true)));
+        lay.cats[c.id].forEach(n => MAP[n] && l.append(item(MAP[n], true)));
         s.append(h, l); return s;
     }
 
