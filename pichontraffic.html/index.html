@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>PichonTraffic</title>
+  
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+   <div class="header">
+        <span class="title">PichonTraffic</span>
+        <span class="credit">- By Pichisoft and MofetaStudios-</span>
+    </div>
+
+    <div class="game-wrap">
+        <canvas id="game" width="400" height="620"></canvas>
+
+        <div class="hud">
+            <div class="hud-item">
+                <span class="label">Puntos</span>
+                <span id="score">0</span>
+            </div>
+            <div class="hud-item right">
+                <span class="label">Récord</span>
+                <span id="best">0</span>
+            </div>
+        </div>
+
+        <div class="hud-ammo">
+            <span class="label">Balas</span>
+            <span id="ammo">5</span>
+        </div>
+
+        <div class="overlay" id="overlay">
+            <div class="panel">
+                <h1 id="ovTitle">🚗 Esquiva el Tráfico</h1>
+                <p id="ovText">
+                    Muévete con <strong>← →</strong> o <strong>A / D</strong>.<br>
+                    Dispara con <strong>Espacio</strong>.<br>
+                    Cada 5 autos que esquives, ¡+1 bala!
+                </p>
+                <button id="ovBtn">Jugar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+     <!-- ===== Pichisoft - Estado de sesión ===== -->
+  <div id="pichisoft-session-status" role="status" aria-live="polite">
+    <span class="ps-check">✓</span>
+    <span class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span>
+  </div>
+
+  <div id="pichisoft-session-profile">
+    <div id="pichisoft-profile-picture"></div>
+    <span id="pichisoft-profile-name"></span>
+  </div>
+
+  <script>
+    (function () {
+      /* Todo va dentro de esta función para no chocar con las variables de la app */
+      var CFG = {
+        apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+        authDomain: "pichisoft.firebaseapp.com",
+        projectId: "pichisoft",
+        storageBucket: "pichisoft.firebasestorage.app",
+        messagingSenderId: "690032082295",
+        appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+        measurementId: "G-K7HRKR8BJ1"
+      };
+      var V = "https://www.gstatic.com/firebasejs/12.3.0/";
+      var DUR_INICIO = 12000;   // "Iniciando sesión..."
+      var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+
+      var box = document.getElementById("pichisoft-session-status");
+      var txt = box.querySelector(".ps-text");
+      var prof = document.getElementById("pichisoft-session-profile");
+      var pic = document.getElementById("pichisoft-profile-picture");
+      var nameEl = document.getElementById("pichisoft-profile-name");
+      var t0 = Date.now();
+
+      function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+      /* Espera a que Firebase confirme si hay sesión y lee el perfil.
+         Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
+      async function comprobar() {
+        try {
+          var m = await Promise.all([
+            import(V + "firebase-app.js"),
+            import(V + "firebase-auth.js"),
+            import(V + "firebase-firestore.js")
+          ]);
+          var app = m[0].initializeApp(CFG);
+          var auth = m[1].getAuth(app);
+          var db = m[2].getFirestore(app);
+
+          var user = await Promise.race([
+            new Promise(function (res) {
+              m[1].onAuthStateChanged(auth, function (u) {
+                window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
+                res(u);
+              });
+            }),
+            wait(15000).then(function () { throw new Error("tiempo agotado"); })
+          ]);
+
+          var perfil = {};
+          if (user) {
+            try {
+              var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+              if (snap.exists()) perfil = snap.data();
+            } catch (e) {
+              console.error("Pichisoft: no se pudo leer el perfil", e);
+            }
+          }
+          return { user: user, perfil: perfil };
+        } catch (e) {
+          console.error("Pichisoft:", e);
+          return { error: true };
+        }
+      }
+
+      async function aviso(texto) {
+        txt.textContent = texto;
+        await wait(DUR_MENSAJE);
+        box.classList.add("hidden");
+      }
+
+      (async function () {
+        var r = await comprobar();
+        await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
+
+        if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
+        if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
+
+        box.classList.add("success");
+        txt.textContent = "Sesión iniciada";
+        await wait(DUR_MENSAJE);
+        box.classList.add("hidden");
+
+        var nombre = r.perfil.username || "Usuario";
+        nameEl.textContent = nombre;
+        var foto = r.perfil.photo;
+        if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
+          var img = new Image();
+          img.src = foto;
+          img.alt = "Foto de perfil";
+          pic.replaceChildren(img);
+        } else {
+          var ph = document.createElement("div");
+          ph.className = "profile-placeholder";
+          ph.textContent = nombre.charAt(0).toUpperCase();
+          pic.replaceChildren(ph);
+        }
+        await wait(450);
+        prof.classList.add("visible");
+      })();
+    })();
+    </script>
+     <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
+            href="https://pichisoft.cc" target="_blank"
+            style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
+
+</body>
+
+</html>
