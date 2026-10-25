@@ -1,8 +1,6 @@
-/* Pichisoft - guarda los datos de la app en tu cuenta (si hay sesión) para verlos en cualquier dispositivo.
-   Sin sesión: no hace nada y la app sigue usando solo LocalStorage.
-   Uso (en cada app, antes de </body>):
-   <script src="pichisoft-datos.js" data-keys="clave1,clave2"></script>
-   data-keys = nombres de las claves de localStorage que usa esa app. */
+/* Pichisoft - guarda los datos de la app en tu cuenta (si hay sesión).
+   Uso:
+   <script src="pichisoft-datos.js" data-keys="clave1,clave2"></script> */
 (function () {
     var me = document.currentScript;
     var KEYS = ((me && me.dataset.keys) || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
@@ -34,15 +32,14 @@
                 new Promise(function (res) { Au.onAuthStateChanged(auth, function (u) { res(u); }); }),
                 wait(15000).then(function () { return null; })
             ]);
-            if (!user) return;                       // sin cuenta: solo LocalStorage
+            if (!user) return;
             var uid = user.uid;
             function ref(k) { return F.doc(db, "users", uid, "data", id(k)); }
 
-            /* 0) Borrados pendientes (si la app borró una clave y no se llegó a borrar en la nube) */
+            /* 0) Borrados pendientes */
             for (var b = 0; b < KEYS.length; b++) {
                 var bk = KEYS[b];
                 var marcaBorrado = "ps_borrar_nube__" + bk;
-
                 if (localStorage.getItem(marcaBorrado) === "1") {
                     try {
                         await F.deleteDoc(ref(bk));
@@ -50,23 +47,27 @@
                         console.warn("Pichisoft: no se pudo borrar " + bk + " de la nube.", e);
                         continue;
                     }
-
                     rawRemove.call(localStorage, marcaBorrado);
                 }
             }
 
-            /* 1) Al abrir: si la nube tiene datos, mandan esos; si está vacía, sube lo que hay en este dispositivo */
+            /* 1) Al abrir: la nube manda. FIX: saltamos keys con borrado pendiente. */
             var cambio = false;
-            for (var i = 0; i < KEYS.length; i++) {
-                var k = KEYS[i], dk = "ps_dueno__" + k, dueno = localStorage.getItem(dk);
-                if (dueno && dueno !== uid) rawRemove.call(localStorage, k);   // datos de otra cuenta: no se mezclan
+            for (let i = 0; i < KEYS.length; i++) {
+                const k = KEYS[i];
+                const dk = "ps_dueno__" + k, dueno = localStorage.getItem(dk);
+                if (dueno && dueno !== uid) rawRemove.call(localStorage, k);
                 rawSet.call(localStorage, dk, uid);
-                var local = localStorage.getItem(k);
-                var snap = await F.getDoc(ref(k));
+
+                /* FIX: si quedó una marca de borrado pendiente, no restauramos desde la nube */
+                if (localStorage.getItem("ps_borrar_nube__" + k) === "1") continue;
+
+                const local = localStorage.getItem(k);
+                const snap = await F.getDoc(ref(k));
                 if (snap.exists() && typeof snap.data().v === "string") {
-                    var cloud = snap.data().v;
+                    const cloud = snap.data().v;
                     if (local !== cloud) {
-                        if (local !== null) rawSet.call(localStorage, k + "__respaldo", local);   // copia de seguridad
+                        if (local !== null) rawSet.call(localStorage, k + "__respaldo", local);
                         rawSet.call(localStorage, k, cloud);
                         cambio = true;
                     }
@@ -75,7 +76,7 @@
                 }
             }
 
-            /* 2) Desde ahora, cada cambio de la app se guarda también en la nube */
+            /* 2) Interceptar cambios */
             function flush(k) {
                 clearTimeout(timers[k]);
                 if (!(k in pend)) return;
@@ -83,26 +84,26 @@
                 F.setDoc(ref(k), { v: v, t: Date.now() }).catch(function (e) { console.warn("Pichisoft: no se pudo guardar " + k, e); });
             }
 
-            // Intercepta setItem: guarda en local y programa la subida a la nube
             Storage.prototype.setItem = function (k, v) {
                 rawSet.call(this, k, v);
-                if (this === localStorage && KEYS.indexOf(k) > -1) {
-                    rawRemove.call(localStorage, "ps_borrar_nube__" + k);   // si se vuelve a guardar, ya no hay que borrar la nube
-                    pend[k] = String(v);
-                    clearTimeout(timers[k]);
-                    timers[k] = setTimeout(function () { flush(k); }, 1500);   // espera 1,5 s sin cambios y sube
+                var ks = String(k);
+                if (this === localStorage && KEYS.indexOf(ks) > -1) {
+                    rawRemove.call(localStorage, "ps_borrar_nube__" + ks);
+                    pend[ks] = String(v);
+                    clearTimeout(timers[ks]);
+                    timers[ks] = setTimeout(function () { flush(ks); }, 1500);
                 }
             };
 
-            // Intercepta removeItem: borra en local y en la nube
             Storage.prototype.removeItem = function (k) {
                 rawRemove.call(this, k);
-                if (this === localStorage && KEYS.indexOf(k) > -1) {
-                    delete pend[k];
-                    clearTimeout(timers[k]);
-                    rawSet.call(localStorage, "ps_borrar_nube__" + k, "1");
-                    F.deleteDoc(ref(k)).then(function () {
-                        rawRemove.call(localStorage, "ps_borrar_nube__" + k);
+                var ks = String(k);
+                if (this === localStorage && KEYS.indexOf(ks) > -1) {
+                    delete pend[ks];
+                    clearTimeout(timers[ks]);
+                    rawSet.call(localStorage, "ps_borrar_nube__" + ks, "1");
+                    F.deleteDoc(ref(ks)).then(function () {
+                        rawRemove.call(localStorage, "ps_borrar_nube__" + ks);
                     }).catch(function () { });
                 }
             };
@@ -111,16 +112,14 @@
             document.addEventListener("visibilitychange", function () { if (document.hidden) flushAll(); });
             window.addEventListener("pagehide", flushAll);
 
-            /* 3) Si llegaron datos nuevos de la nube, se recarga una vez para que la app los muestre */
+            /* 3) Recarga una vez si llegaron datos nuevos de la nube */
             var rk = "ps_datos_reload_" + location.pathname;
             if (cambio && Date.now() - (+sessionStorage.getItem(rk) || 0) > 20000) {
                 sessionStorage.setItem(rk, String(Date.now()));
                 location.reload();
             }
 
-            /* 4) Cambios hechos desde otro dispositivo: se aplican solos.
-                  - al volver a la app (cambiás de pestaña / abrís el celular): se actualiza enseguida
-                  - con la app abierta: se actualiza cuando pasan 4 segundos sin que toques nada */
+            /* 4) Cambios desde otro dispositivo */
             var remoto = {}, idleT = null;
             function aplicar() {
                 var ks = Object.keys(remoto);
