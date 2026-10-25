@@ -1668,6 +1668,291 @@
             background: transparent !important;
             border: 1px solid rgba(0, 0, 0, 0.3) !important;
         }
+
+        /* =========================================================
+   ICONOS DIBUJADOS EN CSS (sin emojis)
+   ========================================================= */
+
+        /* ---- Luna (tema oscuro activo) ---- */
+        .theme-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            position: relative;
+            vertical-align: middle;
+        }
+
+        .theme-icon.moon::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            margin: -8px 0 0 -8px;
+            border-radius: 50%;
+            background: currentColor;
+            -webkit-mask: radial-gradient(circle at 72% 28%, transparent 42%, #000 44%);
+            mask: radial-gradient(circle at 72% 28%, transparent 42%, #000 44%);
+        }
+
+        /* ---- Sol (tema claro activo) ---- */
+        .theme-icon.sun::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            margin: -4px 0 0 -4px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .theme-icon.sun::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 18px;
+            height: 18px;
+            margin: -9px 0 0 -9px;
+            background:
+                linear-gradient(currentColor, currentColor) top center / 2px 4px no-repeat,
+                linear-gradient(currentColor, currentColor) bottom center / 2px 4px no-repeat,
+                linear-gradient(currentColor, currentColor) left center / 4px 2px no-repeat,
+                linear-gradient(currentColor, currentColor) right center / 4px 2px no-repeat;
+        }
+
+        /* ---- Lápiz (editar) ---- */
+        .icon-pencil {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            position: relative;
+            transform: rotate(-45deg);
+            flex: 0 0 18px;
+        }
+
+        .icon-pencil::before {
+            content: "";
+            position: absolute;
+            width: 5px;
+            height: 11px;
+            background: currentColor;
+            top: 4px;
+            left: 6.5px;
+            border-radius: 1px;
+        }
+
+        .icon-pencil::after {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 2.5px solid transparent;
+            border-right: 2.5px solid transparent;
+            border-top: 4px solid currentColor;
+            top: 0;
+            left: 6.5px;
+        }
+
+        /* ---- Candado ---- */
+        .icon-lock {
+            display: inline-block;
+            width: 12px;
+            height: 10px;
+            position: relative;
+            background: currentColor;
+            border-radius: 2px;
+            margin-right: 7px;
+            vertical-align: middle;
+            top: -1px;
+        }
+
+        .icon-lock::before {
+            content: "";
+            position: absolute;
+            width: 8px;
+            height: 7px;
+            border: 1.5px solid currentColor;
+            border-bottom: 0;
+            border-radius: 4px 4px 0 0;
+            top: -7px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-sizing: border-box;
+        }
+
+        /* ---- Documento (frase) ---- */
+        .icon-doc {
+            display: inline-block;
+            width: 11px;
+            height: 14px;
+            border: 1.5px solid currentColor;
+            border-radius: 1px;
+            position: relative;
+            margin-right: 7px;
+            vertical-align: middle;
+            top: -1px;
+            box-sizing: border-box;
+        }
+
+        .icon-doc::before {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 2px;
+            width: 5px;
+            height: 1px;
+            background: currentColor;
+            box-shadow: 0 3px 0 currentColor, 0 6px 0 currentColor;
+        }
+
+        /* ---- Flecha (resumen de registro) ---- */
+        .record-arrow {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 5px 0 5px 8px;
+            border-color: transparent transparent transparent currentColor;
+            transition: transform 0.2s ease;
+            flex: 0 0 auto;
+        }
+
+        .card[open] .record-arrow {
+            transform: rotate(90deg);
+        }
+
+        /* La regla vieja de .record-arrow (font-size + transform 90) ya no aplica */
+        /* =========================================================
+   TOASTS (avisos flotantes, sin alert)
+   ========================================================= */
+
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10000;
+            pointer-events: none;
+            width: min(420px, calc(100vw - 30px));
+        }
+
+        .toast {
+            padding: 13px 18px;
+            border-radius: 9px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: auto;
+            cursor: pointer;
+            border: 1px solid transparent;
+            line-height: 1.35;
+        }
+
+        .toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.error {
+            background: #8e3030;
+            color: #ffffff;
+            border-color: #642020;
+        }
+
+        .toast.success {
+            background: #20a84b;
+            color: #ffffff;
+            border-color: #167a36;
+        }
+
+        .toast.info {
+            background: #2b2e34;
+            color: #eeeeee;
+            border-color: #444;
+        }
+
+        body.light .toast.info {
+            background: #ffffff;
+            color: #222222;
+            border-color: #ccc;
+        }
+
+        /* Coherencia con el estilo Premium */
+        body.premium-mode .toast.info,
+        body.premium-mode .toast.success {
+            border-color: rgba(179, 139, 39, 0.6);
+        }
+
+        /* =========================================================
+   CONFIGURACIÓN DE CIERRE DE SESIÓN
+   ========================================================= */
+
+        .session-settings {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-top: 22px;
+            padding: 14px 16px;
+            border-radius: 9px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        body.dark .session-settings {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid #444;
+        }
+
+        body.light .session-settings {
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid #ccc;
+        }
+
+        .session-settings label {
+            font-weight: bold;
+            font-family: "Times New Roman", Times, serif;
+        }
+
+        .session-settings select {
+            font: inherit;
+            padding: 7px 10px;
+            border-radius: 6px;
+            border: 1px solid #aaa;
+            cursor: pointer;
+            min-width: 160px;
+        }
+
+        body.dark .session-settings select {
+            background: #1b1d22;
+            color: #eeeeee;
+        }
+
+        body.light .session-settings select {
+            background: #ffffff;
+            color: #222222;
+        }
+
+        body.premium-mode.dark .session-settings {
+            border-color: rgba(179, 139, 39, 0.5);
+            background: rgba(179, 139, 39, 0.08);
+        }
+
+        body.premium-mode.light .session-settings {
+            border-color: rgba(179, 139, 39, 0.5);
+            background: rgba(179, 139, 39, 0.06);
+        }
     </style>
 
 </head>
@@ -1691,8 +1976,8 @@
             <a class="pichisoft-link" href="https://pichisoft.cc" target="_blank" rel="noopener noreferrer">
                 Pichisoft
             </a>
-            <button id="themeBtn" onclick="toggleTheme()">
-                🌙
+            <button id="themeBtn" onclick="toggleTheme()" aria-label="Cambiar tema">
+                <span class="theme-icon moon"></span>
             </button>
         </div>
     </div>
@@ -1715,14 +2000,15 @@
         <input id="username" placeholder="Nombre de usuario">
         <input id="password" type="password" placeholder="Contraseña">
         <div class="master-password-warning">
-            🔐 <strong>Importante:</strong> si olvidas tu contraseña maestra, o quieres editarla,
-            no podrás recuperarla. por lo tanto, te recomendamos que elijas una contraseña larga y difícil. No la
+            <span class="icon-lock" aria-hidden="true"></span>
+            <strong>Importante:</strong> si olvidas tu contraseña maestra, o quieres editarla,
+            no podrás recuperarla. Por lo tanto, te recomendamos que elijas una contraseña larga y difícil. No la
             compartas con nadie y recuerda anotarla en un lugar seguro.
         </div>
         <button id="loginBtn" onclick="login()">Entrar</button>
         <button onclick="resetAll()">Restablecer datos</button>
         <div id="error" style="color:red;display:none">
-            Usuario o contraseña incorrectos
+            Usuario o contraseña incorrectos.
         </div>
     </div>
 
@@ -1792,12 +2078,12 @@
 
                         <button id="randomPasswordBtn" class="generator-option active" type="button"
                             onclick="selectGenerator('password')">
-                            🔐 Contraseña aleatoria
+                            <span class="icon-lock" aria-hidden="true"></span>Contraseña aleatoria
                         </button>
 
                         <button id="passphraseBtn" class="generator-option" type="button"
                             onclick="selectGenerator('phrase')">
-                            📝 Frase de contraseña
+                            <span class="icon-doc" aria-hidden="true"></span>Frase de contraseña
                         </button>
 
                     </div>
@@ -1872,12 +2158,84 @@
         <div id="list"></div>
 
 
+        <div class="session-settings">
+            <label for="autoLogoutSelect">Cierre de sesión por inactividad:</label>
+            <select id="autoLogoutSelect" onchange="updateAutoLogout()">
+                <option value="60000">1 minuto</option>
+                <option value="300000">5 minutos</option>
+                <option value="900000">15 minutos</option>
+                <option value="1800000">30 minutos</option>
+                <option value="3600000">1 hora</option>
+                <option value="0">Nunca (no recomendado)</option>
+            </select>
+        </div>
+
         <button type="button" onclick="logout()" style="margin-top:20px;">
             Cerrar sesión
         </button>
 
     </div>
     <script>
+        /* ============================================================
+   AUTO-LOGOUT CONFIGURABLE
+   ============================================================ */
+
+        function loadAutoLogoutConfig() {
+            const saved = localStorage.getItem("pichonpass-autologout");
+            if (saved !== null) {
+                const parsed = parseInt(saved, 10);
+                TIEMPO_CIERRE_SESION = Number.isFinite(parsed) ? parsed : 300000;
+            }
+            const select = document.getElementById("autoLogoutSelect");
+            if (select) select.value = String(TIEMPO_CIERRE_SESION);
+            startInactivityWatcher();
+        }
+
+        function updateAutoLogout() {
+            const select = document.getElementById("autoLogoutSelect");
+            if (!select) return;
+            TIEMPO_CIERRE_SESION = parseInt(select.value, 10) || 0;
+            localStorage.setItem("pichonpass-autologout", String(TIEMPO_CIERRE_SESION));
+            showToast(
+                TIEMPO_CIERRE_SESION === 0
+                    ? "Cierre automático desactivado."
+                    : "Cierre automático: " + formatDuration(TIEMPO_CIERRE_SESION),
+                "info",
+                2500
+            );
+            startInactivityWatcher();
+        }
+
+        function formatDuration(ms) {
+            const min = Math.round(ms / 60000);
+            if (min < 60) return min + " min";
+            const horas = Math.floor(min / 60);
+            const resto = min % 60;
+            return horas + " h" + (resto ? " " + resto + " min" : "");
+        }
+
+        function recordActivity() {
+            lastActivity = Date.now();
+        }
+
+        function startInactivityWatcher() {
+            if (inactivityTimer) clearInterval(inactivityTimer);
+            if (TIEMPO_CIERRE_SESION <= 0) return;
+
+            inactivityTimer = setInterval(() => {
+                if (document.visibilityState !== "visible") return;
+                if (!cryptoKey) return; // solo cuando hay sesión abierta
+                if (Date.now() - lastActivity >= TIEMPO_CIERRE_SESION) {
+                    clearInterval(inactivityTimer);
+                    showToast("Cerrando sesión por inactividad…", "info", 2000, () => logout());
+                }
+            }, 10000); // revisa cada 10s
+        }
+
+        // Registrar actividad
+        ["mousemove", "keydown", "click", "scroll", "touchstart"].forEach((evt) => {
+            document.addEventListener(evt, recordActivity, { passive: true });
+        });
 
         /* ============================================================
            Tus registros se guardan CIFRADOS (AES-GCM) con tu contraseña
@@ -1887,7 +2245,11 @@
         let vault = [];
         let cryptoKey = null, cryptoSalt = null, masterUser = "";
         const BD = "pichonpass-bd";
-        const TIEMPO_CIERRE_SESION = 60000; // 60 segundos en milisegundos
+        // Tiempo de cierre por inactividad — configurable por el usuario
+        let TIEMPO_CIERRE_SESION = 300000; // 5 minutos por defecto
+        let lastActivity = Date.now();
+        let inactivityTimer = null;
+        let horaSalida = null;
 
         const te = new TextEncoder(), td = new TextDecoder();
 
@@ -1913,21 +2275,6 @@
             localStorage.setItem(BD, JSON.stringify({ u: masterUser, s: toHex(cryptoSalt), i: toHex(iv), c: toB64(ct) }));
         }
 
-        function initTheme() {
-            const savedTheme = localStorage.getItem("pichonpass-theme");
-
-            // Predeterminado: oscuro
-            const theme = savedTheme === "light" ? "light" : "dark";
-
-            document.body.classList.remove("dark", "light");
-            document.body.classList.add(theme);
-
-            const btn = document.getElementById("themeBtn");
-
-            if (btn) {
-                btn.textContent = theme === "dark" ? "🌙" : "☀️";
-            }
-        }
 
         function toggleTheme() {
             const cambiarTema = () => {
@@ -1942,7 +2289,11 @@
                 const btn = document.getElementById("themeBtn");
 
                 if (btn) {
-                    btn.textContent = newTheme === "dark" ? "🌙" : "☀️";
+                    const icon = btn.querySelector(".theme-icon");
+                    if (icon) {
+                        icon.classList.remove("moon", "sun");
+                        icon.classList.add(newTheme === "dark" ? "moon" : "sun");
+                    }
                 }
             };
 
@@ -1964,28 +2315,21 @@
             }, 400);
         }
         (function () {
-
             const body = document.body;
             const btn = document.getElementById("themeBtn");
+            const saved = localStorage.getItem("pichonpass-theme");
+            const theme = saved === "light" ? "light" : "dark";
 
-            const saved =
-                localStorage.getItem("pichonpass-theme");
+            body.classList.remove("dark", "light");
+            body.classList.add(theme);
 
-            if (saved === "light") {
-
-                body.classList.remove("dark");
-                body.classList.add("light");
-
-                btn.textContent = "☀️";
-
-            } else {
-
-                body.classList.remove("light");
-                body.classList.add("dark");
-
-                btn.textContent = "🌙";
+            if (btn) {
+                const icon = btn.querySelector(".theme-icon");
+                if (icon) {
+                    icon.classList.remove("moon", "sun");
+                    icon.classList.add(theme === "dark" ? "moon" : "sun");
+                }
             }
-
         })();
 
         /* LOGIN */
@@ -2072,22 +2416,6 @@
             document.getElementById("resetModal").style.display = "flex";
         }
 
-        /* GENERADOR */
-        function gen() {
-            let c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>/?~`¬¦¢£¥§±÷×";
-            let n = parseInt(len.value) || 20;
-
-            let r = new Uint32Array(n);
-            crypto.getRandomValues(r);
-
-            let out = "";
-            for (let i = 0; i < n; i++) {
-                out += c[r[i] % c.length];
-            }
-
-            pass.value = out;
-            checkStrength();
-        }
 
         async function save() {
             // Aseguramos capturar los elementos correctamente
@@ -2169,7 +2497,6 @@
 
                 const arrow = document.createElement("span");
                 arrow.className = "record-arrow";
-                arrow.textContent = "▶";
 
                 const summaryTitle = document.createElement("span");
                 summaryTitle.className = "record-summary-title";
@@ -2320,48 +2647,25 @@
         }
         async function copyRecord(i, button) {
             const r = vault[i];
-
             const partes = [];
 
-            if (r.title) {
-                partes.push(`Título: ${r.title}`);
-            }
-
-            if (r.user) {
-                partes.push(`Usuario: ${r.user}`);
-            }
-
-            if (r.email) {
-                partes.push(`Email: ${r.email}`);
-            }
-
-            if (r.pass) {
-                partes.push(`Contraseña: ${r.pass}`);
-            }
-
-            if (r.notes) {
-                partes.push(`Notas: ${r.notes}`);
-            }
+            if (r.title) partes.push(`Título: ${r.title}`);
+            if (r.user) partes.push(`Usuario: ${r.user}`);
+            if (r.email) partes.push(`Email: ${r.email}`);
+            if (r.pass) partes.push(`Contraseña: ${r.pass}`);
+            if (r.notes) partes.push(`Notas: ${r.notes}`);
 
             const texto = partes.join("\n");
 
             try {
-                await navigator.clipboard.writeText(texto);
-
-                const icon = button.querySelector(".copy-record-icon");
-
-                if (!icon) return;
-
-                icon.textContent = "✓";
+                // Usa copyText() → ya limpia el portapapeles a los 45s
+                await copyText(texto);
+                // El ✓ lo dibuja el CSS cuando está la clase .copied. No tocar textContent.
                 button.classList.add("copied");
-
-                setTimeout(() => {
-                    icon.textContent = "📋";
-                    button.classList.remove("copied");
-                }, 5000);
-
+                setTimeout(() => button.classList.remove("copied"), 5000);
             } catch (error) {
                 console.error("No se pudo copiar el registro:", error);
+                showToast("No se pudo copiar el registro al portapapeles.", "error");
             }
         }
 
@@ -2371,29 +2675,27 @@
         }
 
         function initTheme() {
-            // Revisa si el usuario ya había elegido un tema antes
-            let savedTheme = localStorage.getItem("pichonpass-theme");
-            if (savedTheme === "light") {
-                document.body.classList.remove("dark");
-                document.body.classList.add("light");
+            const isDark = document.body.classList.contains("dark");
+            const btn = document.getElementById("themeBtn");
+            if (btn) {
+                const icon = btn.querySelector(".theme-icon");
+                if (icon) {
+                    icon.classList.remove("moon", "sun");
+                    icon.classList.add(isDark ? "moon" : "sun");
+                }
             }
-            else if (savedTheme === "dark") {
-                document.body.classList.remove("light");
-                document.body.classList.add("dark");
-            }
-            // Sincroniza el emoji del botón según el estado final del body
-            let isDark = document.body.classList.contains("dark");
-            if (themeBtn) themeBtn.textContent = isDark ? "🌙" : "☀️";
 
-            // NUEVO: Recuerda el nombre de usuario si existe y lo escribe en el input
+            // Recuerda el nombre de usuario si existe
             const rememberedUser = localStorage.getItem("pichonpass-remembered-user");
             const usernameInput = document.getElementById("username");
             if (rememberedUser && usernameInput) {
                 usernameInput.value = rememberedUser;
-                // Opcional: Pone el foco directamente en la contraseña para agilizar el ingreso
                 const passwordInput = document.getElementById("password");
                 if (passwordInput) passwordInput.focus();
             }
+
+            // Cargar config de auto-logout
+            loadAutoLogoutConfig();
         }
         window.onload = initTheme;
 
@@ -3004,72 +3306,54 @@
          */
 
         const PASS_PHRASE_WORDS = [
-
-            "nombre",
-            "computadora",
-            "taza",
-            "caminando",
-            "estufa",
-            "beber",
-            "ventana",
-            "montaña",
-            "perro",
-            "gato",
-            "libro",
-            "nube",
-            "teclado",
-            "camino",
-            "sol",
-            "luna",
-            "casa",
-            "puerta",
-            "jardín",
-            "árbol",
-            "agua",
-            "fuego",
-            "cielo",
-            "mesa",
-            "silla",
-            "reloj",
-            "zapato",
-            "camisa",
-            "tren",
-            "avión",
-            "bicicleta",
-            "pelota",
-            "escuela",
-            "música",
-            "papel",
-            "lápiz",
-            "ventilador",
-            "teléfono",
-            "pantalla",
-            "techo",
-            "mar",
-            "río",
-            "bosque",
-            "estrella",
-            "planeta",
-            "café",
-            "pan",
-            "queso",
-            "puente",
-            "puerta"
-
+            "nombre", "computadora", "taza", "caminando", "estufa", "beber", "ventana",
+            "montaña", "perro", "gato", "libro", "nube", "teclado", "camino", "sol",
+            "luna", "casa", "puerta", "jardín", "árbol", "agua", "fuego", "cielo",
+            "mesa", "silla", "reloj", "zapato", "camisa", "tren", "avión", "bicicleta",
+            "pelota", "escuela", "música", "papel", "lápiz", "ventilador", "teléfono",
+            "pantalla", "techo", "mar", "río", "bosque", "estrella", "planeta", "café",
+            "pan", "queso", "puente", "ventana", "espejo", "cuchara", "tenedor",
+            "cuchillo", "plato", "vaso", "botella", "nevera", "horno", "microondas",
+            "lavadora", "cama", "almohada", "sábana", "manta", "cortina", "alfombra",
+            "lámpara", "enchufe", "cable", "batería", "radio", "televisión", "cámara",
+            "foto", "cuadro", "pared", "piso", "balcón", "terraza", "escalera",
+            "ascensor", "garaje", "coche", "moto", "barco", "helicóptero", "cohete",
+            "satélite", "cometa", "galaxia", "universo", "nebulosa", "agujero",
+            "guitarra", "piano", "violín", "tambor", "flauta", "trompeta", "acordeón",
+            "canción", "melodía", "ritmo", "nota", "concierto", "orquesta", "coro",
+            "abeja", "mariposa", "hormiga", "araña", "serpiente", "tigre", "león",
+            "elefante", "jirafa", "mono", "ballena", "delfín", "tiburón", "pulpo",
+            "tortuga", "águila", "búho", "loro", "pingüino", "flamenco", "colibrí",
+            "roble", "pino", "sauce", "cactus", "girasol", "rosa", "tulipán", "orquídea",
+            "hierba", "musgo", "helecho", "semilla", "raíz", "hoja", "flor", "fruto",
+            "manzana", "pera", "uva", "naranja", "limón", "plátano", "sandía", "melón",
+            "fresa", "cereza", "durazno", "kiwi", "piña", "mango", "coco", "aguacate",
+            "tomate", "cebolla", "ajo", "zanahoria", "papa", "calabaza", "pepino",
+            "lechuga", "espinaca", "brócoli", "coliflor", "champiñón", "arroz", "pasta",
+            "harina", "azúcar", "sal", "pimienta", "aceite", "vinagre", "miel", "mermelada",
+            "chocolate", "galleta", "pastel", "helado", "yogur", "leche", "manteca",
+            "primavera", "verano", "otoño", "invierno", "lluvia", "nieve", "viento",
+            "tormenta", "relámpago", "trueno", "arcoíris", "niebla", "rocío", "hielo",
+            "arena", "piedra", "roca", "montículo", "valle", "colina", "acantilado",
+            "cueva", "volcán", "desierto", "selva", "pradera", "pantano", "laguna",
+            "lago", "océano", "playa", "isla", "península", "golfo", "bahía", "arrecife",
+            "lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo",
+            "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
+            "septiembre", "octubre", "noviembre", "diciembre", "siglo", "década",
+            "año", "mes", "semana", "día", "hora", "minuto", "segundo", "instante"
         ];
 
 
         function randomWord() {
-
-            const index =
-                Math.floor(
-                    Math.random() *
-                    PASS_PHRASE_WORDS.length
-                );
-
-            return PASS_PHRASE_WORDS[index];
+            const arr = new Uint32Array(1);
+            const n = PASS_PHRASE_WORDS.length;
+            // Rechazo para evitar sesgo por módulo
+            const limit = Math.floor(4294967296 / n) * n;
+            do {
+                crypto.getRandomValues(arr);
+            } while (arr[0] >= limit);
+            return PASS_PHRASE_WORDS[arr[0] % n];
         }
-
 
         function generatePassphrase() {
 
@@ -3737,7 +4021,7 @@
                     error
                 );
 
-                alert("No se pudo guardar la eliminación. El registro se ha restaurado.");
+                showToast("No se pudo guardar la eliminación. El registro se ha restaurado.", "error", 4000);
                 render();
             }
         }
@@ -3768,7 +4052,6 @@
             localStorage.removeItem("users");
             localStorage.removeItem("vault");
             localStorage.removeItem("pichonpass-bd");
-            localStorage.removeItem("pichonpass-theme");
 
             // Dar tiempo a que pichisoft-datos.js termine
             // de procesar el borrado antes de recargar.
@@ -3806,31 +4089,50 @@
             setTimeout(checkActiveSession, 500);
         });
 
-        let horaSalida = null;
-
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === "hidden") {
-                // Guardamos el momento exacto en el que minimizó
                 horaSalida = Date.now();
             } else if (document.visibilityState === "visible") {
-                if (horaSalida) {
+                if (horaSalida && TIEMPO_CIERRE_SESION > 0 && cryptoKey) {
                     const tiempoTranscurrido = Date.now() - horaSalida;
-
-                    // Si pasó más de 60 segundos fuera, cerramos sesión
                     if (tiempoTranscurrido >= TIEMPO_CIERRE_SESION) {
-                        console.log("PichonPass: Pasaron más de 60s afuera. Cerrando sesión.");
-                        logout();
-                    } else {
-                        // Si regresó antes, limpiamos la marca de tiempo
+                        showToast("Cerrando sesión por inactividad…", "info", 2000, () => logout());
                         horaSalida = null;
-                        console.log("PichonPass: Sesión salvada.");
+                        return;
                     }
                 }
+                horaSalida = null;
+                recordActivity();
             }
         });
+        /* ============================================================
+           TOASTS (reemplaza alert)
+           ============================================================ */
 
+        function showToast(message, type = "info", duration = 3000, onClose = null) {
+            const container = document.getElementById("toastContainer");
+            if (!container) return;
+
+            const toast = document.createElement("div");
+            toast.className = "toast " + type;
+            toast.textContent = message;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => toast.classList.add("visible"));
+
+            const close = () => {
+                toast.classList.remove("visible");
+                setTimeout(() => {
+                    toast.remove();
+                    if (onClose) onClose();
+                }, 300);
+            };
+
+            setTimeout(close, duration);
+            toast.addEventListener("click", close);
+        }
     </script>
-
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 </body>
 
 
