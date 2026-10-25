@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>PichonDestiny</title>
-  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -18,10 +18,18 @@
       font-family: Arial, sans-serif;
       text-align: center;
       overflow: hidden;
+
+      /* Mejoras para la experiencia táctil y de clics */
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: pointer;
+      touch-action: manipulation;
     }
 
     #container {
       padding: 20px;
+      /* Aseguramos que el texto no se pueda seleccionar */
+      pointer-events: none;
     }
 
     #respuesta {
@@ -45,6 +53,8 @@
       align-items: baseline;
       gap: 8px;
       z-index: 100;
+      pointer-events: none;
+      /* Para que no interfiera con el clic */
     }
 
     .logo {
@@ -59,13 +69,6 @@
       font-size: 0.9rem;
       font-style: italic;
       color: #bdbdbd;
-    }
-
-    .credit {
-      font-family: Verdana, sans-serif;
-      font-size: 18px;
-      font-style: italic;
-      color: #bbb;
     }
 
     /* ==========================================
@@ -251,7 +254,6 @@
 
   <div id="container">
     <div id="respuesta"></div>
-    <!-- <div id="hint">Tocá la pantalla para otra respuesta</div> -->
   </div>
 
   <script>
@@ -319,35 +321,49 @@
       "NO SÉ :(",
       "ESTOY NERVIOSO PARA RESPONDER A ESA PREGUNTA",
       "HOLA :D"
-
     ];
 
     const el = document.getElementById("respuesta");
+    let animationTimer = null; // Guardamos el temporizador para cancelarlo si se toca rápido
 
-    function nuevaRespuesta() {
+    function nuevaRespuesta(e) {
+      // Evitar que cambie la respuesta si tocamos el link de Pichisoft, el header o el cartel de sesión
+      if (e && e.target.closest('a, .header, #pichisoft-session-status, #pichisoft-session-profile')) {
+        return;
+      }
+
       el.style.opacity = 0;
       el.style.transform = "scale(0.9)";
 
-      setTimeout(() => {
+      // Cancelar la animación anterior si el usuario está tocando muy rápido
+      if (animationTimer) {
+        clearTimeout(animationTimer);
+      }
+
+      animationTimer = setTimeout(() => {
         const r = respuestas[Math.floor(Math.random() * respuestas.length)];
         el.textContent = r;
 
         el.style.opacity = 1;
         el.style.transform = "scale(1)";
+        animationTimer = null;
       }, 150);
     }
 
-    /* al cargar */
+    /* Al cargar, mostramos la primera */
     nuevaRespuesta();
 
-    /* tap */
-    document.body.addEventListener("click", nuevaRespuesta);
-    document.body.addEventListener("touchstart", nuevaRespuesta);
-    // holaa
+    /* 
+     * Usamos "pointerdown" en lugar de "click" y "touchstart".
+     * Esto unifica la experiencia en PC (mouse) y celular (dedo),
+     * y soluciona el problema del doble toque.
+     */
+    document.body.addEventListener("pointerdown", nuevaRespuesta);
   </script>
-  <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999;"><a
-      href="https://pichisoft.cc" target="_blank"
-      style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
+
+  <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999;">
+    <a href="https://pichisoft.cc" target="_blank" style="color:#4db8ff; text-decoration: underline;">Pichisoft</a>
+  </p>
 
   <!-- ===== Pichisoft - Estado de sesión ===== -->
   <div id="pichisoft-session-status" role="status" aria-live="polite">
@@ -362,7 +378,6 @@
 
   <script>
     (function () {
-      /* Todo va dentro de esta función para no chocar con las variables de la app */
       var CFG = {
         apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
         authDomain: "pichisoft.firebaseapp.com",
@@ -373,8 +388,8 @@
         measurementId: "G-K7HRKR8BJ1"
       };
       var V = "https://www.gstatic.com/firebasejs/12.3.0/";
-      var DUR_INICIO = 12000;   // "Iniciando sesión..."
-      var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+      var DUR_INICIO = 12000;
+      var DUR_MENSAJE = 6000;
 
       var box = document.getElementById("pichisoft-session-status");
       var txt = box.querySelector(".ps-text");
@@ -385,8 +400,6 @@
 
       function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-      /* Espera a que Firebase confirme si hay sesión y lee el perfil.
-         Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
       async function comprobar() {
         try {
           var m = await Promise.all([
