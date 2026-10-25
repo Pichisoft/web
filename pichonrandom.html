@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>PichonRandom</title>
- 
+
     <style>
         :root {
             --bg: #121212;
@@ -13,8 +13,6 @@
             --text: #f2f2f2;
             --accent: #2d6cdf;
             --border: #333;
-            padding-top: env(safe-area-inset-top, 0px);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         * {
@@ -198,6 +196,7 @@
             padding: 14px 36px;
             border-radius: 10px;
             cursor: pointer;
+            transition: background .2s;
         }
 
         .generate-btn:hover {
@@ -221,6 +220,19 @@
             font-weight: bold;
             min-width: 60px;
             text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         /* Dado */
@@ -314,13 +326,7 @@
 
         /* ==========================================
            PICHISOFT - ESTADO DE SESIÓN
-           (queda debajo de la cabecera; el alto lo calcula el script)
            ========================================== */
-
-
-        /* ==========================================
-       PICHISOFT - ESTADO DE SESIÓN
-       ========================================== */
 
         #pichisoft-session-status {
             position: fixed;
@@ -330,21 +336,16 @@
             display: flex;
             align-items: center;
             gap: 8px;
-
             max-width: calc(100vw - 20px);
             box-sizing: border-box;
             padding: 8px 16px;
-
             background: #000;
             color: #20a84b;
-
             border: 1px solid rgba(34, 197, 94, 0.25);
             border-radius: 22px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-
             font: 14px/1.3 Georgia, serif;
             text-align: left;
-
             opacity: 1;
             transform: translateY(0);
             transition: opacity 0.6s ease, transform 0.6s ease;
@@ -394,25 +395,19 @@
             top: 12px;
             right: 120px;
             z-index: 9998;
-
             display: flex;
             align-items: center;
             gap: 8px;
-
             max-width: calc(100vw - 20px);
             box-sizing: border-box;
             padding: 5px 14px 5px 5px;
-
             background: #000;
             color: #fff;
-
             border: 1px solid rgba(34, 197, 94, 0.25);
             border-radius: 25px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-
             font-family: Georgia, serif;
             text-align: left;
-
             opacity: 0;
             transform: translateY(-12px) scale(0.9);
             transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
@@ -451,42 +446,27 @@
             white-space: nowrap;
         }
 
-        /* Celular: título más chico para que no choque con el link "Pichisoft" */
+        /* Ajustes en Celular */
         @media (max-width: 600px) {
-            .header {
-                top: 16px;
-                left: 15px;
-            }
-
-            .logo {
-                font-size: 1.5rem;
-            }
-
-            .byline {
-                font-size: 0.75rem;
-            }
 
             #pichisoft-session-status,
             #pichisoft-session-profile {
+                position: fixed;
+                top: 60px;
+                /* Justo debajo del header */
                 right: 10px;
+                left: auto;
+                max-width: calc(100vw - 20px);
             }
 
             #pichisoft-session-status {
                 font-size: 13px;
                 padding: 7px 14px;
             }
-        }
 
-        /* ===== Pichisoft - cartel de sesión en celular (PichonRandom) ===== */
-        @media (max-width: 600px) {
-
-            #pichisoft-session-status,
-            #pichisoft-session-profile {
-                position: absolute;
-                top: 70px;
-                right: 10px;
-                left: auto;
-                max-width: calc(100vw - 20px);
+            main {
+                padding-top: 80px;
+                /* Despeja el cartel de sesión */
             }
         }
     </style>
@@ -498,14 +478,13 @@
             <span class="brand-title">PichonRandom</span>
             <span class="brand-sub">- By Pichisoft -</span>
         </div>
-        <button class="pichisoft-link"
-            onclick="window.open('https://pichisoft.cc','_blank')">Pichisoft</button>
+        <button class="pichisoft-link" onclick="window.open('https://pichisoft.cc','_blank')">Pichisoft</button>
     </header>
 
     <main>
         <!-- MENU -->
         <div id="view-menu" class="view active">
-            <div class="subtitle">Elije un modo</div>
+            <div class="subtitle">Elegí un modo</div>
             <div class="menu">
                 <div class="menu-item" onclick="showView('numero')">
                     <h3>Número aleatorio</h3>
@@ -524,14 +503,16 @@
             <button class="back-btn" onclick="showView('menu')">&larr; Volver</button>
             <div class="subtitle">Número aleatorio</div>
             <div class="field">
-                <label for="cifras">Cantidad de cifras:</label>
-                <input type="text" id="cifras" inputmode="numeric" placeholder="Ej: 3" value="1">
+                <label for="cifras">Cantidad de cifras (máx 8):</label>
+                <input type="number" id="cifras" inputmode="numeric" placeholder="Ej: 3" value="1" min="1" max="8"
+                    oninput="validarCifras()">
             </div>
             <div class="field">
                 <label for="cantidad">Cantidad de números aleatorios (máx 15):</label>
                 <input type="number" id="cantidad" min="1" max="15" value="1" oninput="validarCantidad()">
-                <div id="error-cantidad" style="color:#ff4d4d;font-size:14px;margin-top:6px;display:none;">No puede
-                    elegir más de 15 números aleatorios</div>
+                <div id="error-cantidad" style="color:#ff4d4d;font-size:14px;margin-top:6px;display:none;">
+                    No puede elegir más de 15 números aleatorios
+                </div>
             </div>
             <div class="field">
                 <label>Tipo de número:</label>
@@ -588,6 +569,13 @@
             document.getElementById('view-' + name).classList.add('active');
         }
 
+        function validarCifras() {
+            const input = document.getElementById('cifras');
+            let val = parseInt(input.value);
+            if (isNaN(val) || val < 1) input.value = 1;
+            if (val > 8) input.value = 8; // Límite seguro para JS
+        }
+
         function validarCantidad() {
             const input = document.getElementById('cantidad');
             const error = document.getElementById('error-cantidad');
@@ -603,9 +591,13 @@
 
         function generarNumeros() {
             if (!validarCantidad()) return;
-            const cifras = parseInt(document.getElementById('cifras').value) || 1;
+
+            let cifras = parseInt(document.getElementById('cifras').value) || 1;
+            cifras = Math.min(Math.max(cifras, 1), 8); // Entre 1 y 8 cifras
+
             let cantidad = parseInt(document.getElementById('cantidad').value) || 1;
             cantidad = Math.min(Math.max(cantidad, 1), 15);
+
             const tipo = document.querySelector('input[name="tipoNum"]:checked').value;
 
             const min = cifras <= 1 ? 0 : Math.pow(10, cifras - 1);
@@ -616,14 +608,31 @@
 
             for (let i = 0; i < cantidad; i++) {
                 let num;
-                let intentos = 0;
-                do {
+
+                if (tipo === 'ambos') {
                     num = Math.floor(Math.random() * (max - min + 1)) + min;
-                    intentos++;
-                } while (
-                    intentos < 5000 &&
-                    ((tipo === 'par' && num % 2 !== 0) || (tipo === 'impar' && num % 2 === 0))
-                );
+                } else {
+                    // Fórmula directa para pares o impares (sin bucles while)
+                    let start = min, end = max;
+
+                    if (tipo === 'par') {
+                        if (start % 2 !== 0) start++;
+                        if (end % 2 !== 0) end--;
+                    } else { // impar
+                        if (start % 2 === 0) start++;
+                        if (end % 2 === 0) end--;
+                    }
+
+                    if (start > end) {
+                        // No hay números de ese tipo en este rango (ej. 1 cifra, solo el 0 es par)
+                        num = "N/A";
+                    } else {
+                        const count = (end - start) / 2 + 1;
+                        const rand = Math.floor(Math.random() * count);
+                        num = start + rand * 2;
+                    }
+                }
+
                 const box = document.createElement('div');
                 box.className = 'result-box';
                 box.textContent = num;
@@ -640,10 +649,14 @@
             6: [1, 3, 4, 6, 7, 9]
         };
         let rolling = false;
+
         function pintarCara(valor) {
-            for (let i = 1; i <= 9; i++) { document.getElementById('d' + i).classList.remove('on'); }
+            for (let i = 1; i <= 9; i++) {
+                document.getElementById('d' + i).classList.remove('on');
+            }
             caras[valor].forEach(n => document.getElementById('d' + n).classList.add('on'));
         }
+
         function tirarDado() {
             if (rolling) return;
             rolling = true;
@@ -678,6 +691,7 @@
             document.getElementById('resultado-letra').innerHTML = '<div class="result-box">' + letra + '</div>';
         }
     </script>
+
     <!-- ===== Pichisoft - Estado de sesión ===== -->
     <div id="pichisoft-session-status" role="status" aria-live="polite">
         <span class="ps-check">✓</span>
@@ -691,7 +705,6 @@
 
     <script>
         (function () {
-            /* Todo va dentro de esta función para no chocar con las variables de la app */
             var CFG = {
                 apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
                 authDomain: "pichisoft.firebaseapp.com",
@@ -702,8 +715,8 @@
                 measurementId: "G-K7HRKR8BJ1"
             };
             var V = "https://www.gstatic.com/firebasejs/12.3.0/";
-            var DUR_INICIO = 12000;   // "Iniciando sesión..."
-            var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+            var DUR_INICIO = 12000;
+            var DUR_MENSAJE = 6000;
 
             var box = document.getElementById("pichisoft-session-status");
             var txt = box.querySelector(".ps-text");
@@ -714,8 +727,6 @@
 
             function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
-               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
             async function comprobar() {
                 try {
                     var m = await Promise.all([
@@ -742,13 +753,10 @@
                         try {
                             var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
                             if (snap.exists()) perfil = snap.data();
-                        } catch (e) {
-                            console.error("Pichisoft: no se pudo leer el perfil", e);
-                        }
+                        } catch (e) { }
                     }
                     return { user: user, perfil: perfil };
                 } catch (e) {
-                    console.error("Pichisoft:", e);
                     return { error: true };
                 }
             }
