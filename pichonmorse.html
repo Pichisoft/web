@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PichonMorse</title>
-    
+
     <style>
         :root {
             --bg: #14181c;
@@ -46,7 +46,8 @@
             color: #3d8bff;
             text-decoration: underline;
             text-decoration-color: #3d8bff;
-            font-size: 1rem
+            font-size: 1rem;
+            z-index: 10000;
         }
 
         header {
@@ -186,7 +187,10 @@
 
         label {
             color: var(--mute);
-            font-size: .9rem
+            font-size: .9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         input[type=range] {
@@ -205,7 +209,8 @@
             border-radius: 50%;
             background: #333;
             vertical-align: middle;
-            margin-left: 6px
+            margin-left: 6px;
+            transition: background 0.1s;
         }
 
         .flash.on {
@@ -213,33 +218,81 @@
         }
 
         /* ==========================================
-       PICHISOFT - ESTADO DE SESIÓN
-       ========================================== */
+           TOASTS
+           ========================================== */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10000;
+            pointer-events: none;
+            width: min(420px, calc(100vw - 30px));
+        }
 
+        .toast {
+            padding: 13px 18px;
+            border-radius: 9px;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: auto;
+            cursor: pointer;
+            border: 1px solid transparent;
+            line-height: 1.35;
+        }
+
+        .toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.error {
+            background: #8e3030;
+            color: #fff;
+            border-color: #642020;
+        }
+
+        .toast.success {
+            background: #20a84b;
+            color: #fff;
+            border-color: #167a36;
+        }
+
+        .toast.info {
+            background: var(--panel);
+            color: var(--ink);
+            border-color: var(--line);
+        }
+
+        /* ==========================================
+           PICHISOFT - ESTADO DE SESIÓN
+           ========================================== */
         #pichisoft-session-status {
             position: fixed;
             top: 12px;
             right: 150px;
             z-index: 9999;
-
             display: flex;
             align-items: center;
             gap: 8px;
-
             max-width: calc(100vw - 20px);
             box-sizing: border-box;
             padding: 8px 16px;
-
             background: #000;
             color: #20a84b;
-
             border: 1px solid rgba(34, 197, 94, 0.25);
             border-radius: 22px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-
             font: 14px/1.3 Georgia, serif;
             text-align: left;
-
             opacity: 1;
             transform: translateY(0);
             transition: opacity 0.6s ease, transform 0.6s ease;
@@ -289,25 +342,19 @@
             top: 12px;
             right: 150px;
             z-index: 9998;
-
             display: flex;
             align-items: center;
             gap: 8px;
-
             max-width: calc(100vw - 20px);
             box-sizing: border-box;
             padding: 5px 14px 5px 5px;
-
             background: #000;
             color: #fff;
-
             border: 1px solid rgba(34, 197, 94, 0.25);
             border-radius: 25px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-
             font-family: Georgia, serif;
             text-align: left;
-
             opacity: 0;
             transform: translateY(-12px) scale(0.9);
             transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
@@ -346,30 +393,38 @@
             white-space: nowrap;
         }
 
-        /* Celular: título más chico para que no choque con el link "Pichisoft" */
+        /* ── RESPONSIVE ── */
         @media (max-width: 600px) {
-            .header {
+            .toplink {
                 top: 16px;
-                left: 15px;
+                right: 15px;
+                font-size: 0.9rem;
             }
 
-            .logo {
-                font-size: 1.5rem;
+            header {
+                margin-top: 50px;
+                /* Espacio para los carteles arriba */
             }
 
-            .byline {
-                font-size: 0.75rem;
+            h1 {
+                font-size: 2rem;
+            }
+
+            .by {
+                font-size: 0.8rem;
             }
 
             #pichisoft-session-status,
             #pichisoft-session-profile {
-                right: 120px;
-                top: 12px
+                right: auto;
+                left: 15px;
+                top: 12px;
+                font-size: 12px;
+                padding: 6px 12px;
             }
 
-            #pichisoft-session-status {
-                font-size: 13px;
-                padding: 7px 14px;
+            #pichisoft-session-profile {
+                padding: 4px 10px 4px 4px;
             }
         }
     </style>
@@ -377,6 +432,7 @@
 
 <body>
     <a class="toplink" target="_blank" href="https://pichisoft.cc">Pichisoft</a>
+
     <div class="wrap">
         <header>
             <h1>PichonMorse</h1>
@@ -395,6 +451,8 @@
                 <button class="b" id="clear">Limpiar</button>
                 <label>Velocidad <input type="range" id="wpm" min="5" max="30" value="12"> <span id="wpmv">12</span>
                     ppm</label>
+                <label>Frecuencia <input type="range" id="freq" min="300" max="1000" step="50" value="650"> <span
+                        id="freqv">650</span> Hz</label>
             </div>
         </section>
 
@@ -418,8 +476,10 @@
         </section>
     </div>
 
-    <script>
+    <!-- Contenedor de Toasts -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
+    <script>
         const MORSE = {
             A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.", G: "--.", H: "....", I: "..", J: ".---", K: "-.-", L: ".-..", M: "--",
             N: "-.", O: "---", P: ".--.", Q: "--.-", R: ".-.", S: "...", T: "-", U: "..-", V: "...-", W: ".--", X: "-..-", Y: "-.--", Z: "--..",
@@ -431,8 +491,31 @@
         };
         const REV = Object.fromEntries(Object.entries(MORSE).map(([k, v]) => [v, k]));
         const $ = id => document.getElementById(id);
-        const unit = () => 1200 / $("wpm").value;
+
+        // Configuraciones
         $("wpm").oninput = () => $("wpmv").textContent = $("wpm").value;
+        $("freq").oninput = () => $("freqv").textContent = $("freq").value;
+
+        const unit = () => 1200 / $("wpm").value;
+
+        // ---- Toasts ----
+        function showToast(message, type = "info", duration = 3000) {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            toast.className = "toast " + type;
+            toast.textContent = message;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => toast.classList.add("visible"));
+
+            const close = () => {
+                toast.classList.remove("visible");
+                setTimeout(() => toast.remove(), 300);
+            };
+
+            setTimeout(close, duration);
+            toast.addEventListener("click", close);
+        }
 
         // ---- Audio ----
         let ctx, osc, gain;
@@ -443,11 +526,17 @@
         }
         function toneStart() {
             const c = audio();
-            osc = c.createOscillator(); gain = c.createGain();
-            osc.frequency.value = 650; osc.type = "sine";
+            osc = c.createOscillator();
+            gain = c.createGain();
+
+            // Frecuencia configurable
+            osc.frequency.value = parseInt($("freq").value) || 650;
+            osc.type = "sine";
+
             gain.gain.setValueAtTime(0, c.currentTime);
             gain.gain.linearRampToValueAtTime(.3, c.currentTime + .005);
-            osc.connect(gain).connect(c.destination); osc.start();
+            osc.connect(gain).connect(c.destination);
+            osc.start();
         }
         function toneStop() {
             if (!osc) return;
@@ -455,27 +544,32 @@
             g.gain.cancelScheduledValues(c.currentTime);
             g.gain.setValueAtTime(g.gain.value, c.currentTime);
             g.gain.linearRampToValueAtTime(0, c.currentTime + .01);
-            o.stop(c.currentTime + .02); osc = null;
+            o.stop(c.currentTime + .02);
+            osc = null;
         }
 
         // ---- Manipulador ----
         let pressAt = 0, cur = "", text = "", letterT, wordT, isDown = false;
+
         function render() {
             $("live").textContent = cur || "\u00A0";
             $("decoded").textContent = text;
         }
+
         function commitLetter() {
             if (!cur) return;
             text += REV[cur] || "?";
             cur = ""; render();
             wordT = setTimeout(() => { if (text && !text.endsWith(" ")) { text += " "; render(); } }, unit() * 4);
         }
+
         function down() {
             if (isDown) return; isDown = true;
             clearTimeout(letterT); clearTimeout(wordT);
             pressAt = performance.now(); toneStart();
             $("key").classList.add("down");
         }
+
         function up() {
             if (!isDown) return; isDown = false;
             toneStop(); $("key").classList.remove("down");
@@ -484,16 +578,19 @@
             render();
             letterT = setTimeout(commitLetter, unit() * 3);
         }
+
         const k = $("key");
         k.addEventListener("pointerdown", e => { k.setPointerCapture(e.pointerId); down(); });
         k.addEventListener("pointerup", up);
         k.addEventListener("pointercancel", up);
+
         addEventListener("keydown", e => {
             if (e.code === "Space" && !/TEXTAREA|INPUT|BUTTON/.test(document.activeElement.tagName)) { e.preventDefault(); if (!e.repeat) down(); }
         });
         addEventListener("keyup", e => {
             if (e.code === "Space" && !/TEXTAREA|INPUT|BUTTON/.test(document.activeElement.tagName)) up();
         });
+
         $("back").onclick = () => { if (cur) cur = cur.slice(0, -1); else text = text.slice(0, -1); render(); };
         $("clear").onclick = () => { cur = ""; text = ""; clearTimeout(letterT); clearTimeout(wordT); render(); };
 
@@ -505,32 +602,74 @@
             return norm(s).split(/\s+/).filter(Boolean)
                 .map(w => [...w].map(ch => MORSE[ch]).filter(Boolean).join(" ")).join(" / ");
         }
+
         $("txt").oninput = () => $("morseOut").textContent = toMorse($("txt").value);
 
+        // ---- Reproducción automática (Lógica corregida) ----
         let timers = [];
-        function stopPlay() { timers.forEach(clearTimeout); timers = []; toneStop(); $("flash").classList.remove("on"); }
+
+        function stopPlay() {
+            timers.forEach(clearTimeout);
+            timers = [];
+            toneStop();
+            $("flash").classList.remove("on");
+        }
+
         $("stop").onclick = stopPlay;
+
         $("play").onclick = () => {
             stopPlay();
-            const m = toMorse($("txt").value); if (!m) return;
-            const u = unit(); let t = 0;
-            const beep = len => {
-                timers.push(setTimeout(() => { toneStart(); $("flash").classList.add("on"); }, t));
-                timers.push(setTimeout(() => { toneStop(); $("flash").classList.remove("on"); }, t + len));
-                t += len;
+            const m = toMorse($("txt").value);
+            if (!m) return;
+
+            const u = unit();
+            let t = 0;
+
+            const beep = (start, len) => {
+                timers.push(setTimeout(() => { toneStart(); $("flash").classList.add("on"); }, start));
+                timers.push(setTimeout(() => { toneStop(); $("flash").classList.remove("on"); }, start + len));
             };
+
             [...m].forEach((c, i) => {
-                if (c === ".") { beep(u); t += u; }
-                else if (c === "-") { beep(u * 3); t += u; }
-                else if (c === " ") {
-                    const prev = m[i - 1], next = m[i + 1];
-                    if (prev === "/" || next === "/") t += u * 2;   // alrededor de "/"
-                    else t += u * 2;                           // total 3u entre letras
+                if (c === ".") {
+                    beep(t, u);
+                    t += u * 2; // 1u sonido + 1u silencio
                 }
-                else if (c === "/") t += u * 3;                 // total ~7u entre palabras
+                else if (c === "-") {
+                    beep(t, u * 3);
+                    t += u * 4; // 3u sonido + 1u silencio
+                }
+                else if (c === " ") {
+                    // Silencio entre letras es de 3u. Como ya sumamos 1u del último elemento, faltan 2u.
+                    // Si el siguiente es "/", el manejo del espacio es diferente
+                    if (m[i + 1] !== "/") t += u * 2;
+                }
+                else if (c === "/") {
+                    // Silencio entre palabras es 7u. Como ya sumamos 1u, faltan 6u.
+                    t += u * 6;
+                }
             });
         };
-        $("copy").onclick = () => navigator.clipboard && navigator.clipboard.writeText($("morseOut").textContent);
+
+        // ---- Copiar ----
+        $("copy").onclick = async () => {
+            const textToCopy = $("morseOut").textContent;
+            if (!textToCopy) return;
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                showToast("Morse copiado al portapapeles", "success");
+            } catch (err) {
+                // Fallback
+                const ta = document.createElement("textarea");
+                ta.value = textToCopy;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand("copy");
+                ta.remove();
+                showToast("Morse copiado", "success");
+            }
+        };
 
         // ---- Morse a texto ----
         $("m2t").oninput = () => {
@@ -538,8 +677,10 @@
             $("m2tOut").textContent = s.split(/\s*\/\s*|\s{3,}|\n/).map(w =>
                 w.trim().split(/\s+/).filter(Boolean).map(c => REV[c] || "?").join("")).join(" ");
         };
+
         render();
     </script>
+
     <!-- ===== Pichisoft - Estado de sesión ===== -->
     <div id="pichisoft-session-status" role="status" aria-live="polite">
         <span class="ps-check">✓</span>
@@ -553,7 +694,6 @@
 
     <script>
         (function () {
-            /* Todo va dentro de esta función para no chocar con las variables de la app */
             var CFG = {
                 apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
                 authDomain: "pichisoft.firebaseapp.com",
@@ -564,8 +704,8 @@
                 measurementId: "G-K7HRKR8BJ1"
             };
             var V = "https://www.gstatic.com/firebasejs/12.3.0/";
-            var DUR_INICIO = 12000;   // "Iniciando sesión..."
-            var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+            var DUR_INICIO = 12000;
+            var DUR_MENSAJE = 6000;
 
             var box = document.getElementById("pichisoft-session-status");
             var txt = box.querySelector(".ps-text");
@@ -576,8 +716,6 @@
 
             function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
-               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
             async function comprobar() {
                 try {
                     var m = await Promise.all([
@@ -604,13 +742,10 @@
                         try {
                             var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
                             if (snap.exists()) perfil = snap.data();
-                        } catch (e) {
-                            console.error("Pichisoft: no se pudo leer el perfil", e);
-                        }
+                        } catch (e) { }
                     }
                     return { user: user, perfil: perfil };
                 } catch (e) {
-                    console.error("Pichisoft:", e);
                     return { error: true };
                 }
             }
