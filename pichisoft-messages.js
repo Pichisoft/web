@@ -1,7 +1,6 @@
 /* PICHONAPPS · mensajes de Pichisoft + cuentas inhabilitadas
    Agregar al final del <body> de PichonApps (después de los otros scripts):
-       <script type="module" src="pichonapps-mensajes.js"></script>
-   Y en el CSP de PichonApps, sumar a connect-src:  https://api.mymemory.translated.net */
+       <script type="module" src="pichonapps-mensajes.js"></script> */
 import { collection, query, where, onSnapshot, updateDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 const F = window.PichisoftFirebase;
@@ -50,7 +49,11 @@ if (F) {
         c.querySelector('#a').textContent = m.text;
         const sel = c.querySelector('#l');
         Object.entries(LANGS).forEach(([k, n]) => sel.add(new Option(n, k)));
-        sel.value = (navigator.language || 'es').split('-')[0] in LANGS ? (navigator.language || 'es').split('-')[0] : 'es';
+        /* FIX 3: probar idioma completo, después prefijo */
+        const full = navigator.language || 'es';
+        const short = full.split('-')[0];
+        sel.value = LANGS[full] ? full : (LANGS[short] ? short : 'es');
+
         c.querySelector('#g').onclick = async e => {
             const b = c.querySelector('#b'); e.target.disabled = true; b.hidden = false; b.textContent = 'Traduciendo…';
             try { b.textContent = await traducir(m.text, sel.value); } catch (x) { b.textContent = 'No se pudo traducir: ' + x.message; }
@@ -74,7 +77,7 @@ if (F) {
     F.onAuthStateChanged(F.auth, async u => {
         if (unsub) { unsub(); unsub = null; } msgs = []; pintar();
         if (!u) return;
-        try { /* cuenta inhabilitada por el admin */
+        try {
             const f = await getDoc(doc(F.db, 'admin_flags', u.uid));
             if (f.exists() && f.data().disabled) {
                 await F.signOut(F.auth); localStorage.removeItem('ps_session');
