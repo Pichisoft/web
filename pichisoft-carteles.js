@@ -1,15 +1,9 @@
 /* =====================================================================
-   PICHISOFT · CARTELES DE ANUNCIO (v2)  ·  by Pichisoft
+   PICHISOFT · CARTELES DE ANUNCIO (v2.1)  ·  by Pichisoft
    Solo se muestran a usuarios SIN cuenta. Con cuenta no aparece nada.
 
    Se carga con UNA línea al final del <body>:
        <script src="pichisoft-carteles.js"></script>
-   (en PichonApps, después de pichisoft-premium.js; en PichonPass clásica, al final)
-
-   QUÉ EDITAR (todo está en las secciones 1, 2 y 3):
-     1) AJUSTES        → tiempos generales y modo prueba
-     2) ANUNCIOS       → los carteles: títulos, textos, duraciones, opciones, límites
-     3) DISPARADORES   → CUÁNDO aparece cada uno (al entrar, cada X clics, un botón...)
    ===================================================================== */
 (function () {
     'use strict';
@@ -20,100 +14,27 @@
        1) AJUSTES GENERALES
        ================================================================= */
     const AJUSTES = {
-        /* true  = MODO PRUEBA: ignora TODOS los límites (cada X clics, veces, enfriamientos,
-                   fechas, probabilidad). Con true, el cartel sale en CADA clic: sirve para verlo.
-           false = funciona con los límites normales (así debe quedar al publicar). */
         PRUEBA: false,
-
-        /* Tiempo mínimo entre DOS carteles cualquiera (se cuenta desde que empieza el primero).
-           Evita que, por ejemplo, el cartel de PichonApps y el de PichonPass salgan seguidos.
-           Poné 0 para no limitar. */
         ESPERA_GLOBAL: 0,
-
-        /* Cuánto se queda el cartel en su pantalla final cuando el anuncio termina
-           (en ese tiempo ya se puede cerrar con la X). Se cambia por anuncio con "final". */
         FINAL_MS: 10 * SEG,
-
-        /* Clics en estos elementos NUNCA disparan carteles (registro, login, avisos, etc.) */
-      IGNORAR: '.pcr-ov, .ov, .pml-ov, .pm-ov, .pcf-ov, [data-sin-anuncio]'
+        /* Selector de modales de todas las apps Pichisoft: carteles no se muestran encima */
+        IGNORAR: '.pcr-ov, .ov, .pml-ov, .pm-ov, .pcf-ov, .pmO, #pmBox, [data-sin-anuncio]'
     };
 
     /* =================================================================
-       2) LOS CARTELES (ANUNCIOS)
-       Campos de cada cartel:
-
-         activo        true/false. false = el cartel no se muestra nunca.
-         desde / hasta Fechas opcionales 'AAAA-MM-DD' (null = sin límite).
-         max           Veces máximas que lo ve cada dispositivo. 0 = sin límite.
-         enfriamiento  Espera mínima antes de volver a mostrárselo a la misma persona
-                       (ej: 6 * HORA, 1 * DIA, 30 * MIN). 0 = sin espera.
-         final         Cuánto queda en pantalla tras terminar (ms). 0 = no se cierra solo.
-
-         pantallas     Lista de pantallas, una tras otra, con transición. Cada pantalla:
-                         titulo   título grande del medio (Times New Roman, blanco)
-                         texto    descripción (gris claro). LOS SALTOS DE LÍNEA SON LITERALES.
-                                  Escribila entre comillas invertidas ` ` para usar varias líneas.
-                         dur      duración de ESA pantalla en ms (mínimo 1500). Ej: 6 * SEG
-                         efecto   (opcional) transición especial al ENTRAR a esa pantalla:
-                                    'brillo' → aparece con desenfoque y un barrido dorado
-                                    'super'  → entra con zoom, desenfoque, barrido dorado y destello del borde
-                                  Sin "efecto" usa la transición suave normal.
-                         opciones (opcional) opciones solo para esa pantalla.
-                       Si dos pantallas seguidas tienen el MISMO título (o las mismas opciones),
-                       esa parte no se vuelve a animar: solo cambia lo que cambió.
-
-         pantallaFinal (opcional) Pantalla que aparece cuando terminan las "pantallas".
-                       Ahí ya se puede cerrar con la X y se queda "final" ms. Lleva
-                       { titulo, texto, efecto, opciones }. Ideal para mostrar el texto completo.
-
-         opciones      Botones del cartel (dorados, texto blanco, cambian de color al pasar el mouse):
-                         texto   lo que dice
-                         url     (opcional) abre ese link. blank:false = en la misma pestaña.
-                         accion  (opcional) función: () => { ... }
-                         cerrar  true = cierra el cartel. Aparece apagado hasta que se puede cerrar.
-
-       FORMATO DENTRO DE titulo/texto (solo estas etiquetas, el resto se muestra tal cual):
-         <strong>texto</strong>  negrita blanca          <em>texto</em>  cursiva
-         <a href="https://...">texto</a>  link (se abre en pestaña nueva)
+       2) LOS CARTELES (ANUNCIOS)  — sin cambios
        ================================================================= */
     const ANUNCIOS = {
-
-        /* ---------------------------------------------------------
-           ANUNCIO 1 · PichonApps
-           4 pantallas (7 + 6 + 6 + 6 = 25 s; el segundo extra va en la primera
-           porque la entrada del cartel tarda ~medio segundo) y después el texto
-           completo durante 30 s, ya con la X activa.
-           --------------------------------------------------------- */
         premiumApps: {
-            activo: true,
-            max: 0,
-            enfriamiento: 0,
-            final: 40 * SEG,
+            activo: true, max: 0, enfriamiento: 0, final: 40 * SEG,
             pantallas: [
-                {
-                    titulo: 'Versión premium',
-                    texto: `¿Quieres que las apps estén ordenadas, que las puedas buscar por su nombre, y que puedas cambiar de interfaz?`,
-                    dur: 6 * SEG
-                },
-                {
-                    titulo: 'Versión premium',
-                    texto: `Hemos creado la versión premium para PichonApps, en la que, puedas ordenar las apps por tipo de app (herramientas, juegos, diversión...) y por tipo de prefijo (apps nuevas, actualizadas, en mantenimiento...).`,
-                    dur: 8 * SEG
-                },
-                {
-                    titulo: 'Versión premium',
-                    texto: `Y eso no es lo <strong>único</strong>: también puedes configurar para que las apps se abran en una nueva pestaña o en la misma, e incluso, con cuenta de Pichisoft, desbloqueas la versión premium para las aplicaciones que la tienen.`,
-                    dur: 8 * SEG
-                },
-                {
-                    titulo: 'Versión premium',
-                    texto: `Create una cuenta de Pichisoft, y empieza a ver lo que realmente se siente usar una aplicación sin anuncios, con funciones premium, y con estilos que combinen con nuestra personalidad: apreta el botón "Registrarse", create una cuenta (o si ya tienes una, inicia sesión) y disfruta de Pichisoft.`,
-                    dur: 8 * SEG
-                }
+                { titulo: 'Versión premium', texto: `¿Quieres que las apps estén ordenadas, que las puedas buscar por su nombre, y que puedas cambiar de interfaz?`, dur: 6 * SEG },
+                { titulo: 'Versión premium', texto: `Hemos creado la versión premium para PichonApps, en la que, puedas ordenar las apps por tipo de app (herramientas, juegos, diversión...) y por tipo de prefijo (apps nuevas, actualizadas, en mantenimiento...).`, dur: 8 * SEG },
+                { titulo: 'Versión premium', texto: `Y eso no es lo <strong>único</strong>: también puedes configurar para que las apps se abran en una nueva pestaña o en la misma, e incluso, con cuenta de Pichisoft, desbloqueas la versión premium para las aplicaciones que la tienen.`, dur: 8 * SEG },
+                { titulo: 'Versión premium', texto: `Create una cuenta de Pichisoft, y empieza a ver lo que realmente se siente usar una aplicación sin anuncios, con funciones premium, y con estilos que combinen con nuestra personalidad: apreta el botón "Registrarse", create una cuenta (o si ya tienes una, inicia sesión) y disfruta de Pichisoft.`, dur: 8 * SEG }
             ],
             pantallaFinal: {
-                titulo: 'Versión premium',
-                efecto: 'brillo',
+                titulo: 'Versión premium', efecto: 'brillo',
                 texto: `
 ¿Quieres que las apps estén ordenadas, que las puedas buscar por su nombre, y que puedas cambiar de interfaz?
 Hemos creado la versión premium para PichonApps, en la que, puedas ordenar las apps por tipo de app (herramientas, juegos, diversión...) y por tipo de prefijo (apps nuevas, actualizadas, en mantenimiento...). Y eso no es lo <strong>único</strong>: también puedes configurar para que las apps se abran en una nueva pestaña o en la misma, e incluso, con cuenta de Pichisoft, desbloqueas la versión premium para las aplicaciones que la tienen. Create una cuenta de Pichisoft, y empieza a ver lo que realmente se siente usar una aplicación sin anuncios, con funciones premium, y con estilos que combinen con nuestra personalidad: apreta el botón "Registrarse", create una cuenta (o si ya tienes una, inicia sesión) y disfruta de Pichisoft.
@@ -122,52 +43,21 @@ Hemos creado la versión premium para PichonApps, en la que, puedas ordenar las 
 `
             },
             opciones: [
-                { texto: 'Crearse una cuenta', url: 'https://pichisoft.cc', blank: false }, // blank:true = pestaña nueva
+                { texto: 'Crearse una cuenta', url: 'https://pichisoft.cc', blank: false },
                 { texto: 'Cerrar anuncio', cerrar: true }
             ]
         },
-
-        /* ---------------------------------------------------------
-           ANUNCIO 2 · PichonPass (versión clásica)
-           5 pantallas de 6 s (30 s; la 5ª con la "super transición")
-           y después el texto completo durante 30 s, ya con la X activa.
-           --------------------------------------------------------- */
         premiumPass: {
-            activo: true,
-            max: 0,
-            enfriamiento: 0,      // vuelve a salir recién a la hora (cambialo o ponelo en 0)
-            final: 30 * SEG,
+            activo: true, max: 0, enfriamiento: 0, final: 30 * SEG,
             pantallas: [
-                {
-                    titulo: 'Versión premium',
-                    texto: `¿Quieres una interfaz digna de una aplicación para guardar contraseñas?`,
-                    dur: 6 * SEG
-                },
-                {
-                    titulo: 'Versión premium',
-                    texto: `¿Que puedas guardar registros con total seguridad sin tener que preocuparte?`,
-                    dur: 6 * SEG
-                },
-                {
-                    titulo: 'Versión premium',
-                    texto: `¿Que puedas hacer todo con <strong>mucha</strong> más facilidad y velocidad?`,
-                    dur: 6 * SEG
-                },
-                {
-                    titulo: 'Versión premium',
-                    texto: `Ya tenemos la versión premium de PichonPass. Para obtenerla, acceda a <a href="https://pichisoft.cc">pichisoft.cc</a> y hágase una cuenta, apretando el botón "Registrarse", o en caso de que ya tenga cuenta: "Iniciar sesión".`,
-                    dur: 8 * SEG
-                },
-                {
-                    titulo: 'Versión premium',
-                    texto: `Ya disponible, PichonPass —Versión premium—.`,
-                    efecto: 'super',
-                    dur: 6 * SEG
-                }
+                { titulo: 'Versión premium', texto: `¿Quieres una interfaz digna de una aplicación para guardar contraseñas?`, dur: 6 * SEG },
+                { titulo: 'Versión premium', texto: `¿Que puedas guardar registros con total seguridad sin tener que preocuparte?`, dur: 6 * SEG },
+                { titulo: 'Versión premium', texto: `¿Que puedas hacer todo con <strong>mucha</strong> más facilidad y velocidad?`, dur: 6 * SEG },
+                { titulo: 'Versión premium', texto: `Ya tenemos la versión premium de PichonPass. Para obtenerla, acceda a <a href="https://pichisoft.cc">pichisoft.cc</a> y hágase una cuenta, apretando el botón "Registrarse", o en caso de que ya tenga cuenta: "Iniciar sesión".`, dur: 8 * SEG },
+                { titulo: 'Versión premium', texto: `Ya disponible, PichonPass —Versión premium—.`, efecto: 'super', dur: 6 * SEG }
             ],
             pantallaFinal: {
-                titulo: 'Versión premium',
-                efecto: 'brillo',
+                titulo: 'Versión premium', efecto: 'brillo',
                 texto: `
 ¿Quieres una interfaz digna de una aplicación para guardar contraseñas? ¿Que puedas guardar registros con total seguridad sin tener que preocuparte? ¿Que puedas hacer todo con <strong>mucha</strong> más facilidad y velocidad?
 Ya tenemos la versión premium de PichonPass. Para obtenerla, acceda a <a href="https://pichisoft.cc">pichisoft.cc</a> y hágase una cuenta, apretando el botón "Registrarse", o en caso de que ya tenga cuenta: "Iniciar sesión".
@@ -179,60 +69,23 @@ Ya disponible, PichonPass —Versión premium—.
                 { texto: 'Cerrar anuncio', cerrar: true }
             ]
         }
-
-        /* , otroAnuncio: { activo:true, pantallas:[{ titulo:'...', texto:`...`, dur: 6 * SEG }], opciones:[{ texto:'Cerrar', cerrar:true }] } */
     };
 
     /* =================================================================
-       3) DISPARADORES: CUÁNDO APARECE CADA CARTEL
-         nombre     nombre único (cuenta clics y rota carteles)
-         activo     false = apagado
-         tipo       'entrada' → al entrar a la página (tras "retraso" ms)
-                    'click'   → al tocar algo que coincida con "selector"
-         selector   (solo 'click') selector CSS de lo que se toca. Ejemplos:
-                       'ul a[href]'  cualquier app · 'button' cualquier botón
-                       'body'        CUALQUIER clic en la página
-         anuncios   lista de ids de ANUNCIOS (si hay varios, rota entre ellos)
-         cada       (solo 'click') cada cuántos clics sale. 5 = en el 5º, 10º, 15º...
-         prob       (solo 'click') probabilidad de 0 a 1 (opcional)
-         retraso    (solo 'entrada') ms de espera antes de mostrarlo
-         pagina     (opcional) solo vale si la ruta de la página contiene ese texto/regex
-         si         (opcional) solo vale si en la página existe ese selector CSS
-                    (así el mismo archivo se puede usar en varias páginas sin mezclar carteles)
-
-       Si el clic es sobre un LINK (una app), el cartel sale PRIMERO y la app se abre
-       cuando el cartel se cierra. Si es un botón, su acción ocurre normal.
+       3) DISPARADORES  — sin cambios
        ================================================================= */
     const DISPARADORES = [
-        /* PICHONAPPS · cada 5 clics (apps o botones). Para contar CUALQUIER clic: selector:'body' */
         { nombre: 'apps-clics', activo: true, tipo: 'click', si: '#cuenta', selector: 'body', anuncios: ['premiumApps'], cada: 4 },
-
-        /* PICHONAPPS · al entrar (apagado: poné activo:true si también lo querés al entrar) */
         { nombre: 'apps-entrada', activo: true, tipo: 'entrada', si: '#cuenta', anuncios: ['premiumApps'], retraso: 1500 },
-
-        /* PICHONPASS CLÁSICA · al entrar (espera a que Firebase confirme que NO hay sesión) */
         { nombre: 'pass-entrada', activo: true, tipo: 'entrada', pagina: 'pichonpass-classic', anuncios: ['premiumPass'], retraso: 2000 }
     ];
-
-    /* TAMBIÉN SIN TOCAR ESTE ARCHIVO, directo en el HTML:
-           <button data-anuncio="premiumPass">Algo</button>      muestra ese cartel al tocarlo
-           <button data-sin-anuncio>...</button>                 nunca dispara carteles
-
-       FUNCIONES DESDE TU CÓDIGO (window.PichonAnuncios):
-         PichonAnuncios.mostrar('id')                    muestra el cartel (respeta límites)
-         PichonAnuncios.mostrar('id', { forzar:true })   lo muestra ignorando límites
-         PichonAnuncios.antesDe('id', miFuncion)         muestra el cartel y al cerrarlo ejecuta miFuncion;
-                                                         si no corresponde mostrarlo, la ejecuta enseguida
-         PichonAnuncios.definir('id', { ...anuncio })    agrega/reemplaza un cartel
-         PichonAnuncios.reiniciar()                      borra los contadores guardados (para probar)
-       ================================================================= */
 
     /* ================================================================
        A PARTIR DE ACÁ NO HACE FALTA TOCAR NADA
        ================================================================ */
 
     const KEY = 'ps_carteles';
-    const nuevoEstado = () => ({ g: 0, a: {}, c: {}, r: {} }); // g: último cartel · a: por anuncio · c: clics · r: rotación
+    const nuevoEstado = () => ({ g: 0, a: {}, c: {}, r: {} });
     let estado = (() => {
         try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && typeof v === 'object') return Object.assign(nuevoEstado(), v); } catch { }
         return nuevoEstado();
@@ -241,17 +94,21 @@ Ya disponible, PichonPass —Versión premium—.
 
     let abierto = false;
 
-    /* Estado de la sesión:
-         'cuenta'      → tiene cuenta (no se muestra nada)
-         'invitado'    → confirmado sin cuenta
-         'desconocido' → todavía no se sabe (se espera; no se muestra nada)
-       En PichonApps se usa Pichisoft.user. En apps que no lo tienen (PichonPass clásica)
-       se usa Firebase: cuando ya respondió y no hay usuario, es invitado. */
+    /* ================================================================
+       FIX 1: estadoSesion() ahora espera a que Firebase confirme.
+       No devuelve 'invitado' hasta que Firebase esté listo (currentUser !== undefined).
+       Devuelve 'cuenta' si CUALQUIER fuente dice que hay sesión.
+       ================================================================ */
     function estadoSesion() {
         try {
-            if (window.Pichisoft) return window.Pichisoft.user ? 'cuenta' : 'invitado';
-            const f = window.PichisoftFirebase;
-            if (f && f.currentUser !== undefined) return f.currentUser ? 'cuenta' : 'invitado';
+            /* 1) ¿Alguna fuente dice "logueado"? → cuenta */
+            if (window.Pichisoft && window.Pichisoft.user) return 'cuenta';
+            if (window.PichisoftFirebase && window.PichisoftFirebase.currentUser) return 'cuenta';
+
+            /* 2) ¿Firebase ya resolvió y no hay usuario? → invitado (si Pichisoft también dice que no) */
+            if (window.PichisoftFirebase && window.PichisoftFirebase.currentUser === null) {
+                if (!window.Pichisoft || !window.Pichisoft.user) return 'invitado';
+            }
         } catch { }
         return 'desconocido';
     }
@@ -259,7 +116,7 @@ Ya disponible, PichonPass —Versión premium—.
 
     const limpiar = s => String(s == null ? '' : s).replace(/^\r?\n/, '').replace(/\r?\n[ \t]*$/, '');
 
-    /* Texto con formato seguro: solo <strong>, <b>, <em>, <i> y <a href="http...">. Todo lo demás es texto. */
+    /* Texto con formato seguro */
     const ETQ = { strong: 'strong', b: 'strong', em: 'em', i: 'em', a: 'a' };
     function rico(el, texto) {
         el.replaceChildren();
@@ -323,13 +180,11 @@ Ya disponible, PichonPass —Versión premium—.
 .pcr-ov.off .pcr-card{opacity:0;transform:translateY(20px) scale(.96);transition:opacity .35s ease,transform .38s ease}
 .pcr-card.pulso{animation:pcrGlow 1.5s ease-out}
 @keyframes pcrGlow{0%{box-shadow:0 0 0 1px rgba(212,175,55,.18),0 30px 80px rgba(0,0,0,.85),0 0 44px rgba(212,175,55,.12)}35%{box-shadow:0 0 0 2px rgba(241,217,138,.7),0 30px 80px rgba(0,0,0,.85),0 0 90px rgba(212,175,55,.55)}100%{box-shadow:0 0 0 1px rgba(212,175,55,.18),0 30px 80px rgba(0,0,0,.85),0 0 44px rgba(212,175,55,.12)}}
-
 .pcr-head{display:grid;grid-template-columns:auto 1fr auto;align-items:start;gap:14px}
 .pcr-izq{display:flex;align-items:baseline;flex-wrap:wrap;gap:3px 8px;min-height:30px}
 .pcr-lbl{font:bold 1.15rem "Times New Roman",Times,serif;color:#fff}
 .pcr-by{font:italic normal .72rem Verdana,"Open Sans",sans-serif;color:#8d8d8d}
 .pcr-tit{margin:0;align-self:center;text-align:center;font:bold clamp(1.35rem,4.2vw,2rem)/1.2 "Times New Roman",Times,serif;color:#fff;white-space:pre-wrap;word-break:break-word}
-
 .pcr-x{position:relative;width:30px;height:30px;padding:0;border:1.5px solid var(--g);border-radius:50%;background:none;cursor:pointer;transition:transform .3s,background .2s,opacity .3s}
 .pcr-x::before,.pcr-x::after{content:"";position:absolute;left:50%;top:50%;width:12px;height:2px;margin:-1px 0 0 -6px;border-radius:2px;background:var(--g2);transition:background .2s}
 .pcr-x::before{transform:rotate(45deg)}
@@ -340,7 +195,6 @@ Ya disponible, PichonPass —Versión premium—.
 .pcr-x:focus-visible{outline:2px solid var(--g2);outline-offset:2px}
 .pcr-x.lista{animation:pcrPulso 1.5s ease-out 2}
 @keyframes pcrPulso{0%{box-shadow:0 0 0 0 rgba(212,175,55,.6)}100%{box-shadow:0 0 0 14px rgba(212,175,55,0)}}
-
 .pcr-d{transition:opacity .28s ease,transform .28s ease}
 .pcr-d.out{opacity:0;transform:translateY(8px)}
 .pcr-d.esp-brillo{animation:pcrBrillo .95s cubic-bezier(.2,.8,.2,1) both}
@@ -350,31 +204,20 @@ Ya disponible, PichonPass —Versión premium—.
 .pcr-brillo{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0;background:linear-gradient(105deg,transparent 35%,rgba(241,217,138,.30) 50%,transparent 65%);transform:translateX(-120%)}
 .pcr-brillo.go{animation:pcrBarrido 1.2s ease-out}
 @keyframes pcrBarrido{0%{opacity:1;transform:translateX(-120%)}100%{opacity:1;transform:translateX(120%)}}
-
 .pcr-desc{margin:16px 0 0;font:.95rem/1.7 Verdana,"Open Sans",sans-serif;color:#c4c4c4;white-space:pre-wrap;word-break:break-word}
 .pcr-desc[hidden]{display:none}
 .pcr-desc strong,.pcr-tit strong{color:#fff;font-weight:bold}
 .pcr-desc a,.pcr-desc a:visited{color:#4da3ff;font-weight:bold;text-decoration:underline}
 .pcr-desc a:hover{color:#8cc4ff}
-
 .pcr-ops{display:flex;flex-direction:column;gap:9px;margin-top:20px}
 .pcr-ops:empty{display:none}
-.pcr-op{display:block;width:100%;box-sizing:border-box;padding:13px 14px;border:1px solid var(--g2);border-radius:10px;cursor:pointer;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5);font:1rem Georgia,"Times New Roman",serif;
-  background:linear-gradient(135deg,#2b2107,#100c02) left/0% 100% no-repeat,linear-gradient(135deg,#d4af37,#a67c12);
-  transition:background-size .35s ease,transform .2s,box-shadow .25s,border-color .25s,opacity .3s}
+.pcr-op{display:block;width:100%;box-sizing:border-box;padding:13px 14px;border:1px solid var(--g2);border-radius:10px;cursor:pointer;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5);font:1rem Georgia,"Times New Roman",serif;background:linear-gradient(135deg,#2b2107,#100c02) left/0% 100% no-repeat,linear-gradient(135deg,#d4af37,#a67c12);transition:background-size .35s ease,transform .2s,box-shadow .25s,border-color .25s,opacity .3s}
 .pcr-op:not(:disabled):hover{background-size:100% 100%,100% 100%;border-color:var(--g);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.55)}
 .pcr-op:disabled{opacity:.4;cursor:not-allowed}
 .pcr-op:focus-visible{outline:2px solid var(--g2);outline-offset:2px}
-
 .pcr-pie{display:flex;justify-content:space-between;gap:4px 12px;margin:18px calc(var(--px) * -1) 0;padding:10px var(--px) 13px;border-top:1px solid rgba(212,175,55,.18);font:.68rem Verdana,"Open Sans",sans-serif;color:#8d8d8d}
 .pcr-barra{position:absolute;left:0;bottom:0;width:100%;height:3px;background:linear-gradient(90deg,#b8901f,#f1d98a);transform-origin:left;transform:scaleX(0);transition:transform .12s linear}
-
-@media (max-width:560px){
-  .pcr-card{--px:16px;padding-top:16px;border-radius:16px}
-  .pcr-head{grid-template-columns:1fr auto}
-  .pcr-tit{grid-column:1/-1;grid-row:2;margin-top:12px}
-  .pcr-pie{flex-direction:column}
-}
+@media (max-width:560px){.pcr-card{--px:16px;padding-top:16px;border-radius:16px}.pcr-head{grid-template-columns:1fr auto}.pcr-tit{grid-column:1/-1;grid-row:2;margin-top:12px}.pcr-pie{flex-direction:column}}
 @media (prefers-reduced-motion:reduce){.pcr-ov,.pcr-card,.pcr-d,.pcr-x,.pcr-op,.pcr-barra{transition:none!important;animation:none!important}.pcr-brillo{display:none}}
 `;
     function inyectarCSS() {
@@ -382,12 +225,11 @@ Ya disponible, PichonPass —Versión premium—.
         const st = document.createElement('style'); st.id = 'pcrCss'; st.textContent = CSS; document.head.appendChild(st);
     }
 
-    /* ----------------------- Abrir el link pendiente ----------------------- */
     function continuar(d) {
         if (!d) return;
         if (d.blank) {
             const w = window.open(d.href, '_blank');
-            if (w) { try { w.opener = null; } catch { } } else location.href = d.href; // si el navegador lo bloquea, misma pestaña
+            if (w) { try { w.opener = null; } catch { } } else location.href = d.href;
         } else location.href = d.href;
     }
     function abrirUrl(url, blank) {
@@ -430,7 +272,7 @@ Ya disponible, PichonPass —Versión premium—.
             dest = ov.querySelector('.pcr-dest'), barra = ov.querySelector('.pcr-barra'), brillo = ov.querySelector('.pcr-brillo');
         if (o.destino) dest.textContent = 'Al cerrar se abrirá la app que elegiste.';
 
-        let idx = 0, mostrado = 0, t = 0, terminado = false, cerrando = false, ultimoMsg = '';
+        let idx = 0, mostrado = 0, t = 0, terminado = false, cerrando = false, ultimoMsg = '', finTerminada = false;
 
         function pintar(i, sinTit, sinOps) {
             const p = datos(i); mostrado = i;
@@ -451,8 +293,6 @@ Ya disponible, PichonPass —Versión premium—.
             }
         }
 
-        /* Cambio de pantalla: lo que cambia se desvanece, se reemplaza, el cartel cambia de alto con
-           animación y reaparece. Con "efecto" entra con desenfoque + barrido dorado (y destello del borde en 'super'). */
         function cambiar(i) {
             const p = datos(i), q = datos(mostrado), esp = p.efecto === 'super' ? 'super' : (p.efecto === 'brillo' ? 'brillo' : '');
             const mismoTit = limpiar(p.titulo) === limpiar(q.titulo), mismasOps = opsKey(p) === opsKey(q);
@@ -486,11 +326,14 @@ Ya disponible, PichonPass —Versión premium—.
 
         function setMsg(s) { if (s !== ultimoMsg) { msg.textContent = s; ultimoMsg = s; } }
 
+        /* FIX: si final === 0 (no cierra solo), paramos el intervalo al llegar al estado final
+           para evitar updates de DOM eternos */
         function tick() {
-            if (t >= total && !terminado) terminar();               // primero se habilita la X...
+            if (finTerminada) return;
+            if (t >= total && !terminado) terminar();
             let n = 0, acc = pant[0].dur;
             while (t >= acc && n < pant.length - 1) acc += pant[++n].dur;
-            if (t >= total && pf) n = pant.length;                  // ...y luego pasa a la pantalla final
+            if (t >= total && pf) n = pant.length;
             if (n !== idx) { idx = n; cambiar(n); }
             if (t < total) {
                 setMsg('Podrás cerrar este anuncio en ' + Math.ceil((total - t) / SEG) + ' s');
@@ -500,10 +343,15 @@ Ya disponible, PichonPass —Versión premium—.
                 setMsg('Se cerrará solo en ' + Math.max(0, Math.ceil(resto / SEG)) + ' s · o toca la X');
                 barra.style.transform = 'scaleX(' + Math.max(0, resto / final) + ')';
                 if (resto <= 0) cerrar();
-            } else { setMsg('Ya puedes cerrarlo con la X'); barra.style.transform = 'scaleX(1)'; }
+            } else {
+                setMsg('Ya puedes cerrarlo con la X');
+                barra.style.transform = 'scaleX(1)';
+                finTerminada = true;
+                clearInterval(iv);
+            }
         }
 
-        const iv = setInterval(() => { if (document.hidden || cerrando) return; t += 100; tick(); }, 100); // solo cuenta con la pestaña visible
+        const iv = setInterval(() => { if (document.hidden || cerrando) return; t += 100; tick(); }, 100);
         const tecla = e => { if (e.key === 'Escape' && terminado) cerrar(); };
 
         function cerrar(extra) {
@@ -539,7 +387,6 @@ Ya disponible, PichonPass —Versión premium—.
         return true;
     }
 
-    /* ----------------------------- CLICS ----------------------------- */
     function destinoDe(el, e) {
         const a = el.closest('a[href]');
         if (!a || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return null;
@@ -552,7 +399,6 @@ Ya disponible, PichonPass —Versión premium—.
         if (!e.isTrusted || abierto || !esInvitado() || !e.target.closest) return;
         if (e.target.closest(AJUSTES.IGNORAR)) return;
 
-        /* a) elementos con data-anuncio="id" */
         const d = e.target.closest('[data-anuncio]');
         if (d) {
             const dest = destinoDe(e.target, e);
@@ -560,7 +406,6 @@ Ya disponible, PichonPass —Versión premium—.
             return;
         }
 
-        /* b) disparadores de la sección 3 */
         for (const tr of DISPARADORES) {
             if (tr.tipo !== 'click' || tr.activo === false || !aplica(tr)) continue;
             if (!e.target.closest(tr.selector)) continue;
@@ -575,13 +420,15 @@ Ya disponible, PichonPass —Versión premium—.
         }
     }
 
-    /* Espera a que se sepa que NO hay sesión y a que no haya paneles abiertos (login, registro...) */
+    /* FIX 2: selector amplio de modales abiertos */
     function cuandoLibre(fn) {
         const ini = Date.now();
         const iv = setInterval(() => {
             const s = estadoSesion();
             if (s === 'cuenta' || Date.now() - ini > 2 * MIN) { clearInterval(iv); return; }
-            if (s === 'invitado' && !abierto && !document.querySelector('.ov')) { clearInterval(iv); fn(); }
+            if (s === 'invitado' && !abierto && !document.querySelector(AJUSTES.IGNORAR)) {
+                clearInterval(iv); fn();
+            }
         }, 600);
     }
 
