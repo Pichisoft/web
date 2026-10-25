@@ -233,7 +233,7 @@ body.prem .p-gear{display:flex}
     const MAP = Object.fromEntries(APPS.map(a => [a.n, a]));
     const CATS = [
         { id: 'utiles', nombre: 'Herramientas', apps: ['PichonTutorial', 'PichonInfo', 'PichonRules', 'PichonCode', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonCalc', 'PichonCalendar', 'PichonAlarm'] },
-        { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake', 'PichonChess', 'PichonGames', 'PichMan'] },
+      { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake', 'PichonChess', 'PichonGames', 'PichonMan'] },
         { id: 'azar', nombre: 'Azar', apps: ['PichonDestiny', 'PichonRandom'] },
         { id: 'divertidas', nombre: 'Diversión', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonPaint', 'PichonWatch'] }
     ];
@@ -272,7 +272,7 @@ body.prem .p-gear{display:flex}
         CATS.forEach(c => {
             cats[c.id] = ((sv.cats && sv.cats[c.id]) || []).filter(n => MAP[n] && !usadas.has(n) && usadas.add(n));
         });
-        CATS.forEach(c => c.apps.forEach(n => { if (!usadas.has(n)) { usadas.add(n); cats[c.id].push(n); } }));
+      CATS.forEach(c => c.apps.forEach(n => { if (MAP[n] && !usadas.has(n)) { usadas.add(n); cats[c.id].push(n); } }));
         const fu = new Set(), flat = (sv.flat || []).filter(n => MAP[n] && !fu.has(n) && fu.add(n));
         APPS.forEach(a => { if (!fu.has(a.n)) flat.push(a.n); });
         lay = { cats, flat };
@@ -364,7 +364,7 @@ body.prem .p-gear{display:flex}
         const h = document.createElement('div'); h.className = 'cat-h';
         h.innerHTML = '<i class="ci ci-' + c.id + '" aria-hidden="true"></i><span>' + c.nombre + '</span>';
         const l = document.createElement('div'); l.className = 'lista'; l.dataset.cat = c.id;
-        lay.cats[c.id].forEach(n => l.append(item(MAP[n], true)));
+lay.cats[c.id].forEach(n => MAP[n] && l.append(item(MAP[n], true)));
         s.append(h, l); return s;
     }
 
