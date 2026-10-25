@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
     <title>PichonPaint</title>
-   
+
     <style>
         * {
             box-sizing: border-box;
@@ -135,7 +135,11 @@
             padding: 6px 10px;
             cursor: pointer;
             min-height: 36px;
-            min-width: 36px
+            min-width: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
         #toolbar button:hover:not(:disabled) {
@@ -235,33 +239,440 @@
         }
 
         /* ==========================================
-       PICHISOFT - ESTADO DE SESIÓN
-       ========================================== */
+           ÍCONOS DIBUJADOS EN CSS (Sin emojis)
+           ========================================== */
+        .ico {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            position: relative;
+            flex-shrink: 0;
+        }
 
+        /* Pincel */
+        .i-brush::before {
+            content: "";
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border: 2px solid currentColor;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+        }
+
+        .i-brush::after {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 8px solid currentColor;
+            bottom: -4px;
+            left: 5px;
+            transform: rotate(45deg);
+        }
+
+        /* Goma */
+        .i-eraser::before {
+            content: "";
+            position: absolute;
+            width: 14px;
+            height: 10px;
+            border: 2px solid currentColor;
+            border-radius: 3px;
+            top: 4px;
+            left: 2px;
+            transform: rotate(-20deg);
+        }
+
+        .i-eraser::after {
+            content: "";
+            position: absolute;
+            width: 10px;
+            height: 2px;
+            background: currentColor;
+            top: 9px;
+            left: 4px;
+            transform: rotate(-20deg);
+        }
+
+        /* Línea */
+        .i-line::before {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 2px;
+            background: currentColor;
+            top: 9px;
+            left: 2px;
+            transform: rotate(-45deg);
+        }
+
+        /* Rectángulo */
+        .i-rect::before {
+            content: "";
+            position: absolute;
+            width: 12px;
+            height: 10px;
+            border: 2px solid currentColor;
+            top: 3px;
+            left: 2px;
+        }
+
+        /* Elipse */
+        .i-ellipse::before {
+            content: "";
+            position: absolute;
+            width: 12px;
+            height: 10px;
+            border: 2px solid currentColor;
+            border-radius: 50%;
+            top: 3px;
+            left: 2px;
+        }
+
+        /* Balde */
+        .i-fill::before {
+            content: "";
+            position: absolute;
+            width: 10px;
+            height: 12px;
+            border: 2px solid currentColor;
+            border-radius: 2px;
+            top: 2px;
+            left: 2px;
+            transform: rotate(30deg);
+        }
+
+        .i-fill::after {
+            content: "";
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: currentColor;
+            border-radius: 50%;
+            top: 10px;
+            left: 10px;
+        }
+
+        /* Texto */
+        .i-text::before {
+            content: "";
+            position: absolute;
+            width: 14px;
+            height: 2px;
+            background: currentColor;
+            top: 4px;
+            left: 3px;
+        }
+
+        .i-text::after {
+            content: "";
+            position: absolute;
+            width: 2px;
+            height: 14px;
+            background: currentColor;
+            top: 4px;
+            left: 9px;
+        }
+
+        /* Gotero */
+        .i-picker::before {
+            content: "";
+            position: absolute;
+            width: 4px;
+            height: 10px;
+            border: 2px solid currentColor;
+            border-radius: 2px;
+            top: 6px;
+            left: 2px;
+            transform: rotate(45deg);
+        }
+
+        .i-picker::after {
+            content: "";
+            position: absolute;
+            width: 2px;
+            height: 8px;
+            background: currentColor;
+            top: 2px;
+            left: 12px;
+            transform: rotate(45deg);
+        }
+
+        /* Mano */
+        .i-hand::before {
+            content: "";
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border: 2px solid currentColor;
+            border-radius: 4px;
+            top: 5px;
+            left: 4px;
+        }
+
+        .i-hand::after {
+            content: "";
+            position: absolute;
+            width: 2px;
+            height: 6px;
+            background: currentColor;
+            top: 2px;
+            left: 13px;
+            border-radius: 2px;
+            transform: rotate(30deg);
+        }
+
+        /* Flechas (Swap) */
+        .i-swap {
+            background:
+                linear-gradient(45deg, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%) left 3px top 3px / 8px 8px no-repeat,
+                linear-gradient(-135deg, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%) right 3px bottom 3px / 8px 8px no-repeat;
+            border-left: 2px solid currentColor;
+            border-right: 2px solid currentColor;
+            width: 16px;
+            height: 10px;
+            margin: 0 auto;
+        }
+
+        /* Deshacer / Rehacer */
+        .i-undo::before,
+        .i-redo::before {
+            content: "";
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border: 2px solid currentColor;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+
+        .i-undo::after {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+            border-right: 6px solid currentColor;
+            top: 4px;
+            left: 0;
+        }
+
+        .i-redo::after {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+            border-left: 6px solid currentColor;
+            top: 4px;
+            right: 0;
+        }
+
+        .i-redo::before {
+            transform: scaleX(-1);
+            left: auto;
+            right: 2px;
+        }
+
+        /* Menos / Más */
+        .i-minus::before {
+            content: "";
+            position: absolute;
+            width: 12px;
+            height: 2px;
+            background: currentColor;
+            top: 9px;
+            left: 4px;
+        }
+
+        .i-plus::before {
+            content: "";
+            position: absolute;
+            width: 12px;
+            height: 2px;
+            background: currentColor;
+            top: 9px;
+            left: 4px;
+        }
+
+        .i-plus::after {
+            content: "";
+            position: absolute;
+            width: 2px;
+            height: 12px;
+            background: currentColor;
+            top: 4px;
+            left: 9px;
+        }
+
+        /* Ajustar a pantalla */
+        .i-fit::before {
+            content: "";
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border: 2px solid currentColor;
+            top: 2px;
+            left: 2px;
+            border-right: 0;
+            border-bottom: 0;
+        }
+
+        .i-fit::after {
+            content: "";
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border: 2px solid currentColor;
+            bottom: 2px;
+            right: 2px;
+            border-left: 0;
+            border-top: 0;
+        }
+
+        /* Descargar */
+        .i-download::before {
+            content: "";
+            position: absolute;
+            width: 2px;
+            height: 10px;
+            background: currentColor;
+            top: 2px;
+            left: 9px;
+        }
+
+        .i-download::after {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid currentColor;
+            top: 10px;
+            left: 5px;
+        }
+
+        /* Guardar */
+        .i-save::before {
+            content: "";
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border: 2px solid currentColor;
+            border-radius: 2px;
+            top: 2px;
+            left: 3px;
+        }
+
+        .i-save::after {
+            content: "";
+            position: absolute;
+            width: 8px;
+            height: 6px;
+            background: currentColor;
+            bottom: 4px;
+            left: 6px;
+        }
+
+        /* Modal de Texto */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #1c1c1c;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            color: #fff;
+        }
+
+        .modal-box h3 {
+            margin-top: 0;
+            font-family: "Times New Roman", serif;
+        }
+
+        .modal-box textarea {
+            width: 100%;
+            min-height: 100px;
+            background: #000;
+            color: #fff;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .modal-actions button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font: inherit;
+            cursor: pointer;
+        }
+
+        .modal-actions .cancel {
+            background: #555;
+            color: #fff;
+        }
+
+        .modal-actions .confirm {
+            background: #20a84b;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* ==========================================
+           PICHISOFT - ESTADO DE SESIÓN
+           ========================================== */
         #pichisoft-session-status {
             position: fixed;
             top: 52px;
             right: 20px;
             z-index: 9999;
-
             display: flex;
             align-items: center;
             gap: 8px;
-
             max-width: calc(100vw - 20px);
             box-sizing: border-box;
             padding: 8px 16px;
-
             background: #000;
             color: #20a84b;
-
             border: 1px solid rgba(34, 197, 94, 0.25);
             border-radius: 22px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-
             font: 14px/1.3 Georgia, serif;
             text-align: left;
-
             opacity: 1;
             transform: translateY(0);
             transition: opacity 0.6s ease, transform 0.6s ease;
@@ -311,25 +722,19 @@
             top: 52px;
             right: 20px;
             z-index: 9998;
-
             display: flex;
             align-items: center;
             gap: 8px;
-
             max-width: calc(100vw - 20px);
             box-sizing: border-box;
             padding: 5px 14px 5px 5px;
-
             background: #000;
             color: #fff;
-
             border: 1px solid rgba(34, 197, 94, 0.25);
             border-radius: 25px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-
             font-family: Georgia, serif;
             text-align: left;
-
             opacity: 0;
             transform: translateY(-12px) scale(0.9);
             transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
@@ -368,7 +773,7 @@
             white-space: nowrap;
         }
 
-        /* Celular: título más chico para que no choque con el link "Pichisoft" */
+        /* Celular */
         @media (max-width: 600px) {
             .header {
                 top: 16px;
@@ -410,7 +815,7 @@
             <span id="sws"></span>
             <input type="color" id="color" value="#e11d48" title="Color principal (clic izquierdo)"
                 aria-label="Color principal">
-            <button id="swap" title="Intercambiar colores (X)">⇄</button>
+            <button id="swap" title="Intercambiar colores (X)"><span class="ico i-swap"></span></button>
             <input type="color" id="color2" value="#ffffff" title="Color secundario (clic derecho)"
                 aria-label="Color secundario">
             <input type="range" id="size" min="1" max="80" value="8" title="Grosor / tamaño de texto"
@@ -424,17 +829,32 @@
             </select>
         </div>
         <div class="row">
-            <button id="undo" title="Deshacer (Ctrl+Z)" disabled>↩ Deshacer</button>
-            <button id="redo" title="Rehacer (Ctrl+Y)" disabled>↪ Rehacer</button>
+            <button id="undo" title="Deshacer (Ctrl+Z)" disabled><span class="ico i-undo"></span> Deshacer</button>
+            <button id="redo" title="Rehacer (Ctrl+Y)" disabled><span class="ico i-redo"></span> Rehacer</button>
             <span class="sep"></span>
-            <button id="zo" title="Alejar (-)">−</button><span id="zl">100%</span>
-            <button id="zi" title="Acercar (+)">+</button><button id="zf" title="Ajustar a pantalla (0)">⤢</button>
+            <button id="zo" title="Alejar (-)"><span class="ico i-minus"></span></button><span id="zl">100%</span>
+            <button id="zi" title="Acercar (+)"><span class="ico i-plus"></span></button><button id="zf"
+                title="Ajustar a pantalla (0)"><span class="ico i-fit"></span></button>
             <span class="sep"></span>
-            <button id="dl" title="Descargar la imagen como PNG">⬇ Descargar</button>
-            <button id="save" title="Guardar para todos (Ctrl+S)" disabled>💾 Guardar</button>
+            <button id="dl" title="Descargar la imagen como PNG"><span class="ico i-download"></span> Descargar</button>
+            <button id="save" title="Guardar para todos (Ctrl+S)" disabled><span class="ico i-save"></span>
+                Guardar</button>
         </div>
     </div>
     <div id="toast" role="status" aria-live="polite"></div>
+
+    <!-- Modal de Texto -->
+    <div class="modal-overlay" id="modal-text">
+        <div class="modal-box">
+            <h3>Insertar texto</h3>
+            <textarea id="text-input" placeholder="Escribí tu texto acá (usá Enter para saltar de línea)"></textarea>
+            <div class="modal-actions">
+                <button class="cancel"
+                    onclick="document.getElementById('modal-text').classList.remove('open')">Cancelar</button>
+                <button class="confirm" id="btn-insert-text">Insertar</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ===== Pichisoft - Estado de sesión ===== -->
     <div id="pichisoft-session-status" role="status" aria-live="polite">
@@ -449,7 +869,6 @@
 
     <script>
         (function () {
-            /* Todo va dentro de esta función para no chocar con las variables de la app */
             var CFG = {
                 apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
                 authDomain: "pichisoft.firebaseapp.com",
@@ -460,8 +879,8 @@
                 measurementId: "G-K7HRKR8BJ1"
             };
             var V = "https://www.gstatic.com/firebasejs/12.3.0/";
-            var DUR_INICIO = 12000;   // "Iniciando sesión..."
-            var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+            var DUR_INICIO = 12000;
+            var DUR_MENSAJE = 6000;
 
             var box = document.getElementById("pichisoft-session-status");
             var txt = box.querySelector(".ps-text");
@@ -472,8 +891,6 @@
 
             function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
-               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
             async function comprobar() {
                 try {
                     var m = await Promise.all([
@@ -500,13 +917,10 @@
                         try {
                             var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
                             if (snap.exists()) perfil = snap.data();
-                        } catch (e) {
-                            console.error("Pichisoft: no se pudo leer el perfil", e);
-                        }
+                        } catch (e) { }
                     }
                     return { user: user, perfil: perfil };
                 } catch (e) {
-                    console.error("Pichisoft:", e);
                     return { error: true };
                 }
             }
@@ -549,12 +963,12 @@
         })();
     </script>
 
-    <!-- ===== PichonPaint ===== -->
+    <!-- ===== PichonPaint Lógica ===== -->
     <script type="module">
         const V = "https://www.gstatic.com/firebasejs/12.3.0/";
         const { doc, getDoc, setDoc, onSnapshot, serverTimestamp } = await import(V + "firebase-firestore.js");
 
-        const W = 1600, H = 1000, REF = ["pichonpaint", "canvas"];   // lienzo compartido de tamaño fijo
+        const W = 1600, H = 1000, REF = ["pichonpaint", "canvas"];
         const $ = id => document.getElementById(id);
         const cv = $("cv"), pv = $("pv"), board = $("board"), stage = $("stage");
         const ctx = cv.getContext("2d", { willReadFrequently: true }), pctx = pv.getContext("2d");
@@ -562,6 +976,7 @@
 
         let base = null, strokes = [], redo = [], cur = null, tool = "brush", color = "#e11d48", color2 = "#ffffff";
         let fillOn = false, db = null, saving = false, z = 1, tx = 0, ty = 0, bl = 0, bt = 0, space = false;
+        let textModalPos = { x: 0, y: 0 };
         const size = () => +$("size").value;
 
         /* ---------- Vista: ajustar, zoom y desplazamiento ---------- */
@@ -575,7 +990,7 @@
             board.style.transform = `translate(${tx}px,${ty}px) scale(${z})`;
             $("zl").textContent = Math.round(z * 100) + "%";
         }
-        function zoomTo(mx, my, nz, fx = mx, fy = my, o = { z, tx, ty }) {   // zoom anclado a un punto
+        function zoomTo(mx, my, nz, fx = mx, fy = my, o = { z, tx, ty }) {
             nz = Math.min(16, Math.max(.4, nz));
             const ux = (mx - bl - o.tx) / o.z, uy = (my - bt - o.ty) / o.z;
             z = nz; tx = fx - bl - ux * nz; ty = fy - bt - uy * nz; view();
@@ -592,7 +1007,7 @@
         function style(c, s) {
             c.lineCap = c.lineJoin = "round"; c.strokeStyle = c.fillStyle = s.t === "e" ? "#fff" : s.c; c.lineWidth = s.w;
         }
-        function flood(c, x, y, hex) {                        // balde de pintura
+        function flood(c, x, y, hex) {
             x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= W || y >= H) return;
             const im = c.getImageData(0, 0, W, H), d = im.data, n = parseInt(hex.slice(1), 16);
             const R = n >> 16, G = n >> 8 & 255, B = n & 255, i0 = (y * W + x) * 4, tr = d[i0], tg = d[i0 + 1], tb = d[i0 + 2];
@@ -644,7 +1059,7 @@
 
         stage.addEventListener("pointerdown", e => {
             stage.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-            if (ptrs.size === 2) {                               // dos dedos: zoom y desplazamiento
+            if (ptrs.size === 2) {
                 cancelCur(); const [a, b] = [...ptrs.values()];
                 g = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, z, tx, ty }; pan = null; return;
             }
@@ -652,20 +1067,24 @@
             if (tool === "hand" || space || e.button === 1) { pan = { x: e.clientX, y: e.clientY, tx, ty }; return; }
             if (e.button !== 0 && e.button !== 2) return;
             const col = e.button === 2 ? color2 : color, p = pt(e);
+
             if (tool === "picker" || tool === "fill" || tool === "text") {
                 ptrs.delete(e.pointerId);
                 if (p.x < 0 || p.y < 0 || p.x >= W || p.y >= H) return;
                 if (tool === "picker") { pickColor(sample(p), true, e.button === 2); setTool("brush"); }
                 else if (tool === "fill") commit({ t: "f", c: col, p: [p] }, true);
-                else setTimeout(() => {
-                    const txt = prompt("Texto (podés usar varias líneas con Enter):");
-                    if (txt) commit({ t: "x", c: col, p: [p], txt, sz: Math.max(14, size() * 4), f: $("font").value }, true);
-                }, 0);
+                else if (tool === "text") {
+                    textModalPos = p;
+                    $("text-input").value = "";
+                    $("modal-text").classList.add("open");
+                    setTimeout(() => $("text-input").focus(), 100);
+                }
                 return;
             }
             cur = { t: KIND[tool], c: col, w: size(), fill: fillOn, p: [p] };
             if (cur.t === "b" || cur.t === "e") drawStroke(ctx, cur); else { cur.p[1] = p; preview(); }
         });
+
         stage.addEventListener("pointermove", e => {
             if (!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
             if (g && ptrs.size === 2) {
@@ -682,52 +1101,80 @@
                 }
             } else { cur.p[1] = pt(e); preview(); }
         });
+
         function up(e) {
             ptrs.delete(e.pointerId); if (ptrs.size < 2) g = null; if (!ptrs.size) pan = null;
             if (!cur) return;
             const s = cur; cur = null; pctx.clearRect(0, 0, W, H);
             commit(s, s.t !== "b" && s.t !== "e");
         }
+
         stage.addEventListener("contextmenu", e => e.preventDefault());
         stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", up);
 
         /* ---------- Herramientas y colores ---------- */
-        const TOOLS = [["brush", "✏️", "Pincel (B)"], ["eraser", "🧽", "Goma (E)"], ["line", "╱", "Línea (L)"], ["rect", "▭", "Rectángulo (R)"],
-        ["ellipse", "◯", "Elipse (O)"], ["fill", "🪣", "Balde de relleno (F)"], ["text", "🔤", "Texto (T)"], ["picker", "💧", "Gotero (I)"], ["hand", "✋", "Mano: mover (H o Espacio)"]];
-        TOOLS.forEach(([id, ic, tt]) => {
-            const b = document.createElement("button"); b.id = "t-" + id; b.textContent = ic; b.title = tt; b.setAttribute("aria-label", tt);
+        const TOOLS = [
+            ["brush", "i-brush", "Pincel (B)"], ["eraser", "i-eraser", "Goma (E)"],
+            ["line", "i-line", "Línea (L)"], ["rect", "i-rect", "Rectángulo (R)"],
+            ["ellipse", "i-ellipse", "Elipse (O)"], ["fill", "i-fill", "Balde de relleno (F)"],
+            ["text", "i-text", "Texto (T)"], ["picker", "i-picker", "Gotero (I)"],
+            ["hand", "i-hand", "Mano: mover (H o Espacio)"]
+        ];
+
+        TOOLS.forEach(([id, iconClass, tt]) => {
+            const b = document.createElement("button"); b.id = "t-" + id; b.title = tt; b.setAttribute("aria-label", tt);
+            const ico = document.createElement("span"); ico.className = "ico " + iconClass;
+            b.appendChild(ico);
             b.onclick = () => setTool(id); $("tools").appendChild(b);
         });
+
         function setTool(t) {
-            tool = t; TOOLS.forEach(([id]) => $("t-" + id).classList.toggle("on", id === t)); stage.className = "t-" + t;
+            tool = t; TOOLS.forEach(([id]) => $("t-" + id).classList.toggle("on", id === t));
+            stage.classList.remove('t-brush', 't-eraser', 't-line', 't-rect', 't-ellipse', 't-fill', 't-text', 't-picker', 't-hand');
+            stage.classList.add("t-" + t);
         }
+
         const PAL = ["#000000", "#4b5563", "#9ca3af", "#ffffff", "#7f1d1d", "#e11d48", "#f97316", "#facc15", "#a3e635", "#22c55e", "#14b8a6",
             "#0ea5e9", "#2563eb", "#6366f1", "#a855f7", "#ec4899", "#78350f", "#b45309", "#d6a97a", "#fcd5b5", "#fecdd3", "#fed7aa",
             "#fef08a", "#bbf7d0", "#a5f3fc", "#bfdbfe", "#ddd6fe", "#fbcfe8"];
+
         PAL.forEach(c => {
             const b = document.createElement("button"); b.className = "sw"; b.style.background = c; b.dataset.c = c;
             b.setAttribute("aria-label", "Color " + c); b.title = "Clic: principal · Clic derecho: secundario";
             b.onclick = () => pickColor(c, false); b.oncontextmenu = e => { e.preventDefault(); pickColor(c, false, true); };
             $("sws").appendChild(b);
         });
+
         function pickColor(c, fromPicker, second) {
             if (second) color2 = c; else color = c;
             $("color").value = color; $("color2").value = color2;
             [...$("sws").children].forEach(b => { b.classList.toggle("on", b.dataset.c === color); b.classList.toggle("on2", b.dataset.c === color2); });
             if (!fromPicker && !second && (tool === "eraser" || tool === "hand" || tool === "picker")) setTool("brush");
         }
+
         $("color").oninput = e => pickColor(e.target.value, false);
         $("color2").oninput = e => pickColor(e.target.value, false, true);
         $("swap").onclick = () => { [color, color2] = [color2, color]; pickColor(color, true); };
         $("fillb").onclick = () => { fillOn = !fillOn; $("fillb").classList.toggle("on", fillOn); $("fillb").textContent = fillOn ? "◼ Sólido" : "◻ Contorno"; };
 
+        /* ---------- Modal de Texto ---------- */
+        $("btn-insert-text").onclick = () => {
+            const txt = $("text-input").value;
+            if (txt) {
+                commit({ t: "x", c: color, p: [textModalPos], txt, sz: Math.max(14, size() * 4), f: $("font").value }, true);
+            }
+            $("modal-text").classList.remove("open");
+        };
+
+        /* ---------- Utilidades ---------- */
         function sync() {
             $("undo").disabled = !strokes.length; $("redo").disabled = !redo.length; $("save").disabled = !strokes.length || saving;
         }
         function undo() { if (strokes.length) { redo.push(strokes.pop()); redraw(); sync(); } }
         function redoFn() { if (redo.length) { strokes.push(redo.pop()); redraw(); sync(); } }
         $("undo").onclick = undo; $("redo").onclick = redoFn;
-        $("dl").onclick = () => cv.toBlob(blob => {            // incluye también lo que todavía no guardaste
+
+        $("dl").onclick = () => cv.toBlob(blob => {
             const u = URL.createObjectURL(blob), a = document.createElement("a");
             a.href = u; a.download = "pichonpaint-" + new Date().toISOString().slice(0, 10) + ".png";
             document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
@@ -759,14 +1206,14 @@
         const loadImg = src => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
         function encode(c) {
             for (let q = 0.92; q > 0.25; q -= 0.1) { const d = c.toDataURL("image/jpeg", q); if (d.length < 1000000) return d; }
-            return c.toDataURL("image/jpeg", 0.25);                 // Firestore: máx. ~1 MB por documento
+            return c.toDataURL("image/jpeg", 0.25);
         }
         async function save() {
             if (!strokes.length || saving) return;
             if (!db) return toast("Sin conexión: todavía no se puede guardar");
             saving = true; sync(); toast("Guardando...", 8000);
             try {
-                const ref = doc(db, ...REF), snap = await getDoc(ref);   // trae lo último de otros y le suma tus trazos
+                const ref = doc(db, ...REF), snap = await getDoc(ref);
                 const img = snap.exists() ? await loadImg(snap.data().data) : null;
                 const tmp = document.createElement("canvas"); tmp.width = W; tmp.height = H;
                 paint(tmp.getContext("2d", { willReadFrequently: true }), img, strokes);
@@ -779,7 +1226,7 @@
         $("save").onclick = save;
         addEventListener("beforeunload", e => { if (strokes.length) { e.preventDefault(); e.returnValue = ""; } });
 
-        db = await new Promise(res => {                           // espera a que el script de sesión deje listo Firestore
+        db = await new Promise(res => {
             let n = 0;
             const i = setInterval(() => {
                 if (window.PichisoftFirebase && window.PichisoftFirebase.db) { clearInterval(i); res(window.PichisoftFirebase.db); }
@@ -788,15 +1235,15 @@
         });
         redraw();
         if (db) {
-            onSnapshot(doc(db, ...REF), async snap => {            // carga inicial + cambios en vivo de otros
+            onSnapshot(doc(db, ...REF), async snap => {
                 if (!snap.exists() || snap.metadata.hasPendingWrites) return;
                 try { base = await loadImg(snap.data().data); if (!cur) redraw(); } catch (e) { console.error(e); }
             }, e => { console.error(e); toast("No se pudo leer el lienzo compartido", 4000); });
         } else toast("Sin conexión con Pichisoft: podés dibujar, pero no guardar", 5000);
     </script>
     <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
-            href="https://pichisoft.cc" target="_blank"
-            style="color:#278acc; text-decoration: underline;">Pichisoft</a></p>
+            href="https://pichisoft.cc" target="_blank" style="color:#278acc; text-decoration: underline;">Pichisoft</a>
+    </p>
 </body>
 
 </html>
