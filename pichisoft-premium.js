@@ -217,7 +217,6 @@ body.prem .p-gear{display:flex}
         { n: 'PichonDestiny', u: 'pichondestiny' },
         { n: 'PichonDocs', u: 'pichondocs' },
         { n: 'PichonFood', u: 'pichonfood' },
-        { n: 'PichonTraffic', u: 'pichontraffic', t: ['nuevo'] },
         { n: 'PichonList', u: 'pichonlist' },
         { n: 'PichonMan', u: 'pichman', t: ['nuevo'] },
         { n: 'PichonMorse', u: 'pichonmorse' },
@@ -227,6 +226,7 @@ body.prem .p-gear{display:flex}
         { n: 'PichonPass', u: 'pichonpass' },
         { n: 'PichonRandom', u: 'pichonrandom' },
         { n: 'PichonSnake', u: 'pichonsnake' },
+         { n: 'PichonTraffic', u: 'pichontraffic', t: ['nuevo'] },
         { n: 'PichonWatch', u: 'pichonwatch' }
     ];
     APPS.forEach(a => a.t = a.t || []);
