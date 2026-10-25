@@ -26,9 +26,14 @@
             --link: #0b3fd1;
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
-        html, body { margin: 0; }
+        html,
+        body {
+            margin: 0;
+        }
 
         body {
             background: var(--bg);
@@ -120,9 +125,13 @@
             transition: background-color .5s ease, color .5s ease, border-color .5s ease;
         }
 
-        #theme-toggle .ico { transition: transform .6s ease; }
+        #theme-toggle .ico {
+            transition: transform .6s ease;
+        }
 
-        #theme-toggle.girando .ico { transform: rotate(360deg); }
+        #theme-toggle.girando .ico {
+            transform: rotate(360deg);
+        }
 
         /* Revelado circular desde el botón (View Transitions) */
         ::view-transition-old(root),
@@ -144,7 +153,10 @@
             text-decoration-color: #1e5eff;
         }
 
-        main { max-width: 800px; margin: 0 auto; }
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+        }
 
         /* white-space: pre-line => respeta saltos de línea, ignora la sangría */
         .content {
@@ -174,7 +186,9 @@
             font-size: 1.5rem;
         }
 
-        .info .fila { margin: 0 0 10px; }
+        .info .fila {
+            margin: 0 0 10px;
+        }
 
         .info strong,
         .info a {
@@ -211,7 +225,9 @@
             margin-bottom: 12px;
         }
 
-        .panel-body { padding-bottom: 16px; }
+        .panel-body {
+            padding-bottom: 16px;
+        }
 
         .arial-bold {
             font-family: Arial, sans-serif;
@@ -226,12 +242,18 @@
             margin: 28px 0 8px;
         }
 
-        .panel-body a { color: var(--link); }
+        .panel-body a {
+            color: var(--link);
+        }
 
         /* Panel anidado (para usar dentro de Información general) */
-        details details { background: transparent; }
+        details details {
+            background: transparent;
+        }
 
-        details details>summary { font-size: 1rem; }
+        details details>summary {
+            font-size: 1rem;
+        }
 
         /* ==========================================
            PICHISOFT - ESTADO DE SESIÓN
@@ -272,7 +294,9 @@
             transform: translateY(-12px);
         }
 
-        #pichisoft-session-status.success { font-weight: bold; }
+        #pichisoft-session-status.success {
+            font-weight: bold;
+        }
 
         #pichisoft-session-status .ps-check {
             display: none;
@@ -287,9 +311,20 @@
         }
 
         @keyframes pichisoftCheck {
-            0% { opacity: 0; transform: scale(0.2) rotate(-25deg); }
-            60% { opacity: 1; transform: scale(1.25) rotate(8deg); }
-            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+            0% {
+                opacity: 0;
+                transform: scale(0.2) rotate(-25deg);
+            }
+
+            60% {
+                opacity: 1;
+                transform: scale(1.25) rotate(8deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
         }
 
         #pichisoft-session-profile {
@@ -356,21 +391,32 @@
 
         /* Celular: título más chico para que no choque con el link "Pichisoft" */
         @media (max-width: 600px) {
-            .header { top: 16px; left: 15px; }
+            .header {
+                top: 16px;
+                left: 15px;
+            }
 
-            .logo { font-size: 1.5rem; }
+            .logo {
+                font-size: 1.5rem;
+            }
 
-            .byline { font-size: 0.75rem; }
+            .byline {
+                font-size: 0.75rem;
+            }
 
             #theme-toggle {
                 font-size: .65rem;
                 padding: 2px 8px;
             }
 
-            body { padding-top: 100px; }
+            body {
+                padding-top: 100px;
+            }
 
             #pichisoft-session-status,
-            #pichisoft-session-profile { right: 10px; }
+            #pichisoft-session-profile {
+                right: 10px;
+            }
 
             #pichisoft-session-status {
                 font-size: 13px;
@@ -388,7 +434,8 @@
             <h1 class="logo">PichonInfo</h1>
             <span class="byline"> - By Pichisoft - </span>
         </div>
-        <button id="theme-toggle" type="button"><span class="ico" aria-hidden="true"></span><span id="theme-label">Modo oscuro</span></button>
+        <button id="theme-toggle" type="button"><span class="ico" aria-hidden="true"></span><span id="theme-label">Modo
+                oscuro</span></button>
     </header>
 
     <!-- Link arriba a la derecha -->
@@ -398,8 +445,9 @@
 
         <!-- ===== BIENVENIDA (Verdana, negrita) ===== -->
         <div class="content welcome">
-          ¡Hola, pichisofter! Bienvenido a Pichisoft, el mundo donde te diviertes y disfrutas de todo lo que te ofrecemos.
-          En esta app llamada PichonInfo, te presentaremos algunas cosas que quizás te gustaría saber. ¡Empecemos!
+            ¡Hola, pichisofter! Bienvenido a Pichisoft, el mundo donde te diviertes y disfrutas de todo lo que te
+            ofrecemos.
+            En esta app llamada PichonInfo, te presentaremos algunas cosas que quizás te gustaría saber. ¡Empecemos!
         </div>
 
         <!-- ===== PANEL 1: SOBRE NOSOTROS ===== -->
@@ -407,21 +455,51 @@
             <summary>Sobre nosotros</summary>
             <div class="panel-body">
                 <div class="content arial-bold">
-                    Un tiempo atrás, hemos decidido crear lo que simplemente pensábamos que sería un "Proyecto de Github", llamado Pichisoft.
-                    Fuimos haciendo aplicaciones que incluso no están y no estuvieron nunca en el repositorio de apps: como por ejemplo, "PichonAsteroids", "PichonBowman", "PichonTanks", "PichonTetris", etc.
-                    Pero, todo empezó cuando dijimos "¿Y si hacemos una aplicación de calculadora?" e hicimos el proyecto, estábamos pensando qué nombre ponerle... Y nos decidimos por "PichonCalc", tan solo porque nos parecía divertido simplemente combinar "Pichon" con una palabra que le diera significado a la app.
-                    Desde ese entonces, al crear PichonCalc, surgió otra idea más: "Podríamos hacer una app para que le preguntes algo, y al tocar la pantalla, te de una respuesta al azar", las primeras respuestas fueron las más obvias, como "Sí", "No", "Tal vez"... Pero luego fuimos añadiendo respuestas muy divertidas, volviendo a nombrar la palabra "Pichón": ¿Qué puedo hacer ahora?"→"PREGUNTALE AL PICHÓN". Y se nos ocurrió más ideas, tanto respuestas exageradas como "Preguntame de nuevo en 40 días", respuestas que parecían saber lo que alguien preguntaba, como "Sí, definitivamente", respuestas, donde incluso PichonDestiny, espera, ¿Qué?, ¿¡PICHONDESTINY!? Entonces allí nació el nombre de la segunda app: PichonDestiny. Ahora sí, ¿En qué estabámos? Ah, en respuestass donde incluso, PichonDestiny, se sentía mal al responder, por ejemplo, decía: "ESTOY NERVIOSO PARA RESPONDER A ESA PREGUNTA :(".
-                    Y fueron surgiendo más apps, algunas que no están, otras que pasaron todas las pruebas, y otras que se siguen actualizando más y más para estar en PichonApps. Entre las que pasaron las pruebas, están exactamente las que están en PichonApps:
-                    Primero y segundo, como ya sabemos, PichonCalc y PichonDestiny, respectivamente. Luego se creó PichonPass, PichonDocs (que era una simple aplicación sin fuentes, tamaños, ni nada: solo poder crear notas. Pero eso fue hasta que llegó la actualización...), PichonCalendar... PichonList (diría que la más exitosa de las primeras 8)... PichonSnake y PichonWatch. Esa fue la primer etapa, después aparecieron las aplicaciones más modernas: PichonTutorial; PichonAlarm y PichonRamdom (es que las dos fueron creadas el mismo día), PichonBirthday; PichonFood; PichonMorse, PichonPaint, y la más nueva de todas (pero que se estaba haciendo incluso antes de empezar PichonCalc)...¡PichonChess! Todas las actuales 16 apps, en ese orden. Se creará en poco la aplicación PichonOpinion, antes queremos dejar PichonPaint y PichonChess ya listos para usar sin errores.
+                    Un tiempo atrás, decidimos crear lo que en principio pensábamos que sería un "Proyecto de GitHub",
+                    llamado Pichisoft.
+                    Fuimos creando aplicaciones que ni siquiera están (ni estuvieron nunca) en el repositorio de apps,
+                    como por ejemplo: "PichonAsteroids", "PichonBowman", "PichonTanks", "PichonTetris", etc.
+                    Pero todo empezó cuando dijimos: "¿Y si hacemos una aplicación de calculadora?". Hicimos el proyecto
+                    y estábamos pensando qué nombre ponerle... Y nos decidimos por "PichonCalc", tan solo porque nos
+                    parecía divertido combinar "Pichon" con una palabra que le diera significado a la app.
+                    Desde entonces, al crear PichonCalc, surgió otra idea más: "Podríamos hacer una app para que le
+                    preguntes algo y, al tocar la pantalla, te dé una respuesta al azar". Las primeras respuestas fueron
+                    las más obvias, como "Sí", "No", "Tal vez"... Pero luego fuimos añadiendo respuestas muy divertidas,
+                    volviendo a usar la palabra "Pichón": ¿Qué puedo hacer ahora? → "PREGUNTALE AL PICHÓN". Y se nos
+                    ocurrieron más ideas, tanto respuestas exageradas como "Preguntame de nuevo en 40 días", respuestas
+                    que parecían saber lo que alguien preguntaba, como "Sí, definitivamente", respuestas donde incluso
+                    PichonDestiny... espera, ¿qué? ¿¡PichonDestiny!? Entonces allí nació el nombre de la segunda app:
+                    PichonDestiny. Ahora sí, ¿en qué estábamos? Ah, en respuestas donde incluso PichonDestiny se sentía
+                    mal al responder. Por ejemplo, decía: "ESTOY NERVIOSO PARA RESPONDER A ESA PREGUNTA :(".
+                    Y fueron surgiendo más apps, algunas que no están, otras que pasaron todas las pruebas, y otras que
+                    se siguen actualizando más y más para estar en PichonApps. Entre las que pasaron las pruebas, están
+                    exactamente las que están en PichonApps:
+                    Primero y segundo, como ya sabemos, PichonCalc y PichonDestiny, respectivamente. Luego se creó
+                    PichonPass, PichonDocs (que era una simple aplicación sin fuentes, tamaños ni nada; solo para crear
+                    notas, pero eso fue hasta que llegó la actualización...), PichonCalendar... PichonList (diría que la
+                    más exitosa de las primeras 8)... PichonSnake y PichonWatch. Esa fue la primera etapa. Después
+                    aparecieron las aplicaciones más modernas: PichonTutorial; PichonAlarm y PichonRandom (es que las
+                    dos fueron creadas el mismo día), PichonBirthday; PichonFood; PichonMorse, PichonPaint y la más
+                    nueva de todas (pero que se estaba haciendo incluso antes de empezar con PichonCalc)...
+                    ¡PichonChess! Esas son las 16 apps actuales, en ese orden. Pronto se creará la aplicación
+                    PichonOpinion, pero antes queremos dejar PichonPaint y PichonChess ya listos para usar sin errores.
 
-                    Todo eso fue lo relacionado con las apps, ahora, vamos a ver cómo fue nuestro crecimiento y cómo pensamos ahora:
+                    Todo eso fue lo relacionado con las apps. Ahora, vamos a ver cómo fue nuestro crecimiento y cómo
+                    pensamos ahora:
 
-                    Se empezó a pensar en hacer apps públicas, precisamente el 10 de mayo de este año, con nuestra ex-cuenta de Github llamada "Pichisama", allí nacieron las primeras 8 apps, usando como siempre, al igual que ahora, VS Code para programar, haciendo todo en tan solo apps en un sólo archivo HTML Vanilla, ¡Al igual que ahora! Pero lamentablemente, perdimos la cuenta (polémicamente nos olvidamos los datos de Pichisama XD), entonces, creamos la nueva y definitiva cuenta de Github: Pichisoft, que desde que fue creada (el 25 de julio de este año) hasta ahora, es la cuenta que usamos para subir nuestros proyectos, y, desde el 07 de octubre de 2026, Pichisoft, tiene su propio dominio: <a href="https://pichisoft.cc" target="_blank" rel="noopener">pichisoft.cc</a>
+                    Se empezó a pensar en hacer apps públicas precisamente el 10 de mayo de este año, con nuestra
+                    ex-cuenta de GitHub llamada "Pichisama". Allí nacieron las primeras 8 apps, usando como siempre (y
+                    al igual que ahora) VS Code para programar, haciendo todo en apps de un solo archivo HTML Vanilla.
+                    ¡Al igual que ahora! Pero lamentablemente perdimos la cuenta (polémicamente, nos olvidamos los datos
+                    de Pichisama XD). Entonces creamos la nueva y definitiva cuenta de GitHub: Pichisoft. Desde que fue
+                    creada (el 25 de julio de este año) hasta ahora, es la cuenta que usamos para subir nuestros
+                    proyectos. Y desde el 07 de octubre de 2026, Pichisoft tiene su propio dominio: <a
+                        href="https://pichisoft.cc" target="_blank" rel="noopener">pichisoft.cc</a>
 
+                    Somos un pequeño grupo (pero grande por el resultado) que hizo una <i>gran</i> "empresa" en poco
+                    tiempo.
 
-                    Somos un pequeño grupo (pero grande por el resultado) que hizo una <i>gran</i> "empresa" en poco tiempo.
-
-                    Para ver datos específicos, diríjase donde el panel "Información general".
+                    Para ver datos específicos, diríjase al panel "Información general".
                     ——<i>Equipo Pichisoft</i>——
 
                 </div>
@@ -435,45 +513,79 @@
 
                 <!-- PREGUNTA 1: copiá este bloque (de faq-title a content) por cada pregunta nueva -->
                 <div class="faq-title">¿Me puedo unir al Equipo Pichisoft?</div>
-                <div class="content arial-bold">De momento no aceptamos solicitudes para formar parte de nuestro equipo, sin embargo, nos puede <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">enviar un email</a> para sugerirnos apps, juegos, modificaciones, actualizaciones, etc. (Probablemente agreguemos la función para poder ser parte del Equipo Pichisoft).</div>
+                <div class="content arial-bold">De momento no aceptamos solicitudes para formar parte de nuestro equipo.
+                    Sin embargo, nos pueden <a
+                        href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank"
+                        rel="noopener">enviar un email</a> para sugerirnos apps, juegos, modificaciones,
+                    actualizaciones, etc. (Probablemente agreguemos la función para poder ser parte del Equipo
+                    Pichisoft).</div>
 
                 <!-- PREGUNTA 2 -->
                 <div class="faq-title">¿Cómo programa Pichisoft?</div>
-                <div class="content arial-bold">Usamos html, css, js, LocalStorage. Para enviar emails automáticos y personalizados, usamos EmailJS, para que se sincronicen los datos de tus apps en cualquier dispositivo con la misma cuenta, usamos Firebase, y tenemos, también, nuestras propias reglas de Firestore.</div>
+                <div class="content arial-bold">Usamos HTML, CSS, JS y LocalStorage. Para enviar emails automáticos y
+                    personalizados usamos EmailJS; para que se sincronicen los datos de tus apps en cualquier
+                    dispositivo con la misma cuenta usamos Firebase, y tenemos, también, nuestras propias reglas de
+                    Firestore.</div>
 
                 <!-- PREGUNTA 3 -->
                 <div class="faq-title">¿Qué datos guardan ustedes cuando me creo una cuenta?</div>
-                <div class="content arial-bold">Nosotros guardamos solo tu email y tu UID generada aleatoriamente por Firebase Authentication.</div>
+                <div class="content arial-bold">Nosotros guardamos solo tu email y tu UID generada aleatoriamente por
+                    Firebase Authentication.</div>
 
                 <div class="faq-title">¿Quiénes ven mis datos de Firebase?</div>
-                <div class="content arial-bold">Sólo lo vemos nosotros en Firebase: Firebase no tiene acceso a tus datos, nosotros lo tenemos, y nadie más puede verlos.</div>
+                <div class="content arial-bold">Solo lo vemos nosotros en Firebase: Firebase no tiene acceso a tus
+                    datos, nosotros lo tenemos, y nadie más puede verlos.</div>
 
                 <div class="faq-title">¿Qué datos ven los usuarios de Pichisoft?</div>
-                <div class="content arial-bold">Sólo ven tu nombre de usuario y tu foto de perfil: no tienen acceso ni a tu email ni contraseña, ni tu UID.</div>
+                <div class="content arial-bold">Solo ven tu nombre de usuario y tu foto de perfil: no tienen acceso ni a
+                    tu email ni contraseña, ni a tu UID.</div>
 
-                <div class="faq-title">Los datos que tengo en mis apps, ¿Se suben a algún lado?</div>
-                <div class="content arial-bold">Para nada, tus datos que tengas en nuestras apps los ves tú y solo tú: por ejemplo, si guardas una nota de PichonDocs o una contraseña de PichonPass, se guarda en tu almacenamiento local y en la app donde hayas guardado cada dato.</div>
+                <div class="faq-title">Los datos que tengo en mis apps, ¿se suben a algún lado?</div>
+                <div class="content arial-bold">Para nada. Tus datos que tengas en nuestras apps los ves tú y solo tú:
+                    por ejemplo, si guardas una nota de PichonDocs o una contraseña de PichonPass, se guarda en tu
+                    almacenamiento local y en la app donde hayas guardado cada dato.</div>
 
                 <div class="faq-title">¿Qué pueden hacer con mi cuenta?</div>
-                <div class="content arial-bold">Con tu cuenta, podemos hacer las siguientes 3 cosas: Restablecer tu contraseña, Inhabilitar tu cuenta, y Borrar tu cuenta. (<i>Nota: solo realizaremos estas acciones si detectamos alguna infracción de <a href="https://pichisoft.cc/pichonrules" target="_blank" rel="noopener">nuestras normas</a></i>)</div>
+                <div class="content arial-bold">Con tu cuenta podemos hacer las siguientes 3 cosas: Restablecer tu
+                    contraseña, Inhabilitar tu cuenta y Borrar tu cuenta. (<i>Nota: solo realizaremos estas acciones si
+                        detectamos alguna infracción de <a href="https://pichisoft.cc/pichonrules" target="_blank"
+                            rel="noopener">nuestras normas</a></i>).</div>
 
                 <div class="faq-title">¿Qué es Firebase?</div>
-                <div class="content arial-bold">Firebase es la aplicación que aprovechamos usar para que se sincronicen los datos de tus apps en cualquier dispositivo con la misma cuenta, y, además, para poder hacer cosas online, como jugar PichonChess.</div>
+                <div class="content arial-bold">Firebase es la aplicación que aprovechamos usar para que se sincronicen
+                    los datos de tus apps en cualquier dispositivo con la misma cuenta, y, además, para poder hacer
+                    cosas online, como jugar PichonChess.</div>
 
-                <div class="faq-title">Para que se sincronicen los datos de mis apps en cualquier dispositivo con mi misma cuenta, ¿Qué tengo que hacer?</div>
-                <div class="content arial-bold">Lo único que debes hacer es crearte la cuenta de Pichisoft, poniendo un email, un nombre de usuario y una contraseña. Si ya tiene cuenta pero no la tiene iniciada: debe iniciar sesión, poniendo tu email y contraseña. Si olvidó su contraseña: debe poner "Olvidé mi contraseña", poner su nombre de usuario, y poner el código de verificación que le llegará  a su email. Si ya tiene cuenta: no tiene que hacer nada, tus datos en las apps de Pichisoft se sincronizarán automáticamente en todos tus dispositivos en los que tengas la misma cuenta.</div>
+                <div class="faq-title">Para que se sincronicen los datos de mis apps en cualquier dispositivo con mi
+                    misma cuenta, ¿qué tengo que hacer?</div>
+                <div class="content arial-bold">Lo único que debes hacer es crearte la cuenta de Pichisoft, poniendo un
+                    email, un nombre de usuario y una contraseña. Si ya tienes cuenta pero no la tienes iniciada, debes
+                    iniciar sesión poniendo tu email y contraseña. Si olvidaste tu contraseña, debes poner "Olvidé mi
+                    contraseña", ingresar tu nombre de usuario y el código de verificación que le llegará a tu email. Si
+                    ya tienes cuenta, no tienes que hacer nada; tus datos en las apps de Pichisoft se sincronizarán
+                    automáticamente en todos tus dispositivos en los que tengas la misma cuenta.</div>
 
                 <div class="faq-title">¿Cuál es el motivo de todo esto?</div>
-                <div class="content arial-bold">Queremos lograr que Pichisoft sea una empresa gigante, donde, al tener semejante cantidad de apps, la gente vaya específicamente a <a href="https://pichisoft.cc" target="_blank" rel="noopener">PichonApps</a> a fin de usar cada app de las que tenemos con el propósito de facilitar las cosas. (<i>Y no estamos lejos de lograrlo...</i>)</div>
+                <div class="content arial-bold">Queremos lograr que Pichisoft sea una empresa gigante donde, al tener
+                    semejante cantidad de apps, la gente vaya específicamente a <a href="https://pichisoft.cc"
+                        target="_blank" rel="noopener">PichonApps</a> a usar cada una de las que tenemos, con el
+                    propósito de facilitar las cosas. (<i>Y no estamos lejos de lograrlo...</i>).</div>
 
                 <div class="faq-title">¿A dónde vamos ahora?</div>
-                <div class="content arial-bold">Tenemos muchos proyectos guardados para continuar cuando queramos, ya que nos quedaron guardados para seguir en el futuro. Además, estamos pensando en hacer más versiones premium para usar con cuenta de Pichisoft, y, estamos haciendo la nueva app PichonOpinion.</div>
+                <div class="content arial-bold">Tenemos muchos proyectos guardados para continuar cuando queramos, ya
+                    que los dejamos listos para seguir en el futuro. Además, estamos pensando en hacer más versiones
+                    premium para usar con cuenta de Pichisoft, y estamos haciendo la nueva app PichonOpinion.</div>
 
                 <div class="faq-title">¿Qué computadora usan para programar?</div>
-                <div class="content arial-bold">Esta respuesta te va a sorprender: ¡Usamos una de las computadoras lanzadas en 2010: ¡Sí! ¡Así es! Usamos la más fiel y linda ASUS K52F, y encima, anda perfectamente bien!</div>
+                <div class="content arial-bold">Esta respuesta te va a sorprender: ¡Usamos una de las computadoras
+                    lanzadas en 2010! ¡Sí! ¡Así es! Usamos la más fiel y linda ASUS K52F, y encima, ¡anda perfectamente
+                    bien!</div>
 
                 <div class="faq-title">¿No has encontrado lo que buscabas?</div>
-                <div class="content arial-bold"><a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Comuníquese con nosotros</a> para decirnos cualquier cosa que quiera decir.</div>
+                <div class="content arial-bold"><a
+                        href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank"
+                        rel="noopener">Comuníquese con nosotros</a> para decirnos cualquier cosa que quiera consultar.
+                </div>
 
                 <h2>Equipo Pichisoft ——Desde 2026—— </h2>
 
@@ -522,10 +634,22 @@
                     <div class="info">
                         <h1>Pichisoft</h1>
 
-                        <div class="fila"><h3>Desde:</h3> <strong>10 de mayo de 2026</strong></div>
-                        <div class="fila"><h3>Link del perfil de Github:</h3> <strong><a href="https://github.com/pichisoft" target="_blank" rel="noopener">https://github.com/pichisoft</a></strong></div>
-                        <div class="fila"><h3>Email de Pichisoft:</h3> <strong><a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">contacto@pichisoft.cc</a></strong></div>
-                        <div class="fila"><h3>Link de PichonApps:</h3> <strong><a href="https://pichisoft.cc" target="_blank" rel="noopener">pichisoft.cc</a></strong></div>
+                        <div class="fila">
+                            <h3>Desde:</h3> <strong>10 de mayo de 2026</strong>
+                        </div>
+                        <div class="fila">
+                            <h3>Link del perfil de Github:</h3> <strong><a href="https://github.com/pichisoft"
+                                    target="_blank" rel="noopener">https://github.com/pichisoft</a></strong>
+                        </div>
+                        <div class="fila">
+                            <h3>Email de Pichisoft:</h3> <strong><a
+                                    href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc"
+                                    target="_blank" rel="noopener">contacto@pichisoft.cc</a></strong>
+                        </div>
+                        <div class="fila">
+                            <h3>Link de PichonApps:</h3> <strong><a href="https://pichisoft.cc" target="_blank"
+                                    rel="noopener">pichisoft.cc</a></strong>
+                        </div>
 
                         <h1>Pichisoft ——Desde 2026——</h1>
                     </div>
