@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0c0c0c">
     <title>PichonAlarm</title>
-   
+
     <style>
         :root {
             --bg: #0c0c0c;
@@ -655,6 +655,61 @@
                 padding: 7px 14px;
             }
         }
+
+        /* ==========================================
+   TOASTS (sin alert)
+   ========================================== */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10000;
+            pointer-events: none;
+            width: min(420px, calc(100vw - 30px));
+        }
+
+        .toast {
+            padding: 13px 18px;
+            border-radius: 9px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: auto;
+            cursor: pointer;
+            border: 1px solid transparent;
+            line-height: 1.35;
+        }
+
+        .toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.error {
+            background: #8e3030;
+            color: #fff;
+            border-color: #642020;
+        }
+
+        .toast.success {
+            background: #20a84b;
+            color: #fff;
+            border-color: #167a36;
+        }
+
+        .toast.info {
+            background: #1c1c1c;
+            color: #f2f2f2;
+            border-color: #333;
+        }
     </style>
 </head>
 
@@ -662,8 +717,7 @@
     <header>
         <div class="brand"><span class="brand-title">PichonAlarm</span><span class="brand-sub">- By Pichisoft -</span>
         </div>
-        <button class="pichisoft-link"
-            onclick="window.open('https://pichisoft.cc','_blank')">Pichisoft</button>
+        <button class="pichisoft-link" onclick="window.open('https://pichisoft.cc','_blank')">Pichisoft</button>
     </header>
     <nav>
         <button class="active" onclick="showTab('alarma',this)">⏰ Alarma</button>
@@ -699,8 +753,9 @@
                     </div>
                 </div>
                 <div class="btn-row"><button class="btn" onclick="agregarAlarma()">Agregar alarma</button></div>
-                <p class="note">Las alarmas, el cronómetro y el temporizador se guardan y siguen corriendo al cerrar y
-                    reabrir la página. Si una alarma vence mientras la página está cerrada, sonará apenas la abras.</p>
+                <p class="note">Las alarmas y temporizadores se guardan y siguen corriendo aunque recargues la página.
+                    <strong>Importante:</strong> por limitaciones de los navegadores móviles, si cerrás la pestaña por
+                    completo, la alarma sonará la próxima vez que abras la app.</p>
             </div>
             <div id="listaAlarmas"></div>
         </div>
@@ -768,6 +823,21 @@
     </div>
 
     <script>
+        function showToast(message, type = "info", duration = 3000) {
+            const container = document.getElementById("toastContainer");
+            if (!container) return;
+            const toast = document.createElement("div");
+            toast.className = "toast " + type;
+            toast.textContent = message;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add("visible"));
+            const close = () => {
+                toast.classList.remove("visible");
+                setTimeout(() => toast.remove(), 300);
+            };
+            setTimeout(close, duration);
+            toast.addEventListener("click", close);
+        }
         /* ---------- ESTADO PERSISTENTE ---------- */
         const K = 'pichonalarm.v1';
         let S = {
@@ -895,7 +965,7 @@
 
         function agregarAlarma() {
             const hora = $('alarmHora').value;
-            if (!hora) { alert('Elegí una hora'); return; }
+            if (!hora) { showToast('Elegí una hora para la alarma.', 'error'); return; }
             const repetir = $('alarmRepetir').checked;
             const dias = [];
             if (repetir) document.querySelectorAll('.day-chip.on').forEach(c => dias.push(parseInt(c.dataset.day)));
@@ -909,15 +979,53 @@
             const cont = $('listaAlarmas');
             cont.innerHTML = '';
             const N = { 0: 'Dom', 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb' };
+
             S.alarmas.forEach(a => {
                 const div = document.createElement('div');
                 div.className = 'alarm-item';
+
+                // Bloque Izquierdo (Hora y Meta)
+                const infoDiv = document.createElement('div');
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'alarm-time';
+                timeDiv.textContent = a.hora;
+
+                const metaDiv = document.createElement('div');
+                metaDiv.className = 'alarm-meta';
                 let meta = a.etiqueta || '';
                 if (a.repetir && a.dias.length) meta += (meta ? ' · ' : '') + [...a.dias].sort().map(d => N[d]).join(', ');
                 else if (a.repetir) meta += (meta ? ' · ' : '') + 'Repite (sin días elegidos)';
-                div.innerHTML = `<div><div class="alarm-time">${a.hora}</div><div class="alarm-meta">${meta.replace(/</g, '&lt;')}</div></div>
-      <div class="alarm-actions"><label class="switch"><input type="checkbox" ${a.activa ? 'checked' : ''} onchange="toggleAlarma(${a.id})"><span class="slider"></span></label>
-      <button class="delete-x" onclick="borrarAlarma(${a.id})">✕</button></div>`;
+                metaDiv.textContent = meta;
+
+                infoDiv.appendChild(timeDiv);
+                infoDiv.appendChild(metaDiv);
+
+                // Bloque Derecho (Botones)
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'alarm-actions';
+
+                const labelSwitch = document.createElement('label');
+                labelSwitch.className = 'switch';
+                const inputCheck = document.createElement('input');
+                inputCheck.type = 'checkbox';
+                inputCheck.checked = a.activa;
+                inputCheck.onchange = () => toggleAlarma(a.id);
+                const spanSlider = document.createElement('span');
+                spanSlider.className = 'slider';
+                labelSwitch.appendChild(inputCheck);
+                labelSwitch.appendChild(spanSlider);
+
+                const btnDel = document.createElement('button');
+                btnDel.className = 'delete-x';
+                btnDel.textContent = '✕';
+                btnDel.onclick = () => borrarAlarma(a.id);
+
+                actionsDiv.appendChild(labelSwitch);
+                actionsDiv.appendChild(btnDel);
+
+                div.appendChild(infoDiv);
+                div.appendChild(actionsDiv);
+
                 cont.appendChild(div);
             });
         }
@@ -984,7 +1092,7 @@
                 if (t.rest <= 0) {
                     leerInputsTemp();
                     t.rest = t.h * 3600 + t.m * 60 + t.s;
-                    if (t.rest <= 0) { alert('Poné una duración mayor a 0'); return; }
+                    if (t.rest <= 0) { showToast('Poné una duración mayor a 0.', 'error'); return; }
                 }
                 t.endAt = Date.now() + t.rest * 1000;
                 pedirPermiso();
@@ -992,7 +1100,14 @@
             cambio(); pintar();
         }
         function tempReset() { S.temp.endAt = null; S.temp.rest = 0; leerInputsTemp(); cambio(); pintar(); }
-        ['tHoras', 'tMin', 'tSeg'].forEach(id => $(id).addEventListener('input', () => { if (!S.temp.endAt) tempReset(); }));
+        ['tHoras', 'tMin', 'tSeg'].forEach(id => $(id).addEventListener('input', () => {
+            if (S.temp.endAt) {
+                // Si estaba corriendo, solo actualizamos los valores internos sin resetear el endAt
+                leerInputsTemp();
+            } else {
+                tempReset();
+            }
+        }));
         $('tempTono').addEventListener('change', () => { S.temp.tono = $('tempTono').value; save(); });
 
         /* ---------- PINTAR Y BUCLE PRINCIPAL ---------- */
@@ -1172,6 +1287,7 @@
             })();
         })();
     </script>
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 </body>
 
 </html>
