@@ -503,8 +503,6 @@
             border: 1px solid #333;
             user-select: none;
             -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
         }
 
         .box h3 {
@@ -536,140 +534,27 @@
             background: #d32323;
         }
 
-        @media (max-width: 900px) {
-
-            .bodyWrap {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                height: 220px;
-                border-right: none;
-                border-bottom: 1px solid #333;
-            }
-
-            .toolbar {
-                gap: 8px;
-            }
-
-            .toolbar>button {
-                flex: 1;
-                min-width: 80px;
-            }
-
-            .titleWrap {
-                padding: 12px;
-            }
-
-            #content {
-                padding: 12px;
-                font-size: 17px;
-            }
-
-            .appHeader {
-                justify-content: space-between;
-            }
-
-            .customDropdown {
-                max-height: 180px;
-            }
-        }
-
-        @media (max-width: 560px) {
-
-            .appHeader {
-                justify-content: center;
-                text-align: center;
-            }
-
-            .brandGroup,
-            .headerRight {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .formatPanel {
-                left: 50%;
-                right: auto;
-                transform: translateX(-50%);
-            }
-
-            .toolbar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .toolbar>* {
-                width: 100%;
-            }
-
-            .noteSearchWrap {
-                width: 100%;
-            }
-
-            .newNoteBtn {
-                font-size: 16px;
-            }
-
-            .searchBox input,
-            #noteSearch {
-                font-size: 16px;
-            }
-
-            button {
-                font-size: 15px;
-                padding: 10px;
-            }
-
-            .clearBtn {
-                width: 30px;
-                height: 30px;
-            }
-
-            .searchNav button {
-                padding: 6px 12px;
-                font-size: 13px;
-            }
-
-            .titleText {
-                font-size: 24px;
-            }
-
-            #content {
-                font-size: 18px;
-                line-height: 1.8;
-            }
-        }
-
         /* ==========================================
-       PICHISOFT - ESTADO DE SESIÓN
-       ========================================== */
-
+           PICHISOFT - ESTADO DE SESIÓN
+           ========================================== */
         #pichisoft-session-status {
             position: fixed;
             top: 12px;
             right: 420px;
             z-index: 9999;
-
             display: flex;
             align-items: center;
             gap: 8px;
-
             max-width: calc(100vw - 20px);
             box-sizing: border-box;
             padding: 8px 16px;
-
             background: #000;
             color: #20a84b;
-
             border: 1px solid rgba(34, 197, 94, 0.25);
             border-radius: 22px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-
             font: 14px/1.3 Georgia, serif;
             text-align: left;
-
             opacity: 1;
             transform: translateY(0);
             transition: opacity 0.6s ease, transform 0.6s ease;
@@ -719,25 +604,19 @@
             top: 12px;
             right: 420px;
             z-index: 9998;
-
             display: flex;
             align-items: center;
             gap: 8px;
-
             max-width: calc(100vw - 20px);
             box-sizing: border-box;
             padding: 5px 14px 5px 5px;
-
             background: #000;
             color: #fff;
-
             border: 1px solid rgba(34, 197, 94, 0.25);
             border-radius: 25px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-
             font-family: Georgia, serif;
             text-align: left;
-
             opacity: 0;
             transform: translateY(-12px) scale(0.9);
             transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
@@ -776,46 +655,124 @@
             white-space: nowrap;
         }
 
-        /* Celular: título más chico para que no choque con el link "Pichisoft" */
-        @media (max-width: 600px) {
-            .header {
-                top: 16px;
-                left: 15px;
-            }
-
-            .logo {
-                font-size: 1.5rem;
-            }
-
-            .byline {
-                font-size: 0.75rem;
-            }
-
-            #pichisoft-session-status,
-            #pichisoft-session-profile {
-                right: 10px;
-            }
-
-            #pichisoft-session-status {
-                font-size: 13px;
-                padding: 7px 14px;
-            }
-        }
-
-        /* ===== Pichisoft - cartel de sesión en celular y tablet (PichonDocs) =====
-   Solo para pantallas de hasta 900px: en PC no cambia nada. */
+        /* ==========================================
+           RESPONSIVE MEJORADO (TABLET Y CELULAR)
+           ========================================== */
         @media (max-width: 900px) {
+            .bodyWrap {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 180px;
+                /* Reducido de 220 a 180 */
+                border-right: none;
+                border-bottom: 1px solid #333;
+            }
+
             .appHeader {
                 margin-top: 46px;
+                /* Espacio para los carteles de sesión */
+                justify-content: space-between;
             }
 
             #pichisoft-session-status,
             #pichisoft-session-profile {
-                position: absolute;
+                position: fixed;
+                /* Cambiado a fixed para que no scrollee */
                 top: 6px;
                 right: 8px;
                 left: auto;
                 max-width: calc(100vw - 16px);
+            }
+
+            .customDropdown {
+                max-height: 180px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .appHeader {
+                justify-content: center;
+                text-align: center;
+                flex-direction: column;
+                gap: 8px;
+                padding: 10px;
+            }
+
+            .brandGroup,
+            .headerRight {
+                width: 100%;
+                justify-content: center;
+            }
+
+            /* Panel de formato estilo hoja deslizante (Bottom Sheet) */
+            .formatPanel {
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                left: 0;
+                right: 0;
+                width: 100%;
+                max-width: none;
+                border-radius: 16px 16px 0 0;
+                transform: none;
+                box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+                padding-bottom: env(safe-area-inset-bottom, 20px);
+                z-index: 9999;
+            }
+
+            /* Toolbar en fila adaptable */
+            .toolbar {
+                flex-direction: row;
+                flex-wrap: wrap;
+                padding: 8px;
+                gap: 8px;
+            }
+
+            .noteSearchWrap {
+                width: 100%;
+                order: -1;
+                /* El buscador sube al principio */
+            }
+
+            .spacer {
+                display: none;
+            }
+
+            .toolbar>button {
+                flex: 1;
+                padding: 8px 4px;
+                font-size: 13px;
+            }
+
+            .noteSearchWrap {
+                width: 100%;
+            }
+
+            .newNoteBtn {
+                font-size: 16px;
+            }
+
+            .searchBox input,
+            #noteSearch {
+                font-size: 16px;
+                /* Evita zoom automático en iOS */
+            }
+
+            button {
+                font-size: 14px;
+                padding: 8px 10px;
+            }
+
+            .titleText {
+                font-size: 22px;
+            }
+
+            #content {
+                font-size: 16px;
+                line-height: 1.7;
             }
         }
     </style>
@@ -933,8 +890,7 @@
             <div class="toolbar">
                 <div class="noteSearchWrap">
                     <div class="searchInputWrap">
-                        <input id="noteSearch" placeholder="Buscar dentro de la nota... (Enter)"
-                            oninput="onNoteSearchInput()"
+                        <input id="noteSearch" placeholder="Buscar en la nota... (Enter)" oninput="onNoteSearchInput()"
                             onkeydown="if(event.key==='Enter'){event.preventDefault(); searchInNote();}" />
                         <button class="clearBtn" id="noteClearBtn" onclick="exitSearch()"
                             title="Cerrar búsqueda">✕</button>
@@ -982,7 +938,6 @@
     </div>
 
     <script>
-
         let notes = [];
         let currentId = null;
         let activeEditable = null;
@@ -1009,7 +964,6 @@
         let selectedColor = colors[0];
 
         /* ================= STORAGE ================= */
-
         function loadStorage() {
             notes = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
         }
@@ -1019,13 +973,16 @@
         }
 
         /* ================= DESHACER / REHACER ================= */
-
         function cloneState() {
             return { notes: JSON.parse(JSON.stringify(notes)), currentId };
         }
 
         function pushUndoSnapshot() {
             undoStack.push(cloneState());
+            // Límite de memoria: guardamos máximo 30 estados en el historial
+            if (undoStack.length > 30) {
+                undoStack.shift();
+            }
             redoStack = [];
             updateUndoRedoButtons();
         }
@@ -1059,10 +1016,8 @@
 
         function undoAction() {
             if (!undoStack.length) return;
-
             clearTimeout(saveTimeout);
             saveTimeout = null;
-
             redoStack.push(cloneState());
             const prev = undoStack.pop();
             restoreState(prev);
@@ -1071,10 +1026,8 @@
 
         function redoAction() {
             if (!redoStack.length) return;
-
             clearTimeout(saveTimeout);
             saveTimeout = null;
-
             undoStack.push(cloneState());
             const next = redoStack.pop();
             restoreState(next);
@@ -1082,7 +1035,6 @@
         }
 
         /* ================= INIT ================= */
-
         function start() {
             loadStorage();
             renderPalette();
@@ -1112,32 +1064,19 @@
                     }
                 });
             });
-            // Guarda todo inmediatamente al cerrar o salir de la página
-            window.addEventListener("pagehide", () => {
-                flushSave();
-            });
 
-            // Guarda también si minimizas o cambias de pestaña en el celular
+            window.addEventListener("pagehide", () => { flushSave(); });
             document.addEventListener("visibilitychange", () => {
-                if (document.visibilityState === "hidden") {
-                    flushSave();
-                }
+                if (document.visibilityState === "hidden") flushSave();
             });
-
         }
 
-
         function newNote() {
-            // Primero guarda la nota que estaba abierta.
             flushSave();
-
             pushUndoSnapshot();
 
-            // Evita IDs duplicados si se crean notas muy rápido.
             let newId = Date.now();
-            while (notes.some(note => note.id === newId)) {
-                newId++;
-            }
+            while (notes.some(note => note.id === newId)) newId++;
 
             const n = {
                 id: newId,
@@ -1149,7 +1088,6 @@
             notes.unshift(n);
             currentId = n.id;
 
-            // Limpia el editor directamente, sin cargar la nota anterior.
             titleView.innerHTML = "";
             content.innerHTML = "";
 
@@ -1163,17 +1101,15 @@
 
             titleView.focus();
         }
+
         function loadNote(id) {
             flushSave();
-
             let n = notes.find(x => x.id === id);
             if (!n) return;
 
             currentId = id;
-
             titleView.innerHTML = n.title || "";
             content.innerHTML = n.content || "";
-
             selectedColor = n.color || colors[0];
 
             exitSearch();
@@ -1185,30 +1121,20 @@
             return notes.find(x => x.id === currentId);
         }
 
-        /* ================= SISTEMA DE GUARDADO MEJORADO ================= */
-
+        /* ================= SISTEMA DE GUARDADO ================= */
         function scheduleSave() {
             clearTimeout(saveTimeout);
-
             const tag = document.getElementById("autosaveTag");
-
             if (tag) tag.innerText = "Guardando...";
 
             saveTimeout = setTimeout(() => {
                 saveTimeout = null;
-
                 const guardado = silentSave();
-
                 if (tag) {
-                    tag.innerText = guardado
-                        ? "Guardado ✓"
-                        : "Error al guardar";
-
+                    tag.innerText = guardado ? "Guardado ✓" : "Error al guardar";
                     if (guardado) {
                         setTimeout(() => {
-                            if (tag.innerText === "Guardado ✓") {
-                                tag.innerText = "";
-                            }
+                            if (tag.innerText === "Guardado ✓") tag.innerText = "";
                         }, 2000);
                     }
                 }
@@ -1220,53 +1146,37 @@
                 clearTimeout(saveTimeout);
                 saveTimeout = null;
             }
-
             return silentSave();
         }
 
         function silentSave() {
             const n = getCurrentNote();
-
             if (!n) return false;
 
             const newTitle = titleView.innerHTML;
             const newContent = content.innerHTML;
             const newColor = selectedColor;
 
-            const changed =
-                n.title !== newTitle ||
-                n.content !== newContent ||
-                n.color !== newColor;
+            const changed = n.title !== newTitle || n.content !== newContent || n.color !== newColor;
 
             if (changed) {
+                // Tomamos una foto del estado SOLO cuando hay cambios reales
                 pushUndoSnapshot();
-
                 n.title = newTitle;
                 n.content = newContent;
                 n.color = newColor;
             }
 
             try {
-                localStorage.setItem(
-                    STORAGE_KEY,
-                    JSON.stringify(notes)
-                );
-
-                const query = document.getElementById("globalSearch")
-                    ? document.getElementById("globalSearch").value.trim()
-                    : "";
-
-                if (!query) {
-                    render();
-                }
-
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+                const query = document.getElementById("globalSearch") ? document.getElementById("globalSearch").value.trim() : "";
+                if (!query) render();
                 return true;
             } catch (error) {
                 console.error("Error al guardar las notas:", error);
                 return false;
             }
         }
-
 
         function deleteNote() {
             let n = getCurrentNote();
@@ -1284,27 +1194,19 @@
 
         function confirmDelete() {
             if (pendingDeleteId == null) return;
-
             pushUndoSnapshot();
-
             notes = notes.filter(x => x.id !== pendingDeleteId);
             saveStorage();
-
             document.getElementById("deleteModal").classList.remove("show");
             pendingDeleteId = null;
             currentId = null;
-
             render();
 
-            if (notes.length > 0) {
-                loadNote(notes[0].id);
-            } else {
-                newNote();
-            }
+            if (notes.length > 0) loadNote(notes[0].id);
+            else newNote();
         }
 
         /* ================= RENDER SIDEBAR ================= */
-
         function plainText(html) {
             let d = document.createElement("div");
             d.innerHTML = html || "";
@@ -1320,7 +1222,6 @@
             const words = query.split(/\s+/).filter(Boolean);
 
             document.getElementById("globalClearBtn").classList.toggle("show", query.length > 0);
-
             list.innerHTML = "";
 
             let filtered = notes.filter(n => {
@@ -1401,7 +1302,6 @@
         }
 
         /* ================= FORMAT MENU ================= */
-
         function toggleFormatPanel() {
             const panel = document.getElementById("formatPanel");
             panel.classList.toggle("open");
@@ -1435,12 +1335,8 @@
 
         function trackSelection(el) {
             el.addEventListener("focus", () => { activeEditable = el; });
-            el.addEventListener("input", () => {
-                scheduleSave();
-            });
-            el.addEventListener("blur", () => {
-                flushSave();
-            });
+            el.addEventListener("input", () => { scheduleSave(); });
+            el.addEventListener("blur", () => { flushSave(); });
         }
 
         document.addEventListener("selectionchange", () => {
@@ -1569,12 +1465,10 @@
 
         function renderPalette() {
             palette.innerHTML = "";
-
             colors.forEach(c => {
                 let b = document.createElement("div");
                 b.className = "colorBtn" + (c === selectedColor ? " selected" : "");
                 b.style.background = c;
-
                 b.onmousedown = (e) => e.preventDefault();
                 b.onclick = () => {
                     selectedColor = c;
@@ -1582,13 +1476,11 @@
                     renderPalette();
                     closeFormatPanel();
                 };
-
                 palette.appendChild(b);
             });
         }
 
         /* ================= BÚSQUEDA DENTRO DE LA NOTA ================= */
-
         function escapeRegex(s) {
             return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         }
@@ -1606,7 +1498,6 @@
             document.getElementById("noteSearch").value = "";
             document.getElementById("noteClearBtn").classList.remove("show");
             document.getElementById("noteSearchNav").classList.remove("show");
-
             clearHighlights();
             matchElements = [];
             currentMatchIndex = 0;
@@ -1655,7 +1546,6 @@
             if (!words.length) return;
 
             clearHighlights();
-
             const regex = new RegExp("(" + words.join("|") + ")", "gi");
 
             const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
@@ -1688,21 +1578,16 @@
                 if (lastIndex < text.length) {
                     frag.appendChild(document.createTextNode(text.slice(lastIndex)));
                 }
-
                 textNode.parentNode.replaceChild(frag, textNode);
             });
 
             matchElements = Array.from(content.querySelectorAll("mark.pichon-hl"));
 
-            if (matchElements.length) {
-                setCurrentMatch(0);
-            } else {
-                document.getElementById("noteSearchNav").classList.remove("show");
-            }
+            if (matchElements.length) setCurrentMatch(0);
+            else document.getElementById("noteSearchNav").classList.remove("show");
         }
 
-        /* ================= EXPORTAR ================= */
-
+        /* ================= EXPORTAR / IMPORTAR ================= */
         function handleImportFile(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1755,7 +1640,6 @@
             const contentTxt = plainText(n.content);
 
             const text = `${titleTxt}\n\n${contentTxt}`;
-
             const blob = new Blob([text], { type: "text/plain" });
             const url = URL.createObjectURL(blob);
 
@@ -1769,7 +1653,6 @@
 
         /* INIT */
         start();
-
     </script>
     <!-- ===== Pichisoft - Estado de sesión ===== -->
     <div id="pichisoft-session-status" role="status" aria-live="polite">
@@ -1784,7 +1667,6 @@
 
     <script>
         (function () {
-            /* Todo va dentro de esta función para no chocar con las variables de la app */
             var CFG = {
                 apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
                 authDomain: "pichisoft.firebaseapp.com",
@@ -1795,8 +1677,8 @@
                 measurementId: "G-K7HRKR8BJ1"
             };
             var V = "https://www.gstatic.com/firebasejs/12.3.0/";
-            var DUR_INICIO = 12000;   // "Iniciando sesión..."
-            var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+            var DUR_INICIO = 12000;
+            var DUR_MENSAJE = 6000;
 
             var box = document.getElementById("pichisoft-session-status");
             var txt = box.querySelector(".ps-text");
@@ -1807,8 +1689,6 @@
 
             function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
-               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
             async function comprobar() {
                 try {
                     var m = await Promise.all([
@@ -1835,13 +1715,10 @@
                         try {
                             var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
                             if (snap.exists()) perfil = snap.data();
-                        } catch (e) {
-                            console.error("Pichisoft: no se pudo leer el perfil", e);
-                        }
+                        } catch (e) { }
                     }
                     return { user: user, perfil: perfil };
                 } catch (e) {
-                    console.error("Pichisoft:", e);
                     return { error: true };
                 }
             }
