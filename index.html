@@ -825,35 +825,30 @@
             },
             async register(name, email, pass, photo) {
                 this.validar(name, pass);
-
                 if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                     throw new Error('Ingresá un email válido.');
                 }
 
+                // FIX: verificar nombre ANTES de tocar Firebase
+                const u = this.users();
+                const k = name.toLowerCase();
+                if (u[k]) {
+                    throw new Error('Ese nombre de usuario ya existe.');
+                }
+
                 const firebase = firebaseAuth();
 
+                let credencial;
                 try {
-                    const credencial = await firebase.createUserWithEmailAndPassword(
-                        firebase.auth,
-                        email,
-                        pass
-                    );
+                    credencial = await firebase.createUserWithEmailAndPassword(firebase.auth, email, pass);
+                } catch (error) {
+                    if (error.code === 'auth/email-already-in-use') throw new Error('Ese email ya está registrado.');
+                    if (error.code === 'auth/invalid-email') throw new Error('El email no es válido.');
+                    if (error.code === 'auth/weak-password') throw new Error('La contraseña es demasiado débil.');
+                    throw error;
+                }
 
-                    const u = this.users();
-                    const k = name.toLowerCase();
-
-                    if (u[k]) {
-                        await firebase.signOut(firebase.auth);
-                        throw new Error('Ese nombre de usuario ya existe.');
-                    }
-
-                    u[k] = {
-                        name,
-                        email,
-                        photo: okFoto(photo),
-                        data: {},
-                        firebaseUid: credencial.user.uid
-                    };
+                try {
                     await firebase.setDoc(
                         firebase.doc(firebase.db, 'users', credencial.user.uid),
                         {
@@ -863,25 +858,34 @@
                             createdAt: new Date().toISOString()
                         }
                     );
-                    LS.set('ps_users', u);
 
+                    // FIX: enviar email de verificación de Firebase
+                    try {
+                        await firebase.sendEmailVerification(credencial.user);
+                    } catch (e) {
+                        console.warn('No se pudo enviar el email de verificación:', e);
+                    }
+
+                    u[k] = {
+                        name,
+                        email,
+                        photo: okFoto(photo),
+                        data: {},
+                        firebaseUid: credencial.user.uid
+                    };
+                    LS.set('ps_users', u);
                     return k;
 
                 } catch (error) {
-                    if (error.code === 'auth/email-already-in-use') {
-                        throw new Error('Ese email ya está registrado.');
+                    // FIX: si falla setDoc, hacer cleanup en Firebase
+                    try {
+                        if (firebase.auth.currentUser) {
+                            await firebase.deleteUser(firebase.auth.currentUser);
+                        }
+                    } catch (e) {
+                        console.error('No se pudo limpiar el usuario huérfano:', e);
                     }
-
-
-                    if (error.code === 'auth/invalid-email') {
-                        throw new Error('El email no es válido.');
-                    }
-
-                    if (error.code === 'auth/weak-password') {
-                        throw new Error('La contraseña es demasiado débil.');
-                    }
-
-                    throw error;
+                    throw new Error('No se pudo crear el perfil. Intentá de nuevo.');
                 }
             },
             bloqueo(k) { const f = LS.get('ps_fails', {})[k]; return f && f.hasta > Date.now() ? Math.ceil((f.hasta - Date.now()) / 1000) : 0; },
@@ -919,89 +923,59 @@
             async guardarPerfil(k, nuevoNombre, nuevoEmail, nuevaPass, passActual) {
                 const users = this.users();
                 const u = users[k];
-
-                if (!u) {
-                    throw new Error('No se encontró la cuenta.');
-                }
+                if (!u) throw new Error('No se encontró la cuenta.');
 
                 nuevoNombre = nuevoNombre.trim();
                 nuevoEmail = nuevoEmail.trim();
 
                 if (!/^[A-Za-z0-9_.-]{3,20}$/.test(nuevoNombre)) {
-                    throw new Error(
-                        'El usuario debe tener de 3 a 20 caracteres: letras, números, _ . -'
-                    );
+                    throw new Error('El usuario debe tener de 3 a 20 caracteres: letras, números, _ . -');
                 }
-
                 if (!nuevoEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nuevoEmail)) {
                     throw new Error('Ingresá un email válido.');
                 }
 
                 const nuevaK = nuevoNombre.toLowerCase();
-
                 if (nuevaK !== k && users[nuevaK]) {
                     throw new Error('Ese nombre de usuario ya existe.');
                 }
 
-                if (nuevaPass) {
-                    this.validar(nuevoNombre, nuevaPass);
+                const cambioEmail = nuevoEmail.toLowerCase() !== u.email.toLowerCase();
+                const cambioPass = !!nuevaPass;
 
+                // FIX: si cambia email O contraseña, exigir contraseña actual
+                if (cambioEmail || cambioPass) {
                     if (!passActual) {
-                        throw new Error('Ingresá tu contraseña actual para cambiar la contraseña.');
+                        throw new Error('Ingresá tu contraseña actual para cambiar el email o la contraseña.');
+                    }
+                    if (cambioPass) {
+                        this.validar(nuevoNombre, nuevaPass);
                     }
                 }
 
                 const firebase = firebaseAuth();
                 const usuarioFirebase = firebase.auth.currentUser;
-
                 if (!usuarioFirebase) {
                     throw new Error('La sesión de Firebase no está disponible. Volvé a iniciar sesión.');
                 }
 
-                const cambioEmail = nuevoEmail !== u.email;
-                const cambioNombre = nuevoNombre !== u.name;
-                const cambioPass = !!nuevaPass;
-
                 try {
-                    /*
-                     * Si se cambia la contraseña, necesitamos la contraseña actual
-                     * para volver a autenticar al usuario antes de modificarla.
-                     */
-                    if (cambioPass) {
+                    // FIX: reautenticar SIEMPRE para cambios sensibles
+                    if (cambioEmail || cambioPass) {
                         const credencial = firebase.EmailAuthProvider.credential(
                             usuarioFirebase.email,
                             passActual
                         );
-
-                        await firebase.reauthenticateWithCredential(
-                            usuarioFirebase,
-                            credencial
-                        );
+                        await firebase.reauthenticateWithCredential(usuarioFirebase, credencial);
                     }
 
-                    /*
-                     * Cambiar email en Firebase Authentication.
-                     */
                     if (cambioEmail) {
-                        await firebase.updateEmail(
-                            usuarioFirebase,
-                            nuevoEmail
-                        );
+                        await firebase.updateEmail(usuarioFirebase, nuevoEmail);
                     }
-
-                    /*
-                     * Cambiar contraseña en Firebase Authentication.
-                     */
                     if (cambioPass) {
-                        await firebase.updatePassword(
-                            usuarioFirebase,
-                            nuevaPass
-                        );
+                        await firebase.updatePassword(usuarioFirebase, nuevaPass);
                     }
 
-                    /*
-                     * Actualizar el perfil en Firestore.
-                     */
                     await firebase.setDoc(
                         firebase.doc(firebase.db, 'users', u.firebaseUid),
                         {
@@ -1013,60 +987,29 @@
                         { merge: true }
                     );
 
-                    /*
-                     * Actualizar el almacenamiento local.
-                     */
-                    const perfilActualizado = {
-                        ...u,
-                        name: nuevoNombre,
-                        email: nuevoEmail
-                    };
-
+                    const perfilActualizado = { ...u, name: nuevoNombre, email: nuevoEmail };
                     delete users[k];
                     users[nuevaK] = perfilActualizado;
-
                     LS.set('ps_users', users);
 
-                    /*
-                     * Si cambió el nombre de usuario, también cambiamos
-                     * la clave de la sesión actual.
-                     */
                     const sesion = LS.get('ps_session', null);
-
                     if (sesion && sesion.k === k) {
                         sesion.k = nuevaK;
                         LS.set('ps_session', sesion);
                     }
-
                     return nuevaK;
 
                 } catch (error) {
-
                     console.error('Error actualizando perfil:', error);
-
-                    if (error.code === 'auth/wrong-password' ||
-                        error.code === 'auth/invalid-credential') {
+                    if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
                         throw new Error('La contraseña actual es incorrecta.');
                     }
-
                     if (error.code === 'auth/requires-recent-login') {
-                        throw new Error(
-                            'Por seguridad, necesitás volver a iniciar sesión antes de cambiar estos datos.'
-                        );
+                        throw new Error('Por seguridad, necesitás volver a iniciar sesión antes de cambiar estos datos.');
                     }
-
-                    if (error.code === 'auth/email-already-in-use') {
-                        throw new Error('Ese email ya está registrado.');
-                    }
-
-                    if (error.code === 'auth/invalid-email') {
-                        throw new Error('El email no es válido.');
-                    }
-
-                    if (error.code === 'auth/weak-password') {
-                        throw new Error('La contraseña nueva es demasiado débil.');
-                    }
-
+                    if (error.code === 'auth/email-already-in-use') throw new Error('Ese email ya está registrado.');
+                    if (error.code === 'auth/invalid-email') throw new Error('El email no es válido.');
+                    if (error.code === 'auth/weak-password') throw new Error('La contraseña nueva es demasiado débil.');
                     throw error;
                 }
             },
@@ -1279,7 +1222,7 @@
             return usuario.slice(0, 2) + '**@' + dominio;
         }
 
-        async function verificar(email, onOk) {
+        async function verificar(email, onOk, onCancel) {
             const m = modal(`
         <h2 class="t">Código de verificación</h2>
         <div class="verificacion-info" id="inf">
@@ -1289,7 +1232,10 @@
         <button class="btn" id="no">Cancelar</button>
     `, 'sem sem2');
 
-            q(m, '#no').onclick = () => m.close();
+            q(m, '#no').onclick = () => {
+                m.close();
+                if (onCancel) onCancel();
+            };
 
             try {
                 const code = await API.newCode();
@@ -1313,7 +1259,7 @@
 
                 reintentar.onclick = () => {
                     m.close();
-                    verificar(email, onOk);
+                    verificar(email, onOk, onCancel);
                 };
 
                 q(m, '.box').insertBefore(reintentar, q(m, '#no'));
@@ -1476,7 +1422,12 @@
 
                     LS.set('ps_users', users);
 
-                    verificar(usuario.email, () => iniciarSesionUI(k));
+                    verificar(usuario.email, () => iniciarSesionUI(k), async () => {
+                        const fb = firebaseAuth();
+                        try { await fb.signOut(fb.auth); } catch (e) { }
+                        q(m, '#er').textContent = 'Verificación cancelada. Volvé a intentarlo.';
+                        e.target.disabled = false;
+                    });
                 } catch (x) {
                     q(m, '#er').textContent = traducirError(x);
                 }
@@ -1491,63 +1442,28 @@
 
         function pantallaReset() {
             const m = modal(`<h2 class="t">Restablecer contraseña</h2>
-    <div class="peq">Se abrirá tu app de mails con un mensaje listo para enviar a ${MAIL}. El equipo Pichisoft te responderá con un código de 6 dígitos.</div>
-    <label>Nombre de usuario:</label><input type="text" id="u" maxlength="20">
-    <div class="err" id="er"></div>
-    <button class="btn" id="ok">Solicitar código</button><button class="btn" id="vol">Volver</button><br>
-    <span class="lnk" id="ya">Ya tengo un código</span>`);
+        <div class="peq">Ingresá tu email y te enviaremos un link de Firebase para restablecer tu contraseña.</div>
+        <label>Email:</label><input type="email" id="email" autocomplete="email">
+        <div class="err" id="er"></div>
+        <button class="btn" id="ok">Enviar email</button><button class="btn" id="vol">Volver</button>`);
             q(m, '#vol').onclick = () => { m.close(); pantallaLogin(); };
-            q(m, '#ya').onclick = () => { m.close(); pantallaResetCodigo(false); };
             q(m, '#ok').onclick = async e => {
-                const k = q(m, '#u').value.trim().toLowerCase();
-                if (!API.users()[k]) { q(m, '#er').textContent = 'Ese usuario no existe en este dispositivo.'; return; }
+                const email = q(m, '#email').value.trim();
+                if (!email) { q(m, '#er').textContent = 'Ingresá tu email.'; return; }
                 e.target.disabled = true;
                 try {
-                    const c = String(100000 + crypto.getRandomValues(new Uint32Array(1))[0] % 900000);
-                    const blob = await cifrarParaEquipo(c);
-                    LS.set('ps_reset', { k, h: await sha('reset:' + k + ':' + c), exp: Date.now() + 48 * 36e5, n: 0, blob });
-                    m.close(); pantallaResetCodigo(true);
-                } catch { q(m, '#er').textContent = 'No se pudo generar la solicitud.'; e.target.disabled = false; }
+                    const firebase = firebaseAuth();
+                    await firebase.sendPasswordResetEmail(firebase.auth, email);
+                    m.close();
+                    alert('Si el email está registrado, te va a llegar un mensaje de Firebase con instrucciones para restablecer tu contraseña. Revisá tu bandeja de entrada y la carpeta de spam.');
+                    pantallaLogin();
+                } catch (x) {
+                    q(m, '#er').textContent = traducirError(x);
+                    e.target.disabled = false;
+                }
             };
         }
 
-        function pantallaResetCodigo(enviar) {
-            const r = LS.get('ps_reset', null), vigente = r && r.exp > Date.now();
-            const cuerpo = vigente ? MSG + '\n\nCódigo de solicitud (no lo borres):\n' + r.blob : '';
-            const mailto = 'mailto:' + MAIL + '?subject=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(cuerpo);
-            const gmail = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + MAIL + '&su=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(cuerpo);
-            const m = modal(`<h2 class="t">Restablecer contraseña</h2>` +
-                (enviar && vigente ? `<div class="peq">1) Enviá el mail que se abrió (si no se abrió, usá uno de estos botones).<br>2) Cuando el equipo Pichisoft te responda con el código de 6 dígitos, escribilo abajo.</div>
-      <div><button class="btn" id="mt">Abrir mi app de mails</button><button class="btn" id="gm">Abrir Gmail</button><button class="btn" id="cp">Copiar mensaje</button></div>`
-                    : `<div class="peq">Escribí el código de 6 dígitos que te envió el equipo Pichisoft.</div>`) +
-                `<label>Código de 6 dígitos:</label><input type="text" id="cd" inputmode="numeric" maxlength="6">
-    <label>Nueva contraseña (mínimo 8 caracteres):</label><input type="password" id="p" autocomplete="new-password">
-    <label>Repetir contraseña:</label><input type="password" id="p2" autocomplete="new-password">
-    <div class="err" id="er"></div>
-    <button class="btn" id="ok">Restablecer</button><button class="btn" id="vol">Volver</button>`);
-            if (enviar && vigente) {
-                q(m, '#mt').onclick = () => { location.href = mailto; };
-                q(m, '#gm').onclick = () => { window.open(gmail, '_blank', 'noopener'); };
-                q(m, '#cp').onclick = async e => { try { await navigator.clipboard.writeText(cuerpo); e.target.textContent = '¡Copiado!'; } catch { e.target.textContent = 'No se pudo copiar'; } };
-                setTimeout(() => { location.href = mailto; }, 250);
-            }
-            q(m, '#vol').onclick = () => { m.close(); pantallaLogin(); };
-            q(m, '#ok').onclick = async () => {
-                const err = t => q(m, '#er').textContent = t;
-                const r = LS.get('ps_reset', null);
-                if (!r || r.exp < Date.now() || !API.users()[r.k]) { err('No hay una solicitud vigente. Pedí un código nuevo.'); return; }
-                const c = q(m, '#cd').value.trim(), p = q(m, '#p').value;
-                if (p !== q(m, '#p2').value) { err('Las contraseñas no coinciden.'); return; }
-                try { API.validar(API.users()[r.k].name, p); } catch (x) { err(x.message); return; }
-                if (!iguales(await sha('reset:' + r.k + ':' + c), r.h)) {
-                    if (++r.n >= 5) { localStorage.removeItem('ps_reset'); m.close(); alert('Demasiados intentos fallidos. Pedí un código nuevo.'); pantallaReset(); return; }
-                    LS.set('ps_reset', r); err('Código incorrecto. Te quedan ' + (5 - r.n) + ' intentos.'); return;
-                }
-                try { await API.setPass(r.k, p); } catch (x) { err(x.message); return; }
-                localStorage.removeItem('ps_reset'); m.close();
-                alert('Contraseña restablecida. Ahora iniciá sesión.'); pantallaLogin();
-            };
-        }
 
         /* ---------- Cabecera (arriba a la derecha) ---------- */
         function editarPerfil() {
@@ -1782,7 +1698,7 @@
             box.innerHTML = '';
             if (!u) {
                 const b = document.createElement('button');
-                b.className = 'btn'; b.style.margin = 0; b.textContent = 'Registrarse';
+                b.className = 'btn'; b.style.margin = 0; b.textContent = 'Ingresar';
                 b.setAttribute('data-sin-anuncio', '');
                 b.onclick = pantallaBienvenida; box.appendChild(b); return;
             }
@@ -1823,7 +1739,6 @@
     </script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-
         import {
             getAuth,
             createUserWithEmailAndPassword,
@@ -1833,7 +1748,10 @@
             updateEmail,
             updatePassword,
             reauthenticateWithCredential,
-            EmailAuthProvider
+            EmailAuthProvider,
+            sendEmailVerification,
+            sendPasswordResetEmail,
+            deleteUser
         } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
         import {
             getFirestore,
@@ -1868,6 +1786,9 @@
             updatePassword,
             reauthenticateWithCredential,
             EmailAuthProvider,
+            sendEmailVerification,
+            sendPasswordResetEmail,
+            deleteUser,
             doc,
             setDoc,
             getDoc
