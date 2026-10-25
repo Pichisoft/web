@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>PichonPass</title>
-  
+
     <style>
         * {
             box-sizing: border-box;
@@ -1715,8 +1715,8 @@
         <input id="username" placeholder="Nombre de usuario">
         <input id="password" type="password" placeholder="Contraseña">
         <div class="master-password-warning">
-            🔐 <strong>Importante:</strong> si olvidas tu contraseña maestra, o quieres editarla para mayor seguridad,
-            no podrás recuperarla, por lo tanto, te recomendamos que elijas una contraseña larga, difícil, no la
+            🔐 <strong>Importante:</strong> si olvidas tu contraseña maestra, o quieres editarla,
+            no podrás recuperarla. por lo tanto, te recomendamos que elijas una contraseña larga y difícil. No la
             compartas con nadie y recuerda anotarla en un lugar seguro.
         </div>
         <button id="loginBtn" onclick="login()">Entrar</button>
@@ -3712,25 +3712,36 @@
         }
 
 
-        function confirmDelete() {
 
+        async function confirmDelete() {
             if (deletingIndex < 0) {
                 return;
             }
 
+            const deletedRecord = vault[deletingIndex];
 
-            vault.splice(
-                deletingIndex,
-                1
-            );
+            vault.splice(deletingIndex, 1);
 
+            try {
+                await persist();
 
-            persist();
+                closeDeleteModal();
+                render();
 
-            closeDeleteModal();
+            } catch (error) {
+                // Si falla el guardado, restauramos el registro en memoria.
+                vault.splice(deletingIndex, 0, deletedRecord);
 
-            render();
+                console.error(
+                    "Error crítico al guardar la eliminación:",
+                    error
+                );
+
+                alert("No se pudo guardar la eliminación. El registro se ha restaurado.");
+                render();
+            }
         }
+
 
 
         /*
