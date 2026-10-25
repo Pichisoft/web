@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PichonCalc</title>
-    
+
     <style>
         body {
             margin: 0;
@@ -54,18 +54,127 @@
             top: 6px;
         }
 
-        #display {
+        /* ===== PANTALLA DE CALCULADORA ===== */
+        .display-container {
+            position: relative;
             width: 100%;
-            height: 60px;
-            font-size: 22px;
-            text-align: right;
-            padding: 10px;
-            border: none;
+            height: 80px;
+            background: #000;
             border-radius: 8px;
             margin-bottom: 10px;
-            background: #000;
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-end;
+            transition: background 0.3s ease;
+        }
+
+        /* Animación PRO al calcular */
+        @keyframes flashResult {
+            0% {
+                background: #000;
+                box-shadow: inset 0 0 0 rgba(15, 255, 0, 0);
+            }
+
+            30% {
+                background: #0a1a0a;
+                box-shadow: inset 0 0 25px rgba(15, 255, 0, 0.3);
+            }
+
+            100% {
+                background: #000;
+                box-shadow: inset 0 0 0 rgba(15, 255, 0, 0);
+            }
+        }
+
+        .display-container.flash {
+            animation: flashResult 0.6s ease-out;
+        }
+
+        #preview {
+            font-size: 16px;
+            color: #888;
+            min-height: 20px;
+            font-family: monospace;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        #display {
+            font-size: 26px;
             color: #0f0;
+            font-family: monospace;
             outline: none;
+            width: 100%;
+            text-align: right;
+            overflow-x: auto;
+            white-space: nowrap;
+            user-select: text;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #333;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #555;
+        }
+
+        /* Icono de copiar dibujado en CSS */
+        .copy-icon {
+            position: relative;
+            width: 14px;
+            height: 16px;
+            border: 2px solid #0f0;
+            border-radius: 2px;
+            transition: 0.2s;
+        }
+
+        .copy-icon::before {
+            content: "";
+            position: absolute;
+            width: 14px;
+            height: 16px;
+            border: 2px solid #0f0;
+            border-radius: 2px;
+            left: -4px;
+            top: 4px;
+            background: #333;
+            transition: 0.2s;
+        }
+
+        .copy-btn.copied .copy-icon {
+            border-color: #fff;
+        }
+
+        .copy-btn.copied .copy-icon::before {
+            display: none;
+        }
+
+        .copy-btn.copied .copy-icon::after {
+            content: "✓";
+            position: absolute;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            left: -1px;
+            top: -5px;
+            font-family: Arial, sans-serif;
         }
 
         .buttons {
@@ -76,16 +185,25 @@
 
         button {
             padding: 12px;
-            font-size: 13px;
+            font-size: 16px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             background: #333;
             color: white;
+            transition: transform 0.1s, background 0.2s, box-shadow 0.1s;
+            user-select: none;
         }
 
         button:hover {
             background: #555;
+        }
+
+        /* Animación de hundido PRO */
+        button:active {
+            transform: scale(0.95);
+            background: #222;
+            box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.5);
         }
 
         .eq {
@@ -93,37 +211,25 @@
             grid-column: span 4;
         }
 
+        .eq:hover {
+            background: #218838;
+        }
+
+        .eq:active {
+            background: #1e7e34;
+            box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.6);
+        }
+
         .clear {
             background: #dc3545;
         }
 
-        /* partículas */
-        .particle {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            pointer-events: none;
-            animation: fly 600ms linear forwards;
+        .clear:hover {
+            background: #c82333;
         }
 
-        @keyframes fly {
-            from {
-                transform: translate(0, 0);
-                opacity: 1;
-            }
-
-            to {
-                transform: translate(var(--x), var(--y));
-                opacity: 0;
-            }
-        }
-
-        .credit {
-            font-family: Verdana, sans-serif;
-            font-size: 18px;
-            font-style: italic;
-            color: #bbb;
+        .clear:active {
+            background: #bd2130;
         }
 
         /* ==========================================
@@ -135,24 +241,18 @@
             top: 12px;
             right: 120px;
             z-index: 9999;
-
             display: flex;
             align-items: center;
             gap: 8px;
-
             max-width: calc(100vw - 20px);
             box-sizing: border-box;
             padding: 8px 16px;
-
             background: #000;
             color: #20a84b;
-
             border: 1px solid rgba(34, 197, 94, 0.25);
             border-radius: 22px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-
             font: 14px/1.3 Georgia, serif;
-
             opacity: 1;
             transform: translateY(0);
             transition: opacity 0.6s ease, transform 0.6s ease;
@@ -202,24 +302,18 @@
             top: 12px;
             right: 120px;
             z-index: 9998;
-
             display: flex;
             align-items: center;
             gap: 8px;
-
             max-width: calc(100vw - 20px);
             box-sizing: border-box;
             padding: 5px 14px 5px 5px;
-
             background: #000;
             color: #fff;
-
             border: 1px solid rgba(34, 197, 94, 0.25);
             border-radius: 25px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-
             font-family: Georgia, serif;
-
             opacity: 0;
             transform: translateY(-12px) scale(0.9);
             transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
@@ -258,8 +352,6 @@
             white-space: nowrap;
         }
 
-        /* Celular: título más chico (para que no choque con el link "Pichisoft")
-           y el cartel queda arriba de la calculadora, sin tapar nada */
         @media (max-width: 600px) {
             .header {
                 left: 12px;
@@ -297,7 +389,13 @@
 
     <div class="calculator" id="calc">
 
-        <input id="display" type="text" autofocus />
+        <div class="display-container" id="displayContainer">
+            <button class="copy-btn" id="copyBtn" onclick="copyResult()" title="Copiar resultado">
+                <span class="copy-icon"></span>
+            </button>
+            <div id="preview"></div>
+            <div id="display" autofocus></div>
+        </div>
 
         <div class="buttons">
 
@@ -331,101 +429,142 @@
     </div>
 
     <script>
-        const display = document.getElementById("display");
-        const calc = document.getElementById("calc");
+        const displayEl = document.getElementById("display");
+        const previewEl = document.getElementById("preview");
+        const displayContainer = document.getElementById("displayContainer");
+        const copyBtn = document.getElementById("copyBtn");
 
+        let currentExpression = "";
         let lastExpression = "";
 
-        /* ===== VARIABLES ===== */
         let vars = { a: 10, b: 5, c: 0, d: 2 };
 
-        /* ===== UTIL ===== */
-        function sanitize(expr) {
-            return expr.replace(/Math\./g, "");
-        }
-
         function replaceLetters(expr) {
-            return expr.replace(/[a-z]/gi, m => vars[m] ?? m);
+            return expr.replace(/[a-z]/gi, m => vars[m] !== undefined ? vars[m] : m);
         }
 
-        /* ===== INPUT ===== */
-        function append(v) {
-            display.value += v;
-        }
-
-        function clearDisplay() { display.value = ""; }
-        function del() { display.value = display.value.slice(0, -1); }
-
-        /* ===== PARTICULAS ===== */
-        function spawnParticles(x, y) {
-            for (let i = 0; i < 20; i++) {
-                let p = document.createElement("div");
-                p.className = "particle";
-
-                p.style.left = x + "px";
-                p.style.top = y + "px";
-
-                let angle = Math.random() * Math.PI * 2;
-                let dist = Math.random() * 80;
-
-                p.style.setProperty("--x", Math.cos(angle) * dist + "px");
-                p.style.setProperty("--y", Math.sin(angle) * dist + "px");
-
-                p.style.background = `hsl(${Math.random() * 360},100%,60%)`;
-
-                calc.appendChild(p);
-                setTimeout(() => p.remove(), 600);
-            }
-        }
-
-        /* ===== CALCULAR ===== */
-        function calculate(e) {
+        function safeEval(expr) {
+            if (!expr) return "";
+            expr = replaceLetters(expr);
+            if (!/^[0-9+\-*/().\s]+$/.test(expr)) return "";
             try {
-                let expr = display.value;
-
-                if (expr.trim() === "" && lastExpression) {
-                    expr = lastExpression;
-                }
-
-                expr = sanitize(expr);
-                expr = replaceLetters(expr);
-
-                let result = eval(expr);
-
-                display.value = result;
-                lastExpression = expr;
-
-                let rect = e.target.getBoundingClientRect();
-                spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
-
+                let res = Function('"use strict";return (' + expr + ')')();
+                if (!isFinite(res) || isNaN(res)) return "";
+                return Math.round(res * 100000000) / 100000000;
             } catch {
-                display.value = "Error";
+                return "";
             }
         }
 
-        /* ===== TECLADO ===== */
-        document.addEventListener("keydown", (e) => {
-            const key = e.key.toLowerCase();
-            const allowed = "0123456789+-*/().abcdefghijklmnopqrstuvwxyz";
+        function updateDisplay() {
+            displayEl.textContent = currentExpression || "0";
 
-            if (allowed.includes(key)) {
+            if (currentExpression.trim() === "" || currentExpression === "0") {
+                previewEl.textContent = "";
+            } else {
+                let res = safeEval(currentExpression);
+                previewEl.textContent = (res !== "" && res !== currentExpression) ? "= " + res : "";
+            }
+        }
+
+        function append(v) {
+            if (currentExpression === "Error" || (lastExpression && displayEl.textContent === lastExpression.toString())) {
+                if (!isNaN(v) || v === "(") {
+                    currentExpression = "";
+                    lastExpression = "";
+                }
+            }
+            currentExpression += v;
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentExpression = "";
+            lastExpression = "";
+            updateDisplay();
+        }
+
+        function del() {
+            currentExpression = currentExpression.slice(0, -1);
+            updateDisplay();
+        }
+
+        function calculate(e) {
+            if (!currentExpression) return;
+
+            let expr = currentExpression;
+            let result = safeEval(expr);
+
+            if (result === "") {
+                displayEl.textContent = "Error";
+                previewEl.textContent = "";
+                currentExpression = "";
+                lastExpression = "";
+                return;
+            }
+
+            currentExpression = result.toString();
+            lastExpression = currentExpression;
+            displayEl.textContent = currentExpression;
+            previewEl.textContent = "";
+
+            // Animación PRO en vez de confeti
+            displayContainer.classList.remove("flash");
+            void displayContainer.offsetWidth; // Truco para reiniciar la animación
+            displayContainer.classList.add("flash");
+        }
+
+        function copyResult() {
+            // Si hay un resultado en la vista previa (ej. "= 25"), copia eso.
+            // Si no, copia el resultado principal.
+            let textToCopy = displayEl.textContent;
+            let previewText = previewEl.textContent;
+
+            if (previewText && previewText.startsWith("= ")) {
+                textToCopy = previewText.replace("= ", "").trim();
+            }
+
+            if (!textToCopy || textToCopy === "Error" || textToCopy === "0") return;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                copyBtn.classList.add("copied");
+                setTimeout(() => copyBtn.classList.remove("copied"), 2000);
+            }).catch(() => {
+                let ta = document.createElement("textarea");
+                ta.value = textToCopy;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand("copy");
+                ta.remove();
+                copyBtn.classList.add("copied");
+                setTimeout(() => copyBtn.classList.remove("copied"), 2000);
+            });
+        }
+
+        document.addEventListener("keydown", (e) => {
+            const key = e.key;
+
+            if (/^[0-9+\-*/().]$/.test(key)) {
                 e.preventDefault();
                 append(key);
-            } else if (key === "enter") {
+            } else if (key === "Enter" || key === "=") {
                 e.preventDefault();
                 calculate({ target: document.querySelector(".eq") });
-            } else if (key === "backspace") {
+            } else if (key === "Backspace") {
                 e.preventDefault();
                 del();
-            } else if (key === "escape") {
+            } else if (key === "Escape" || key === "Delete") {
                 e.preventDefault();
                 clearDisplay();
             }
         });
+
+        updateDisplay();
     </script>
+
     <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
-            href="https://pichisoft.cc" target="_blank"
-            style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
+            href="https://pichisoft.cc" target="_blank" style="color:#4db8ff; text-decoration: underline;">Pichisoft</a>
+    </p>
 
     <!-- ===== Pichisoft - Estado de sesión ===== -->
     <div id="pichisoft-session-status" role="status" aria-live="polite">
@@ -440,7 +579,6 @@
 
     <script>
         (function () {
-            /* Todo va dentro de esta función para no chocar con las variables de la app */
             var CFG = {
                 apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
                 authDomain: "pichisoft.firebaseapp.com",
@@ -451,8 +589,8 @@
                 measurementId: "G-K7HRKR8BJ1"
             };
             var V = "https://www.gstatic.com/firebasejs/12.3.0/";
-            var DUR_INICIO = 12000;   // "Iniciando sesión..."
-            var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+            var DUR_INICIO = 12000;
+            var DUR_MENSAJE = 6000;
 
             var box = document.getElementById("pichisoft-session-status");
             var txt = box.querySelector(".ps-text");
@@ -463,8 +601,6 @@
 
             function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
-               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
             async function comprobar() {
                 try {
                     var m = await Promise.all([
@@ -491,13 +627,10 @@
                         try {
                             var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
                             if (snap.exists()) perfil = snap.data();
-                        } catch (e) {
-                            console.error("Pichisoft: no se pudo leer el perfil", e);
-                        }
+                        } catch (e) { }
                     }
                     return { user: user, perfil: perfil };
                 } catch (e) {
-                    console.error("Pichisoft:", e);
                     return { error: true };
                 }
             }
