@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>PichonBirthday</title>
-   
+
     <style>
         * {
             box-sizing: border-box
@@ -1063,6 +1063,62 @@
                 max-height: 75vh
             }
         }
+
+        /* ==========================================
+   TOASTS (sin alert)
+   ========================================== */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 99999;
+            /* Por encima de todo */
+            pointer-events: none;
+            width: min(420px, calc(100vw - 30px));
+        }
+
+        .toast {
+            padding: 13px 18px;
+            border-radius: 9px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: auto;
+            cursor: pointer;
+            border: 1px solid transparent;
+            line-height: 1.35;
+        }
+
+        .toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.error {
+            background: #8e3030;
+            color: #fff;
+            border-color: #642020;
+        }
+
+        .toast.success {
+            background: #20a84b;
+            color: #fff;
+            border-color: #167a36;
+        }
+
+        .toast.info {
+            background: #1b1b27;
+            color: #fff;
+            border-color: #ffffff33;
+        }
     </style>
 </head>
 
@@ -1177,13 +1233,26 @@
             const W = 800, H = 600, V = "https://www.gstatic.com/firebasejs/12.3.0/", F = ['img', 'vid', 'col'];
             const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
             const fresh = () => ({ id: null, title: '', st: 'draft', bg: { t: 'g', a: '#2a1b4d', b: '#0b0b10', d: 160 }, items: [], ts: { f: 'Georgia', z: 44, c: '#ffffff', b: 1, i: 0, u: 0 }, fr: { w: 0, c: '#ffffff', s: 'solid', r: 0 } });
-            const loadS = g => Object.assign(fresh(), { id: g.id, title: g.title == 'Sin título' ? '' : g.title, st: g.st, bg: g.bg, items: g.items, ts: g.ts || fresh().ts, fr: g.fr || fresh().fr });
+            const loadS = g => Object.assign(fresh(), {
+                id: g.id,
+                title: g.title == 'Sin título' ? '' : g.title,
+                st: g.st,
+                bg: g.bg,
+                items: g.items || [], // Si no hay items, arranca vacío
+                ts: g.ts || fresh().ts,
+                fr: g.fr || fresh().fr
+            });
             let S = fresh(), M = {}, sel = null, editing = null, rng = null, hist = [], hi = -1, scale = 1;
             const st = $('#st'), wrap = $('#wrap'), panel = $('#panel'), md = $('#md'), pv = $('#pv'), pvs = $('#pvs');
             const gi = id => S.items.find(i => i.id == id), elOf = id => st.querySelector('[data-id="' + id + '"]');
 
             /* ---------- Guardado local (IndexedDB) ---------- */
-            const DB = new Promise(r => { const q = indexedDB.open('pichonbirthday', 1); q.onupgradeneeded = () => q.result.createObjectStore('g', { keyPath: 'id' }); q.onsuccess = () => r(q.result) });
+            const DB = new Promise((res, rej) => {
+                const q = indexedDB.open('pichonbirthday', 1);
+                q.onupgradeneeded = () => q.result.createObjectStore('g', { keyPath: 'id' });
+                q.onsuccess = () => res(q.result);
+                q.onerror = () => rej(q.error);
+            });
             const tx = async (m, f) => { const d = await DB; return new Promise((res, rej) => { const t = d.transaction('g', m), q = f(t.objectStore('g')); t.oncomplete = () => res(q && q.result); t.onerror = () => rej(t.error) }) };
             const dbPut = g => tx('readwrite', s => s.put(g)), dbGet = id => tx('readonly', s => s.get(id)), dbAll = () => tx('readonly', s => s.getAll()), dbDel = id => tx('readwrite', s => s.delete(id));
             /* Nube (Firestore, colección "gifts") para poder compartir el link con otros dispositivos */
@@ -1192,19 +1261,17 @@
                     const f = await new Promise((r, j) => { let n = 0; const t = setInterval(() => { if (window.PichisoftFirebase && window.PichisoftFirebase.db) { clearInterval(t); r(window.PichisoftFirebase) } else if (++n > tries) { clearInterval(t); j() } }, 100) }); const m = await import(V + 'firebase-firestore.js');
                     if (g) {
                         const j = JSON.stringify(g);
-                        if (j.length > 5e6) return false; // Permitir hasta ~5 MB
+                        // Límite real de Firestore es 1 MB (1,048,576 bytes)
+                        if (j.length > 1000000) {
+                            showToast("El regalo es muy pesado para la nube (supera 1MB). Solo se guardó localmente.", "error", 5000);
+                            return false;
+                        }
                         await m.setDoc(m.doc(f.db, 'gifts', id), { json: j, uid: f.currentUser ? f.currentUser.uid : null, t: Date.now() });
                         return true;
                     }
                     const s = await m.getDoc(m.doc(f.db, 'gifts', id)); return s.exists() ? JSON.parse(s.data().json) : null
                 } catch (e) { return g ? false : null }
             }
-
-            /* ---------- Historial ---------- */
-            const snap = () => JSON.stringify({ bg: S.bg, items: S.items, ts: S.ts, fr: S.fr });
-            function push() { const s = snap(); if (hist[hi] === s) return; hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 60) hist.shift(); hi = hist.length - 1; btns() }
-            function go(d) { const i = hi + d; if (i < 0 || i >= hist.length) return; endEdit(true); hi = i; const o = JSON.parse(hist[hi]); S.bg = o.bg; S.items = o.items; S.ts = o.ts; S.fr = o.fr; syncT(); if (!gi(sel)) sel = null; draw() }
-            function btns() { $('#et').disabled = !(sel && gi(sel) && gi(sel).k == 'text'); $('#un').disabled = hi <= 0; $('#re').disabled = hi >= hist.length - 1; const it = sel && gi(sel);['fr', 'bk', 'del'].forEach(i => $('#' + i).disabled = !it); $('#pl').disabled = !(it && ['chip', 'aud', 'vid'].includes(it.k)) }
 
             /* ---------- Render ---------- */
             function bgSet(el, b) { el.style.background = b.t == 'c' ? b.a : b.t == 'g' ? 'linear-gradient(' + b.d + 'deg,' + b.a + ',' + b.b + ')' : 'url(' + M[b.m] + ') center/cover' }
@@ -1482,58 +1549,53 @@
 
             /* ---------- Guardar ---------- */
             async function save(kind) {
-                console.log("1. Entró a la función save. Tipo:", kind);
-
                 try {
-                    if (typeof endEdit === 'function') {
-                        endEdit(true);
-                    }
-
+                    endEdit(true);
                     const tiInput = $('#ti');
                     S.title = tiInput ? tiInput.value.trim() : 'Regalo';
                     if (!S.id) S.id = uid();
                     if (kind == 'gift') S.st = 'gift';
 
-                    console.log("2. Procesando multimedia y datos...");
                     const used = new Set(S.bg && S.bg.m ? [S.bg.m] : []);
                     if (S.items) {
                         S.items.forEach(i => { if (i.m) used.add(i.m); (i.ms || []).forEach(m => used.add(m)) });
                     }
                     const media = {};
-                    if (typeof M !== 'undefined') {
-                        used.forEach(k => media[k] = M[k]);
-                    }
+                    used.forEach(k => media[k] = M[k]);
 
-                    const g = { id: S.id, title: S.title || 'Sin título', st: S.st, bg: S.bg, items: S.items, ts: S.ts, fr: S.fr, media, t: Date.now() };
+                    const g = { id: S.id, title: S.title || 'Sin título', st: S.st, bg: S.bg, items: S.items || [], ts: S.ts, fr: S.fr, media, t: Date.now() };
 
-                    console.log("3. Guardando localmente (dbPut)...");
-                    if (typeof dbPut === 'function') {
+                    try {
                         await dbPut(g);
+                    } catch (err) {
+                        console.error("Error crítico de IndexedDB", err);
+                        showToast("Error al guardar en el dispositivo. ¿Falta de espacio?", "error", 5000);
+                        return; // Detiene la ejecución aquí
                     }
 
                     if (kind != 'gift') {
                         modal('Borrador guardado', mk('p', '', 'Podés cerrar y seguir después desde "Mis regalos y borradores" en la pantalla de inicio.'));
+                        showToast("Borrador guardado", "success");
                         return;
                     }
 
-                    console.log("4. Subiendo a la nube...");
                     let ok = false;
                     if (typeof cloud === 'function') {
                         ok = await cloud(g.id, g, 30);
                     }
-                    console.log("5. Nube respondida. ¿Ok?", ok);
 
                     const link = location.href.split(/[?#]/)[0] + '?g=' + g.id;
                     const w = mk('div');
                     w.innerHTML = '<p>¡Tu regalo está guardado! Este es su link:</p><a href="' + link + '"></a><p></p>';
                     w.querySelector('a').textContent = link;
-                    w.lastChild.textContent = ok ? 'También quedó en la nube: el link funciona en otros dispositivos.' : 'Quedó guardado en este dispositivo.';
+                    w.lastChild.textContent = ok ? 'También quedó en la nube: el link funciona en otros dispositivos.' : 'Quedó guardado en este dispositivo (no se pudo subir a la nube por tamaño o conexión).';
 
                     modal('Regalo guardado', w, () => { location.href = link }, 'Ir al regalo');
+                    showToast("Regalo guardado", "success");
 
                 } catch (e) {
                     console.error("¡ERROR CRÍTICO EN SAVE!", e);
-                    alert("Hubo un error al guardar: " + e.message);
+                    showToast("Hubo un error al guardar: " + e.message, "error", 5000);
                 }
             }
             /* ---------- Inicio y rutas ---------- */
@@ -1541,11 +1603,41 @@
             $('#goGift').onclick = () => openEd();
             $('#back').onclick = () => { endEdit(true); $('#editor').classList.remove('on'); $('#home').classList.remove('off'); list() };
             async function list() {
-                const a = ((await dbAll()) || []).sort((x, y) => y.t - x.t), m = $('#mine'); m.innerHTML = a.length ? '<h3>Mis regalos y borradores</h3>' : '';
+                let a = [];
+                try {
+                    a = (await dbAll()) || [];
+                } catch (e) {
+                    console.error("Error al cargar los regalos de la base local:", e);
+                    showToast("Error al leer el almacenamiento local.", "error");
+                }
+
+                a.sort((x, y) => y.t - x.t);
+                const m = $('#mine');
+                m.innerHTML = a.length ? '<h3>Mis regalos y borradores</h3>' : '';
+
                 a.forEach(g => {
-                    const r = mk('div', 'gl'), l = g.st == 'gift' ? mk('a') : mk('span'), s = mk('small', '', g.st == 'gift' ? 'regalo' : 'borrador'), e = mk('button', 'b', 'Editar'), x = mk('button', 'b', 'Borrar'); l.textContent = g.title; if (g.st == 'gift') l.href = '?g=' + g.id;
-                    e.onclick = () => openEd(g); x.onclick = async () => { if (confirm('¿Borrar "' + g.title + '"?')) { await dbDel(g.id); list() } }; r.append(l, s, e, x); m.append(r)
-                })
+                    const r = mk('div', 'gl'), l = g.st == 'gift' ? mk('a') : mk('span'), s = mk('small', '', g.st == 'gift' ? 'regalo' : 'borrador'), e = mk('button', 'b', 'Editar'), x = mk('button', 'b', 'Borrar');
+                    l.textContent = g.title;
+                    if (g.st == 'gift') l.href = '?g=' + g.id;
+
+                    e.onclick = () => openEd(g);
+
+                    x.onclick = () => {
+                        // Usamos la función modal() original, que es segura.
+                        modal('Borrar regalo', mk('p', '', '¿Estás seguro de que querés borrar "' + g.title + '"? Esta acción no se puede deshacer.'), async () => {
+                            try {
+                                await dbDel(g.id);
+                                list();
+                                showToast("Regalo borrado", "info");
+                            } catch (err) {
+                                showToast("Error al borrar el regalo.", "error");
+                            }
+                        }, 'Sí, borrar');
+                    };
+
+                    r.append(l, s, e, x);
+                    m.append(r);
+                });
             }
             const q = new URLSearchParams(location.search).get('g');
             if (q) {
@@ -1555,21 +1647,26 @@
                 })()
             }
             else list();
-            document.addEventListener('DOMContentLoaded', () => {
-                const btnGuardar = document.getElementById('sg') || document.querySelector('.ok');
-                if (btnGuardar) {
-                    btnGuardar.onclick = () => {
-                        console.log("¡Botón presionado, ejecutando save!");
-                        if (typeof save === 'function') {
-                            save('gift');
-                        } else {
-                            console.error("La función save no está definida.");
-                        }
-                    };
-                } else {
-                    console.warn("No se encontró el botón de guardar en el HTML.");
-                }
-            });
+            // Botones de guardado
+            $('#sg').onclick = () => save('gift');
+            $('#sd').onclick = () => save('draft');
+
+            // Función Toast
+            function showToast(message, type = "info", duration = 3000) {
+                const container = document.getElementById("toastContainer");
+                if (!container) return;
+                const toast = document.createElement("div");
+                toast.className = "toast " + type;
+                toast.textContent = message;
+                container.appendChild(toast);
+                requestAnimationFrame(() => toast.classList.add("visible"));
+                const close = () => {
+                    toast.classList.remove("visible");
+                    setTimeout(() => toast.remove(), 300);
+                };
+                setTimeout(close, duration);
+                toast.addEventListener("click", close);
+            }
         })();
 
     </script>
@@ -1675,6 +1772,7 @@
             })();
         })();
     </script>
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 </body>
 
 </html>
