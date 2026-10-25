@@ -28,6 +28,9 @@ body.prem.vista-orig #pPremium{display:none}
 .p-pre{color:var(--gold2);font-weight:bold;font-size:16px}
 .p-search input{flex:1;min-width:0;background:none;border:0;outline:0;color:#fff;font:inherit;font-size:16px;padding:15px 0 15px 1px}
 .p-search input::placeholder{color:#6d6d6d}
+.p-clear{display:none;background:none;border:0;color:#6d6d6d;cursor:pointer;font-size:18px;padding:4px 8px;line-height:1;transition:color .15s}
+.p-clear:hover{color:var(--gold)}
+.p-clear.on{display:inline-block}
 
 .acc{background:linear-gradient(180deg,#1b1b1b,#131313);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:14px;box-shadow:0 10px 28px rgba(0,0,0,.4)}
 .acc-h{width:100%;display:flex;align-items:center;gap:12px;background:none;border:0;color:#fff;font:bold 1.05rem Verdana,"Open Sans",sans-serif;padding:17px 18px;cursor:pointer;text-align:left}
@@ -226,7 +229,7 @@ body.prem .p-gear{display:flex}
         { n: 'PichonPass', u: 'pichonpass' },
         { n: 'PichonRandom', u: 'pichonrandom' },
         { n: 'PichonSnake', u: 'pichonsnake' },
-         { n: 'PichonTraffic', u: 'pichontraffic', t: ['nuevo'] },
+        { n: 'PichonTraffic', u: 'pichontraffic', t: ['nuevo'] },
         { n: 'PichonWatch', u: 'pichonwatch' }
     ];
     APPS.forEach(a => a.t = a.t || []);
@@ -254,7 +257,7 @@ body.prem .p-gear{display:flex}
 
     /* Carteles de aviso: "solo" limita quién lo ve (invitado = sin cuenta, premium = con cuenta) */
     const CARTELES = [
-        { id: 'reg', solo: 'invitado', html: 'Ya está disponible nuestra versión premium para PichonApps. ¿Quiere obtenerla? Hágase una cuenta, en esta misma app, apretando el botón "Registrarse".' },
+        { id: 'reg', solo: 'invitado', html: 'Ya está disponible nuestra versión premium para PichonApps. ¿Quiere obtenerla? Hágase una cuenta, en esta misma app, apretando el botón "Ingresar".' },
         { id: 'tut', solo: 'premium', html: '¿Tiene una duda acerca de nuestras apps? <a data-b href="' + B + '/pichontutorial.html">Vea el tutorial de cada una.</a>' },
         { id: 'con', html: '<a data-mail href="#" role="button">¿Tiene una duda?→ Comuníquese con nosotros.</a>' }
     ];
@@ -290,9 +293,10 @@ body.prem .p-gear{display:flex}
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
     <span class="p-pre">Pichon</span>
     <input id="pQ" type="text" inputmode="search" autocomplete="off" spellcheck="false" placeholder="Destiny, Calc, Snake…" aria-label="Buscar apps de Pichon">
+    <button class="p-clear" id="pClear" aria-label="Limpiar búsqueda" title="Limpiar">✕</button>
   </div>
   <div id="pBody"></div>
-  <p class="p-no" id="pNo" hidden>No encontramos ninguna app con ese nombre. ¿Quiere sugerir una? <a class="linkdemail"href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Cuéntenos</a>.</p>
+  <p class="p-no" id="pNo" hidden>No encontramos ninguna app con ese nombre. ¿Quiere sugerir una? <a class="linkdemail" href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Cuéntenos</a>.</p>
 </div>`);
         document.body.insertAdjacentHTML('beforeend', `
 <button class="p-gear" id="pGear" aria-label="Configuración" title="Configuración"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -302,6 +306,15 @@ body.prem .p-gear{display:flex}
             if (/^pichon/i.test(e.target.value)) e.target.value = e.target.value.replace(/^pichon\s*/i, '');
             filtrar();
         };
+        const clearBtn = document.getElementById('pClear');
+        if (clearBtn) {
+            clearBtn.onclick = () => {
+                $('#pQ').value = '';
+                clearBtn.classList.remove('on');
+                filtrar();
+                $('#pQ').focus();
+            };
+        }
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') cerrarConfig();
 
@@ -429,14 +442,17 @@ body.prem .p-gear{display:flex}
 
     function filtrar() {
         const raw = cfg.buscador ? $('#pQ').value.trim().toLowerCase().replace(/^pichon\s*/, '') : '';
+        const clearBtn = document.getElementById('pClear');
+        if (clearBtn) clearBtn.classList.toggle('on', !!raw);
         const root = $('#pPremium'); root.classList.toggle('buscando', !!raw);
         let hits = 0;
-        root.querySelectorAll('.lista .app').forEach(a => {
+        root.querySelectorAll('.lista .app, .lista-p .app').forEach(a => {
             const ok = !raw || a.dataset.n.toLowerCase().slice(6).includes(raw);
             a.hidden = !ok; if (ok) hits++;
         });
         root.querySelectorAll('.cat').forEach(c => { c.hidden = !!raw && !c.querySelector('.app:not([hidden])'); });
-        $('#pNo').hidden = !(raw && !hits);
+        const noEl = $('#pNo');
+        if (noEl) noEl.hidden = !(raw && !hits);
     }
 
     /* ---------------------- ARRASTRAR (mouse y táctil) ---------------------- */
@@ -482,7 +498,13 @@ body.prem .p-gear{display:flex}
     /* Deja espacio abajo para que los carteles apilados no tapen las apps */
     function reservar() {
         const b = $('#pCart');
-        document.body.style.paddingBottom = b && b.children.length ? (b.offsetHeight + 16) + 'px' : '';
+        const sueltos = document.querySelectorAll('.cartel.suelto').length;
+        const enContenedor = b ? b.children.length : 0;
+        if (enContenedor === 0 && sueltos === 0) {
+            document.body.style.paddingBottom = '';
+        } else {
+            document.body.style.paddingBottom = (b.offsetHeight + 16) + 'px';
+        }
     }
 
     function renderCarteles() {
@@ -670,7 +692,7 @@ body.prem .p-gear{display:flex}
     });
 
     inyectar();
-    const rcOriginal = window.renderCuenta;
+    const rcOriginal = window.renderCuenta || function () { };
     window.renderCuenta = function () { rcOriginal.apply(this, arguments); renderPremium(); };
     renderPremium();
 })();
