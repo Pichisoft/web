@@ -1244,6 +1244,294 @@
     <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
             href="https://pichisoft.cc" target="_blank" style="color:#278acc; text-decoration: underline;">Pichisoft</a>
     </p>
+    <!-- ============================================================
+     PICHISOFT · BOTÓN DE AYUDA (estilo premium)
+     Pegar al final del <body> de cada app.
+     Cambiar SOLO el objeto CONFIG (titulo, descripcion, top, right).
+     ============================================================ -->
+<script>
+(function () {
+    'use strict';
+
+    /* ============================================================
+       CONFIGURACIÓN — CAMBIAR POR APP
+       ============================================================
+       titulo       → título del panel (Times New Roman, dorado)
+       descripcion  → contenido. Respeta saltos de línea. Admite:
+                      <strong>negrita</strong>, <i>cursiva</i>,
+                      <a href="...">link</a>
+       top          → distancia desde arriba (ajustar según header)
+       right        → distancia desde la derecha (ajustar para quedar
+                      a la izquierda de los carteles de sesión y del
+                      link Pichisoft)
+       ============================================================ */
+    const CONFIG = {
+        titulo: 'Ayuda para PichonPaint',
+        descripcion: `PichonPaint es una app que sirve para pintar y dibujar, con distintas funciones como hacer formas, rellenar, e incluso guardar tus dibujos como .png.
+Puede sugerir mejoras para esta app <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank"
+                rel="noopener">aquí</a>.`,
+        top: '98px',
+        right: '40px'
+    };
+    /* ============================================================ */
+
+    // Evitar duplicados si se carga dos veces
+    if (document.getElementById('psHelpBtn')) return;
+
+    // ─── CSS ───
+    const css = document.createElement('style');
+    css.textContent = `
+/* Botón flotante */
+#psHelpBtn {
+    position: fixed;
+    top: ${CONFIG.top};
+    right: ${CONFIG.right};
+    z-index: 9998;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid #d4af37;
+    background: linear-gradient(135deg, #2b2107, #100c02);
+    color: #f1d98a;
+    font: bold 20px/1 "Times New Roman", Times, serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.1);
+    transition: transform .25s, background .25s, color .25s, box-shadow .25s;
+}
+#psHelpBtn:hover {
+    background: linear-gradient(135deg, #d4af37, #a67c12);
+    color: #111;
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(212,175,55,.45);
+}
+#psHelpBtn:focus-visible {
+    outline: 2px solid #f1d98a;
+    outline-offset: 2px;
+}
+
+/* Overlay */
+#psHelpOv {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    box-sizing: border-box;
+    overflow: auto;
+    background: rgba(0,0,0,.72);
+    backdrop-filter: blur(0);
+    -webkit-backdrop-filter: blur(0);
+    opacity: 0;
+    transition: opacity .35s ease, backdrop-filter .35s ease;
+}
+#psHelpOv.on {
+    opacity: 1;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+/* Card */
+#psHelpCard {
+    position: relative;
+    width: min(560px, 100%);
+    margin: auto;
+    box-sizing: border-box;
+    padding: 22px 24px 20px;
+    color: #fff;
+    background: linear-gradient(180deg, #181818, #0b0b0b);
+    border: 2px solid #d4af37;
+    border-radius: 16px;
+    box-shadow: 0 0 0 1px rgba(212,175,55,.18), 0 30px 80px rgba(0,0,0,.85), 0 0 44px rgba(212,175,55,.12);
+    opacity: 0;
+    transform: translateY(24px) scale(.95);
+    transition: opacity .4s ease, transform .5s cubic-bezier(.2,.9,.25,1.08);
+}
+#psHelpOv.on #psHelpCard {
+    opacity: 1;
+    transform: none;
+}
+
+/* Título */
+#psHelpCard h2 {
+    margin: 0 40px 14px 0;
+    font: bold 1.7rem "Times New Roman", Times, serif;
+    color: #fff;
+    line-height: 1.2;
+}
+
+/* Contenido */
+#psHelpBody {
+    font: bold .95rem/1.7 Verdana, "Open Sans", sans-serif;
+    color: #fff;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+#psHelpBody a,
+#psHelpBody a:visited {
+    color: #4da3ff;
+    text-decoration: underline;
+    font-weight: bold;
+}
+#psHelpBody a:hover { color: #8cc4ff; }
+#psHelpBody i { font-style: italic; font-weight: bold; }
+#psHelpBody strong { font-weight: bold; color: #fff; }
+
+/* Botón X (CSS puro) */
+#psHelpX {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1.5px solid #d4af37;
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+    transition: transform .3s, background .2s;
+}
+#psHelpX::before,
+#psHelpX::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 12px;
+    height: 2px;
+    margin: -1px 0 0 -6px;
+    border-radius: 2px;
+    background: #f1d98a;
+    transition: background .2s;
+}
+#psHelpX::before { transform: rotate(45deg); }
+#psHelpX::after { transform: rotate(-45deg); }
+#psHelpX:hover {
+    transform: rotate(90deg);
+    background: #d4af37;
+}
+#psHelpX:hover::before,
+#psHelpX:hover::after { background: #111; }
+#psHelpX:focus-visible {
+    outline: 2px solid #f1d98a;
+    outline-offset: 2px;
+}
+
+/* Botón Entendido */
+#psHelpClose {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #f1d98a;
+    cursor: pointer;
+    color: #fff;
+    font: bold 1rem Georgia, "Times New Roman", serif;
+    background: linear-gradient(135deg, #2b2107, #100c02);
+    transition: background .3s, color .2s, transform .2s;
+}
+#psHelpClose:hover {
+    background: linear-gradient(135deg, #d4af37, #a67c12);
+    color: #111;
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    #psHelpBtn {
+        top: ${CONFIG.top};
+        right: ${CONFIG.right};
+        width: 34px;
+        height: 34px;
+        font-size: 18px;
+    }
+    #psHelpCard { padding: 18px 16px 16px; }
+    #psHelpCard h2 { font-size: 1.4rem; margin-right: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #psHelpBtn, #psHelpOv, #psHelpCard, #psHelpX, #psHelpClose { transition: none !important; animation: none !important; }
+}
+`;
+    document.head.appendChild(css);
+
+    // ─── Botón flotante ───
+    const btn = document.createElement('button');
+    btn.id = 'psHelpBtn';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Ayuda');
+    btn.title = 'Ayuda';
+    btn.textContent = '?';
+    document.body.appendChild(btn);
+
+    // ─── Lógica ───
+    let ov = null;
+    let onEsc = null;
+
+    function abrir() {
+        if (ov) return;
+
+        ov = document.createElement('div');
+        ov.id = 'psHelpOv';
+        ov.setAttribute('role', 'dialog');
+        ov.setAttribute('aria-modal', 'true');
+        ov.setAttribute('aria-labelledby', 'psHelpTitle');
+        ov.innerHTML = `
+            <div id="psHelpCard">
+                <button id="psHelpX" type="button" aria-label="Cerrar ayuda" title="Cerrar"></button>
+                <h2 id="psHelpTitle"></h2>
+                <div id="psHelpBody"></div>
+                <button id="psHelpClose" type="button">Entendido</button>
+            </div>
+        `;
+        // Título (texto plano, seguro) y cuerpo (HTML configurado por el dueño de la app)
+        ov.querySelector('#psHelpTitle').textContent = CONFIG.titulo;
+        ov.querySelector('#psHelpBody').innerHTML = CONFIG.descripcion;
+        document.body.appendChild(ov);
+
+        // Forzar reflow para que la animación funcione
+        void ov.offsetHeight;
+        requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
+
+        // Bloquear scroll de fondo
+        document.documentElement.style.overflow = 'hidden';
+
+        // Eventos
+        ov.querySelector('#psHelpX').onclick = cerrar;
+        ov.querySelector('#psHelpClose').onclick = cerrar;
+        ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
+
+        onEsc = e => { if (e.key === 'Escape') cerrar(); };
+        document.addEventListener('keydown', onEsc);
+
+        // Foco al botón de cerrar
+        setTimeout(() => { try { ov.querySelector('#psHelpX').focus(); } catch { } }, 300);
+    }
+
+    function cerrar() {
+        if (!ov) return;
+        const el = ov;
+        ov = null;
+        el.classList.remove('on');
+        if (onEsc) { document.removeEventListener('keydown', onEsc); onEsc = null; }
+        document.documentElement.style.overflow = '';
+        setTimeout(() => el.remove(), 400);
+    }
+
+    btn.onclick = abrir;
+
+    // API pública por si querés abrirlo desde código
+    window.PichisoftAyuda = { abrir, cerrar };
+})();
+</script>
 </body>
 
 </html>
