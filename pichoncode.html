@@ -1325,22 +1325,107 @@
                 height: 190px
             }
         }
-        /* grip del panel: sin selección de texto */
-#grip{top:0;height:8px;touch-action:none;user-select:none;-webkit-user-select:none}
-body.drag{user-select:none;-webkit-user-select:none;cursor:ns-resize}
-body.drag iframe{pointer-events:none}
 
-/* vista previa a pantalla completa */
-#pmin{display:none}
-#panel.full{position:fixed;inset:0;height:auto!important;z-index:14000;border:0;border-radius:0;background:#fff}
-#panel.full .ptabs,#panel.full #con,#panel.full #rrow,#panel.full #prob,#panel.full #grip{display:none!important}
-#panel.full #prev{display:block!important;width:100%;height:100%}
-#panel.full #pmin{display:block;position:absolute;top:10px;right:10px;width:30px;height:30px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(11,10,16,.65);backdrop-filter:blur(4px);opacity:.55;transition:.2s;z-index:7}
-#pmin:hover{opacity:1;background:rgba(11,10,16,.92)}
-#pmin::before,#pmin::after{content:"";position:absolute;width:6px;height:6px;border:0 solid #fff}
-#pmin::before{top:8px;left:8px;border-right-width:2px;border-bottom-width:2px}
-#pmin::after{bottom:8px;right:8px;border-left-width:2px;border-top-width:2px}
-body.pfull #topband,body.pfull .header,body.pfull .plink,body.pfull #pichisoft-session-status,body.pfull #pichisoft-session-profile{display:none}
+        /* grip del panel: sin selección de texto */
+        #grip {
+            top: 0;
+            height: 8px;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none
+        }
+
+        body.drag {
+            user-select: none;
+            -webkit-user-select: none;
+            cursor: ns-resize
+        }
+
+        body.drag iframe {
+            pointer-events: none
+        }
+
+        /* vista previa a pantalla completa */
+        #pmin {
+            display: none
+        }
+
+        #panel.full {
+            position: fixed;
+            inset: 0;
+            height: auto !important;
+            z-index: 14000;
+            border: 0;
+            border-radius: 0;
+            background: #fff
+        }
+
+        #panel.full .ptabs,
+        #panel.full #con,
+        #panel.full #rrow,
+        #panel.full #prob,
+        #panel.full #grip {
+            display: none !important
+        }
+
+        #panel.full #prev {
+            display: block !important;
+            width: 100%;
+            height: 100%
+        }
+
+        #panel.full #pmin {
+            display: block;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, .25);
+            background: rgba(11, 10, 16, .65);
+            backdrop-filter: blur(4px);
+            opacity: .55;
+            transition: .2s;
+            z-index: 7
+        }
+
+        #pmin:hover {
+            opacity: 1;
+            background: rgba(11, 10, 16, .92)
+        }
+
+        #pmin::before,
+        #pmin::after {
+            content: "";
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border: 0 solid #fff
+        }
+
+        #pmin::before {
+            top: 8px;
+            left: 8px;
+            border-right-width: 2px;
+            border-bottom-width: 2px
+        }
+
+        #pmin::after {
+            bottom: 8px;
+            right: 8px;
+            border-left-width: 2px;
+            border-top-width: 2px
+        }
+
+        body.pfull #topband,
+        body.pfull .header,
+        body.pfull .plink,
+        body.pfull #pichisoft-session-status,
+        body.pfull #pichisoft-session-profile {
+            display: none
+        }
     </style>
 </head>
 
@@ -1420,7 +1505,8 @@ body.pfull #topband,body.pfull .header,body.pfull .plink,body.pfull #pichisoft-s
                     </div>
                 </div>
                 <div id="panel" class="card">
-                  <div id="grip"></div><button id="pmin" title="Salir de pantalla completa (Esc)" onclick="minPrev()"></button>
+                    <div id="grip"></div><button id="pmin" title="Salir de pantalla completa (Esc)"
+                        onclick="minPrev()"></button>
                     <div class="ptabs"><button class="pt on" id="p1" onclick="pv(1)"><i
                                 class="ic i-term"></i>Consola</button><button class="pt" id="p2" onclick="pv(2)"><i
                                 class="ic i-globe"></i>Vista previa</button><button class="pt" id="p3"
@@ -1428,7 +1514,7 @@ body.pfull #topband,body.pfull .header,body.pfull .plink,body.pfull #pichisoft-s
                                 style="display:none"></span></button>
                         <div class="sp"></div><button class="ib" title="Limpiar consola"
                             onclick="$('con').innerHTML=''"><i class="ic i-trash"></i></button><button class="ib"
-                          title="Vista previa a pantalla completa" onclick="maxPrev()"><i
+                            title="Vista previa a pantalla completa" onclick="maxPrev()"><i
                                 class="ic i-expand"></i></button><button class="ib" title="Cerrar panel"
                             onclick="tgPanel()"><i class="ic i-x"></i></button>
                     </div>
@@ -1666,14 +1752,14 @@ body.pfull #topband,body.pfull .header,body.pfull .plink,body.pfull #pichisoft-s
             catch (e) { console.error(e); toast('No se pudo borrar en la nube; quedó aplicado en este navegador', 'err') }
         }
         function busy(m) { var d = document.createElement('div'); d.className = 'toast'; d.textContent = m; $('toasts').appendChild(d); return function () { d.classList.add('out'); setTimeout(function () { d.remove() }, 400) } }
-async function saveNow(manual) {
-    var end = manual === 1 ? busy('Guardando...') : null;
-    setSt('Guardando...', 'warn');
-    await new Promise(function (r) { setTimeout(r, 40) }); // deja pintar el cartel antes del trabajo pesado
-    try { await saveCore(manual) } finally { if (end) end() }
-}
-      async function saveCore(manual) {
-    if (!P) return;
+        async function saveNow(manual) {
+            var end = manual === 1 ? busy('Guardando...') : null;
+            setSt('Guardando...', 'warn');
+            await new Promise(function (r) { setTimeout(r, 40) }); // deja pintar el cartel antes del trabajo pesado
+            try { await saveCore(manual) } finally { if (end) end() }
+        }
+        async function saveCore(manual) {
+            if (!P) return;
             if (opt.fmt && FOC && FOC.getModel()) { try { await FOC.getAction('editor.action.formatDocument').run() } catch (e) { } }
             var f = data(), o = { name: P.name, files: f, assets: A, updated: Date.now(), rev: (P.rev || 0) + 1 };
             setSt('Guardando...');
@@ -1956,12 +2042,12 @@ async function saveNow(manual) {
         function showPanel() { $('panel').style.display = '' }
         $('rail').onclick = function (e) { var b = e.target.closest('[data-r]'); if (!b) return; var r = b.dataset.r; if (r == 'f') { showSide(); sv(1) } else if (r == 's') { showSide(); sv(2) } else if (r == 'c') act2('editor.action.quickCommand'); else { showPanel(); pv(1) } };
         function pv(n) { [1, 2, 3].forEach(function (i) { $('p' + i).classList.toggle('on', i == n) }); $('con').style.display = n == 1 ? '' : 'none'; $('rrow').style.display = n == 1 ? 'flex' : 'none'; $('prev').style.display = n == 2 ? 'block' : 'none'; $('prob').style.display = n == 3 ? 'block' : 'none' }
-       (function () {
-    var g = $('grip'), y, h, on = false;
-    g.onpointerdown = function (e) { e.preventDefault(); on = true; y = e.clientY; h = $('panel').offsetHeight; g.setPointerCapture(e.pointerId); document.body.classList.add('drag') };
-    g.onpointermove = function (e) { if (!on) return; $('panel').style.height = Math.max(80, Math.min(window.innerHeight - 250, h + y - e.clientY)) + 'px' };
-    g.onpointerup = g.onpointercancel = function (e) { on = false; document.body.classList.remove('drag'); try { g.releasePointerCapture(e.pointerId) } catch (x) { } };
-})();
+        (function () {
+            var g = $('grip'), y, h, on = false;
+            g.onpointerdown = function (e) { e.preventDefault(); on = true; y = e.clientY; h = $('panel').offsetHeight; g.setPointerCapture(e.pointerId); document.body.classList.add('drag') };
+            g.onpointermove = function (e) { if (!on) return; $('panel').style.height = Math.max(80, Math.min(window.innerHeight - 250, h + y - e.clientY)) + 'px' };
+            g.onpointerup = g.onpointercancel = function (e) { on = false; document.body.classList.remove('drag'); try { g.releasePointerCapture(e.pointerId) } catch (x) { } };
+        })();
         /* ===== Búsqueda ===== */
         function search() {
             var q = $('sq').value.toLowerCase(), h = '', n = 0, f = 0; if (q.length < 2) { $('sres').innerHTML = ''; return }
@@ -1982,13 +2068,13 @@ async function saveNow(manual) {
         function inl(c) { return c.replace(/<\/script/gi, '<\\/script') }
         var IMP = /(\b(?:from|import)\s*\(?\s*)(['"])(\.{1,2}\/[^'"]+)\2/g;
         var CURP = '';
-function norm(f) { return resP(CURP, f) }
+        function norm(f) { return resP(CURP, f) }
         function res(from, s) { var o = []; from.split('/').slice(0, -1).concat(s.split('/')).forEach(function (x) { if (x == '..') o.pop(); else if (x && x != '.') o.push(x) }); var r = o.join('/'); return M[r] ? r : M[r + '.js'] ? r + '.js' : M[r + '/index.js'] ? r + '/index.js' : r }
         function modules(code, from, map) { return code.replace(IMP, function (m, a, q, s) { var r = res(from, s); if (M[r] && !map[r]) { map[r] = 1; map[r] = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(modules(M[r].getValue(), r, map)) } return a + q + 'pc:/' + r + q }) }
         function inject(c, s) { var r = [/<head[^>]*>/i, /<html[^>]*>/i, /<!doctype[^>]*>/i], x; for (var i = 0; i < 3; i++)if ((x = r[i].exec(c))) return c.slice(0, x.index + x[0].length) + s + c.slice(x.index + x[0].length); return s + c }
         function assets(c) { return c.replace(/(\b(?:src|href|poster)=["'])([^"'#?:]+)(["'])/gi, function (m, a, f, b) { f = norm(f); return A[f] !== undefined ? a + A[f] + b : m }).replace(/url\(\s*["']?([^"')]+?)["']?\s*\)/gi, function (m, f) { f = norm(f); return A[f] !== undefined ? 'url(' + A[f] + ')' : m }) }
         function bld(p) {
-           var c = M[p].getValue(), map = {}; CURP = p;
+            var c = M[p].getValue(), map = {}; CURP = p;
             if (/\.html?$/i.test(p)) {
                 c = c.replace(/<link[^>]*href=["']([^"']+)["'][^>]*>/gi, function (m, f) { f = norm(f); return M[f] && /\.css$/i.test(f) ? '<style>' + M[f].getValue() + '</style>' : m })
                     .replace(/<script([^>]*?)src=["']([^"']+)["']([^>]*)><\/script>/gi, function (m, a, f, b) { f = norm(f); if (!M[f]) return m; var mod = /type\s*=\s*["']module["']/i.test(a + b), code = M[f].getValue(); return '<script' + a + b + '>' + inl(mod ? modules(code, f, map) : code) + '<\/script>' })
@@ -2003,55 +2089,55 @@ function norm(f) { return resP(CURP, f) }
             showPanel(); pv(1); log('i', 'Ejecutando Python...');
             try { if (!py) { log('i', 'Cargando Python por primera vez, puede tardar unos segundos...'); await loadJs('https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js'); py = await loadPyodide({ stdout: function (t) { log('', t) }, stderr: function (t) { log('e', t) } }) } await py.runPythonAsync(code) } catch (e) { log('e', String(e.message || e)) }
         }
-      function run() {
-    if (!active || !M[active]) return toast('Abrí un archivo de texto para ejecutarlo'); var p = active, e = ext(p);
-    if (e == 'py') return runPy(M[p].getValue());
-    if (!/^(html?|css|m?js)$/.test(e)) return toast('Se pueden ejecutar archivos HTML, JavaScript y Python', 'err');
-    var h = null;
-    if (/^html?$/.test(e)) h = p;
-    else {
-        var fn = p.split('/').pop();
-        h = Object.keys(M).filter(function (x) { return /\.html?$/i.test(x) && M[x].getValue().indexOf(fn) > -1 })[0] || (M['index.html'] ? 'index.html' : null);
-        if (!h && e == 'css') return toast('No hay ningún HTML para ver este CSS', 'err')
-    }
-    showPanel();
-    if (h) { log('i', 'Ejecutando ' + h + '...'); PV = h; $('prev').srcdoc = bld(h); pv(2) }
-    else { log('i', 'Ejecutando ' + p + '...'); PV = null; $('prev').srcdoc = bld(p); pv(1) }
-}
+        function run() {
+            if (!active || !M[active]) return toast('Abrí un archivo de texto para ejecutarlo'); var p = active, e = ext(p);
+            if (e == 'py') return runPy(M[p].getValue());
+            if (!/^(html?|css|m?js)$/.test(e)) return toast('Se pueden ejecutar archivos HTML, JavaScript y Python', 'err');
+            var h = null;
+            if (/^html?$/.test(e)) h = p;
+            else {
+                var fn = p.split('/').pop();
+                h = Object.keys(M).filter(function (x) { return /\.html?$/i.test(x) && M[x].getValue().indexOf(fn) > -1 })[0] || (M['index.html'] ? 'index.html' : null);
+                if (!h && e == 'css') return toast('No hay ningún HTML para ver este CSS', 'err')
+            }
+            showPanel();
+            if (h) { log('i', 'Ejecutando ' + h + '...'); PV = h; $('prev').srcdoc = bld(h); pv(2) }
+            else { log('i', 'Ejecutando ' + p + '...'); PV = null; $('prev').srcdoc = bld(p); pv(1) }
+        }
         function maxPrev() {
-    var pn = $('panel'); if (pn.classList.contains('full')) return minPrev();
-    showPanel();
-    if (!PV) { var h = (active && /\.html?$/i.test(active) && M[active]) ? active : M['index.html'] ? 'index.html' : Object.keys(M).filter(function (x) { return /\.html?$/i.test(x) })[0]; if (h) { PV = h; $('prev').srcdoc = bld(h) } }
-    pv(2); pn.classList.add('full'); document.body.classList.add('pfull');
-    if (pn.requestFullscreen) pn.requestFullscreen().catch(function () { })
-}
-function minPrev() {
-    $('panel').classList.remove('full'); document.body.classList.remove('pfull');
-    if (document.fullscreenElement) document.exitFullscreen().catch(function () { });
-    pv(2)
-}
-document.addEventListener('fullscreenchange', function () { if (!document.fullscreenElement && $('panel').classList.contains('full')) minPrev() });
+            var pn = $('panel'); if (pn.classList.contains('full')) return minPrev();
+            showPanel();
+            if (!PV) { var h = (active && /\.html?$/i.test(active) && M[active]) ? active : M['index.html'] ? 'index.html' : Object.keys(M).filter(function (x) { return /\.html?$/i.test(x) })[0]; if (h) { PV = h; $('prev').srcdoc = bld(h) } }
+            pv(2); pn.classList.add('full'); document.body.classList.add('pfull');
+            if (pn.requestFullscreen) pn.requestFullscreen().catch(function () { })
+        }
+        function minPrev() {
+            $('panel').classList.remove('full'); document.body.classList.remove('pfull');
+            if (document.fullscreenElement) document.exitFullscreen().catch(function () { });
+            pv(2)
+        }
+        document.addEventListener('fullscreenchange', function () { if (!document.fullscreenElement && $('panel').classList.contains('full')) minPrev() });
         function newTab() { if (!active) return; var u = URL.createObjectURL(new Blob([bld(/\.html?$/i.test(active) ? active : (M['index.html'] ? 'index.html' : active))], { type: 'text/html' })); NATIVE_OPEN(u, '_blank') || toast('El navegador bloqueó la nueva pestaña', 'err') }
         $('rp').onkeydown = function (e) { if (e.key != 'Enter' || !this.value.trim()) return; var c = this.value; this.value = ''; log('i', '> ' + c); var f = $('prev'); if (!f.srcdoc) { f.srcdoc = HOOK; setTimeout(function () { f.contentWindow.postMessage({ pcEval: c }, '*') }, 300) } else f.contentWindow.postMessage({ pcEval: c }, '*') };
         /* ===== Archivos ===== */
         var IMGX = /^(png|jpe?g|gif|webp|ico|bmp|avif)$/;
         var LIVEWIN = null;
         var LIVEWIN = null, LIVEP = null, LIVEU = null;
-      var LIVENAV = '<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(!a||e.defaultPrevented||e.ctrlKey||e.metaKey||e.shiftKey)return;var h=a.getAttribute("href");if(!h||/^(#|[a-z][a-z0-9+.-]*:|[/][/])/i.test(h))return;if(a.target&&a.target!=="_self")return;if(window.opener&&window.opener.pcLiveNav&&window.opener.pcLiveNav(h))e.preventDefault()});<\/script>';
-function liveUrl(p) {
-    if (LIVEU) URL.revokeObjectURL(LIVEU);
-    LIVEU = URL.createObjectURL(new Blob([bld(p).replace(HOOK, function () { return LIVENAV })], { type: 'text/html' }));
-    return LIVEU;
-}
-function resP(from, s) { var o = s[0] == '/' ? [] : from.split('/').slice(0, -1); s.split('/').forEach(function (x) { if (x == '..') o.pop(); else if (x && x != '.') o.push(x) }); var r = o.join('/'); return s.slice(-1) == '/' ? r + '/' : r }
-window.pcLiveNav = function (h) {
-    if (!LIVEP || !LIVEWIN || LIVEWIN.closed) return false;
-    var q = h.split('#')[0].split('?')[0]; if (!q) return false; try { q = decodeURIComponent(q) } catch (e) { }
-    var r = resP(LIVEP, q), C = (r == '' || r.slice(-1) == '/') ? [r + 'index.html'] : [r, r + '.html', r + '/index.html'];
-    var c = C.filter(function (x) { return M[x] && /\.html?$/i.test(x) })[0];
-    if (!c) { toast('No existe ' + q + ' en el proyecto', 'err'); return true }
-    LIVEP = c; renderLive(c); return true
-};
+        var LIVENAV = '<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(!a||e.defaultPrevented||e.ctrlKey||e.metaKey||e.shiftKey)return;var h=a.getAttribute("href");if(!h||/^(#|[a-z][a-z0-9+.-]*:|[/][/])/i.test(h))return;if(a.target&&a.target!=="_self")return;if(window.opener&&window.opener.pcLiveNav&&window.opener.pcLiveNav(h))e.preventDefault()});<\/script>';
+        function liveUrl(p) {
+            if (LIVEU) URL.revokeObjectURL(LIVEU);
+            LIVEU = URL.createObjectURL(new Blob([bld(p).replace(HOOK, function () { return LIVENAV })], { type: 'text/html' }));
+            return LIVEU;
+        }
+        function resP(from, s) { var o = s[0] == '/' ? [] : from.split('/').slice(0, -1); s.split('/').forEach(function (x) { if (x == '..') o.pop(); else if (x && x != '.') o.push(x) }); var r = o.join('/'); return s.slice(-1) == '/' ? r + '/' : r }
+        window.pcLiveNav = function (h) {
+            if (!LIVEP || !LIVEWIN || LIVEWIN.closed) return false;
+            var q = h.split('#')[0].split('?')[0]; if (!q) return false; try { q = decodeURIComponent(q) } catch (e) { }
+            var r = resP(LIVEP, q), C = (r == '' || r.slice(-1) == '/') ? [r + 'index.html'] : [r, r + '.html', r + '/index.html'];
+            var c = C.filter(function (x) { return M[x] && /\.html?$/i.test(x) })[0];
+            if (!c) { toast('No existe ' + q + ' en el proyecto', 'err'); return true }
+            LIVEP = c; renderLive(c); return true
+        };
         function goLive() {
             if (!M || !Object.keys(M).length) return toast('No hay archivos para mostrar', 'err');
             var p = (active && /\.html?$/i.test(active) && M[active]) ? active
@@ -2102,7 +2188,7 @@ window.pcLiveNav = function (h) {
         document.addEventListener('mousedown', function (e) { if (!e.target.closest('#menu') && !e.target.closest('#menus')) closeMenu() });
         /* ===== Atajos globales ===== */
         document.addEventListener('keydown', function (e) {
-           if (e.key == 'Escape') { if ($('panel').classList.contains('full')) { minPrev(); return } closeMenu(); if (CANCEL) CANCEL(); return }
+            if (e.key == 'Escape') { if ($('panel').classList.contains('full')) { minPrev(); return } closeMenu(); if (CANCEL) CANCEL(); return }
             var c = e.ctrlKey || e.metaKey, k = e.key.toLowerCase(), f = null;
             if (c && !e.shiftKey && !e.altKey) f = ({ s: function () { saveNow(1) }, p: quick, b: tgSide, j: tgPanel, enter: run, '\\': tgSplit })[k];
             else if (c && e.shiftKey && k == 'f') f = function () { showSide(); sv(2) };
@@ -2115,6 +2201,295 @@ window.pcLiveNav = function (h) {
 
         window.addEventListener('beforeunload', function (e) { if (D.size || PD) { e.preventDefault(); e.returnValue = '' } });
         pv(1);
+    </script>
+    <!-- ============================================================
+     PICHISOFT · BOTÓN DE AYUDA (estilo premium)
+     Pegar al final del <body> de cada app.
+     Cambiar SOLO el objeto CONFIG (titulo, descripcion, top, right).
+     ============================================================ -->
+    <script>
+        (function () {
+            'use strict';
+
+            /* ============================================================
+               CONFIGURACIÓN — CAMBIAR POR APP
+               ============================================================
+               titulo       → título del panel (Times New Roman, dorado)
+               descripcion  → contenido. Respeta saltos de línea. Admite:
+                              <strong>negrita</strong>, <i>cursiva</i>,
+                              <a href="...">link</a>
+               top          → distancia desde arriba (ajustar según header)
+               right        → distancia desde la derecha (ajustar para quedar
+                              a la izquierda de los carteles de sesión y del
+                              link Pichisoft)
+               ============================================================ */
+            const CONFIG = {
+                titulo: 'Ayuda para PichonCode',
+                descripcion: `PichonCode la app ideal para programar. Esta app usa Monaco Editor.
+                Como dato extra pero importante, ¡PichMan fue creada con PichonCode! Este juego tiene 7000 líneas contando .js, .css y .html, y <i>¡está hecha con PichonCode!</i>
+Puede sugerir mejoras para esta app <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank"
+                rel="noopener">aquí</a>.`,
+                top: '86px',
+                right: '40px'
+            };
+            /* ============================================================ */
+
+            // Evitar duplicados si se carga dos veces
+            if (document.getElementById('psHelpBtn')) return;
+
+            // ─── CSS ───
+            const css = document.createElement('style');
+            css.textContent = `
+/* Botón flotante */
+#psHelpBtn {
+    position: fixed;
+    top: ${CONFIG.top};
+    right: ${CONFIG.right};
+    z-index: 9998;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid #d4af37;
+    background: linear-gradient(135deg, #2b2107, #100c02);
+    color: #f1d98a;
+    font: bold 20px/1 "Times New Roman", Times, serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.1);
+    transition: transform .25s, background .25s, color .25s, box-shadow .25s;
+}
+#psHelpBtn:hover {
+    background: linear-gradient(135deg, #d4af37, #a67c12);
+    color: #111;
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(212,175,55,.45);
+}
+#psHelpBtn:focus-visible {
+    outline: 2px solid #f1d98a;
+    outline-offset: 2px;
+}
+
+/* Overlay */
+#psHelpOv {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    box-sizing: border-box;
+    overflow: auto;
+    background: rgba(0,0,0,.72);
+    backdrop-filter: blur(0);
+    -webkit-backdrop-filter: blur(0);
+    opacity: 0;
+    transition: opacity .35s ease, backdrop-filter .35s ease;
+}
+#psHelpOv.on {
+    opacity: 1;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+/* Card */
+#psHelpCard {
+    position: relative;
+    width: min(560px, 100%);
+    margin: auto;
+    box-sizing: border-box;
+    padding: 22px 24px 20px;
+    color: #fff;
+    background: linear-gradient(180deg, #181818, #0b0b0b);
+    border: 2px solid #d4af37;
+    border-radius: 16px;
+    box-shadow: 0 0 0 1px rgba(212,175,55,.18), 0 30px 80px rgba(0,0,0,.85), 0 0 44px rgba(212,175,55,.12);
+    opacity: 0;
+    transform: translateY(24px) scale(.95);
+    transition: opacity .4s ease, transform .5s cubic-bezier(.2,.9,.25,1.08);
+}
+#psHelpOv.on #psHelpCard {
+    opacity: 1;
+    transform: none;
+}
+
+/* Título */
+#psHelpCard h2 {
+    margin: 0 40px 14px 0;
+    font: bold 1.7rem "Times New Roman", Times, serif;
+    color: #fff;
+    line-height: 1.2;
+}
+
+/* Contenido */
+#psHelpBody {
+    font: bold .95rem/1.7 Verdana, "Open Sans", sans-serif;
+    color: #fff;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+#psHelpBody a,
+#psHelpBody a:visited {
+    color: #4da3ff;
+    text-decoration: underline;
+    font-weight: bold;
+}
+#psHelpBody a:hover { color: #8cc4ff; }
+#psHelpBody i { font-style: italic; font-weight: bold; }
+#psHelpBody strong { font-weight: bold; color: #fff; }
+
+/* Botón X (CSS puro) */
+#psHelpX {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1.5px solid #d4af37;
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+    transition: transform .3s, background .2s;
+}
+#psHelpX::before,
+#psHelpX::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 12px;
+    height: 2px;
+    margin: -1px 0 0 -6px;
+    border-radius: 2px;
+    background: #f1d98a;
+    transition: background .2s;
+}
+#psHelpX::before { transform: rotate(45deg); }
+#psHelpX::after { transform: rotate(-45deg); }
+#psHelpX:hover {
+    transform: rotate(90deg);
+    background: #d4af37;
+}
+#psHelpX:hover::before,
+#psHelpX:hover::after { background: #111; }
+#psHelpX:focus-visible {
+    outline: 2px solid #f1d98a;
+    outline-offset: 2px;
+}
+
+/* Botón Entendido */
+#psHelpClose {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #f1d98a;
+    cursor: pointer;
+    color: #fff;
+    font: bold 1rem Georgia, "Times New Roman", serif;
+    background: linear-gradient(135deg, #2b2107, #100c02);
+    transition: background .3s, color .2s, transform .2s;
+}
+#psHelpClose:hover {
+    background: linear-gradient(135deg, #d4af37, #a67c12);
+    color: #111;
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    #psHelpBtn {
+        top: ${CONFIG.top};
+        right: ${CONFIG.right};
+        width: 34px;
+        height: 34px;
+        font-size: 18px;
+    }
+    #psHelpCard { padding: 18px 16px 16px; }
+    #psHelpCard h2 { font-size: 1.4rem; margin-right: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #psHelpBtn, #psHelpOv, #psHelpCard, #psHelpX, #psHelpClose { transition: none !important; animation: none !important; }
+}
+`;
+            document.head.appendChild(css);
+
+            // ─── Botón flotante ───
+            const btn = document.createElement('button');
+            btn.id = 'psHelpBtn';
+            btn.type = 'button';
+            btn.setAttribute('aria-label', 'Ayuda');
+            btn.title = 'Ayuda';
+            btn.textContent = '?';
+            document.body.appendChild(btn);
+
+            // ─── Lógica ───
+            let ov = null;
+            let onEsc = null;
+
+            function abrir() {
+                if (ov) return;
+
+                ov = document.createElement('div');
+                ov.id = 'psHelpOv';
+                ov.setAttribute('role', 'dialog');
+                ov.setAttribute('aria-modal', 'true');
+                ov.setAttribute('aria-labelledby', 'psHelpTitle');
+                ov.innerHTML = `
+            <div id="psHelpCard">
+                <button id="psHelpX" type="button" aria-label="Cerrar ayuda" title="Cerrar"></button>
+                <h2 id="psHelpTitle"></h2>
+                <div id="psHelpBody"></div>
+                <button id="psHelpClose" type="button">Entendido</button>
+            </div>
+        `;
+                // Título (texto plano, seguro) y cuerpo (HTML configurado por el dueño de la app)
+                ov.querySelector('#psHelpTitle').textContent = CONFIG.titulo;
+                ov.querySelector('#psHelpBody').innerHTML = CONFIG.descripcion;
+                document.body.appendChild(ov);
+
+                // Forzar reflow para que la animación funcione
+                void ov.offsetHeight;
+                requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
+
+                // Bloquear scroll de fondo
+                document.documentElement.style.overflow = 'hidden';
+
+                // Eventos
+                ov.querySelector('#psHelpX').onclick = cerrar;
+                ov.querySelector('#psHelpClose').onclick = cerrar;
+                ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
+
+                onEsc = e => { if (e.key === 'Escape') cerrar(); };
+                document.addEventListener('keydown', onEsc);
+
+                // Foco al botón de cerrar
+                setTimeout(() => { try { ov.querySelector('#psHelpX').focus(); } catch { } }, 300);
+            }
+
+            function cerrar() {
+                if (!ov) return;
+                const el = ov;
+                ov = null;
+                el.classList.remove('on');
+                if (onEsc) { document.removeEventListener('keydown', onEsc); onEsc = null; }
+                document.documentElement.style.overflow = '';
+                setTimeout(() => el.remove(), 400);
+            }
+
+            btn.onclick = abrir;
+
+            // API pública por si querés abrirlo desde código
+            window.PichisoftAyuda = { abrir, cerrar };
+        })();
     </script>
 </body>
 
