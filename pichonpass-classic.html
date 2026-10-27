@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.googleapis.com; base-uri 'self'; form-action 'self'; object-src 'none'">
-    <title>PichonPass - Versión Clásica</title>
+    <title>PichonPass</title>
 
     <style>
         * {
@@ -520,8 +520,8 @@
 
     <div class="topbar">
         <h1>
-            PichonPass
-            <span class="byline">- Versión Clásica -</span>
+            PichonPass Classic
+            <span class="byline">- By Pichisoft -</span>
         </h1>
         <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
             <button id="themeBtn" onclick="toggleTheme()">🌙</button>
@@ -569,7 +569,8 @@
             <label style="font-size:13px;margin-top:10px;display:block;">Contraseña</label>
             <div class="pwrow">
                 <input id="pass" type="password" placeholder="Contraseña" oninput="checkStrength()">
-                <button type="button" class="iconBtn" onclick="togglePassInput('pass', this)" title="Mostrar/ocultar">
+                <button type="button" class="iconBtn hidden" onclick="togglePassInput('pass', this)"
+                    title="Mostrar/ocultar">
                     <span class="eye"></span>
                 </button>
             </div>
@@ -671,13 +672,12 @@
             localStorage.setItem(BD, JSON.stringify({ u: masterUser, s: toHex(cryptoSalt), i: toHex(iv), c: toB64(ct) }));
         }
 
-        async function decryptExisting(bd, pass) {
-            if (bd.u !== masterUser) throw new Error("bad-user");
+        async function decryptExisting(bd, pass, user) {
+            if (bd.u !== user) throw new Error("bad-user");
             const salt = fromHex(bd.s), key = await deriveKey(pass, salt);
             const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: fromHex(bd.i) }, key, fromB64(bd.c));
             return { vault: JSON.parse(td.decode(pt)), key, salt };
         }
-
         /* ============================================================
            TOAST
            ============================================================ */
@@ -733,13 +733,13 @@
 
             document.getElementById("loginBtn").disabled = true;
             try {
+                await window.PichisoftDatosReady;
                 let bd = null;
                 try { bd = JSON.parse(localStorage.getItem(BD) || "null"); } catch (e) { }
 
                 if (bd) {
-                    masterUser = u;
-                    const r = await decryptExisting(bd, p);
-                    vault = r.vault; cryptoKey = r.key; cryptoSalt = r.salt;
+                    const r = await decryptExisting(bd, p, u);
+                    vault = r.vault; cryptoKey = r.key; cryptoSalt = r.salt; masterUser = u;
                 } else {
                     cryptoSalt = crypto.getRandomValues(new Uint8Array(16));
                     cryptoKey = await deriveKey(p, cryptoSalt);
@@ -767,7 +767,13 @@
             render();
         }
 
-        function logout() {
+        async function logout() {
+            try {
+                await Promise.race([
+                    window.PichisoftFlush ? window.PichisoftFlush() : null,
+                    new Promise(r => setTimeout(r, 3000))
+                ]);
+            } catch (e) { }
             location.reload();
         }
 
@@ -899,20 +905,18 @@
                     <div style="font-size:0.85rem;color:#999;margin-bottom:4px;">Usuario</div>
                     <div style="margin-bottom:8px;word-break:break-all;">${escapeHtml(v.user || "—")}</div>
                     <div style="font-size:0.85rem;color:#999;margin-bottom:4px;">Contraseña</div>
-                    <div class="pwrow">
-                        <input type="password" value="${escapeHtml(v.pass || "")}" readonly style="font-family:monospace;">
-                        <button class="iconBtn" onclick="togglePassInput('pw-${v.i}', this)" title="Mostrar/ocultar">
-                            <span class="eye"></span>
-                        </button>
-                    </div>
+                  <div class="pwrow">
+    <input id="pw-${v.i}" type="password" value="${escapeHtml(v.pass || "")}" readonly style="font-family:monospace;">
+    <button type="button" class="iconBtn hidden" onclick="togglePassInput('pw-${v.i}', this)" title="Mostrar/ocultar">
+        <span class="eye"></span>
+    </button>
+</div>
                     ${v.notes ? `<div style="font-size:0.85rem;color:#999;margin-top:8px;">Notas</div><div style="font-size:0.9rem;white-space:pre-wrap;margin-top:2px;">${escapeHtml(v.notes)}</div>` : ""}
                     <div style="margin-top:12px;display:flex;gap:8px;">
                         <button class="card-btn" onclick="copyToClipboard(${v.i})">Copiar</button>
                         <button class="card-btn danger" onclick="openDelete(${v.i})">Eliminar</button>
                     </div>
                 `;
-                const pwField = d.querySelectorAll("input[type=password]")[0];
-                if (pwField) { pwField.id = `pw-${v.i}`; }
                 list.appendChild(d);
             });
         }
@@ -1001,7 +1005,7 @@
                 // Verificar contraseña actual
                 const bd = JSON.parse(localStorage.getItem(BD) || "null");
                 if (!bd) throw new Error("no-vault");
-                const r = await decryptExisting(bd, cur);
+                const r = await decryptExisting(bd, cur, masterUser)
                 // El vault actual, con la nueva contraseña
                 const nuevoSalt = crypto.getRandomValues(new Uint8Array(16));
                 const nuevaKey = await deriveKey(nw, nuevoSalt);
@@ -1232,7 +1236,14 @@
                         }),
                         wait(6000).then(function () { throw new Error("tiempo agotado"); })
                     ]);
-                    return { user: user };
+                    var premium = false;
+                    if (user) {
+                        try {
+                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+                            premium = snap.exists();
+                        } catch (e) { }
+                    }
+                    return { user: user, premium: premium };
                 } catch (e) {
                     console.warn("Pichisoft:", e);
                     return { error: true };
@@ -1264,7 +1275,7 @@
         })();
     </script>
 
-    <script src="pichisoft-datos.js?v=3" data-keys="pichonpass-classic-bd"></script>
+    <script src="pichisoft-datos.js?v=4" data-keys="pichonpass-classic-bd"></script>
     <script src="pichisoft-carteles.js"></script>
 
     <!-- ============================================================
