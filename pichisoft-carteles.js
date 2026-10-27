@@ -1,9 +1,13 @@
 /* =====================================================================
-   PICHISOFT · CARTELES DE ANUNCIO (v2.2)  ·  by Pichisoft
+   PICHISOFT · CARTELES DE ANUNCIO (v2.3)  ·  by Pichisoft
    Solo se muestran a usuarios SIN cuenta. Con cuenta no aparece nada.
 
    Se carga con UNA línea al final del <body>:
        <script src="pichisoft-carteles.js"></script>
+
+   CAMBIOS v2.3:
+   - Detección de invitado corregida (usa PichisoftFirebase.auth.currentUser
+     y onAuthStateChanged).
 
    CAMBIOS v2.2:
    - PichonApps ya no muestra anuncio al entrar (solo cada 8 clics).
@@ -107,19 +111,32 @@ Ya disponible, PichonPass —Versión premium—.
     let abierto = false;
 
     /* ================================================================
-       estadoSesion(): espera a que Firebase confirme.
-       Devuelve 'cuenta' si CUALQUIER fuente dice que hay sesión.
+       estadoSesion(): detecta si hay cuenta o es invitado.
+       - Lee el usuario de Pichisoft.user y de PichisoftFirebase.auth.currentUser
+       - Escucha onAuthStateChanged para saber cuándo Firebase terminó de
+         restaurar la sesión (así no se confunde a un logueado con invitado).
+       - Si no se puede escuchar, usa un margen de 4 s desde la carga.
        ================================================================ */
+    let authListo = false, authUsuario = null, authEscuchando = false;
+    function escucharAuth() {
+        if (authEscuchando) return;
+        const A = window.PichisoftFirebase && window.PichisoftFirebase.auth;
+        if (!A || typeof A.onAuthStateChanged !== 'function') return;
+        authEscuchando = true;
+        try { A.onAuthStateChanged(u => { authListo = true; authUsuario = u || null; }); }
+        catch { authEscuchando = false; }
+    }
     function estadoSesion() {
         try {
-            /* 1) ¿Alguna fuente dice "logueado"? → cuenta */
-            if (window.Pichisoft && window.Pichisoft.user) return 'cuenta';
-            if (window.PichisoftFirebase && window.PichisoftFirebase.currentUser) return 'cuenta';
+            escucharAuth();
+            const P = window.Pichisoft, F = window.PichisoftFirebase;
+            const fbUser = F ? (F.currentUser !== undefined ? F.currentUser : (F.auth ? F.auth.currentUser : undefined)) : undefined;
 
-            /* 2) ¿Firebase ya resolvió y no hay usuario? → invitado (si Pichisoft también dice que no) */
-            if (window.PichisoftFirebase && window.PichisoftFirebase.currentUser === null) {
-                if (!window.Pichisoft || !window.Pichisoft.user) return 'invitado';
-            }
+            /* Cualquier fuente dice "logueado" → cuenta */
+            if ((P && P.user) || fbUser || authUsuario) return 'cuenta';
+
+            /* Sin usuario, y Firebase ya resolvió (o pasó el margen) → invitado */
+            if (P && !P.user && (authListo || performance.now() > 4000)) return 'invitado';
         } catch { }
         return 'desconocido';
     }
