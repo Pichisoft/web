@@ -2225,6 +2225,24 @@
         details[open]>summary::before {
             transform: rotate(90deg);
         }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 7px;
+            border: 1px solid #aaa;
+            font: inherit;
+        }
+
+        body.dark select {
+            background: #1b1d22;
+            color: #eee;
+        }
+
+        body.light select {
+            background: #fff;
+            color: #222;
+        }
     </style>
 
 </head>
@@ -2289,56 +2307,63 @@
 
 
         <details class="new-record" id="newRecordPanel">
-
             <summary id="recordPanelTitle">Nuevo registro</summary>
-            <!-- NUEVO: Selector de tipo -->
-            <label class="field-label">Tipo de elemento</label>
-            <select id="itemType" onchange="updateFormFields()" style="margin-bottom: 15px;">
-                <option value="login">Inicio de sesión</option>
-                <option value="card">Tarjeta</option>
-                <option value="identity">Identidad</option>
-                <option value="note">Nota segura</option>
-            </select>
+            <div class="new-record-content">
 
-            <label class="field-label">Título *</label>
-            <div id="title-error" class="field-error"></div>
-            <div class="field-row">
-                <input id="title" type="text" placeholder="Título">
-                <button class="copy-btn" type="button" onclick="copyNewField('title', this)"></button>
-            </div>
+                <label class="field-label" for="itemType">Tipo de elemento</label>
+                <select id="itemType" onchange="updateFormFields()" style="margin-bottom: 15px;">
+                    <option value="login">Inicio de sesión</option>
+                    <option value="card">Tarjeta</option>
+                    <option value="identity">Identidad</option>
+                    <option value="note">Nota segura</option>
+                </select>
 
-            <!-- CAMPOS PARA LOGIN -->
-            <div id="fields-login" class="type-fields">
-                <label class="field-label">Usuario *</label>
-                <div id="user-error" class="field-error"></div>
+                <label class="field-label">Título *</label>
+                <div id="title-error" class="field-error"></div>
                 <div class="field-row">
-                    <input id="user" type="text" placeholder="Nombre de usuario">
-                    <button class="copy-btn" type="button" onclick="copyNewField('user', this)"></button>
+                    <input id="title" type="text" placeholder="Título">
+                    <button class="copy-btn" type="button" onclick="copyNewField('title', this)"></button>
                 </div>
-                <label class="field-label" for="email">Email</label>
-                <div class="field-row">
-                    <input id="email" type="email" placeholder="Email">
-                    <button class="copy-btn" type="button" onclick="copyNewField('email', this)"></button>
-                </div>
-                <label class="field-label" for="pass">Contraseña</label>
-                <div class="field-row">
-                    <input id="pass" type="password" placeholder="Contraseña" oninput="checkPasswordOrPhraseStrength()">
-                    <button class="copy-btn" type="button" onclick="copyNewField('pass', this)"></button>
-                </div>
-                <div class="password-tools">
-                    <button type="button" onclick="togglePass()">Mostrar / Ocultar</button>
-                </div>
-                <div class="generator-panel">
-                    <div class="generator-title">Generador</div>
-                    <div class="generator-type">
-                        <button id="randomPasswordBtn" class="generator-option active" type="button"
-                            onclick="selectGenerator('password')">
-                            <span class="icon-lock" aria-hidden="true"></span>Contraseña aleatoria
-                        </button>
-                        <button id="passphraseBtn" class="generator-option" type="button"
-                            onclick="selectGenerator('phrase')">
-                            <span class="icon-doc" aria-hidden="true"></span>Frase de contraseña
-                        </button>
+
+                <!-- LOGIN -->
+                <div id="fields-login" class="type-fields">
+                    <label class="field-label">Usuario *</label>
+                    <div id="user-error" class="field-error"></div>
+                    <div class="field-row">
+                        <input id="user" type="text" placeholder="Nombre de usuario">
+                        <button class="copy-btn" type="button" onclick="copyNewField('user', this)"></button>
+                    </div>
+
+                    <label class="field-label" for="email">Email</label>
+                    <div class="field-row">
+                        <input id="email" type="email" placeholder="Email">
+                        <button class="copy-btn" type="button" onclick="copyNewField('email', this)"></button>
+                    </div>
+
+                    <label class="field-label" for="pass">Contraseña</label>
+                    <div class="field-row">
+                        <input id="pass" type="password" placeholder="Contraseña"
+                            oninput="checkPasswordOrPhraseStrength()">
+                        <button class="copy-btn" type="button" onclick="copyNewField('pass', this)"></button>
+                    </div>
+                    <div class="password-tools">
+                        <button type="button" onclick="togglePass()">Mostrar / Ocultar</button>
+                    </div>
+
+                    <div class="generator-panel">
+                        <div class="generator-title">Generador</div>
+
+                        <div class="generator-type">
+                            <button id="randomPasswordBtn" class="generator-option active" type="button"
+                                onclick="selectGenerator('password')">
+                                <span class="icon-lock" aria-hidden="true"></span>Contraseña aleatoria
+                            </button>
+                            <button id="passphraseBtn" class="generator-option" type="button"
+                                onclick="selectGenerator('phrase')">
+                                <span class="icon-doc" aria-hidden="true"></span>Frase de contraseña
+                            </button>
+                        </div>
+
                         <div id="passwordGenerator" class="generator-settings">
                             <label class="field-label" for="len">Cantidad de caracteres</label>
                             <input id="len" type="number" min="1" max="500" value="20">
@@ -2350,14 +2375,15 @@
                             <button class="generate-main-btn" type="button" onclick="generatePassphrase()">Generar
                                 frase</button>
                         </div>
-                    </div>
-                    <div class="bar">
-                        <div id="fill"></div>
-                    </div>
-                    <div id="txt"></div>
-                </div>
 
-                <!-- CAMPOS PARA TARJETA -->
+                        <div class="bar">
+                            <div id="fill"></div>
+                        </div>
+                        <div id="txt"></div>
+                    </div>
+                </div><!-- fin fields-login -->
+
+                <!-- TARJETA -->
                 <div id="fields-card" class="type-fields" style="display:none;">
                     <label class="field-label">Titular</label>
                     <input id="card-holder" type="text" placeholder="Nombre del titular">
@@ -2367,7 +2393,7 @@
                     <input id="card-expiry" type="text" placeholder="MM/AA">
                 </div>
 
-                <!-- CAMPOS PARA IDENTIDAD -->
+                <!-- IDENTIDAD -->
                 <div id="fields-identity" class="type-fields" style="display:none;">
                     <label class="field-label">Nombre completo</label>
                     <input id="id-fullname" type="text" placeholder="Nombre completo">
@@ -2377,14 +2403,14 @@
                     <input id="id-phone" type="text" placeholder="Teléfono">
                 </div>
 
-                <!-- CAMPOS PARA NOTA -->
+                <!-- NOTA -->
                 <div id="fields-note" class="type-fields" style="display:none;">
                     <label class="field-label">Contenido</label>
                     <textarea id="note-content" placeholder="Contenido de la nota"></textarea>
                 </div>
 
-                <!-- CARPETA Y FAVORITO -->
-                <label class="field-label">Carpeta</label>
+                <!-- COMUNES A TODOS LOS TIPOS -->
+                <label class="field-label" for="itemFolder">Carpeta</label>
                 <select id="itemFolder">
                     <option value="general">General</option>
                     <option value="personal">Personal</option>
@@ -2401,16 +2427,15 @@
                     <button class="copy-btn" type="button" onclick="copyNewField('notes', this)"></button>
                 </div>
 
-                <button type="button" onclick="save()" style="margin-top:15px; width: 100%;">Guardar registro</button>
-
+                <button type="button" onclick="save()" style="margin-top:15px; width:100%;">Guardar registro</button>
+            </div>
         </details>
-
 
         <h3>Mis registros</h3>
         <input id="searchBar" type="text" placeholder="Buscar registros por título..." oninput="render()"
             style="margin-bottom: 15px;">
         <!-- NUEVO: Barra de Filtros -->
-        <div class="filters-premiufm">
+        <div class="filters-premium">
             <select id="filterType" onchange="render()" style="flex:1; margin:0; padding:8px;">
                 <option value="all">Todos los tipos</option>
                 <option value="login">Logins</option>
@@ -2512,7 +2537,7 @@
         function updateKDF() {
             const val = parseInt(document.getElementById("kdfIterations").value);
             localStorage.setItem("pichonpass-kdf", val);
-            showToast("Iteraciones de cifrado actualizadas. Se aplicará la próxima vez que inicies sesión.", "info", 4000);
+            showToast("Iteraciones de cifrado actualizadas. Se aplicará la próxima vez que cambies la contraseña maestra.", "info", 4000);
         }
 
         function loadKDFConfig() {
@@ -2587,6 +2612,9 @@
            ============================================================ */
         let vault = [];
         let cryptoKey = null, cryptoSalt = null, masterUser = "";
+        let cryptoIter = 310000;
+        const DEFAULT_KDF = 310000;
+        const getKdfPref = () => parseInt(localStorage.getItem("pichonpass-kdf") || DEFAULT_KDF, 10) || DEFAULT_KDF;
         const BD = "pichonpass-bd";
         let TIEMPO_CIERRE_SESION = 300000;
         let lastActivity = Date.now();
@@ -2604,19 +2632,34 @@
         }
         const fromB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 
-        async function deriveKey(pass, salt) {
+        async function deriveKey(pass, salt, iterations) {
             const base = await crypto.subtle.importKey("raw", te.encode(pass), "PBKDF2", false, ["deriveKey"]);
             return crypto.subtle.deriveKey(
-                { name: "PBKDF2", salt, iterations: parseInt(localStorage.getItem("pichonpass-kdf") || "310000"), hash: "SHA-256" },
+                { name: "PBKDF2", salt, iterations: iterations || DEFAULT_KDF, hash: "SHA-256" },
                 base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
         }
 
         async function persist() {
             const iv = crypto.getRandomValues(new Uint8Array(12));
             const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, cryptoKey, te.encode(JSON.stringify(vault)));
-            localStorage.setItem(BD, JSON.stringify({ u: masterUser, s: toHex(cryptoSalt), i: toHex(iv), c: toB64(ct) }));
+            localStorage.setItem(BD, JSON.stringify({
+                u: masterUser, s: toHex(cryptoSalt), i: toHex(iv), c: toB64(ct), k: cryptoIter
+            }));
         }
 
+        // Abre vaults nuevos (con k) y viejos (prueba varias iteraciones)
+        async function openVault(bd, pass) {
+            const salt = fromHex(bd.s);
+            const candidatos = bd.k ? [bd.k] : [...new Set([getKdfPref(), 310000, 100000, 600000, 1000000])];
+            for (const it of candidatos) {
+                try {
+                    const key = await deriveKey(pass, salt, it);
+                    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: fromHex(bd.i) }, key, fromB64(bd.c));
+                    return { data: JSON.parse(td.decode(pt)), key, salt, iter: it };
+                } catch (e) { }
+            }
+            throw new Error("bad");
+        }
 
         function toggleTheme() {
             const cambiarTema = () => {
@@ -2682,10 +2725,7 @@
             error.style.display = "none";
             error.textContent = "Usuario o contraseña incorrectos";
 
-            if (!u || !p) {
-                error.style.display = "block";
-                return;
-            }
+            if (!u || !p) { error.style.display = "block"; return; }
 
             loginBtn.disabled = true;
             try {
@@ -2695,32 +2735,21 @@
                     return;
                 }
 
+                // NUEVO: esperar a que termine la sincronización con la nube
+                await window.PichisoftDatosReady;
+
                 let bd = null;
-                try {
-                    bd = JSON.parse(localStorage.getItem(BD) || "null");
-                } catch (e) {
-                    bd = null;
-                }
+                try { bd = JSON.parse(localStorage.getItem(BD) || "null"); } catch (e) { bd = null; }
 
                 if (bd) {
-                    if (bd.u !== u) {
-                        throw new Error("bad");
-                    }
-                    const salt = fromHex(bd.s);
-                    const key = await deriveKey(p, salt);
-                    const pt = await crypto.subtle.decrypt(
-                        { name: "AES-GCM", iv: fromHex(bd.i) },
-                        key,
-                        fromB64(bd.c)
-                    );
+                    if (bd.u !== u) throw new Error("bad");
+                    const r = await openVault(bd, p);
+                    const rawData = r.data;
 
-                    const rawData = JSON.parse(td.decode(pt));
-
-                    // Migración automática de datos viejos al nuevo formato
                     if (Array.isArray(rawData)) {
                         vault = rawData.map(item => ({
                             id: Date.now().toString() + Math.random(),
-                            type: "login", // Los datos viejos son todos logins
+                            type: "login",
                             title: item.title || "Sin título",
                             user: item.user || "",
                             pass: item.pass || "",
@@ -2732,12 +2761,11 @@
                     } else {
                         vault = rawData;
                     }
-                    cryptoKey = key;
-                    cryptoSalt = salt;
-                    masterUser = u;
+                    cryptoKey = r.key; cryptoSalt = r.salt; cryptoIter = r.iter; masterUser = u;
                 } else {
                     cryptoSalt = crypto.getRandomValues(new Uint8Array(16));
-                    cryptoKey = await deriveKey(p, cryptoSalt);
+                    cryptoIter = getKdfPref();
+                    cryptoKey = await deriveKey(p, cryptoSalt, cryptoIter);
                     masterUser = u;
                     vault = [];
                     await persist();
@@ -2746,9 +2774,7 @@
 
                 password.value = "";
                 error.style.display = "none";
-
                 localStorage.setItem("pichonpass-remembered-user", u);
-
                 enter();
             } catch (e) {
                 console.error("PichonPass:", e);
@@ -2847,8 +2873,6 @@
                 const summary = document.createElement("summary");
                 summary.className = "record-summary";
 
-                const arrow = document.createElement("span");
-                arrow.className = "record-arrow";
 
                 // NUEVO: Icono de tipo
                 const icon = document.createElement("span");
@@ -2863,7 +2887,7 @@
                 const fav = document.createElement("span");
                 if (r.favorite) fav.textContent = "⭐";
 
-                summary.appendChild(arrow);
+
                 summary.appendChild(icon);
                 summary.appendChild(summaryTitle);
                 summary.appendChild(fav);
@@ -2996,7 +3020,13 @@
         }
 
         /* LOGOUT */
-        function logout() {
+        async function logout() {
+            try {
+                await Promise.race([
+                    window.PichisoftFlush ? window.PichisoftFlush() : null,
+                    new Promise(r => setTimeout(r, 3000))
+                ]);
+            } catch (e) { }
             location.reload();
         }
 
@@ -3115,22 +3145,16 @@
                     var perfil = {};
 
                     if (user) {
+                        // El perfil solo sirve para nombre y foto: si falla, igual sos premium
                         try {
-                            var snap = await m[2].getDoc(
-                                m[2].doc(db, "users", user.uid)
-                            );
-
-                            if (snap.exists()) {
-                                perfil = snap.data();
-                                window.setPichisoftPremium(true);
-                            } else {
-                                window.setPichisoftPremium(false);
-                            }
+                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+                            if (snap.exists()) perfil = snap.data();
                         } catch (e) {
-                            console.error("Pichisoft: no se pudo leer el perfil", e);
-                            window.setPichisoftPremium(false);
+                            console.warn("Pichisoft: no se pudo leer el perfil (se continúa igual)", e);
                         }
+                        window.setPichisoftPremium(true);
                     } else {
+                        window.PichisoftMotivo = "sin-sesion";
                         window.setPichisoftPremium(false);
                     }
 
@@ -3138,6 +3162,7 @@
 
                 } catch (e) {
                     console.error("Pichisoft:", e);
+                    window.PichisoftMotivo = "error";
                     window.setPichisoftPremium(false);
                     return { error: true };
                 }
@@ -3190,7 +3215,7 @@
 
         })();
     </script>
-    <script src="pichisoft-datos.js?v=3" data-keys="pichonpass-bd"></script>
+    <script src="pichisoft-datos.js?v=4" data-keys="pichonpass-bd"></script>
     <!-- MODAL RESTABLECER DATOS -->
 
     <div id="resetModal" class="modal-overlay">
@@ -3208,11 +3233,11 @@
             <div class="modal-actions">
 
                 <button class="modal-cancel" type="button" onclick="closeResetModal()">
-                    No cerrar sesión
+                    Cancelar
                 </button>
 
                 <button class="modal-danger" type="button" onclick="confirmReset()">
-                    Cerrar sesión
+                    Sí, borrar todo
                 </button>
 
             </div>
@@ -3388,9 +3413,15 @@
                 gate.style.display = "none";
                 authBox.style.display = "block";
             } else {
+                const detalle =
+                    window.PichisoftMotivo === "error"
+                        ? " (No se pudo conectar con Pichisoft. Revisá tu conexión o si un bloqueador de anuncios bloquea gstatic.com.)"
+                        : window.PichisoftMotivo === "sin-sesion"
+                            ? " (No hay sesión de Pichisoft iniciada en este sitio.)"
+                            : "";
                 document.getElementById("gateText").textContent =
                     "PichonPass Premium es solo para usuarios con cuenta de Pichisoft. " +
-                    "Iniciá sesión en Pichisoft o creá una cuenta para continuar.";
+                    "Iniciá sesión en Pichisoft o creá una cuenta para continuar." + detalle;
                 document.getElementById("gateActions").style.display = "block";
             }
         });
@@ -3604,37 +3635,31 @@
         async function copyText(text) {
             if (!text) return;
 
-            const ejecutarCopiado = async (txt) => {
-                try {
-                    await navigator.clipboard.writeText(txt);
-                } catch (error) {
-                    const textarea = document.createElement("textarea");
-                    textarea.value = txt;
-                    textarea.style.position = "fixed";
-                    textarea.style.opacity = "0";
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    document.execCommand("copy");
-                    textarea.remove();
-                }
-            };
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch (error) {
+                const textarea = document.createElement("textarea");
+                textarea.value = text;
+                textarea.style.position = "fixed";
+                textarea.style.opacity = "0";
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand("copy");
+                textarea.remove();
+            }
 
-            await ejecutarCopiado(text);
-
-            setTimeout(async () => {
-                try {
-                    const contenidoActual = await navigator.clipboard.readText();
-                    if (contenidoActual === text) {
-                        await navigator.clipboard.writeText("");
+            const ms = parseInt(localStorage.getItem("pichonpass-clipboard-time") || "45000", 10);
+            if (ms > 0) {
+                setTimeout(async () => {
+                    try {
+                        const actual = await navigator.clipboard.readText();
+                        if (actual === text) await navigator.clipboard.writeText("");
+                    } catch (e) {
+                        if (document.hasFocus()) navigator.clipboard.writeText("").catch(() => { });
                     }
-                } catch (e) {
-                    if (document.hasFocus()) {
-                        navigator.clipboard.writeText("").catch(() => { });
-                    }
-                }
-            }, 45000);
+                }, ms);
+            }
         }
-
 
         function showCopied(button) {
             button.classList.add("copied");
@@ -3659,27 +3684,27 @@
         function clearForm() {
             editingIndex = -1;
 
-            document.getElementById("title").value = "";
-            document.getElementById("user").value = "";
-            document.getElementById("email").value = "";
-            document.getElementById("pass").value = "";
-            document.getElementById("notes").value = "";
+            document.querySelectorAll(
+                "#newRecordPanel input[type=text], #newRecordPanel input[type=email], #newRecordPanel input[type=password], #newRecordPanel textarea"
+            ).forEach(el => el.value = "");
+
+            document.getElementById("itemType").value = "login";
+            updateFormFields();
+            document.getElementById("itemFolder").value = "general";
+            document.getElementById("itemFavorite").checked = false;
 
             const fill = document.getElementById("fill");
             const txt = document.getElementById("txt");
-
             if (fill) fill.style.width = "0%";
             if (txt) txt.textContent = "";
 
             const panel = document.getElementById("newRecordPanel");
             const panelTitle = document.getElementById("recordPanelTitle");
-
             if (panel) panel.open = false;
             if (panelTitle) panelTitle.textContent = "Nuevo registro";
 
             updateRequiredMessages();
         }
-
         function updateRequiredMessages() {
             const title = document.getElementById("title");
             const user = document.getElementById("user");
@@ -3952,33 +3977,23 @@
 
             try {
                 const bd = JSON.parse(localStorage.getItem(BD) || "null");
-                if (!bd) {
-                    err.textContent = "No hay datos para re-cifrar.";
-                    return;
-                }
+                if (!bd) { err.textContent = "No hay datos para re-cifrar."; return; }
 
-                const currentSalt = fromHex(bd.s);
-                const currentKey = await deriveKey(cur, currentSalt);
-                await crypto.subtle.decrypt(
-                    { name: "AES-GCM", iv: fromHex(bd.i) },
-                    currentKey,
-                    fromB64(bd.c)
-                );
+                await openVault(bd, cur);   // verifica la contraseña actual
 
                 const newSalt = crypto.getRandomValues(new Uint8Array(16));
-                const newKey = await deriveKey(nw, newSalt);
+                const newIter = getKdfPref();
+                const newKey = await deriveKey(nw, newSalt, newIter);
 
-                const oldKey = cryptoKey, oldSalt = cryptoSalt;
-                cryptoKey = newKey;
-                cryptoSalt = newSalt;
+                const oldKey = cryptoKey, oldSalt = cryptoSalt, oldIter = cryptoIter;
+                cryptoKey = newKey; cryptoSalt = newSalt; cryptoIter = newIter;
 
                 try {
                     await persist();
                     closeChangePass();
                     showToast("Contraseña maestra cambiada correctamente.", "success", 4000);
                 } catch (e) {
-                    cryptoKey = oldKey;
-                    cryptoSalt = oldSalt;
+                    cryptoKey = oldKey; cryptoSalt = oldSalt; cryptoIter = oldIter;
                     throw e;
                 }
             } catch (e) {
@@ -4086,6 +4101,9 @@
                             );
                             if (!exists) {
                                 vault.push({
+                                    id: Date.now().toString() + Math.random(),
+                                    type: "login", folder: "general", favorite: false,
+                                    ...v,
                                     title: v.title,
                                     user: v.user || "",
                                     email: v.email || "",
