@@ -1,9 +1,15 @@
 /* =====================================================================
-   PICHISOFT · CARTELES DE ANUNCIO (v2.1)  ·  by Pichisoft
+   PICHISOFT · CARTELES DE ANUNCIO (v2.2)  ·  by Pichisoft
    Solo se muestran a usuarios SIN cuenta. Con cuenta no aparece nada.
 
    Se carga con UNA línea al final del <body>:
        <script src="pichisoft-carteles.js"></script>
+
+   CAMBIOS v2.2:
+   - PichonApps ya no muestra anuncio al entrar (solo cada 8 clics).
+   - El contador de clics arranca de cero en cada visita/recarga.
+   - El anuncio sigue corriendo si la pestaña está en segundo plano
+     (el tiempo se mide con Date.now(), no contando ticks).
    ===================================================================== */
 (function () {
     'use strict';
@@ -22,7 +28,7 @@
     };
 
     /* =================================================================
-       2) LOS CARTELES (ANUNCIOS)  — sin cambios
+       2) LOS CARTELES (ANUNCIOS)
        ================================================================= */
     const ANUNCIOS = {
         premiumApps: {
@@ -72,11 +78,14 @@ Ya disponible, PichonPass —Versión premium—.
     };
 
     /* =================================================================
-       3) DISPARADORES  — sin cambios
+       3) DISPARADORES
        ================================================================= */
     const DISPARADORES = [
-        { nombre: 'apps-clics', activo: true, tipo: 'click', si: '#cuenta', selector: 'body', anuncios: ['premiumApps'], cada: 4 },
-        { nombre: 'apps-entrada', activo: true, tipo: 'entrada', si: '#cuenta', anuncios: ['premiumApps'], retraso: 1500 },
+        /* PichonApps: anuncio cada 8 clics (el contador arranca de cero en cada visita) */
+        { nombre: 'apps-clics', activo: true, tipo: 'click', si: '#cuenta', selector: 'body', anuncios: ['premiumApps'], cada: 8 },
+        /* PichonApps: SIN anuncio al entrar */
+        { nombre: 'apps-entrada', activo: false, tipo: 'entrada', si: '#cuenta', anuncios: ['premiumApps'], retraso: 1500 },
+        /* PichonPass: anuncio al entrar */
         { nombre: 'pass-entrada', activo: true, tipo: 'entrada', pagina: 'pichonpass-classic', anuncios: ['premiumPass'], retraso: 2000 }
     ];
 
@@ -92,11 +101,13 @@ Ya disponible, PichonPass —Versión premium—.
     })();
     const guardar = () => { try { localStorage.setItem(KEY, JSON.stringify(estado)); } catch { } };
 
+    /* Contadores de clics SOLO EN MEMORIA: arrancan de cero en cada visita/recarga */
+    const contadores = {};
+
     let abierto = false;
 
     /* ================================================================
-       FIX 1: estadoSesion() ahora espera a que Firebase confirme.
-       No devuelve 'invitado' hasta que Firebase esté listo (currentUser !== undefined).
+       estadoSesion(): espera a que Firebase confirme.
        Devuelve 'cuenta' si CUALQUIER fuente dice que hay sesión.
        ================================================================ */
     function estadoSesion() {
@@ -326,8 +337,6 @@ Ya disponible, PichonPass —Versión premium—.
 
         function setMsg(s) { if (s !== ultimoMsg) { msg.textContent = s; ultimoMsg = s; } }
 
-        /* FIX: si final === 0 (no cierra solo), paramos el intervalo al llegar al estado final
-           para evitar updates de DOM eternos */
         function tick() {
             if (finTerminada) return;
             if (t >= total && !terminado) terminar();
@@ -351,7 +360,17 @@ Ya disponible, PichonPass —Versión premium—.
             }
         }
 
-        const iv = setInterval(() => { if (document.hidden || cerrando) return; t += 100; tick(); }, 100);
+        /* FIX: el tiempo se mide con el reloj real (Date.now), así el anuncio
+           sigue avanzando aunque la pestaña esté en segundo plano y el navegador
+           frene los timers. Ya no se pausa con document.hidden. */
+        let ultimo = Date.now();
+        const iv = setInterval(() => {
+            if (cerrando) return;
+            const ahora = Date.now();
+            t += ahora - ultimo;
+            ultimo = ahora;
+            tick();
+        }, 100);
         const tecla = e => { if (e.key === 'Escape' && terminado) cerrar(); };
 
         function cerrar(extra) {
@@ -409,9 +428,10 @@ Ya disponible, PichonPass —Versión premium—.
         for (const tr of DISPARADORES) {
             if (tr.tipo !== 'click' || tr.activo === false || !aplica(tr)) continue;
             if (!e.target.closest(tr.selector)) continue;
-            estado.c[tr.nombre] = (estado.c[tr.nombre] || 0) + 1; guardar();
+            /* Contador en memoria: arranca de cero en cada visita */
+            contadores[tr.nombre] = (contadores[tr.nombre] || 0) + 1;
             if (!AJUSTES.PRUEBA) {
-                if (estado.c[tr.nombre] % (tr.cada || 1) !== 0) continue;
+                if (contadores[tr.nombre] % (tr.cada || 1) !== 0) continue;
                 if (tr.prob != null && Math.random() > tr.prob) continue;
             }
             const id = elegirDe(tr.anuncios, tr.nombre); if (!id) continue;
@@ -420,7 +440,7 @@ Ya disponible, PichonPass —Versión premium—.
         }
     }
 
-    /* FIX 2: selector amplio de modales abiertos */
+    /* Espera a que no haya modales abiertos y a que se confirme la sesión */
     function cuandoLibre(fn) {
         const ini = Date.now();
         const iv = setInterval(() => {
@@ -443,7 +463,7 @@ Ya disponible, PichonPass —Versión premium—.
         mostrar,
         antesDe(id, fn, o) { if (!mostrar(id, Object.assign({}, o, { alCerrar: fn }))) { try { fn && fn(); } catch (e) { console.error(e); } } },
         definir(id, obj) { ANUNCIOS[id] = obj; },
-        reiniciar() { estado = nuevoEstado(); guardar(); }
+        reiniciar() { estado = nuevoEstado(); guardar(); Object.keys(contadores).forEach(k => delete contadores[k]); }
     };
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
