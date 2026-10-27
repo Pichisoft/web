@@ -1,9 +1,15 @@
 /* =====================================================================
-   PICHISOFT · CARTELES DE ANUNCIO (v2.3)  ·  by Pichisoft
+   PICHISOFT · CARTELES DE ANUNCIO (v2.4)  ·  by Pichisoft
    Solo se muestran a usuarios SIN cuenta. Con cuenta no aparece nada.
 
    Se carga con UNA línea al final del <body>:
        <script src="pichisoft-carteles.js"></script>
+
+   CAMBIOS v2.4:
+   - PichonPass Clásico: el anuncio de entrada se activa por "#auth" (no depende
+     del nombre del archivo) y no aparece en la versión premium.
+   - Los 8 clics quedan bloqueados en cualquier página de PichonPass.
+   - estadoSesion() ya no exige window.Pichisoft.
 
    CAMBIOS v2.3:
    - Detección de invitado corregida (usa PichisoftFirebase.auth.currentUser
@@ -85,12 +91,14 @@ Ya disponible, PichonPass —Versión premium—.
        3) DISPARADORES
        ================================================================= */
     const DISPARADORES = [
-        /* PichonApps: anuncio cada 8 clics (el contador arranca de cero en cada visita) */
-        { nombre: 'apps-clics', activo: true, tipo: 'click', si: '#cuenta', selector: 'body', anuncios: ['premiumApps'], cada: 8 },
+        /* PichonApps: anuncio cada 8 clics (contador desde cero en cada visita).
+           NUNCA en páginas de PichonPass (la regex excluye cualquier ruta con "pichonpass"). */
+        { nombre: 'apps-clics', activo: true, tipo: 'click', si: '#cuenta', pagina: '^(?!.*pichonpass)', selector: 'body', anuncios: ['premiumApps'], cada: 8 },
         /* PichonApps: SIN anuncio al entrar */
         { nombre: 'apps-entrada', activo: false, tipo: 'entrada', si: '#cuenta', anuncios: ['premiumApps'], retraso: 1500 },
-        /* PichonPass: anuncio al entrar */
-        { nombre: 'pass-entrada', activo: true, tipo: 'entrada', pagina: 'pichonpass-classic', anuncios: ['premiumPass'], retraso: 2000 }
+        /* PichonPass Clásico: UN anuncio al entrar (al venir del botón "Usar versión clásica").
+           Se activa en la página que tiene el login (#auth) y NO en la versión premium. */
+        { nombre: 'pass-entrada', activo: true, tipo: 'entrada', si: '#auth', pagina: '^(?!.*pichonpass(\\.html)?$)', anuncios: ['premiumPass'], retraso: 1500 }
     ];
 
     /* ================================================================
@@ -135,8 +143,14 @@ Ya disponible, PichonPass —Versión premium—.
             /* Cualquier fuente dice "logueado" → cuenta */
             if ((P && P.user) || fbUser || authUsuario) return 'cuenta';
 
-            /* Sin usuario, y Firebase ya resolvió (o pasó el margen) → invitado */
-            if (P && !P.user && (authListo || performance.now() > 4000)) return 'invitado';
+            /* Invitado solo si Firebase ya respondió:
+               - PichonPass Clásico: PichisoftFirebase se crea recién al responder Firebase
+                 (currentUser === null explícito)
+               - PichonApps: onAuthStateChanged ya disparó, o pasaron 4 s */
+            if (F) {
+                const resuelto = authListo || F.currentUser === null || (F.currentUser === undefined && performance.now() > 4000);
+                if (resuelto) return 'invitado';
+            }
         } catch { }
         return 'desconocido';
     }
