@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
     <title>PichonPaint</title>
-
     <style>
         * {
             box-sizing: border-box;
@@ -60,6 +59,11 @@
             cursor: grab
         }
 
+        #stage.t-picker,
+        #stage.t-fill {
+            cursor: copy
+        }
+
         .header {
             position: fixed;
             top: 20px;
@@ -88,131 +92,572 @@
             font-size: .95rem
         }
 
-        #toolbar {
+        /* ===== Dock vertical izquierdo ===== */
+        #dock {
             position: fixed;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+            left: 10px;
+            top: 76px;
+            bottom: 10px;
             z-index: 30;
+            width: 52px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
             align-items: center;
-            width: max-content;
-            max-width: calc(100vw - 16px);
-            max-height: 46vh;
-            overflow: auto;
-            padding: 8px 10px;
-            background: #000;
+            gap: 4px;
+            padding: 8px 5px;
+            overflow-y: auto;
+            scrollbar-width: none;
+            background: #0a0a0a;
             color: #fff;
-            border-radius: 22px;
-            border: 1px solid rgba(34, 197, 94, .25);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, .3)
+            border: 1px solid rgba(34, 197, 94, .3);
+            border-radius: 26px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .35), inset 0 0 20px rgba(34, 197, 94, .05)
         }
 
-        .row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 5px 6px
+        #dock::-webkit-scrollbar {
+            display: none
         }
 
-        .sep {
-            width: 1px;
-            height: 24px;
-            background: #333
-        }
-
-        #toolbar button,
-        #toolbar select {
-            font: inherit;
-            font-size: 14px;
-            color: #fff;
-            background: #1c1c1c;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 6px 10px;
+        #dock .b,
+        #panel .b {
+            flex: none;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 14px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: #d4d4d4;
             cursor: pointer;
-            min-height: 36px;
-            min-width: 36px;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            transition: background .15s, color .15s, transform .15s
         }
 
-        #toolbar button:hover:not(:disabled) {
-            background: #2a2a2a
+        #dock .b:hover:not(:disabled) {
+            background: #1f1f1f;
+            color: #fff
         }
 
-        #toolbar button:disabled {
-            opacity: .35;
+        #dock .b:disabled {
+            opacity: .3;
             cursor: default
         }
 
-        #toolbar button.on {
+        #dock .b.on {
             background: #20a84b;
-            border-color: #20a84b
+            color: #fff;
+            box-shadow: 0 0 14px rgba(32, 168, 75, .55);
+            transform: scale(1.05)
         }
 
-        #toolbar :focus-visible {
-            outline: 2px solid #20a84b;
-            outline-offset: 2px
+        #dock .b.go {
+            background: #20a84b;
+            color: #fff
         }
 
-        #save {
-            background: #20a84b !important;
-            border-color: #20a84b !important;
-            font-weight: bold
+        #dock .b.go:disabled {
+            background: #1c1c1c
+        }
+
+        svg {
+            width: 22px;
+            height: 22px;
+            display: block
+        }
+
+        .sep {
+            flex: none;
+            width: 26px;
+            height: 1px;
+            background: #2a2a2a;
+            margin: 3px 0
+        }
+
+        #zl {
+            font: 11px Georgia, serif;
+            color: #9ca3af;
+            flex: none
+        }
+
+        /* ===== Paleta flotante (abajo a la derecha) ===== */
+        #palb {
+            position: fixed;
+            right: 14px;
+            bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+            z-index: 35;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 3px solid #000;
+            background: #000;
+            padding: 0;
+            cursor: pointer;
+            box-shadow: 0 6px 22px rgba(0, 0, 0, .4), 0 0 0 2px rgba(34, 197, 94, .5);
+            overflow: hidden;
+            display: block
+        }
+
+        #palb i {
+            position: absolute;
+            inset: 0;
+            display: block
+        }
+
+        #palb i.c2 {
+            clip-path: polygon(100% 0, 100% 100%, 0 100%)
+        }
+
+        #panel {
+            position: fixed;
+            right: 14px;
+            bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+            z-index: 34;
+            width: 310px;
+            max-width: calc(100vw - 80px);
+            max-height: calc(100vh - 170px);
+            overflow: auto;
+            background: #0a0a0a;
+            color: #fff;
+            border: 1px solid rgba(34, 197, 94, .3);
+            border-radius: 20px;
+            padding: 12px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .45);
+            display: none;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        #panel.open {
+            display: flex
+        }
+
+        #panel h4 {
+            margin: 0;
+            font: bold 12px Georgia, serif;
+            color: #20a84b;
+            letter-spacing: .08em;
+            text-transform: uppercase
         }
 
         #sws {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            max-width: 320px;
-            justify-content: center
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 5px
         }
 
-        #toolbar .sw {
-            width: 22px;
-            height: 22px;
-            min-width: 0;
-            min-height: 0;
-            padding: 0;
+        .sw {
+            aspect-ratio: 1;
             border-radius: 50%;
-            border: 2px solid #444
+            border: 2px solid #333;
+            padding: 0;
+            cursor: pointer;
+            min-width: 0
         }
 
-        #toolbar .sw.on {
+        .sw.on {
             border-color: #fff;
-            transform: scale(1.2)
+            transform: scale(1.18)
+        }
+
+        .sw.on2 {
+            box-shadow: 0 0 0 2px #20a84b
+        }
+
+        .prow {
+            display: flex;
+            align-items: center;
+            gap: 8px
         }
 
         #color,
         #color2 {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 34px;
             padding: 0;
             border: 0;
             background: none;
             cursor: pointer
         }
 
-        #toolbar .sw.on2 {
-            box-shadow: 0 0 0 2px #20a84b
+        #panel .b {
+            width: 38px;
+            height: 34px;
+            border-radius: 10px;
+            background: #1c1c1c;
+            border-color: #333
+        }
+
+        #panel .b.on {
+            background: #20a84b
         }
 
         #size {
-            width: 90px;
+            flex: 1;
             accent-color: #20a84b
         }
 
-        #zl {
+        #sv {
+            min-width: 30px;
+            text-align: right;
+            font-size: 13px
+        }
+
+        #dot {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: none
+        }
+
+        #dot i {
+            display: block;
+            border-radius: 50%;
+            background: #fff;
+            max-width: 44px;
+            max-height: 44px
+        }
+
+        #panel select,
+        #fillb {
+            font: 14px Georgia, serif;
+            color: #fff;
+            background: #1c1c1c;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 6px 10px;
+            cursor: pointer;
+            min-height: 34px
+        }
+
+        #fillb.on {
+            background: #20a84b;
+            border-color: #20a84b
+        }
+
+        #panel select {
+            flex: 1
+        }
+
+        #files {
+            position: fixed;
+            left: 72px;
+            bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+            z-index: 30;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 8px;
+            background: #0a0a0a;
+            border: 1px solid rgba(34, 197, 94, .3);
+            border-radius: 28px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .35)
+        }
+
+        #files .b {
+            flex: none;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 14px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: #d4d4d4;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .15s, color .15s
+        }
+
+        #files .b:hover:not(:disabled) {
+            background: #1f1f1f;
+            color: #fff
+        }
+
+        #files .b:disabled {
+            opacity: .3;
+            cursor: default
+        }
+
+        #files .b.go {
+            width: auto;
+            padding: 0 14px;
+            gap: 6px;
+            background: #20a84b;
+            color: #fff;
+            font: bold 14px Georgia, serif
+        }
+
+        #files .b.go:disabled {
+            background: #1c1c1c
+        }
+
+        .modal-box.gm {
+            max-width: 680px;
+            max-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column
+        }
+
+        .gm .top {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px
+        }
+
+        .gm .top button,
+        .gc button {
+            padding: 7px 12px;
+            border-radius: 8px;
+            border: none;
+            font: 13px Georgia, serif;
+            cursor: pointer;
+            color: #fff;
+            background: #333
+        }
+
+        .gm .top .confirm,
+        .gc button:first-child {
+            background: #20a84b;
+            font-weight: bold
+        }
+
+        #glist {
+            overflow: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            color: #9ca3af
+        }
+
+        .gc {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            color: #fff;
+            min-width: 0
+        }
+
+        .gc.cur {
+            border-color: #20a84b
+        }
+
+        .gc img {
+            width: 100%;
+            aspect-ratio: 16/10;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #fff
+        }
+
+        .gc b {
             font-size: 13px;
-            min-width: 44px;
-            text-align: center
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        .gc small {
+            color: #9ca3af
+        }
+
+        .gc .r {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap
+        }
+
+        .gc button {
+            padding: 5px 8px;
+            font-size: 12px
+        }
+
+        .dlg-ov {
+            position: fixed;
+            inset: 0;
+            z-index: 1100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, .6);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px)
+        }
+
+        .dlg-ov.open {
+            display: flex;
+            animation: dfade .2s ease
+        }
+
+        .dlg-ov.danger {
+            --ac: #e11d48;
+            --gl: rgba(225, 29, 72, .28)
+        }
+
+        .dlg-card {
+            --ac: #20a84b;
+            --gl: rgba(32, 168, 75, .28);
+            width: 100%;
+            max-width: 360px;
+            padding: 0 20px 18px;
+            background: #0a0a0a;
+            color: #fff;
+            border: 1px solid var(--ac);
+            border-radius: 20px;
+            overflow: hidden;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .6), 0 0 34px var(--gl);
+            animation: dpop .45s cubic-bezier(.2, 1.2, .3, 1)
+        }
+
+        .dlg-ov.danger .dlg-card {
+            --ac: #e11d48;
+            --gl: rgba(225, 29, 72, .28)
+        }
+
+        .dlg-card::before {
+            content: "";
+            display: block;
+            height: 10px;
+            margin: 0 -20px;
+            background: repeating-linear-gradient(-45deg, var(--ac) 0 10px, #0a0a0a 10px 20px)
+        }
+
+        .dlg-ico {
+            width: 54px;
+            height: 54px;
+            margin: 18px auto 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--ac);
+            color: #fff;
+            box-shadow: 0 0 0 6px var(--gl);
+            animation: dwob .6s .15s ease both
+        }
+
+        .dlg-ico svg {
+            width: 26px;
+            height: 26px
+        }
+
+        .dlg-card h3 {
+            margin: 0 0 6px;
+            font: bold 1.3rem "Times New Roman", Times, serif
+        }
+
+        .dlg-card p {
+            margin: 0 0 4px;
+            font: 14px/1.5 Georgia, serif;
+            color: #d1d5db;
+            word-break: break-word
+        }
+
+        #dlg-i {
+            width: 100%;
+            margin: 8px 0 2px;
+            padding: 10px 12px;
+            background: #000;
+            color: #fff;
+            border: 1px solid var(--ac);
+            border-radius: 10px;
+            font: 16px Georgia, serif;
+            outline: none;
+            -webkit-user-select: text;
+            user-select: text
+        }
+
+        .dlg-act {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px
+        }
+
+        .dlg-act button {
+            flex: 1;
+            padding: 11px 10px;
+            border-radius: 12px;
+            font: bold 14px Georgia, serif;
+            color: #fff;
+            cursor: pointer;
+            transition: transform .15s, filter .15s
+        }
+
+        .dlg-act button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.15)
+        }
+
+        #dlg-ok {
+            background: var(--ac);
+            border: 1px solid var(--ac)
+        }
+
+        #dlg-no {
+            background: #1c1c1c;
+            border: 1px solid #333
+        }
+
+        .dlg-act button:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px
+        }
+
+        @keyframes dfade {
+            from {
+                opacity: 0
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        @keyframes dpop {
+            from {
+                opacity: 0;
+                transform: translateY(24px) scale(.86) rotate(-1.5deg)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes dwob {
+            0% {
+                transform: scale(.4) rotate(-30deg)
+            }
+
+            60% {
+                transform: scale(1.15) rotate(8deg)
+            }
+
+            100% {
+                transform: none
+            }
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+
+            .dlg-ov.open,
+            .dlg-card,
+            .dlg-ico {
+                animation: none
+            }
         }
 
         #toast {
@@ -238,380 +683,34 @@
             transform: translate(-50%, 0)
         }
 
-        /* ==========================================
-           ÍCONOS DIBUJADOS EN CSS (Sin emojis)
-           ========================================== */
-        .ico {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        /* Pincel */
-        .i-brush::before {
-            content: "";
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            border: 2px solid currentColor;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-        }
-
-        .i-brush::after {
-            content: "";
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 4px solid transparent;
-            border-right: 4px solid transparent;
-            border-top: 8px solid currentColor;
-            bottom: -4px;
-            left: 5px;
-            transform: rotate(45deg);
-        }
-
-        /* Goma */
-        .i-eraser::before {
-            content: "";
-            position: absolute;
-            width: 14px;
-            height: 10px;
-            border: 2px solid currentColor;
-            border-radius: 3px;
-            top: 4px;
-            left: 2px;
-            transform: rotate(-20deg);
-        }
-
-        .i-eraser::after {
-            content: "";
-            position: absolute;
-            width: 10px;
-            height: 2px;
-            background: currentColor;
-            top: 9px;
-            left: 4px;
-            transform: rotate(-20deg);
-        }
-
-        /* Línea */
-        .i-line::before {
-            content: "";
-            position: absolute;
-            width: 16px;
-            height: 2px;
-            background: currentColor;
-            top: 9px;
-            left: 2px;
-            transform: rotate(-45deg);
-        }
-
-        /* Rectángulo */
-        .i-rect::before {
-            content: "";
-            position: absolute;
-            width: 12px;
-            height: 10px;
-            border: 2px solid currentColor;
-            top: 3px;
-            left: 2px;
-        }
-
-        /* Elipse */
-        .i-ellipse::before {
-            content: "";
-            position: absolute;
-            width: 12px;
-            height: 10px;
-            border: 2px solid currentColor;
-            border-radius: 50%;
-            top: 3px;
-            left: 2px;
-        }
-
-        /* Balde */
-        .i-fill::before {
-            content: "";
-            position: absolute;
-            width: 10px;
-            height: 12px;
-            border: 2px solid currentColor;
-            border-radius: 2px;
-            top: 2px;
-            left: 2px;
-            transform: rotate(30deg);
-        }
-
-        .i-fill::after {
-            content: "";
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background: currentColor;
-            border-radius: 50%;
-            top: 10px;
-            left: 10px;
-        }
-
-        /* Texto */
-        .i-text::before {
-            content: "";
-            position: absolute;
-            width: 14px;
-            height: 2px;
-            background: currentColor;
-            top: 4px;
-            left: 3px;
-        }
-
-        .i-text::after {
-            content: "";
-            position: absolute;
-            width: 2px;
-            height: 14px;
-            background: currentColor;
-            top: 4px;
-            left: 9px;
-        }
-
-        /* Gotero */
-        .i-picker::before {
-            content: "";
-            position: absolute;
-            width: 4px;
-            height: 10px;
-            border: 2px solid currentColor;
-            border-radius: 2px;
-            top: 6px;
-            left: 2px;
-            transform: rotate(45deg);
-        }
-
-        .i-picker::after {
-            content: "";
-            position: absolute;
-            width: 2px;
-            height: 8px;
-            background: currentColor;
-            top: 2px;
-            left: 12px;
-            transform: rotate(45deg);
-        }
-
-        /* Mano */
-        .i-hand::before {
-            content: "";
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            border: 2px solid currentColor;
-            border-radius: 4px;
-            top: 5px;
-            left: 4px;
-        }
-
-        .i-hand::after {
-            content: "";
-            position: absolute;
-            width: 2px;
-            height: 6px;
-            background: currentColor;
-            top: 2px;
-            left: 13px;
-            border-radius: 2px;
-            transform: rotate(30deg);
-        }
-
-        /* Flechas (Swap) */
-        .i-swap {
-            background:
-                linear-gradient(45deg, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%) left 3px top 3px / 8px 8px no-repeat,
-                linear-gradient(-135deg, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%) right 3px bottom 3px / 8px 8px no-repeat;
-            border-left: 2px solid currentColor;
-            border-right: 2px solid currentColor;
-            width: 16px;
-            height: 10px;
-            margin: 0 auto;
-        }
-
-        /* Deshacer / Rehacer */
-        .i-undo::before,
-        .i-redo::before {
-            content: "";
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            border: 2px solid currentColor;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-        }
-
-        .i-undo::after {
-            content: "";
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-top: 4px solid transparent;
-            border-bottom: 4px solid transparent;
-            border-right: 6px solid currentColor;
-            top: 4px;
-            left: 0;
-        }
-
-        .i-redo::after {
-            content: "";
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-top: 4px solid transparent;
-            border-bottom: 4px solid transparent;
-            border-left: 6px solid currentColor;
-            top: 4px;
-            right: 0;
-        }
-
-        .i-redo::before {
-            transform: scaleX(-1);
-            left: auto;
-            right: 2px;
-        }
-
-        /* Menos / Más */
-        .i-minus::before {
-            content: "";
-            position: absolute;
-            width: 12px;
-            height: 2px;
-            background: currentColor;
-            top: 9px;
-            left: 4px;
-        }
-
-        .i-plus::before {
-            content: "";
-            position: absolute;
-            width: 12px;
-            height: 2px;
-            background: currentColor;
-            top: 9px;
-            left: 4px;
-        }
-
-        .i-plus::after {
-            content: "";
-            position: absolute;
-            width: 2px;
-            height: 12px;
-            background: currentColor;
-            top: 4px;
-            left: 9px;
-        }
-
-        /* Ajustar a pantalla */
-        .i-fit::before {
-            content: "";
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            border: 2px solid currentColor;
-            top: 2px;
-            left: 2px;
-            border-right: 0;
-            border-bottom: 0;
-        }
-
-        .i-fit::after {
-            content: "";
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            border: 2px solid currentColor;
-            bottom: 2px;
-            right: 2px;
-            border-left: 0;
-            border-top: 0;
-        }
-
-        /* Descargar */
-        .i-download::before {
-            content: "";
-            position: absolute;
-            width: 2px;
-            height: 10px;
-            background: currentColor;
-            top: 2px;
-            left: 9px;
-        }
-
-        .i-download::after {
-            content: "";
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 6px solid currentColor;
-            top: 10px;
-            left: 5px;
-        }
-
-        /* Guardar */
-        .i-save::before {
-            content: "";
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            border: 2px solid currentColor;
-            border-radius: 2px;
-            top: 2px;
-            left: 3px;
-        }
-
-        .i-save::after {
-            content: "";
-            position: absolute;
-            width: 8px;
-            height: 6px;
-            background: currentColor;
-            bottom: 4px;
-            left: 6px;
-        }
-
-        /* Modal de Texto */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, .7);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            padding: 20px;
+            padding: 20px
         }
 
         .modal-overlay.open {
-            display: flex;
+            display: flex
         }
 
         .modal-box {
             background: #1c1c1c;
             border: 1px solid #333;
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 20px;
             width: 100%;
             max-width: 400px;
-            color: #fff;
+            color: #fff
         }
 
         .modal-box h3 {
             margin-top: 0;
-            font-family: "Times New Roman", serif;
+            font-family: "Times New Roman", serif
         }
 
         .modal-box textarea {
@@ -623,38 +722,39 @@
             border-radius: 8px;
             padding: 10px;
             font-family: inherit;
+            font-size: 16px;
             resize: vertical;
+            -webkit-user-select: text;
+            user-select: text
         }
 
         .modal-actions {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
-            margin-top: 15px;
+            margin-top: 15px
         }
 
         .modal-actions button {
             padding: 8px 16px;
-            border-radius: 6px;
+            border-radius: 8px;
             border: none;
             font: inherit;
-            cursor: pointer;
+            cursor: pointer
         }
 
-        .modal-actions .cancel {
+        .cancel {
             background: #555;
-            color: #fff;
+            color: #fff
         }
 
-        .modal-actions .confirm {
+        .confirm {
             background: #20a84b;
             color: #fff;
-            font-weight: bold;
+            font-weight: bold
         }
 
-        /* ==========================================
-           PICHISOFT - ESTADO DE SESIÓN
-           ========================================== */
+        /* Pichisoft sesión */
         #pichisoft-session-status {
             position: fixed;
             top: 52px;
@@ -664,56 +764,54 @@
             align-items: center;
             gap: 8px;
             max-width: calc(100vw - 20px);
-            box-sizing: border-box;
             padding: 8px 16px;
             background: #000;
             color: #20a84b;
-            border: 1px solid rgba(34, 197, 94, 0.25);
+            border: 1px solid rgba(34, 197, 94, .25);
             border-radius: 22px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .25);
             font: 14px/1.3 Georgia, serif;
-            text-align: left;
             opacity: 1;
             transform: translateY(0);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-            pointer-events: none;
+            transition: opacity .6s, transform .6s;
+            pointer-events: none
         }
 
         #pichisoft-session-status.hidden {
             opacity: 0;
-            transform: translateY(-12px);
+            transform: translateY(-12px)
         }
 
         #pichisoft-session-status.success {
-            font-weight: bold;
+            font-weight: bold
         }
 
         #pichisoft-session-status .ps-check {
             display: none;
             font-size: 20px;
             font-weight: bold;
-            line-height: 1;
+            line-height: 1
         }
 
         #pichisoft-session-status.success .ps-check {
             display: inline-block;
-            animation: pichisoftCheck 0.8s cubic-bezier(.17, .89, .32, 1.49) forwards;
+            animation: pck .8s cubic-bezier(.17, .89, .32, 1.49) forwards
         }
 
-        @keyframes pichisoftCheck {
+        @keyframes pck {
             0% {
                 opacity: 0;
-                transform: scale(0.2) rotate(-25deg);
+                transform: scale(.2) rotate(-25deg)
             }
 
             60% {
                 opacity: 1;
-                transform: scale(1.25) rotate(8deg);
+                transform: scale(1.25) rotate(8deg)
             }
 
             100% {
                 opacity: 1;
-                transform: scale(1) rotate(0deg);
+                transform: none
             }
         }
 
@@ -726,24 +824,21 @@
             align-items: center;
             gap: 8px;
             max-width: calc(100vw - 20px);
-            box-sizing: border-box;
             padding: 5px 14px 5px 5px;
             background: #000;
             color: #fff;
-            border: 1px solid rgba(34, 197, 94, 0.25);
+            border: 1px solid rgba(34, 197, 94, .25);
             border-radius: 25px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-            font-family: Georgia, serif;
-            text-align: left;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .25);
             opacity: 0;
-            transform: translateY(-12px) scale(0.9);
-            transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
-            pointer-events: none;
+            transform: translateY(-12px) scale(.9);
+            transition: opacity .7s, transform .7s cubic-bezier(.17, .89, .32, 1.3);
+            pointer-events: none
         }
 
         #pichisoft-session-profile.visible {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: none
         }
 
         #pichisoft-profile-picture img,
@@ -754,14 +849,14 @@
             object-fit: cover;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: center
         }
 
         #pichisoft-profile-picture .profile-placeholder {
             background: #20a84b;
             color: #fff;
             font-size: 15px;
-            font-weight: bold;
+            font-weight: bold
         }
 
         #pichisoft-profile-name {
@@ -770,768 +865,558 @@
             max-width: 140px;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
+            white-space: nowrap
         }
 
-        /* Celular */
-        @media (max-width: 600px) {
+        @media(max-width:600px) {
+            #files .lbl {
+                display: none
+            }
+
+            #files .b.go {
+                width: 40px;
+                padding: 0
+            }
+
             .header {
-                top: 16px;
-                left: 15px;
+                top: 14px;
+                left: 10px
             }
 
             .logo {
-                font-size: 1.5rem;
+                font-size: 1.4rem
             }
 
             .byline {
-                font-size: 0.75rem;
+                font-size: .7rem
+            }
+
+            #dock {
+                top: 64px;
+                width: 48px
+            }
+
+            #dock .b {
+                width: 38px;
+                height: 38px
             }
 
             #pichisoft-session-status,
             #pichisoft-session-profile {
-                right: 10px;
+                right: 10px
             }
 
             #pichisoft-session-status {
                 font-size: 13px;
-                padding: 7px 14px;
+                padding: 7px 14px
             }
         }
     </style>
 </head>
 
 <body>
-
     <div class="header"><span class="logo">PichonPaint</span><span class="byline"> - By Pichisoft - </span></div>
 
     <div id="stage">
-        <div id="board"><canvas id="cv" aria-label="Lienzo compartido"></canvas><canvas id="pv"></canvas></div>
+        <div id="board"><canvas id="cv" aria-label="Lienzo"></canvas><canvas id="pv"></canvas></div>
     </div>
 
-    <div id="toolbar" role="toolbar" aria-label="Herramientas">
-        <div class="row" id="tools"></div>
-        <div class="row">
-            <span id="sws"></span>
-            <input type="color" id="color" value="#e11d48" title="Color principal (clic izquierdo)"
+    <nav id="dock" aria-label="Herramientas">
+        <div id="tools" style="display:contents"></div>
+        <span class="sep"></span>
+        <button class="b" id="undo" data-i="undo" title="Deshacer (Ctrl+Z)" disabled></button>
+        <button class="b" id="redo" data-i="redo" title="Rehacer (Ctrl+Y)" disabled></button>
+        <span class="sep"></span>
+        <button class="b" id="zi" data-i="plus" title="Acercar (+)"></button>
+        <span id="zl">100%</span>
+        <button class="b" id="zo" data-i="minus" title="Alejar (-)"></button>
+        <button class="b" id="zf" data-i="fit" title="Ajustar a pantalla (0)"></button>
+        <span class="sep"></span>
+        <button class="b" id="new" data-i="trash" title="Lienzo nuevo"></button>
+    </nav>
+
+    <div id="files" role="toolbar" aria-label="Archivo">
+        <button class="b" id="imp" data-i="upload" title="Importar una imagen"></button>
+        <button class="b" id="dl" data-i="download" title="Descargar imagen (PNG)"></button>
+        <button class="b" id="gal" data-i="folder" title="Mis dibujos"></button>
+        <button class="b go" id="save" data-i="save" title="Guardar (Ctrl+S)" disabled><span
+                class="lbl">Guardar</span></button>
+    </div>
+    <input type="file" id="file" accept="image/*" hidden>
+    <button id="palb" aria-label="Colores y ajustes" title="Colores y ajustes"><i class="c1"></i><i
+            class="c2"></i></button>
+    <div id="panel">
+        <h4>Colores</h4>
+        <div id="sws"></div>
+        <div class="prow">
+            <input type="color" id="color" value="#e11d48" title="Color principal (clic izq.)"
                 aria-label="Color principal">
-            <button id="swap" title="Intercambiar colores (X)"><span class="ico i-swap"></span></button>
-            <input type="color" id="color2" value="#ffffff" title="Color secundario (clic derecho)"
+            <button class="b" id="swap" data-i="swap" title="Intercambiar (X)"></button>
+            <input type="color" id="color2" value="#ffffff" title="Color secundario (clic der.)"
                 aria-label="Color secundario">
-            <input type="range" id="size" min="1" max="80" value="8" title="Grosor / tamaño de texto"
-                aria-label="Grosor">
-            <button id="fillb" title="Formas: contorno o sólido">◻ Contorno</button>
-            <select id="font" title="Tipografía del texto" aria-label="Tipografía">
+            <span style="font-size:12px;color:#9ca3af">Der. = secundario</span>
+        </div>
+        <h4>Trazo</h4>
+        <div class="prow">
+            <div id="dot"><i></i></div><input type="range" id="size" min="1" max="80" value="8"
+                aria-label="Grosor"><span id="sv">8</span>
+        </div>
+        <div class="prow"><button id="fillb">Contorno</button>
+            <select id="font" aria-label="Tipografía">
                 <option value="Arial, sans-serif">Sans</option>
                 <option value="Georgia, serif">Serif</option>
                 <option value="'Courier New', monospace">Mono</option>
                 <option value="'Comic Sans MS', cursive">Cómic</option>
+                <option value="Impact, sans-serif">Impact</option>
             </select>
-        </div>
-        <div class="row">
-            <button id="undo" title="Deshacer (Ctrl+Z)" disabled><span class="ico i-undo"></span> Deshacer</button>
-            <button id="redo" title="Rehacer (Ctrl+Y)" disabled><span class="ico i-redo"></span> Rehacer</button>
-            <span class="sep"></span>
-            <button id="zo" title="Alejar (-)"><span class="ico i-minus"></span></button><span id="zl">100%</span>
-            <button id="zi" title="Acercar (+)"><span class="ico i-plus"></span></button><button id="zf"
-                title="Ajustar a pantalla (0)"><span class="ico i-fit"></span></button>
-            <span class="sep"></span>
-            <button id="dl" title="Descargar la imagen como PNG"><span class="ico i-download"></span> Descargar</button>
-            <button id="save" title="Guardar para todos (Ctrl+S)" disabled><span class="ico i-save"></span>
-                Guardar</button>
         </div>
     </div>
     <div id="toast" role="status" aria-live="polite"></div>
 
-    <!-- Modal de Texto -->
-    <div class="modal-overlay" id="modal-text">
-        <div class="modal-box">
-            <h3>Insertar texto</h3>
-            <textarea id="text-input" placeholder="Escribí tu texto acá (usá Enter para saltar de línea)"></textarea>
-            <div class="modal-actions">
-                <button class="cancel"
-                    onclick="document.getElementById('modal-text').classList.remove('open')">Cancelar</button>
-                <button class="confirm" id="btn-insert-text">Insertar</button>
+    <div class="dlg-ov" id="dlg" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t">
+        <div class="dlg-card">
+            <div class="dlg-ico" id="dlg-ico"></div>
+            <h3 id="dlg-t"></h3>
+            <p id="dlg-m"></p><input id="dlg-i" type="text" maxlength="60" autocomplete="off" aria-label="Nombre">
+            <div class="dlg-act"><button id="dlg-no" type="button"></button><button id="dlg-ok" type="button"></button>
             </div>
         </div>
     </div>
-
-    <!-- ===== Pichisoft - Estado de sesión ===== -->
-    <div id="pichisoft-session-status" role="status" aria-live="polite">
-        <span class="ps-check">✓</span>
-        <span class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span>
+    <div class="modal-overlay" id="modal-gal">
+        <div class="modal-box gm">
+            <h3>Mis dibujos</h3>
+            <div class="top"><button class="confirm" id="g-save">Guardar</button><button id="g-copy">Guardar como
+                    copia</button><button id="g-imp">Importar imagen</button><button id="g-dl">Descargar</button><button
+                    id="g-close" style="margin-left:auto">Cerrar</button></div>
+            <div id="glist"></div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modal-text">
+        <div class="modal-box">
+            <h3>Insertar texto</h3>
+            <textarea id="text-input" placeholder="Escribí tu texto acá (Enter = nueva línea)"></textarea>
+            <div class="modal-actions"><button class="cancel" id="btn-cancel-text">Cancelar</button><button
+                    class="confirm" id="btn-insert-text">Insertar</button></div>
+        </div>
     </div>
 
+    <div id="pichisoft-session-status" role="status" aria-live="polite"><span class="ps-check">✓</span><span
+            class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span></div>
     <div id="pichisoft-session-profile">
-        <div id="pichisoft-profile-picture"></div>
-        <span id="pichisoft-profile-name"></span>
+        <div id="pichisoft-profile-picture"></div><span id="pichisoft-profile-name"></span>
     </div>
 
     <script>
         (function () {
-            var CFG = {
-                apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
-                authDomain: "pichisoft.firebaseapp.com",
-                projectId: "pichisoft",
-                storageBucket: "pichisoft.firebasestorage.app",
-                messagingSenderId: "690032082295",
-                appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
-                measurementId: "G-K7HRKR8BJ1"
-            };
-            var V = "https://www.gstatic.com/firebasejs/12.3.0/";
-            var DUR_INICIO = 12000;
-            var DUR_MENSAJE = 6000;
-
-            var box = document.getElementById("pichisoft-session-status");
-            var txt = box.querySelector(".ps-text");
-            var prof = document.getElementById("pichisoft-session-profile");
-            var pic = document.getElementById("pichisoft-profile-picture");
-            var nameEl = document.getElementById("pichisoft-profile-name");
-            var t0 = Date.now();
-
-            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
-
+            var CFG = { apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8", authDomain: "pichisoft.firebaseapp.com", projectId: "pichisoft", storageBucket: "pichisoft.firebasestorage.app", messagingSenderId: "690032082295", appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572", measurementId: "G-K7HRKR8BJ1" };
+            var V = "https://www.gstatic.com/firebasejs/12.3.0/", DUR_INICIO = 12000, DUR_MENSAJE = 6000;
+            var box = document.getElementById("pichisoft-session-status"), txt = box.querySelector(".ps-text"), prof = document.getElementById("pichisoft-session-profile"), pic = document.getElementById("pichisoft-profile-picture"), nameEl = document.getElementById("pichisoft-profile-name"), t0 = Date.now();
+            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms) }) }
             async function comprobar() {
                 try {
-                    var m = await Promise.all([
-                        import(V + "firebase-app.js"),
-                        import(V + "firebase-auth.js"),
-                        import(V + "firebase-firestore.js")
-                    ]);
-                    var app = m[0].initializeApp(CFG);
-                    var auth = m[1].getAuth(app);
-                    var db = m[2].getFirestore(app);
-
-                    var user = await Promise.race([
-                        new Promise(function (res) {
-                            m[1].onAuthStateChanged(auth, function (u) {
-                                window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
-                                res(u);
-                            });
-                        }),
-                        wait(15000).then(function () { throw new Error("tiempo agotado"); })
-                    ]);
-
+                    var m = await Promise.all([import(V + "firebase-app.js"), import(V + "firebase-auth.js"), import(V + "firebase-firestore.js")]);
+                    var app = m[0].initializeApp(CFG), auth = m[1].getAuth(app), db = m[2].getFirestore(app);
+                    var user = await Promise.race([new Promise(function (res) { m[1].onAuthStateChanged(auth, function (u) { window.PichisoftFirebase = { auth: auth, db: db, currentUser: u }; res(u) }) }), wait(15000).then(function () { throw new Error("tiempo agotado") })]);
                     var perfil = {};
-                    if (user) {
-                        try {
-                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
-                            if (snap.exists()) perfil = snap.data();
-                        } catch (e) { }
-                    }
+                    if (user) { try { var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid)); if (snap.exists()) perfil = snap.data() } catch (e) { } }
                     return { user: user, perfil: perfil };
-                } catch (e) {
-                    return { error: true };
-                }
+                } catch (e) { return { error: true } }
             }
-
-            async function aviso(texto) {
-                txt.textContent = texto;
-                await wait(DUR_MENSAJE);
-                box.classList.add("hidden");
-            }
-
+            async function aviso(t) { txt.textContent = t; await wait(DUR_MENSAJE); box.classList.add("hidden") }
             (async function () {
                 var r = await comprobar();
                 await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
-
                 if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
                 if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
-
-                box.classList.add("success");
-                txt.textContent = "Sesión iniciada";
-                await wait(DUR_MENSAJE);
-                box.classList.add("hidden");
-
-                var nombre = r.perfil.username || "Usuario";
-                nameEl.textContent = nombre;
-                var foto = r.perfil.photo;
-                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
-                    var img = new Image();
-                    img.src = foto;
-                    img.alt = "Foto de perfil";
-                    pic.replaceChildren(img);
-                } else {
-                    var ph = document.createElement("div");
-                    ph.className = "profile-placeholder";
-                    ph.textContent = nombre.charAt(0).toUpperCase();
-                    pic.replaceChildren(ph);
-                }
-                await wait(450);
-                prof.classList.add("visible");
+                box.classList.add("success"); txt.textContent = "Sesión iniciada"; await wait(DUR_MENSAJE); box.classList.add("hidden");
+                var nombre = r.perfil.username || "Usuario"; nameEl.textContent = nombre; var foto = r.perfil.photo;
+                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) { var img = new Image(); img.src = foto; img.alt = "Foto de perfil"; pic.replaceChildren(img) }
+                else { var ph = document.createElement("div"); ph.className = "profile-placeholder"; ph.textContent = nombre.charAt(0).toUpperCase(); pic.replaceChildren(ph) }
+                await wait(450); prof.classList.add("visible");
             })();
         })();
     </script>
 
-    <!-- ===== PichonPaint Lógica ===== -->
     <script type="module">
         const V = "https://www.gstatic.com/firebasejs/12.3.0/";
-        const { doc, getDoc, setDoc, onSnapshot, serverTimestamp } = await import(V + "firebase-firestore.js");
-
-        const W = 1600, H = 1000, REF = ["pichonpaint", "canvas"];
-        const $ = id => document.getElementById(id);
+        const { doc, getDoc, setDoc, collection, getDocs, deleteDoc } = await import(V + "firebase-firestore.js");
+        const W = 1600, H = 1000, $ = id => document.getElementById(id);
         const cv = $("cv"), pv = $("pv"), board = $("board"), stage = $("stage");
         const ctx = cv.getContext("2d", { willReadFrequently: true }), pctx = pv.getContext("2d");
         cv.width = pv.width = W; cv.height = pv.height = H;
 
+        /* ---- Iconos vectoriales (SVG en código, sin emojis) ---- */
+        const P = {
+            brush: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+            eraser: '<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>',
+            line: '<path d="M5 19 19 5"/>',
+            rect: '<rect x="3" y="5" width="18" height="14" rx="2"/>',
+            ellipse: '<ellipse cx="12" cy="12" rx="10" ry="7"/>',
+            fill: '<path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"/><path d="m5 2 5 5"/><path d="M2 13h15"/><path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z"/>',
+            text: '<path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/>',
+            picker: '<path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/>',
+            hand: '<path d="M18 11V6a2 2 0 0 0-4 0"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-5.9-2.4L3.4 16a2 2 0 0 1 3.2-2.4L8 15"/>',
+            undo: '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/>',
+            redo: '<path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/>',
+            plus: '<path d="M12 5v14M5 12h14"/>', minus: '<path d="M5 12h14"/>',
+            fit: '<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>',
+            download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
+            save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/>',
+            trash: '<path d="M3 6h18"/><path d="m19 6-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>',
+            swap: '<path d="m17 4 4 4-4 4"/><path d="M21 8H8"/><path d="m7 20-4-4 4-4"/><path d="M3 16h13"/>'
+        };
+        P.warn = '<path d="m21.7 18-8-14a2 2 0 0 0-3.5 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>';
+        P.upload = '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>';
+        P.folder = '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9l-.8-1.2A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>';
+        const ic = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${P[n]}</svg>`;
+
         let base = null, strokes = [], redo = [], cur = null, tool = "brush", color = "#e11d48", color2 = "#ffffff";
-        let fillOn = false, db = null, saving = false, z = 1, tx = 0, ty = 0, bl = 0, bt = 0, space = false;
-        let textModalPos = { x: 0, y: 0 };
+        let curId = null, curName = "", curSrc = "cloud", fillOn = false, db = null, uid = null, saving = false, dirty = false, z = 1, tx = 0, ty = 0, bl = 0, bt = 0, space = false, textPos = { x: 0, y: 0 };
         const size = () => +$("size").value;
 
-        /* ---------- Vista: ajustar, zoom y desplazamiento ---------- */
+        /* ---- Vista ---- */
         function fit() {
-            const s = Math.min(innerWidth / W, innerHeight / H), w = W * s, h = H * s;
-            board.style.width = w + "px"; board.style.height = h + "px";
-            bl = (innerWidth - w) / 2; bt = (innerHeight - h) / 2; view();
+            const m = innerWidth <= 600 ? [62, 60, 8, 76] : [72, 70, 10, 84], aw = innerWidth - m[0] - m[2], ah = innerHeight - m[1] - m[3];
+            const s = Math.min(aw / W, ah / H), w = W * s, h = H * s;
+            board.style.width = w + "px"; board.style.height = h + "px"; bl = m[0] + (aw - w) / 2; bt = m[1] + (ah - h) / 2; view();
         }
-        function view() {
-            board.style.left = bl + "px"; board.style.top = bt + "px";
-            board.style.transform = `translate(${tx}px,${ty}px) scale(${z})`;
-            $("zl").textContent = Math.round(z * 100) + "%";
-        }
+        function view() { board.style.left = bl + "px"; board.style.top = bt + "px"; board.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; $("zl").textContent = Math.round(z * 100) + "%" }
         function zoomTo(mx, my, nz, fx = mx, fy = my, o = { z, tx, ty }) {
-            nz = Math.min(16, Math.max(.4, nz));
-            const ux = (mx - bl - o.tx) / o.z, uy = (my - bt - o.ty) / o.z;
+            nz = Math.min(16, Math.max(.4, nz)); const ux = (mx - bl - o.tx) / o.z, uy = (my - bt - o.ty) / o.z;
             z = nz; tx = fx - bl - ux * nz; ty = fy - bt - uy * nz; view();
         }
         const zoomBtn = k => zoomTo(innerWidth / 2, innerHeight / 2, z * k);
-        const resetView = () => { z = 1; tx = ty = 0; view(); };
-        addEventListener("resize", fit); fit();
-        stage.addEventListener("wheel", e => {
-            e.preventDefault(); zoomTo(e.clientX, e.clientY, z * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0015)));
-        }, { passive: false });
+        const resetView = () => { z = 1; tx = ty = 0; view() };
+        addEventListener("resize", fit);
+        stage.addEventListener("wheel", e => { e.preventDefault(); zoomTo(e.clientX, e.clientY, z * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0015))) }, { passive: false });
         $("zi").onclick = () => zoomBtn(1.25); $("zo").onclick = () => zoomBtn(.8); $("zf").onclick = resetView;
 
-        /* ---------- Dibujo ---------- */
-        function style(c, s) {
-            c.lineCap = c.lineJoin = "round"; c.strokeStyle = c.fillStyle = s.t === "e" ? "#fff" : s.c; c.lineWidth = s.w;
-        }
+        /* ---- Dibujo ---- */
+        function style(c, s) { c.lineCap = c.lineJoin = "round"; c.strokeStyle = c.fillStyle = s.t === "e" ? "#fff" : s.c; c.lineWidth = s.w }
         function flood(c, x, y, hex) {
             x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= W || y >= H) return;
-            const im = c.getImageData(0, 0, W, H), d = im.data, n = parseInt(hex.slice(1), 16);
-            const R = n >> 16, G = n >> 8 & 255, B = n & 255, i0 = (y * W + x) * 4, tr = d[i0], tg = d[i0 + 1], tb = d[i0 + 2];
+            const im = c.getImageData(0, 0, W, H), d = im.data, n = parseInt(hex.slice(1), 16), R = n >> 16, G = n >> 8 & 255, B = n & 255, i0 = (y * W + x) * 4, tr = d[i0], tg = d[i0 + 1], tb = d[i0 + 2];
             if (Math.abs(tr - R) + Math.abs(tg - G) + Math.abs(tb - B) < 6) return;
             const seen = new Uint8Array(W * H), st = [y * W + x];
             while (st.length) {
                 const p = st.pop(); if (seen[p]) continue; seen[p] = 1; const i = p * 4;
                 if (Math.abs(d[i] - tr) + Math.abs(d[i + 1] - tg) + Math.abs(d[i + 2] - tb) > 60) continue;
-                d[i] = R; d[i + 1] = G; d[i + 2] = B; d[i + 3] = 255;
-                const px = p % W;
+                d[i] = R; d[i + 1] = G; d[i + 2] = B; d[i + 3] = 255; const px = p % W;
                 if (px > 0) st.push(p - 1); if (px < W - 1) st.push(p + 1); if (p >= W) st.push(p - W); if (p < W * H - W) st.push(p + W);
             }
             c.putImageData(im, 0, 0);
         }
         function drawStroke(c, s) {
             style(c, s); const p = s.p, a = p[0], b = p[p.length - 1];
-            if (s.t === "b" || s.t === "e") {
-                c.beginPath(); c.moveTo(a.x, a.y); p.forEach(q => c.lineTo(q.x, q.y)); if (p.length === 1) c.lineTo(a.x, a.y); c.stroke();
-            } else if (s.t === "l") { c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke(); }
-            else if (s.t === "r") {
-                c.beginPath(); c.rect(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(a.x - b.x), Math.abs(a.y - b.y));
-                if (s.fill) c.fill(); c.stroke();
-            } else if (s.t === "o") {
-                c.beginPath(); c.ellipse((a.x + b.x) / 2, (a.y + b.y) / 2, Math.abs(a.x - b.x) / 2, Math.abs(a.y - b.y) / 2, 0, 0, 7);
-                if (s.fill) c.fill(); c.stroke();
-            } else if (s.t === "x") {
-                c.font = `${s.sz}px ${s.f}`; c.textBaseline = "top";
-                s.txt.split("\n").forEach((l, i) => c.fillText(l, a.x, a.y + i * s.sz * 1.2));
-            } else if (s.t === "f") flood(c, a.x, a.y, s.c);
+            if (s.t === "b" || s.t === "e") { c.beginPath(); c.moveTo(a.x, a.y); p.forEach(q => c.lineTo(q.x, q.y)); if (p.length === 1) c.lineTo(a.x, a.y); c.stroke() }
+            else if (s.t === "l") { c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke() }
+            else if (s.t === "r") { c.beginPath(); c.rect(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(a.x - b.x), Math.abs(a.y - b.y)); if (s.fill) c.fill(); c.stroke() }
+            else if (s.t === "o") { c.beginPath(); c.ellipse((a.x + b.x) / 2, (a.y + b.y) / 2, Math.abs(a.x - b.x) / 2, Math.abs(a.y - b.y) / 2, 0, 0, 7); if (s.fill) c.fill(); c.stroke() }
+            else if (s.t === "x") { c.font = `${s.sz}px ${s.f}`; c.textBaseline = "top"; s.txt.split("\n").forEach((l, i) => c.fillText(l, a.x, a.y + i * s.sz * 1.2)) }
+            else if (s.t === "f") flood(c, a.x, a.y, s.c);
+            else if (s.t === "m") { const iw = s.img.naturalWidth || 1, ih = s.img.naturalHeight || 1, k = Math.min(W / iw, H / ih); c.drawImage(s.img, (W - iw * k) / 2, (H - ih * k) / 2, iw * k, ih * k) }
         }
-        function paint(c, img, list) {
-            c.fillStyle = "#fff"; c.fillRect(0, 0, W, H);
-            if (img) c.drawImage(img, 0, 0, W, H);
-            list.forEach(s => drawStroke(c, s));
-        }
+        function paint(c, img, list) { c.fillStyle = "#fff"; c.fillRect(0, 0, W, H); if (img) c.drawImage(img, 0, 0, W, H); list.forEach(s => drawStroke(c, s)) }
         const redraw = () => paint(ctx, base, strokes);
-        const preview = () => { pctx.clearRect(0, 0, W, H); drawStroke(pctx, cur); };
-        function cancelCur() { if (cur) { cur = null; pctx.clearRect(0, 0, W, H); redraw(); } }
-        function commit(s, draw) { if (draw) drawStroke(ctx, s); strokes.push(s); redo = []; sync(); }
-        function sample(p) {
-            const d = ctx.getImageData(Math.min(W - 1, Math.max(0, p.x | 0)), Math.min(H - 1, Math.max(0, p.y | 0)), 1, 1).data;
-            return "#" + [d[0], d[1], d[2]].map(n => n.toString(16).padStart(2, "0")).join("");
+        const preview = () => { pctx.clearRect(0, 0, W, H); drawStroke(pctx, cur) };
+        function cancelCur() { if (cur) { cur = null; pctx.clearRect(0, 0, W, H); redraw() } }
+        function commit(s, draw) { if (draw) drawStroke(ctx, s); strokes.push(s); redo = []; dirty = true; sync() }
+        function sample(p) { const d = ctx.getImageData(Math.min(W - 1, Math.max(0, p.x | 0)), Math.min(H - 1, Math.max(0, p.y | 0)), 1, 1).data; return "#" + [d[0], d[1], d[2]].map(n => n.toString(16).padStart(2, "0")).join("") }
+        function cons(a, p, t) { // Shift: línea a 45°, forma cuadrada/círculo
+            const dx = p.x - a.x, dy = p.y - a.y;
+            if (t === "l") { const r = Math.hypot(dx, dy), an = Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) * Math.PI / 4; return { x: a.x + r * Math.cos(an), y: a.y + r * Math.sin(an) } }
+            const m = Math.max(Math.abs(dx), Math.abs(dy)); return { x: a.x + Math.sign(dx || 1) * m, y: a.y + Math.sign(dy || 1) * m };
         }
 
-        /* ---------- Mouse, dedo y lápiz ---------- */
+        /* ---- Puntero ---- */
         const ptrs = new Map(); let g = null, pan = null;
-        const pt = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; };
+        const pt = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height } };
         const KIND = { brush: "b", eraser: "e", line: "l", rect: "r", ellipse: "o" };
-
         stage.addEventListener("pointerdown", e => {
+            $("panel").classList.remove("open");
             stage.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-            if (ptrs.size === 2) {
-                cancelCur(); const [a, b] = [...ptrs.values()];
-                g = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, z, tx, ty }; pan = null; return;
-            }
+            if (ptrs.size === 2) { cancelCur(); const [a, b] = [...ptrs.values()]; g = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, z, tx, ty }; pan = null; return }
             if (ptrs.size > 2) return;
-            if (tool === "hand" || space || e.button === 1) { pan = { x: e.clientX, y: e.clientY, tx, ty }; return; }
-            if (e.button !== 0 && e.button !== 2) return;
+            if (tool === "hand" || space || e.button === 1) { pan = { x: e.clientX, y: e.clientY, tx, ty }; return }
+            if (e.button !== 0 && e.button !== 2) { ptrs.delete(e.pointerId); return }
             const col = e.button === 2 ? color2 : color, p = pt(e);
-
             if (tool === "picker" || tool === "fill" || tool === "text") {
-                ptrs.delete(e.pointerId);
-                if (p.x < 0 || p.y < 0 || p.x >= W || p.y >= H) return;
-                if (tool === "picker") { pickColor(sample(p), true, e.button === 2); setTool("brush"); }
+                ptrs.delete(e.pointerId); if (p.x < 0 || p.y < 0 || p.x >= W || p.y >= H) return;
+                if (tool === "picker") { pickColor(sample(p), true, e.button === 2); setTool("brush") }
                 else if (tool === "fill") commit({ t: "f", c: col, p: [p] }, true);
-                else if (tool === "text") {
-                    textModalPos = p;
-                    $("text-input").value = "";
-                    $("modal-text").classList.add("open");
-                    setTimeout(() => $("text-input").focus(), 100);
-                }
+                else { textPos = p; $("text-input").value = ""; $("modal-text").classList.add("open"); setTimeout(() => $("text-input").focus(), 100) }
                 return;
             }
             cur = { t: KIND[tool], c: col, w: size(), fill: fillOn, p: [p] };
-            if (cur.t === "b" || cur.t === "e") drawStroke(ctx, cur); else { cur.p[1] = p; preview(); }
+            if (cur.t === "b" || cur.t === "e") drawStroke(ctx, cur); else { cur.p[1] = p; preview() }
         });
-
         stage.addEventListener("pointermove", e => {
             if (!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-            if (g && ptrs.size === 2) {
-                const [a, b] = [...ptrs.values()];
-                zoomTo(g.mx, g.my, g.z * Math.hypot(a.x - b.x, a.y - b.y) / g.d, (a.x + b.x) / 2, (a.y + b.y) / 2, g); return;
-            }
-            if (pan) { tx = pan.tx + e.clientX - pan.x; ty = pan.ty + e.clientY - pan.y; view(); return; }
+            if (g && ptrs.size === 2) { const [a, b] = [...ptrs.values()]; zoomTo(g.mx, g.my, g.z * Math.hypot(a.x - b.x, a.y - b.y) / g.d, (a.x + b.x) / 2, (a.y + b.y) / 2, g); return }
+            if (pan) { tx = pan.tx + e.clientX - pan.x; ty = pan.ty + e.clientY - pan.y; view(); return }
             if (!cur) return;
             if (cur.t === "b" || cur.t === "e") {
                 const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
-                for (const ev of (evs.length ? evs : [e])) {
-                    const p = pt(ev), l = cur.p[cur.p.length - 1]; cur.p.push(p);
-                    style(ctx, cur); ctx.beginPath(); ctx.moveTo(l.x, l.y); ctx.lineTo(p.x, p.y); ctx.stroke();
-                }
-            } else { cur.p[1] = pt(e); preview(); }
+                for (const ev of (evs.length ? evs : [e])) { const p = pt(ev), l = cur.p[cur.p.length - 1]; cur.p.push(p); style(ctx, cur); ctx.beginPath(); ctx.moveTo(l.x, l.y); ctx.lineTo(p.x, p.y); ctx.stroke() }
+            } else { let p = pt(e); if (e.shiftKey) p = cons(cur.p[0], p, cur.t); cur.p[1] = p; preview() }
         });
-
         function up(e) {
             ptrs.delete(e.pointerId); if (ptrs.size < 2) g = null; if (!ptrs.size) pan = null;
-            if (!cur) return;
-            const s = cur; cur = null; pctx.clearRect(0, 0, W, H);
-            commit(s, s.t !== "b" && s.t !== "e");
+            if (!cur) return; const s = cur; cur = null; pctx.clearRect(0, 0, W, H); commit(s, s.t !== "b" && s.t !== "e");
         }
-
         stage.addEventListener("contextmenu", e => e.preventDefault());
         stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", up);
 
-        /* ---------- Herramientas y colores ---------- */
-        const TOOLS = [
-            ["brush", "i-brush", "Pincel (B)"], ["eraser", "i-eraser", "Goma (E)"],
-            ["line", "i-line", "Línea (L)"], ["rect", "i-rect", "Rectángulo (R)"],
-            ["ellipse", "i-ellipse", "Elipse (O)"], ["fill", "i-fill", "Balde de relleno (F)"],
-            ["text", "i-text", "Texto (T)"], ["picker", "i-picker", "Gotero (I)"],
-            ["hand", "i-hand", "Mano: mover (H o Espacio)"]
-        ];
-
-        TOOLS.forEach(([id, iconClass, tt]) => {
-            const b = document.createElement("button"); b.id = "t-" + id; b.title = tt; b.setAttribute("aria-label", tt);
-            const ico = document.createElement("span"); ico.className = "ico " + iconClass;
-            b.appendChild(ico);
-            b.onclick = () => setTool(id); $("tools").appendChild(b);
-        });
-
+        /* ---- Herramientas y colores ---- */
+        const TOOLS = [["brush", "Pincel (B)"], ["eraser", "Goma (E)"], ["line", "Línea (L)"], ["rect", "Rectángulo (R)"], ["ellipse", "Elipse (O)"], ["fill", "Balde (F)"], ["text", "Texto (T)"], ["picker", "Gotero (I)"], ["hand", "Mano (H o Espacio)"]];
+        TOOLS.forEach(([id, tt]) => { const b = document.createElement("button"); b.className = "b"; b.id = "t-" + id; b.title = tt; b.setAttribute("aria-label", tt); b.dataset.i = id; b.onclick = () => setTool(id); $("tools").appendChild(b) });
+        document.querySelectorAll("[data-i]").forEach(b => b.insertAdjacentHTML("afterbegin", ic(b.dataset.i)));
         function setTool(t) {
             tool = t; TOOLS.forEach(([id]) => $("t-" + id).classList.toggle("on", id === t));
-            stage.classList.remove('t-brush', 't-eraser', 't-line', 't-rect', 't-ellipse', 't-fill', 't-text', 't-picker', 't-hand');
-            stage.classList.add("t-" + t);
+            stage.className = (space ? "pan " : "") + "t-" + t;
         }
-
-        const PAL = ["#000000", "#4b5563", "#9ca3af", "#ffffff", "#7f1d1d", "#e11d48", "#f97316", "#facc15", "#a3e635", "#22c55e", "#14b8a6",
-            "#0ea5e9", "#2563eb", "#6366f1", "#a855f7", "#ec4899", "#78350f", "#b45309", "#d6a97a", "#fcd5b5", "#fecdd3", "#fed7aa",
-            "#fef08a", "#bbf7d0", "#a5f3fc", "#bfdbfe", "#ddd6fe", "#fbcfe8"];
-
-        PAL.forEach(c => {
-            const b = document.createElement("button"); b.className = "sw"; b.style.background = c; b.dataset.c = c;
-            b.setAttribute("aria-label", "Color " + c); b.title = "Clic: principal · Clic derecho: secundario";
-            b.onclick = () => pickColor(c, false); b.oncontextmenu = e => { e.preventDefault(); pickColor(c, false, true); };
-            $("sws").appendChild(b);
-        });
-
+        const PAL = ["#000000", "#1f2937", "#4b5563", "#6b7280", "#9ca3af", "#d1d5db", "#e5e7eb", "#f3f4f6", "#ffffff", "#450a0a",
+            "#7f1d1d", "#b91c1c", "#e11d48", "#ef4444", "#f97316", "#fb923c", "#facc15", "#fde047", "#a3e635", "#65a30d",
+            "#166534", "#22c55e", "#4ade80", "#14b8a6", "#0d9488", "#06b6d4", "#0ea5e9", "#2563eb", "#1e3a8a", "#4f46e5",
+            "#6366f1", "#7c3aed", "#a855f7", "#c026d3", "#ec4899", "#f472b6", "#78350f", "#b45309", "#a16207", "#d6a97a",
+            "#fcd5b5", "#fecdd3", "#fed7aa", "#fef08a", "#bbf7d0", "#a5f3fc", "#bfdbfe", "#ddd6fe", "#fbcfe8", "#0f766e"];
+        PAL.forEach(c => { const b = document.createElement("button"); b.className = "sw"; b.style.background = c; b.dataset.c = c; b.setAttribute("aria-label", "Color " + c); b.title = "Clic: principal · Clic derecho: secundario"; b.onclick = () => pickColor(c, false); b.oncontextmenu = e => { e.preventDefault(); pickColor(c, false, true) }; $("sws").appendChild(b) });
         function pickColor(c, fromPicker, second) {
             if (second) color2 = c; else color = c;
             $("color").value = color; $("color2").value = color2;
-            [...$("sws").children].forEach(b => { b.classList.toggle("on", b.dataset.c === color); b.classList.toggle("on2", b.dataset.c === color2); });
-            if (!fromPicker && !second && (tool === "eraser" || tool === "hand" || tool === "picker")) setTool("brush");
+            document.querySelector("#palb .c1").style.background = color; document.querySelector("#palb .c2").style.background = color2;
+            [...$("sws").children].forEach(b => { b.classList.toggle("on", b.dataset.c === color); b.classList.toggle("on2", b.dataset.c === color2) });
+            dot(); if (!fromPicker && !second && (tool === "eraser" || tool === "hand" || tool === "picker")) setTool("brush");
         }
+        function dot() { const d = document.querySelector("#dot i"), s = size(); d.style.width = d.style.height = Math.min(44, Math.max(3, s * (innerWidth / W) * 1.2 + 3)) + "px"; d.style.background = color; $("sv").textContent = s }
+        $("size").oninput = dot;
+        $("color").oninput = e => pickColor(e.target.value, false); $("color2").oninput = e => pickColor(e.target.value, false, true);
+        $("swap").onclick = () => { [color, color2] = [color2, color]; pickColor(color, true); pickColor(color2, true, true) };
+        $("fillb").onclick = () => { fillOn = !fillOn; $("fillb").classList.toggle("on", fillOn); $("fillb").textContent = fillOn ? "Sólido" : "Contorno" };
+        $("palb").onclick = e => { e.stopPropagation(); $("panel").classList.toggle("open") };
 
-        $("color").oninput = e => pickColor(e.target.value, false);
-        $("color2").oninput = e => pickColor(e.target.value, false, true);
-        $("swap").onclick = () => { [color, color2] = [color2, color]; pickColor(color, true); };
-        $("fillb").onclick = () => { fillOn = !fillOn; $("fillb").classList.toggle("on", fillOn); $("fillb").textContent = fillOn ? "◼ Sólido" : "◻ Contorno"; };
+        /* ---- Texto ---- */
+        const closeText = () => $("modal-text").classList.remove("open");
+        $("btn-cancel-text").onclick = closeText;
+        $("btn-insert-text").onclick = () => { const t = $("text-input").value; if (t.trim()) commit({ t: "x", c: color, p: [textPos], txt: t, sz: Math.max(14, size() * 4), f: $("font").value }, true); closeText() };
 
-        /* ---------- Modal de Texto ---------- */
-        $("btn-insert-text").onclick = () => {
-            const txt = $("text-input").value;
-            if (txt) {
-                commit({ t: "x", c: color, p: [textModalPos], txt, sz: Math.max(14, size() * 4), f: $("font").value }, true);
-            }
-            $("modal-text").classList.remove("open");
-        };
-
-        /* ---------- Utilidades ---------- */
-        function sync() {
-            $("undo").disabled = !strokes.length; $("redo").disabled = !redo.length; $("save").disabled = !strokes.length || saving;
-        }
-        function undo() { if (strokes.length) { redo.push(strokes.pop()); redraw(); sync(); } }
-        function redoFn() { if (redo.length) { strokes.push(redo.pop()); redraw(); sync(); } }
+        /* ---- Utilidades ---- */
+        function sync() { $("undo").disabled = !strokes.length; $("redo").disabled = !redo.length; $("save").disabled = !dirty || saving }
+        function undo() { if (strokes.length) { redo.push(strokes.pop()); redraw(); sync() } }
+        function redoFn() { if (redo.length) { strokes.push(redo.pop()); redraw(); sync() } }
         $("undo").onclick = undo; $("redo").onclick = redoFn;
-
-        $("dl").onclick = () => cv.toBlob(blob => {
-            const u = URL.createObjectURL(blob), a = document.createElement("a");
-            a.href = u; a.download = "pichonpaint-" + new Date().toISOString().slice(0, 10) + ".png";
-            document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
-            toast("✓ Imagen descargada");
-        }, "image/png");
-
+        $("new").onclick = async () => { if (dirty && !await ask("¿Empezar un lienzo nuevo?", "Tenés cambios sin guardar y se van a perder.", { ok: "Empezar de nuevo", danger: true })) return; base = null; strokes = []; redo = []; dirty = false; curId = null; curName = ""; redraw(); sync() };
+        $("dl").onclick = () => cv.toBlob(blob => { const u = URL.createObjectURL(blob), a = document.createElement("a"); a.href = u; a.download = (curName || "pichonpaint").replace(/[^\w\- áéíóúñÁÉÍÓÚÑ]/g, "").trim().replace(/\s+/g, "-") + "-" + new Date().toISOString().slice(0, 10) + ".png"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); toast("✓ Imagen descargada") }, "image/png");
         addEventListener("keydown", e => {
             if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName) && !(e.ctrlKey || e.metaKey)) return;
+            if (e.key === "Escape") closeGal();
+            if (document.querySelector(".modal-overlay.open") && !(e.ctrlKey || e.metaKey)) return;
             const k = e.key.toLowerCase();
-            if (e.ctrlKey || e.metaKey) {
-                if (k === "z") { e.preventDefault(); e.shiftKey ? redoFn() : undo(); }
-                else if (k === "y") { e.preventDefault(); redoFn(); }
-                else if (k === "s") { e.preventDefault(); save(); }
-            } else if (e.code === "Space") { e.preventDefault(); space = true; stage.classList.add("pan"); }
+            if (e.ctrlKey || e.metaKey) { if (k === "z") { e.preventDefault(); e.shiftKey ? redoFn() : undo() } else if (k === "y") { e.preventDefault(); redoFn() } else if (k === "s") { e.preventDefault(); save() } }
+            else if (e.code === "Space") { e.preventDefault(); space = true; stage.classList.add("pan") }
             else {
                 const m = { b: "brush", e: "eraser", l: "line", r: "rect", o: "ellipse", f: "fill", t: "text", i: "picker", h: "hand" };
                 if (m[k]) setTool(m[k]); else if (k === "+" || k === "=") zoomBtn(1.25); else if (k === "-") zoomBtn(.8); else if (k === "0") resetView(); else if (k === "x") $("swap").click();
+                else if (k === "[") { $("size").value = Math.max(1, size() - 3); dot() } else if (k === "]") { $("size").value = Math.min(80, size() + 3); dot() }
             }
         });
-        addEventListener("keyup", e => { if (e.code === "Space") { space = false; stage.classList.remove("pan"); } });
+        addEventListener("keyup", e => { if (e.code === "Space") { space = false; stage.classList.remove("pan") } });
+        let tt; function toast(msg, ms = 3000) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), ms) }
 
-        let tt;
-        function toast(msg, ms = 3000) {
-            const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), ms);
-        }
-        setTool("brush"); pickColor(color, true);
+        /* ---- Guardado personal (cada usuario su dibujo) ---- */
+        const loadImg = src => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src });
+        const LSK = () => "pichonpaint:dibujos:" + (uid || "local");
+        const rdLocal = () => { try { return JSON.parse(localStorage.getItem(LSK()) || "[]") } catch (e) { return [] } };
+        const wrLocal = a => { try { localStorage.setItem(LSK(), JSON.stringify(a)); return true } catch (e) { return false } };
+        function encode(c) { for (let q = .92; q > .25; q -= .1) { const d = c.toDataURL("image/jpeg", q); if (d.length < 1000000) return d } return c.toDataURL("image/jpeg", .25) }
+        function thumbOf(c) { const t = document.createElement("canvas"); t.width = 320; t.height = 200; t.getContext("2d").drawImage(c, 0, 0, 320, 200); return t.toDataURL("image/jpeg", .7) }
+        const fmt = t => t ? new Date(t).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+        let galOpen = false;
 
-        /* ---------- Compartir (Firestore) ---------- */
-        const loadImg = src => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
-        function encode(c) {
-            for (let q = 0.92; q > 0.25; q -= 0.1) { const d = c.toDataURL("image/jpeg", q); if (d.length < 1000000) return d; }
-            return c.toDataURL("image/jpeg", 0.25);
+        async function listAll() {
+            const out = [];
+            if (db && uid) {
+                try { (await getDocs(collection(db, "pichonpaint", uid, "dibujos"))).forEach(d => out.push({ ...d.data(), id: d.id, src: "cloud" })) } catch (e) { console.error(e) }
+                try { const s = await getDoc(doc(db, "pichonpaint", uid)), d = s.exists() && s.data(); if (d && d.data) out.push({ id: "__old", src: "old", name: "Dibujo anterior", data: d.data, thumb: d.data, t: d.updatedAt && d.updatedAt.toMillis ? d.updatedAt.toMillis() : 0 }) } catch (e) { }
+            }
+            rdLocal().forEach(d => out.push({ ...d, src: "local" }));
+            try { const o = localStorage.getItem("pichonpaint:" + (uid || "local")); if (o) out.push({ id: "__oldl", src: "oldl", name: "Dibujo anterior (dispositivo)", data: o, thumb: o, t: 0 }) } catch (e) { }
+            return out.sort((a, b) => (b.t || 0) - (a.t || 0));
         }
-        async function save() {
-            if (!strokes.length || saving) return;
-            if (!db) return toast("Sin conexión: todavía no se puede guardar");
+
+        async function save(copy) {
+            if (saving) return;
+            if (!dirty && copy !== true) { toast("No hay cambios para guardar"); return }
             saving = true; sync(); toast("Guardando...", 8000);
-            try {
-                const ref = doc(db, ...REF), snap = await getDoc(ref);
-                const img = snap.exists() ? await loadImg(snap.data().data) : null;
-                const tmp = document.createElement("canvas"); tmp.width = W; tmp.height = H;
-                paint(tmp.getContext("2d", { willReadFrequently: true }), img, strokes);
-                await setDoc(ref, { data: encode(tmp), updatedAt: serverTimestamp() });
-                base = tmp; strokes = []; redo = []; redraw();
-                toast("✓ Guardado: ya lo ve todo el mundo");
-            } catch (e) { console.error(e); toast("No se pudo guardar. Probá de nuevo.", 4000); }
-            saving = false; sync();
+            const tmp = document.createElement("canvas"); tmp.width = W; tmp.height = H;
+            paint(tmp.getContext("2d", { willReadFrequently: true }), base, strokes);
+            const data = encode(tmp), thumb = thumbOf(tmp), nuevo = copy === true || !curId;
+            const id = nuevo ? "d" + Date.now().toString(36) : curId;
+            const name = nuevo ? (copy === true && curName ? curName + " (copia)" : (curName || "Dibujo " + fmt(Date.now()))) : curName;
+            const item = { name, data, thumb, t: Date.now() }; let src = null;
+            if (db && uid && (nuevo || curSrc !== "local")) { try { await setDoc(doc(db, "pichonpaint", uid, "dibujos", id), item); src = "cloud" } catch (e) { console.error(e) } }
+            if (!src) { const a = rdLocal().filter(d => d.id !== id); a.push({ ...item, id }); if (wrLocal(a)) src = "local" }
+            if (src) { curId = id; curName = name; curSrc = src; base = tmp; strokes = []; redo = []; dirty = false; redraw(); toast(src === "cloud" ? "✓ Guardado en tu cuenta: " + name : "✓ Guardado en este dispositivo: " + name) }
+            else toast("No se pudo guardar (sin espacio). Descargá la imagen para no perderla.", 5000);
+            saving = false; sync(); if (galOpen) renderGal();
         }
-        $("save").onclick = save;
-        addEventListener("beforeunload", e => { if (strokes.length) { e.preventDefault(); e.returnValue = ""; } });
+        $("save").onclick = () => save();
+        addEventListener("beforeunload", e => { if (dirty) { e.preventDefault(); e.returnValue = "" } });
 
-        db = await new Promise(res => {
-            let n = 0;
-            const i = setInterval(() => {
-                if (window.PichisoftFirebase && window.PichisoftFirebase.db) { clearInterval(i); res(window.PichisoftFirebase.db); }
-                else if (++n > 250) { clearInterval(i); res(null); }
-            }, 100);
-        });
-        redraw();
-        if (db) {
-            onSnapshot(doc(db, ...REF), async snap => {
-                if (!snap.exists() || snap.metadata.hasPendingWrites) return;
-                try { base = await loadImg(snap.data().data); if (!cur) redraw(); } catch (e) { console.error(e); }
-            }, e => { console.error(e); toast("No se pudo leer el lienzo compartido", 4000); });
-        } else toast("Sin conexión con Pichisoft: podés dibujar, pero no guardar", 5000);
+        /* ---- Carteles propios (reemplazan confirm/prompt) ---- */
+        function dlgOpen(o) {
+            return new Promise(res => {
+                const d = $("dlg"), inp = $("dlg-i"), txt = o.input != null;
+                d.classList.toggle("danger", !!o.danger);
+                $("dlg-ico").innerHTML = ic(txt ? "brush" : o.danger ? "trash" : "warn");
+                $("dlg-t").textContent = o.title; $("dlg-m").textContent = o.msg || ""; $("dlg-m").style.display = o.msg ? "" : "none";
+                inp.style.display = txt ? "" : "none"; inp.value = txt ? o.input : "";
+                $("dlg-ok").textContent = o.ok || "Aceptar"; $("dlg-no").textContent = o.no || "Cancelar";
+                const no = () => done(txt ? null : false), yes = () => done(txt ? inp.value : true);
+                const kd = e => {
+                    const inI = e.target === inp;
+                    if (e.key === "Escape") { e.preventDefault(); e.stopImmediatePropagation(); no(); return }
+                    if (e.key === "Enter" && inI) { e.preventDefault(); e.stopImmediatePropagation(); yes(); return }
+                    if (e.key !== "Tab" && e.key !== "Enter" && !(inI && !e.ctrlKey && !e.metaKey)) e.stopImmediatePropagation();
+                };
+                function done(v) { d.classList.remove("open"); removeEventListener("keydown", kd, true); $("dlg-ok").onclick = $("dlg-no").onclick = d.onclick = null; res(v) }
+                $("dlg-ok").onclick = yes; $("dlg-no").onclick = no; d.onclick = e => { if (e.target === d) no() };
+                addEventListener("keydown", kd, true); d.classList.add("open");
+                setTimeout(() => { if (txt) { inp.focus(); inp.select() } else (o.danger ? $("dlg-no") : $("dlg-ok")).focus() }, 60);
+            });
+        }
+        const ask = (title, msg, o = {}) => dlgOpen({ title, msg, ...o });
+        const askText = (title, val) => dlgOpen({ title, input: val, ok: "Guardar" });
+
+        /* ---- Mis dibujos ---- */
+        function closeGal() { galOpen = false; $("modal-gal").classList.remove("open") }
+        async function openGal() { galOpen = true; $("modal-gal").classList.add("open"); await renderGal() }
+        async function renderGal() {
+            const L = $("glist"); L.textContent = "Cargando...";
+            const items = await listAll(); L.textContent = "";
+            if (!items.length) { L.textContent = "Todavía no guardaste dibujos."; return }
+            items.forEach(it => {
+                const c = document.createElement("div"); c.className = "gc" + (it.id === curId ? " cur" : "");
+                const im = new Image(); im.src = it.thumb || it.data; im.alt = it.name || "";
+                const n = document.createElement("b"); n.textContent = it.name || "Sin nombre";
+                const sm = document.createElement("small"); sm.textContent = fmt(it.t) + (it.src === "local" || it.src === "oldl" ? " · dispositivo" : "");
+                const r = document.createElement("div"); r.className = "r";
+                [["Abrir", () => openItem(it)], ["Nombre", () => rename(it)], ["Borrar", () => del(it)]].forEach(([t, f]) => { const b = document.createElement("button"); b.textContent = t; b.onclick = f; r.appendChild(b) });
+                c.append(im, n, sm, r); L.appendChild(c);
+            });
+        }
+        async function openItem(it) {
+            if (dirty && !await ask("¿Abrir otro dibujo?", "Tenés cambios sin guardar y se van a perder.", { ok: "Abrir igual", danger: true })) return;
+            try { base = await loadImg(it.data) } catch (e) { return toast("No se pudo abrir ese dibujo", 4000) }
+            strokes = []; redo = []; dirty = false; const leg = it.id.startsWith("__");
+            curId = leg ? null : it.id; curName = it.name || ""; curSrc = it.src; redraw(); sync(); closeGal(); toast("Abierto: " + (it.name || "dibujo"));
+        }
+        async function rename(it) {
+            if (it.id.startsWith("__")) return toast("Abrilo y guardalo de nuevo para poder renombrarlo", 4000);
+            const nm = await askText("Nombre del dibujo", it.name || ""); if (!nm || !nm.trim()) return;
+            try {
+                if (it.src === "cloud") await setDoc(doc(db, "pichonpaint", uid, "dibujos", it.id), { name: nm.trim() }, { merge: true });
+                else wrLocal(rdLocal().map(d => d.id === it.id ? { ...d, name: nm.trim() } : d));
+                if (it.id === curId) curName = nm.trim();
+            } catch (e) { console.error(e); toast("No se pudo renombrar", 3000) }
+            renderGal();
+        }
+        async function del(it) {
+            if (!await ask("¿Borrar este dibujo?", '"' + (it.name || "Sin nombre") + '" se va a borrar para siempre.', { ok: "Borrar", danger: true })) return;
+            try {
+                if (it.src === "cloud") await deleteDoc(doc(db, "pichonpaint", uid, "dibujos", it.id));
+                else if (it.src === "old") await deleteDoc(doc(db, "pichonpaint", uid));
+                else if (it.src === "oldl") localStorage.removeItem("pichonpaint:" + (uid || "local"));
+                else wrLocal(rdLocal().filter(d => d.id !== it.id));
+                if (it.id === curId) { curId = null; curName = "" }
+            } catch (e) { console.error(e); toast("No se pudo borrar", 3000) }
+            renderGal();
+        }
+        async function openLatest() { const L = await listAll(); if (L.length && !dirty && !strokes.length) await openItem(L[0]) }
+        $("gal").onclick = openGal; $("g-close").onclick = closeGal;
+        $("modal-gal").onclick = e => { if (e.target === e.currentTarget) closeGal() };
+        $("g-save").onclick = () => save(); $("g-copy").onclick = () => save(true); $("g-dl").onclick = () => $("dl").click();
+
+        /* ---- Importar imagen ---- */
+        $("imp").onclick = () => $("file").click();
+        $("g-imp").onclick = () => { closeGal(); $("file").click() };
+        $("file").onchange = e => {
+            const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+            if (!f.type.startsWith("image/")) return toast("Elegí un archivo de imagen", 3000);
+            const u = URL.createObjectURL(f), img = new Image();
+            img.onload = () => { URL.revokeObjectURL(u); commit({ t: "m", img, p: [{ x: 0, y: 0 }] }, true); toast("✓ Imagen importada (podés deshacer)") };
+            img.onerror = () => { URL.revokeObjectURL(u); toast("No se pudo leer la imagen", 3000) };
+            img.src = u;
+        };
+
+        setTool("brush"); pickColor(color, true); pickColor(color2, true, true); fit(); redraw(); sync();
+        db = await new Promise(res => { let n = 0; const i = setInterval(() => { if (window.PichisoftFirebase && window.PichisoftFirebase.db) { clearInterval(i); res(window.PichisoftFirebase.db) } else if (++n > 250) { clearInterval(i); res(null) } }, 100) });
+        uid = window.PichisoftFirebase && window.PichisoftFirebase.currentUser ? window.PichisoftFirebase.currentUser.uid : null;
+        await openLatest();
+        if (!uid) toast("Sin sesión de Pichisoft: tu dibujo se guarda solo en este dispositivo", 5000);
     </script>
-    <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
-            href="https://pichisoft.cc" target="_blank" style="color:#278acc; text-decoration: underline;">Pichisoft</a>
-    </p>
-    <!-- ============================================================
-     PICHISOFT · BOTÓN DE AYUDA (estilo premium)
-     Pegar al final del <body> de cada app.
-     Cambiar SOLO el objeto CONFIG (titulo, descripcion, top, right).
-     ============================================================ -->
-<script>
-(function () {
-    'use strict';
+    <p style="position:fixed;top:15px;right:20px;font-weight:bold;margin:0;z-index:9999"><a href="https://pichisoft.cc"
+            target="_blank" style="color:#278acc;text-decoration:underline">Pichisoft</a></p>
 
-    /* ============================================================
-       CONFIGURACIÓN — CAMBIAR POR APP
-       ============================================================
-       titulo       → título del panel (Times New Roman, dorado)
-       descripcion  → contenido. Respeta saltos de línea. Admite:
-                      <strong>negrita</strong>, <i>cursiva</i>,
-                      <a href="...">link</a>
-       top          → distancia desde arriba (ajustar según header)
-       right        → distancia desde la derecha (ajustar para quedar
-                      a la izquierda de los carteles de sesión y del
-                      link Pichisoft)
-       ============================================================ */
-    const CONFIG = {
-        titulo: 'Ayuda para PichonPaint',
-        descripcion: `PichonPaint es una app que sirve para pintar y dibujar, con distintas funciones como hacer formas, rellenar, e incluso guardar tus dibujos como .png.
-Puede sugerir mejoras para esta app <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank"
-                rel="noopener">aquí</a>.`,
-        top: '98px',
-        right: '40px'
-    };
-    /* ============================================================ */
+    <script>
+        (function () {
+            'use strict';
+            const CONFIG = {
+                titulo: 'Ayuda para PichonPaint',
+                descripcion: `PichonPaint sirve para pintar y dibujar: pincel, goma, formas, texto, balde, gotero y más. Tu dibujo es solo tuyo: se guarda en tu cuenta de Pichisoft (o en este dispositivo si no iniciaste sesión).
 
-    // Evitar duplicados si se carga dos veces
-    if (document.getElementById('psHelpBtn')) return;
+<strong>Atajos:</strong> B pincel · E goma · L línea · R rectángulo · O elipse · F balde · T texto · I gotero · H mano · [ ] grosor · Shift = líneas rectas y formas perfectas · clic derecho = color secundario.
 
-    // ─── CSS ───
-    const css = document.createElement('style');
-    css.textContent = `
-/* Botón flotante */
-#psHelpBtn {
-    position: fixed;
-    top: ${CONFIG.top};
-    right: ${CONFIG.right};
-    z-index: 9998;
-    width: 38px;
-    height: 38px;
-    padding: 0;
-    border-radius: 50%;
-    border: 2px solid #d4af37;
-    background: linear-gradient(135deg, #2b2107, #100c02);
-    color: #f1d98a;
-    font: bold 20px/1 "Times New Roman", Times, serif;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.1);
-    transition: transform .25s, background .25s, color .25s, box-shadow .25s;
-}
-#psHelpBtn:hover {
-    background: linear-gradient(135deg, #d4af37, #a67c12);
-    color: #111;
-    transform: scale(1.08);
-    box-shadow: 0 6px 20px rgba(212,175,55,.45);
-}
-#psHelpBtn:focus-visible {
-    outline: 2px solid #f1d98a;
-    outline-offset: 2px;
-}
-
-/* Overlay */
-#psHelpOv {
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 18px;
-    box-sizing: border-box;
-    overflow: auto;
-    background: rgba(0,0,0,.72);
-    backdrop-filter: blur(0);
-    -webkit-backdrop-filter: blur(0);
-    opacity: 0;
-    transition: opacity .35s ease, backdrop-filter .35s ease;
-}
-#psHelpOv.on {
-    opacity: 1;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-}
-
-/* Card */
-#psHelpCard {
-    position: relative;
-    width: min(560px, 100%);
-    margin: auto;
-    box-sizing: border-box;
-    padding: 22px 24px 20px;
-    color: #fff;
-    background: linear-gradient(180deg, #181818, #0b0b0b);
-    border: 2px solid #d4af37;
-    border-radius: 16px;
-    box-shadow: 0 0 0 1px rgba(212,175,55,.18), 0 30px 80px rgba(0,0,0,.85), 0 0 44px rgba(212,175,55,.12);
-    opacity: 0;
-    transform: translateY(24px) scale(.95);
-    transition: opacity .4s ease, transform .5s cubic-bezier(.2,.9,.25,1.08);
-}
-#psHelpOv.on #psHelpCard {
-    opacity: 1;
-    transform: none;
-}
-
-/* Título */
-#psHelpCard h2 {
-    margin: 0 40px 14px 0;
-    font: bold 1.7rem "Times New Roman", Times, serif;
-    color: #fff;
-    line-height: 1.2;
-}
-
-/* Contenido */
-#psHelpBody {
-    font: bold .95rem/1.7 Verdana, "Open Sans", sans-serif;
-    color: #fff;
-    white-space: pre-wrap;
-    word-break: break-word;
-    max-height: 60vh;
-    overflow-y: auto;
-    padding-right: 4px;
-}
-#psHelpBody a,
-#psHelpBody a:visited {
-    color: #4da3ff;
-    text-decoration: underline;
-    font-weight: bold;
-}
-#psHelpBody a:hover { color: #8cc4ff; }
-#psHelpBody i { font-style: italic; font-weight: bold; }
-#psHelpBody strong { font-weight: bold; color: #fff; }
-
-/* Botón X (CSS puro) */
-#psHelpX {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    border: 1.5px solid #d4af37;
-    border-radius: 50%;
-    background: none;
-    cursor: pointer;
-    transition: transform .3s, background .2s;
-}
-#psHelpX::before,
-#psHelpX::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 12px;
-    height: 2px;
-    margin: -1px 0 0 -6px;
-    border-radius: 2px;
-    background: #f1d98a;
-    transition: background .2s;
-}
-#psHelpX::before { transform: rotate(45deg); }
-#psHelpX::after { transform: rotate(-45deg); }
-#psHelpX:hover {
-    transform: rotate(90deg);
-    background: #d4af37;
-}
-#psHelpX:hover::before,
-#psHelpX:hover::after { background: #111; }
-#psHelpX:focus-visible {
-    outline: 2px solid #f1d98a;
-    outline-offset: 2px;
-}
-
-/* Botón Entendido */
-#psHelpClose {
-    display: block;
-    width: 100%;
-    margin-top: 20px;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #f1d98a;
-    cursor: pointer;
-    color: #fff;
-    font: bold 1rem Georgia, "Times New Roman", serif;
-    background: linear-gradient(135deg, #2b2107, #100c02);
-    transition: background .3s, color .2s, transform .2s;
-}
-#psHelpClose:hover {
-    background: linear-gradient(135deg, #d4af37, #a67c12);
-    color: #111;
-    transform: translateY(-2px);
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-    #psHelpBtn {
-        top: ${CONFIG.top};
-        right: ${CONFIG.right};
-        width: 34px;
-        height: 34px;
-        font-size: 18px;
-    }
-    #psHelpCard { padding: 18px 16px 16px; }
-    #psHelpCard h2 { font-size: 1.4rem; margin-right: 36px; }
-}
-@media (prefers-reduced-motion: reduce) {
-    #psHelpBtn, #psHelpOv, #psHelpCard, #psHelpX, #psHelpClose { transition: none !important; animation: none !important; }
-}
-`;
-    document.head.appendChild(css);
-
-    // ─── Botón flotante ───
-    const btn = document.createElement('button');
-    btn.id = 'psHelpBtn';
-    btn.type = 'button';
-    btn.setAttribute('aria-label', 'Ayuda');
-    btn.title = 'Ayuda';
-    btn.textContent = '?';
-    document.body.appendChild(btn);
-
-    // ─── Lógica ───
-    let ov = null;
-    let onEsc = null;
-
-    function abrir() {
-        if (ov) return;
-
-        ov = document.createElement('div');
-        ov.id = 'psHelpOv';
-        ov.setAttribute('role', 'dialog');
-        ov.setAttribute('aria-modal', 'true');
-        ov.setAttribute('aria-labelledby', 'psHelpTitle');
-        ov.innerHTML = `
-            <div id="psHelpCard">
-                <button id="psHelpX" type="button" aria-label="Cerrar ayuda" title="Cerrar"></button>
-                <h2 id="psHelpTitle"></h2>
-                <div id="psHelpBody"></div>
-                <button id="psHelpClose" type="button">Entendido</button>
-            </div>
-        `;
-        // Título (texto plano, seguro) y cuerpo (HTML configurado por el dueño de la app)
-        ov.querySelector('#psHelpTitle').textContent = CONFIG.titulo;
-        ov.querySelector('#psHelpBody').innerHTML = CONFIG.descripcion;
-        document.body.appendChild(ov);
-
-        // Forzar reflow para que la animación funcione
-        void ov.offsetHeight;
-        requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
-
-        // Bloquear scroll de fondo
-        document.documentElement.style.overflow = 'hidden';
-
-        // Eventos
-        ov.querySelector('#psHelpX').onclick = cerrar;
-        ov.querySelector('#psHelpClose').onclick = cerrar;
-        ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
-
-        onEsc = e => { if (e.key === 'Escape') cerrar(); };
-        document.addEventListener('keydown', onEsc);
-
-        // Foco al botón de cerrar
-        setTimeout(() => { try { ov.querySelector('#psHelpX').focus(); } catch { } }, 300);
-    }
-
-    function cerrar() {
-        if (!ov) return;
-        const el = ov;
-        ov = null;
-        el.classList.remove('on');
-        if (onEsc) { document.removeEventListener('keydown', onEsc); onEsc = null; }
-        document.documentElement.style.overflow = '';
-        setTimeout(() => el.remove(), 400);
-    }
-
-    btn.onclick = abrir;
-
-    // API pública por si querés abrirlo desde código
-    window.PichisoftAyuda = { abrir, cerrar };
-})();
-</script>
+Podés sugerir mejoras <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">aquí</a>.`,
+                top: '98px', right: '40px'
+            };
+            if (document.getElementById('psHelpBtn')) return;
+            const css = document.createElement('style');
+            css.textContent = `
+#psHelpBtn{position:fixed;top:${CONFIG.top};right:${CONFIG.right};z-index:9998;width:38px;height:38px;padding:0;border-radius:50%;border:2px solid #d4af37;background:linear-gradient(135deg,#2b2107,#100c02);color:#f1d98a;font:bold 20px/1 "Times New Roman",Times,serif;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1);transition:transform .25s,background .25s,color .25s,box-shadow .25s}
+#psHelpBtn:hover{background:linear-gradient(135deg,#d4af37,#a67c12);color:#111;transform:scale(1.08);box-shadow:0 6px 20px rgba(212,175,55,.45)}
+#psHelpBtn:focus-visible,#psHelpX:focus-visible{outline:2px solid #f1d98a;outline-offset:2px}
+#psHelpOv{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;overflow:auto;background:rgba(0,0,0,.72);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);opacity:0;transition:opacity .35s ease,backdrop-filter .35s ease}
+#psHelpOv.on{opacity:1;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#psHelpCard{position:relative;width:min(560px,100%);margin:auto;box-sizing:border-box;padding:22px 24px 20px;color:#fff;background:linear-gradient(180deg,#181818,#0b0b0b);border:2px solid #d4af37;border-radius:16px;box-shadow:0 0 0 1px rgba(212,175,55,.18),0 30px 80px rgba(0,0,0,.85),0 0 44px rgba(212,175,55,.12);opacity:0;transform:translateY(24px) scale(.95);transition:opacity .4s ease,transform .5s cubic-bezier(.2,.9,.25,1.08)}
+#psHelpOv.on #psHelpCard{opacity:1;transform:none}
+#psHelpCard h2{margin:0 40px 14px 0;font:bold 1.7rem "Times New Roman",Times,serif;color:#fff;line-height:1.2}
+#psHelpBody{font:bold .95rem/1.7 Verdana,"Open Sans",sans-serif;color:#fff;white-space:pre-wrap;word-break:break-word;max-height:60vh;overflow-y:auto;padding-right:4px;-webkit-user-select:text;user-select:text}
+#psHelpBody a,#psHelpBody a:visited{color:#4da3ff;text-decoration:underline;font-weight:bold}
+#psHelpBody a:hover{color:#8cc4ff}
+#psHelpBody i{font-style:italic;font-weight:bold}#psHelpBody strong{font-weight:bold;color:#fff}
+#psHelpX{position:absolute;top:14px;right:14px;width:30px;height:30px;padding:0;border:1.5px solid #d4af37;border-radius:50%;background:none;cursor:pointer;transition:transform .3s,background .2s}
+#psHelpX::before,#psHelpX::after{content:"";position:absolute;left:50%;top:50%;width:12px;height:2px;margin:-1px 0 0 -6px;border-radius:2px;background:#f1d98a;transition:background .2s}
+#psHelpX::before{transform:rotate(45deg)}#psHelpX::after{transform:rotate(-45deg)}
+#psHelpX:hover{transform:rotate(90deg);background:#d4af37}
+#psHelpX:hover::before,#psHelpX:hover::after{background:#111}
+#psHelpClose{display:block;width:100%;margin-top:20px;padding:12px;border-radius:10px;border:1px solid #f1d98a;cursor:pointer;color:#fff;font:bold 1rem Georgia,"Times New Roman",serif;background:linear-gradient(135deg,#2b2107,#100c02);transition:background .3s,color .2s,transform .2s}
+#psHelpClose:hover{background:linear-gradient(135deg,#d4af37,#a67c12);color:#111;transform:translateY(-2px)}
+@media(max-width:600px){#psHelpBtn{width:34px;height:34px;font-size:18px}#psHelpCard{padding:18px 16px 16px}#psHelpCard h2{font-size:1.4rem;margin-right:36px}}
+@media(prefers-reduced-motion:reduce){#psHelpBtn,#psHelpOv,#psHelpCard,#psHelpX,#psHelpClose{transition:none!important;animation:none!important}}`;
+            document.head.appendChild(css);
+            const btn = document.createElement('button'); btn.id = 'psHelpBtn'; btn.type = 'button'; btn.setAttribute('aria-label', 'Ayuda'); btn.title = 'Ayuda'; btn.textContent = '?'; document.body.appendChild(btn);
+            let ov = null, onEsc = null;
+            function abrir() {
+                if (ov) return; ov = document.createElement('div'); ov.id = 'psHelpOv'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'psHelpTitle');
+                ov.innerHTML = `<div id="psHelpCard"><button id="psHelpX" type="button" aria-label="Cerrar ayuda" title="Cerrar"></button><h2 id="psHelpTitle"></h2><div id="psHelpBody"></div><button id="psHelpClose" type="button">Entendido</button></div>`;
+                ov.querySelector('#psHelpTitle').textContent = CONFIG.titulo; ov.querySelector('#psHelpBody').innerHTML = CONFIG.descripcion;
+                document.body.appendChild(ov); void ov.offsetHeight;
+                requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
+                document.documentElement.style.overflow = 'hidden';
+                ov.querySelector('#psHelpX').onclick = cerrar; ov.querySelector('#psHelpClose').onclick = cerrar;
+                ov.addEventListener('click', e => { if (e.target === ov) cerrar() });
+                onEsc = e => { if (e.key === 'Escape') cerrar() }; document.addEventListener('keydown', onEsc);
+                setTimeout(() => { try { ov.querySelector('#psHelpX').focus() } catch { } }, 300);
+            }
+            function cerrar() {
+                if (!ov) return; const el = ov; ov = null; el.classList.remove('on');
+                if (onEsc) { document.removeEventListener('keydown', onEsc); onEsc = null }
+                document.documentElement.style.overflow = ''; setTimeout(() => el.remove(), 400);
+            }
+            btn.onclick = abrir; window.PichisoftAyuda = { abrir, cerrar };
+        })();
+    </script>
 </body>
 
 </html>
