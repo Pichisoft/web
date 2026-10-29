@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>PichonWeather</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        [hidden] {
+            display: none !important
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color: #fff
+        }
+
+        body {
+            background: linear-gradient(180deg, #2a62b0, #69aae8) fixed;
+            overflow-x: hidden
+        }
+
+        button {
+            font: inherit;
+            color: inherit
+        }
+
+        #clouds,
+        #fog {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0
+        }
+
+        #fx {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1
+        }
+
+        #app {
+            position: relative;
+            z-index: 2;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: calc(14px + env(safe-area-inset-top, 0px)) 14px calc(34px + env(safe-area-inset-bottom, 0px))
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px
+        }
+
+        .logo {
+            flex: 1;
+            font: bold 1.7rem Georgia, "Times New Roman", serif;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, .35)
+        }
+
+        .logo small {
+            font: italic .78rem Georgia, serif;
+            opacity: .75;
+            margin-left: 6px
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, .14);
+            border: 1px solid rgba(255, 255, 255, .24);
+            border-radius: 22px;
+            -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .12)
+        }
+
+        .ib {
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            border-radius: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            background: rgba(255, 255, 255, .14);
+            border: 1px solid rgba(255, 255, 255, .24);
+            -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px)
+        }
+
+        .ib:hover {
+            background: rgba(255, 255, 255, .28)
+        }
+
+        svg.i {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round
+        }
+
+        .ib.on svg,
+        .fs.on svg {
+            fill: #ffd34d;
+            stroke: #ffd34d
+        }
+
+        /* búsqueda */
+        .sb {
+            position: relative;
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px
+        }
+
+        .sb input,
+        .sb select {
+            font: inherit;
+            color: #fff;
+            background: rgba(255, 255, 255, .16);
+            border: 1px solid rgba(255, 255, 255, .28);
+            border-radius: 16px;
+            padding: 12px 14px;
+            outline: none;
+            -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px)
+        }
+
+        .sb input {
+            flex: 1;
+            min-width: 0
+        }
+
+        .sb input::placeholder {
+            color: rgba(255, 255, 255, .7)
+        }
+
+        .sb select {
+            max-width: 150px
+        }
+
+        .sb select option {
+            color: #111
+        }
+
+        .sb input:focus,
+        .sb select:focus {
+            border-color: #fff
+        }
+
+        #res {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 6px;
+            z-index: 10;
+            max-height: 60vh;
+            overflow: auto;
+            background: rgba(10, 20, 38, .94);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 18px;
+            padding: 6px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, .45)
+        }
+
+        .rr,
+        .rm {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            cursor: pointer
+        }
+
+        .rm {
+            cursor: default;
+            color: #cbd5e1
+        }
+
+        .rr:hover,
+        .rr:focus {
+            background: rgba(255, 255, 255, .12);
+            outline: none
+        }
+
+        .rr small {
+            display: block;
+            color: #aab6c8;
+            font-size: .8rem
+        }
+
+        .pl {
+            font-style: normal;
+            font-size: .68rem;
+            margin-left: 8px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #20a84b;
+            color: #fff;
+            vertical-align: middle
+        }
+
+        .fs {
+            flex: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0
+        }
+
+        .fs:hover {
+            background: rgba(255, 255, 255, .18)
+        }
+
+        /* favoritos */
+        h3.sec {
+            margin: 6px 4px 10px;
+            font: 600 .8rem system-ui;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            opacity: .85
+        }
+
+        .favs {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px
+        }
+
+        .fc {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 16px;
+            cursor: pointer;
+            transition: transform .2s, background .2s
+        }
+
+        .fc:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, .22)
+        }
+
+        .fc .fl {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+            padding-right: 30px
+        }
+
+        .fc b {
+            font-size: 1.1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .fc small {
+            opacity: .8;
+            font-size: .78rem
+        }
+
+        .fd {
+            font-size: .9rem
+        }
+
+        .fh {
+            font-size: .8rem;
+            opacity: .85
+        }
+
+        .fc .fr {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .ft {
+            font-size: 2.6rem;
+            font-weight: 300
+        }
+
+        .fc .fs {
+            position: absolute;
+            top: 6px;
+            right: 6px
+        }
+
+        .sk {
+            height: 118px;
+            animation: pulse 1.2s ease-in-out infinite
+        }
+
+        @keyframes pulse {
+            50% {
+                opacity: .5
+            }
+        }
+
+        .empty {
+            text-align: center;
+            padding: 34px 20px
+        }
+
+        .empty p {
+            margin: 10px 0 0;
+            opacity: .9;
+            line-height: 1.5
+        }
+
+        /* detalle */
+        .dh {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px
+        }
+
+        .dh .dt {
+            flex: 1;
+            min-width: 0
+        }
+
+        .dh h2 {
+            margin: 0;
+            font: bold 1.5rem Georgia, serif;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .dh small {
+            opacity: .85
+        }
+
+        .hero {
+            text-align: center;
+            padding: 10px 0 18px;
+            text-shadow: 0 2px 14px rgba(0, 0, 0, .25)
+        }
+
+        .hero .big {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px
+        }
+
+        .hero .tmp {
+            font-size: 6.2rem;
+            font-weight: 200;
+            line-height: 1
+        }
+
+        .hero .ds2 {
+            font-size: 1.4rem;
+            margin-top: 4px
+        }
+
+        .hero .ln {
+            opacity: .92;
+            margin-top: 6px
+        }
+
+        .hero .sm {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, .18);
+            font-size: .9rem
+        }
+
+        .strip {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 2px 0 8px;
+            scrollbar-width: thin
+        }
+
+        .dc {
+            flex: none;
+            width: 94px;
+            padding: 10px 6px;
+            border-radius: 18px;
+            cursor: pointer;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, .12);
+            border: 1px solid rgba(255, 255, 255, .2);
+            font-size: .85rem
+        }
+
+        .dc.on {
+            background: rgba(255, 255, 255, .34);
+            border-color: #fff
+        }
+
+        .dc b {
+            text-transform: capitalize
+        }
+
+        .dc small {
+            opacity: .85
+        }
+
+        .hs {
+            overflow-x: auto;
+            padding: 10px 6px;
+            scrollbar-width: thin
+        }
+
+        .hw {
+            position: relative;
+            width: max-content
+        }
+
+        .hw svg {
+            display: block
+        }
+
+        .hr {
+            display: flex
+        }
+
+        .hc {
+            flex: none;
+            width: 64px;
+            padding: 6px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            font-size: .84rem;
+            border-radius: 14px
+        }
+
+        .hc.now {
+            background: rgba(255, 255, 255, .2)
+        }
+
+        .hc small {
+            color: #bfe3ff
+        }
+
+        .tiles {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+            gap: 10px;
+            margin-top: 14px
+        }
+
+        .tl {
+            position: relative;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-height: 104px
+        }
+
+        .tl .tk {
+            font-size: .72rem;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            opacity: .85
+        }
+
+        .tl b {
+            font-size: 1.65rem;
+            font-weight: 500
+        }
+
+        .tl small {
+            opacity: .85;
+            font-size: .8rem
+        }
+
+        .cp {
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(255, 255, 255, .4);
+            border-radius: 50%
+        }
+
+        .cp i {
+            position: absolute;
+            left: calc(50% - 5px);
+            top: calc(50% - 8px);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 16px solid #fff;
+            transition: transform .6s
+        }
+
+        .bar {
+            height: 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, .25);
+            overflow: hidden;
+            margin-top: 4px
+        }
+
+        .bar i {
+            display: block;
+            height: 100%;
+            background: #fff
+        }
+
+        .upd {
+            text-align: center;
+            opacity: .75;
+            font-size: .78rem;
+            margin-top: 16px
+        }
+
+        /* iconos del clima dibujados en CSS */
+        .wi {
+            position: relative;
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            flex: none
+        }
+
+        .wi b,
+        .wi i,
+        .wi s {
+            position: absolute;
+            display: block;
+            text-decoration: none
+        }
+
+        .sun {
+            left: .27em;
+            top: .22em;
+            width: .46em;
+            height: .46em;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #fff3a0, #ffc93a);
+            box-shadow: 0 0 .14em #ffb400
+        }
+
+        .sun::before {
+            content: "";
+            position: absolute;
+            inset: -.2em;
+            border-radius: 50%;
+            background: repeating-conic-gradient(#ffcb3d 0 8deg, transparent 8deg 30deg);
+            -webkit-mask: radial-gradient(circle, transparent 58%, #000 60%, #000 74%, transparent 76%);
+            mask: radial-gradient(circle, transparent 58%, #000 60%, #000 74%, transparent 76%);
+            animation: spin 16s linear infinite
+        }
+
+        .sun.p {
+            left: .06em;
+            top: .03em;
+            transform: scale(.72)
+        }
+
+        .moon {
+            left: .45em;
+            top: .2em;
+            width: .44em;
+            height: .44em;
+            border-radius: 50%;
+            box-shadow: -.12em .04em 0 0 #f4efc3
+        }
+
+        .moon.p {
+            left: .4em;
+            top: .04em;
+            transform: scale(.8)
+        }
+
+        .cld {
+            left: .1em;
+            top: .4em;
+            width: .8em;
+            height: .3em;
+            border-radius: .3em;
+            background: #f4f7fb;
+            box-shadow: 0 .02em .05em rgba(0, 0, 0, .2)
+        }
+
+        .cld::before,
+        .cld::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            background: inherit
+        }
+
+        .cld::before {
+            left: .12em;
+            top: -.17em;
+            width: .32em;
+            height: .32em
+        }
+
+        .cld::after {
+            left: .34em;
+            top: -.27em;
+            width: .4em;
+            height: .4em
+        }
+
+        .cld.dk {
+            background: #a9b4c2
+        }
+
+        .dp {
+            top: .72em;
+            width: .04em;
+            height: .16em;
+            border-radius: .04em;
+            background: #6fc3ff;
+            transform: rotate(18deg);
+            animation: fall .9s linear infinite
+        }
+
+        .fk {
+            top: .74em;
+            width: .07em;
+            height: .07em;
+            border-radius: 50%;
+            background: #fff;
+            animation: fall2 1.6s linear infinite
+        }
+
+        .bolt {
+            left: .4em;
+            top: .58em;
+            width: .22em;
+            height: .38em;
+            background: #ffd93a;
+            clip-path: polygon(60% 0, 0 55%, 42% 55%, 25% 100%, 100% 40%, 55% 40%);
+            animation: blink 1.4s infinite
+        }
+
+        .fg {
+            height: .05em;
+            border-radius: .05em;
+            background: rgba(255, 255, 255, .85)
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        @keyframes fall {
+            0% {
+                opacity: 0;
+                transform: translateY(-.1em) rotate(18deg)
+            }
+
+            30% {
+                opacity: 1
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(.2em) rotate(18deg)
+            }
+        }
+
+        @keyframes fall2 {
+            0% {
+                opacity: 0;
+                transform: translate(0, -.1em)
+            }
+
+            30% {
+                opacity: 1
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(.04em, .2em)
+            }
+        }
+
+        @keyframes blink {
+
+            0%,
+            60%,
+            100% {
+                opacity: 1
+            }
+
+            70% {
+                opacity: .2
+            }
+
+            80% {
+                opacity: 1
+            }
+        }
+
+        /* nubes de fondo */
+        .cl {
+            position: absolute;
+            left: 0;
+            width: 4.4em;
+            height: 1.3em;
+            border-radius: 1em;
+            background: var(--cc);
+            animation: drift var(--d) linear infinite;
+            will-change: transform
+        }
+
+        .cl::before,
+        .cl::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            background: var(--cc)
+        }
+
+        .cl::before {
+            width: 1.9em;
+            height: 1.9em;
+            left: .6em;
+            top: -.95em
+        }
+
+        .cl::after {
+            width: 2.5em;
+            height: 2.5em;
+            left: 1.5em;
+            top: -1.35em
+        }
+
+        @keyframes drift {
+            from {
+                transform: translateX(-45vw)
+            }
+
+            to {
+                transform: translateX(110vw)
+            }
+        }
+
+        #fog {
+            transition: opacity 1.2s;
+            opacity: 0
+        }
+
+        .fb {
+            position: absolute;
+            left: 0;
+            width: 220vw;
+            height: 34vh;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .38), transparent 60%, rgba(255, 255, 255, .3), transparent);
+            animation: fogm 40s linear infinite
+        }
+
+        .fb:nth-child(1) {
+            top: 8%
+        }
+
+        .fb:nth-child(2) {
+            top: 38%;
+            animation-duration: 62s;
+            animation-direction: reverse
+        }
+
+        .fb:nth-child(3) {
+            top: 64%;
+            animation-duration: 85s
+        }
+
+        @keyframes fogm {
+            from {
+                transform: translateX(-110vw)
+            }
+
+            to {
+                transform: translateX(0)
+            }
+        }
+
+        /* cartel */
+        .dlg {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, .55);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            --ac: #20a84b;
+            --gl: rgba(32, 168, 75, .28)
+        }
+
+        .dlg.open {
+            display: flex;
+            animation: df .2s
+        }
+
+        .dlg.danger {
+            --ac: #e11d48;
+            --gl: rgba(225, 29, 72, .28)
+        }
+
+        .cart {
+            width: 100%;
+            max-width: 370px;
+            padding: 0 20px 18px;
+            background: #0a0f1a;
+            border: 1px solid var(--ac);
+            border-radius: 20px;
+            overflow: hidden;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .6), 0 0 34px var(--gl);
+            animation: dp .45s cubic-bezier(.2, 1.2, .3, 1)
+        }
+
+        .cart::before {
+            content: "";
+            display: block;
+            height: 10px;
+            margin: 0 -20px;
+            background: repeating-linear-gradient(-45deg, var(--ac) 0 10px, #0a0f1a 10px 20px)
+        }
+
+        .cico {
+            width: 54px;
+            height: 54px;
+            margin: 18px auto 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--ac);
+            box-shadow: 0 0 0 6px var(--gl)
+        }
+
+        .cico svg {
+            width: 26px;
+            height: 26px
+        }
+
+        .cart h3 {
+            margin: 0 0 6px;
+            font: bold 1.3rem Georgia, serif
+        }
+
+        .cart p {
+            margin: 0;
+            color: #cbd5e1;
+            font-size: .92rem;
+            line-height: 1.5
+        }
+
+        .da {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px
+        }
+
+        .da button {
+            flex: 1;
+            padding: 11px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid #334
+        }
+
+        #dg-ok {
+            background: var(--ac);
+            border-color: var(--ac)
+        }
+
+        #dg-no {
+            background: #1a2234
+        }
+
+        .da button:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px
+        }
+
+        @keyframes df {
+            from {
+                opacity: 0
+            }
+        }
+
+        @keyframes dp {
+            from {
+                opacity: 0;
+                transform: translateY(24px) scale(.86) rotate(-1.5deg)
+            }
+        }
+
+        #toast {
+            position: fixed;
+            left: 50%;
+            bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+            transform: translate(-50%, 20px);
+            z-index: 900;
+            background: #000c;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: .9rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: .35s;
+            max-width: 90vw;
+            text-align: center
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0)
+        }
+
+        @media(max-width:600px) {
+            .hero .tmp {
+                font-size: 5rem
+            }
+
+            .sb select {
+                max-width: 112px
+            }
+
+            .logo {
+                font-size: 1.45rem
+            }
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+            .cl {
+                animation-duration: 900s
+            }
+
+            .sun::before,
+            .dp,
+            .fk,
+            .bolt {
+                animation: none
+            }
+        }
+
+        /* ==========================================
+       PICHISOFT - ESTADO DE SESIÓN
+       ========================================== */
+
+        #pichisoft-session-status {
+            position: fixed;
+            top: 12px;
+            right: 420px;
+            z-index: 9999;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 8px 16px;
+
+            background: #000;
+            color: #20a84b;
+
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 22px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+            font: 14px/1.3 Georgia, serif;
+            text-align: left;
+
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
+        }
+
+        #pichisoft-session-status.hidden {
+            opacity: 0;
+            transform: translateY(-12px);
+        }
+
+        #pichisoft-session-status.success {
+            font-weight: bold;
+        }
+
+        #pichisoft-session-status .ps-check {
+            display: none;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        #pichisoft-session-status.success .ps-check {
+            display: inline-block;
+            animation: pichisoftCheck 0.8s cubic-bezier(.17, .89, .32, 1.49) forwards;
+        }
+
+        @keyframes pichisoftCheck {
+            0% {
+                opacity: 0;
+                transform: scale(0.2) rotate(-25deg);
+            }
+
+            60% {
+                opacity: 1;
+                transform: scale(1.25) rotate(8deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        #pichisoft-session-profile {
+            position: fixed;
+            top: 12px;
+            right: 420px;
+            z-index: 9998;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 5px 14px 5px 5px;
+
+            background: #000;
+            color: #fff;
+
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 25px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+
+            font-family: Georgia, serif;
+            text-align: left;
+
+            opacity: 0;
+            transform: translateY(-12px) scale(0.9);
+            transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
+            pointer-events: none;
+        }
+
+        #pichisoft-session-profile.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        #pichisoft-profile-picture img,
+        #pichisoft-profile-picture .profile-placeholder {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pichisoft-profile-picture .profile-placeholder {
+            background: #20a84b;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #pichisoft-profile-name {
+            font-size: 14px;
+            font-weight: bold;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Celular: título más chico para que no choque con el link "Pichisoft" */
+        @media (max-width: 600px) {
+            .header {
+                top: 16px;
+                left: 15px;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .byline {
+                font-size: 0.75rem;
+            }
+
+            #pichisoft-session-status,
+            #pichisoft-session-profile {
+                right: 10px;
+            }
+
+            #pichisoft-session-status {
+                font-size: 13px;
+                padding: 7px 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="clouds"></div>
+    <div id="fog">
+        <div class="fb"></div>
+        <div class="fb"></div>
+        <div class="fb"></div>
+    </div>
+    <canvas id="fx"></canvas>
+
+    <div id="app">
+        <header>
+            <div class="logo">PichonWeather<small>- By Pichisoft -</small></div>
+            <button class="ib" id="loc" title="Mi ubicación" aria-label="Mi ubicación"></button>
+            <button class="ib" id="un" title="Cambiar unidades" aria-label="Unidades">°C</button>
+            <button class="ib" id="rf" title="Actualizar" aria-label="Actualizar"></button>
+        </header>
+
+        <main id="home">
+            <div class="sb">
+                <input id="q" type="search" placeholder="Buscá una ciudad o un país..." autocomplete="off"
+                    aria-label="Buscar ciudad o país">
+                <select id="cs" aria-label="Filtrar por país">
+                    <option value="">Todos los países</option>
+                </select>
+                <div id="res" hidden></div>
+            </div>
+            <h3 class="sec">Mis lugares favoritos</h3>
+            <div class="favs" id="fav"></div>
+        </main>
+
+        <main id="detail" hidden></main>
+    </div>
+
+    <div class="dlg" id="dlg" role="alertdialog" aria-modal="true" aria-labelledby="dg-t">
+        <div class="cart">
+            <div class="cico" id="dg-i"></div>
+            <h3 id="dg-t"></h3>
+            <p id="dg-m"></p>
+            <div class="da"><button id="dg-no" type="button"></button><button id="dg-ok" type="button"></button></div>
+        </div>
+    </div>
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        "use strict";
+        const $ = id => document.getElementById(id);
+        const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+        const norm = s => String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const LS = { get(k, d) { try { const v = localStorage.getItem("pw:" + k); return v ? JSON.parse(v) : d } catch (e) { return d } }, set(k, v) { try { localStorage.setItem("pw:" + k, JSON.stringify(v)) } catch (e) { } } };
+        let favs = LS.get("favs", []), imp = LS.get("imp", false), countries = LS.get("countries", []), cur = null, sel = 0, DATA = null, AQ = null, HD = null, view = "home", RES = [];
+        const key = p => (+p.lat).toFixed(2) + "," + (+p.lon).toFixed(2), isFav = p => favs.some(f => key(f) === key(p));
+
+        /* ---------- iconos de interfaz ---------- */
+        const IC = { star: '<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21.1 7 14.2 2 9.3l6.9-1Z"/>', search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', back: '<path d="m15 18-6-6 6-6"/>', refresh: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>', pin: '<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>', warn: '<path d="m21.7 18-8-14a2 2 0 0 0-3.5 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/><path d="M12 9v4M12 17h.01"/>', info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>' };
+        const ico = n => `<svg class="i" viewBox="0 0 24 24">${IC[n]}</svg>`;
+        $("loc").innerHTML = ico("pin"); $("rf").innerHTML = ico("refresh");
+
+        /* ---------- cartel y aviso ---------- */
+        function cartel(o) {
+            return new Promise(res => {
+                const d = $("dlg"); d.className = "dlg open" + (o.danger ? " danger" : "");
+                $("dg-i").innerHTML = ico(o.icon || (o.danger ? "warn" : "info")); $("dg-t").textContent = o.title; $("dg-m").textContent = o.msg || "";
+                $("dg-no").style.display = o.no ? "" : "none"; $("dg-no").textContent = o.no || ""; $("dg-ok").textContent = o.ok || "Entendido";
+                const done = v => { d.classList.remove("open"); removeEventListener("keydown", kd, true); res(v) };
+                const kd = e => { if (e.key === "Escape") { e.stopImmediatePropagation(); done(false) } };
+                $("dg-ok").onclick = () => done(true); $("dg-no").onclick = () => done(false); addEventListener("keydown", kd, true); setTimeout(() => $("dg-ok").focus(), 60);
+            })
+        }
+        let tt; function toast(m) { const t = $("toast"); t.textContent = m; t.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), 2600) }
+
+        /* ---------- unidades ---------- */
+        const T = v => v == null ? "--" : Math.round(imp ? v * 9 / 5 + 32 : v) + "°";
+        const Wn = v => v == null ? "--" : Math.round(imp ? v * .621371 : v) + (imp ? " mph" : " km/h");
+        const Pr = v => v == null ? "--" : imp ? (v / 25.4).toFixed(2) + " in" : (Math.round(v * 10) / 10) + " mm";
+        const Vi = m => m == null ? "--" : imp ? (m / 1609.34).toFixed(1) + " mi" : (m / 1000).toFixed(1) + " km";
+        const Sn = v => imp ? (v / 2.54).toFixed(1) + " in" : (Math.round(v * 10) / 10) + " cm";
+        const CARD = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSO", "SO", "OSO", "O", "ONO", "NO", "NNO"], card = d => CARD[Math.round(d / 22.5) % 16];
+
+        /* ---------- códigos del clima ---------- */
+        const WD = { 0: "Despejado", 1: "Mayormente despejado", 2: "Parcialmente nublado", 3: "Nublado", 45: "Niebla", 48: "Niebla con escarcha", 51: "Llovizna leve", 53: "Llovizna moderada", 55: "Llovizna intensa", 56: "Llovizna helada leve", 57: "Llovizna helada intensa", 61: "Lluvia leve", 63: "Lluvia moderada", 65: "Lluvia fuerte", 66: "Lluvia helada leve", 67: "Lluvia helada fuerte", 71: "Nevada leve", 73: "Nevada moderada", 75: "Nevada fuerte", 77: "Cristales de nieve", 80: "Chubascos leves", 81: "Chubascos moderados", 82: "Chubascos violentos", 85: "Chubascos de nieve leves", 86: "Chubascos de nieve fuertes", 95: "Tormenta eléctrica", 96: "Tormenta con granizo", 99: "Tormenta con granizo fuerte" };
+        const wd = c => WD[c] || "Sin datos";
+        const R = { 51: .25, 53: .4, 55: .6, 56: .3, 57: .5, 61: .45, 63: .75, 65: 1, 66: .5, 67: .9, 80: .55, 81: .8, 82: 1 }, S = { 71: .35, 73: .65, 75: 1, 77: .3, 85: .5, 86: .9 };
+        function kind(c) {
+            const k = { cc: 0, dk: 0 };
+            if (R[c] != null) { k.rain = R[c]; k.cc = 9; k.dk = 1 }
+            else if (S[c] != null) { k.snow = S[c]; k.cc = 8 }
+            else if (c >= 95) { k.rain = 1; k.thunder = 1; k.hail = c >= 96; k.cc = 10; k.dk = 2 }
+            else if (c === 45 || c === 48) { k.fog = 1; k.cc = 4; k.dk = 1 }
+            else { k.cc = [0, 2, 5, 9][c] || 0; k.dk = c === 3 ? 1 : 0 }
+            return k;
+        }
+        /* icono CSS del clima */
+        function wi(code, day, sz) {
+            const sun = day ? '<b class="sun"></b>' : '<b class="moon"></b>', sp = day ? '<b class="sun p"></b>' : '<b class="moon p"></b>', k = kind(code);
+            let h = "";
+            if (code === 0) h = sun;
+            else if (code === 1 || code === 2) h = sp + '<b class="cld"></b>';
+            else if (code === 3) h = '<b class="cld dk"></b>';
+            else if (k.fog) h = '<b class="cld" style="top:.3em"></b><s class="fg" style="left:.2em;top:.64em;width:.6em"></s><s class="fg" style="left:.3em;top:.76em;width:.5em"></s><s class="fg" style="left:.15em;top:.88em;width:.55em"></s>';
+            else if (k.thunder) h = '<b class="cld dk"></b><b class="bolt"></b>';
+            else if (k.rain) { const n = k.rain < .45 ? 2 : 3; h = '<b class="cld dk"></b>' + [.3, .48, .66].slice(0, n).map((l, i) => `<i class="dp" style="left:${l}em;animation-delay:${i * .28}s"></i>`).join("") }
+            else if (k.snow) h = '<b class="cld"></b>' + [.28, .48, .68].map((l, i) => `<i class="fk" style="left:${l}em;animation-delay:${i * .5}s"></i>`).join("");
+            return `<span class="wi" style="font-size:${sz}px" role="img" aria-label="${esc(wd(code))}">${h}</span>`;
+        }
+
+        /* ---------- fondo: degradado, nubes, niebla ---------- */
+        const sh = (h, f) => "#" + [1, 3, 5].map(i => Math.round(parseInt(h.substr(i, 2), 16) * f).toString(16).padStart(2, "0")).join("");
+        function clouds(n, dk, night) {
+            const c = $("clouds"); c.innerHTML = ""; c.style.setProperty("--cc", dk === 2 ? "#3b4254" : dk === 1 ? "#97a3b0" : "#f4f7fb"); c.style.filter = night ? "brightness(.55)" : "none";
+            for (let i = 0; i < n; i++) {
+                const s = 50 + Math.random() * 90, d = document.createElement("div"); d.className = "cl";
+                d.style.cssText = `font-size:${s}px;top:${Math.random() * 50 - 4}%;--d:${Math.round(60 + s * 1.1 + Math.random() * 60)}s;animation-delay:-${Math.round(Math.random() * 200)}s;opacity:${(.55 + Math.random() * .35).toFixed(2)}`; c.appendChild(d)
+            }
+        }
+        function scene(code, day, cover) {
+            const k = kind(code);
+            if (cover != null && !k.rain && !k.snow && !k.fog && !k.thunder) { k.cc = cover < 10 ? 0 : cover < 30 ? 2 : cover < 55 ? 4 : cover < 80 ? 7 : 10; k.dk = cover >= 80 ? 1 : 0 }
+            const p = k.thunder ? ["#171b2c", "#3c3f5a"] : k.rain ? ["#2c3a4a", "#566a7e"] : k.snow ? ["#8b9fb2", "#d3dde6"] : k.fog ? ["#868e95", "#bcc1c5"] : k.cc >= 7 ? ["#5d7285", "#a2b1bf"] : ["#2a62b0", "#69aae8"];
+            const c = day ? p : (k.rain || k.snow || k.fog || k.cc >= 7) ? [sh(p[0], .45), sh(p[1], .5)] : ["#070d22", "#1b2a58"];
+            document.body.style.background = `linear-gradient(180deg,${c[0]},${c[1]}) fixed`;
+            clouds(k.cc, k.dk, !day); $("fog").style.opacity = k.fog ? 1 : 0;
+            const dry = !k.rain && !k.snow && !k.fog;
+            setFx({ rain: k.rain, snow: k.snow, hail: k.hail, thunder: k.thunder, stars: !day && dry && k.cc < 8, sun: day && dry && k.cc <= 4 });
+        }
+
+        /* ---------- efectos en canvas: lluvia, nieve, granizo, rayos, estrellas, sol ---------- */
+        const cvs = $("fx"), g = cvs.getContext("2d");
+        let CW = 0, CH = 0, DPR = 1, M = {}, RP = [], SP = [], HP = [], ST = [], flash = 0, bolt = null, tn = 3, last = 0, ang = 0;
+        const rd = Math.random;
+        function rs() { DPR = Math.min(devicePixelRatio || 1, 2); CW = innerWidth; CH = innerHeight; cvs.width = CW * DPR; cvs.height = CH * DPR; build() }
+        function build() {
+            RP = Array.from({ length: M.rain ? Math.round(M.rain * Math.min(380, CW / 3.5)) : 0 }, () => ({ x: rd() * CW, y: rd() * CH, l: 10 + rd() * 18, v: 11 + rd() * 12 }));
+            SP = Array.from({ length: M.snow ? Math.round(M.snow * Math.min(230, CW / 5)) : 0 }, () => ({ x: rd() * CW, y: rd() * CH, r: 1 + rd() * 3, v: .5 + rd() * 1.2, p: rd() * 6 }));
+            HP = M.hail ? Array.from({ length: 90 }, () => ({ x: rd() * CW, y: rd() * CH, v: 14 + rd() * 8 })) : [];
+            ST = M.stars ? Array.from({ length: 130 }, () => ({ x: rd() * CW, y: rd() * CH * .8, r: .4 + rd() * 1.4, p: rd() * 6 })) : [];
+        }
+        function setFx(m) { M = m; tn = 2; flash = 0; build() }
+        function mkBolt() { let x = CW * (.15 + rd() * .7), y = 0; const a = [[x, y]]; while (y < CH * .6) { x += (rd() - .5) * 70; y += 30 + rd() * 40; a.push([x, y]) } return a }
+        function frame(ts) {
+            requestAnimationFrame(frame); if (document.hidden) return;
+            const dt = Math.min(3, (ts - last) / 16.67 || 1); last = ts; ang += .0015 * dt;
+            g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, CW, CH);
+            if (M.sun) {
+                const x = CW * .8, y = CH * .13, L = Math.max(CW, CH), gr = g.createRadialGradient(x, y, 0, x, y, L * .5);
+                gr.addColorStop(0, "rgba(255,244,190,.85)"); gr.addColorStop(.12, "rgba(255,225,120,.45)"); gr.addColorStop(1, "rgba(255,225,120,0)");
+                g.fillStyle = gr; g.fillRect(0, 0, CW, CH); g.save(); g.translate(x, y); g.rotate(ang); g.fillStyle = "rgba(255,240,170,.10)";
+                for (let i = 0; i < 14; i++) { g.rotate(Math.PI * 2 / 14); g.beginPath(); g.moveTo(0, 0); g.lineTo(-30, L); g.lineTo(30, L); g.fill() } g.restore()
+            }
+            for (const s of ST) { g.fillStyle = `rgba(255,255,255,${(.4 + .6 * Math.abs(Math.sin(ts / 900 + s.p))).toFixed(2)})`; g.beginPath(); g.arc(s.x, s.y, s.r, 0, 7); g.fill() }
+            if (RP.length) {
+                g.strokeStyle = "rgba(200,220,255,.5)"; g.lineWidth = 1.3; g.beginPath();
+                for (const p of RP) { g.moveTo(p.x, p.y); g.lineTo(p.x + p.l * .25, p.y + p.l); p.y += p.v * dt; p.x += p.v * .25 * dt; if (p.y > CH) { p.y = -20; p.x = rd() * CW } if (p.x > CW) p.x = 0 } g.stroke()
+            }
+            if (HP.length) { g.fillStyle = "rgba(255,255,255,.9)"; for (const p of HP) { g.beginPath(); g.arc(p.x, p.y, 2.2, 0, 7); g.fill(); p.y += p.v * dt; p.x += p.v * .2 * dt; if (p.y > CH) { p.y = -10; p.x = rd() * CW } } }
+            if (SP.length) { g.fillStyle = "rgba(255,255,255,.85)"; for (const s of SP) { g.beginPath(); g.arc(s.x, s.y, s.r, 0, 7); g.fill(); s.p += .02 * dt; s.y += s.v * dt; s.x += Math.sin(s.p) * .6 * dt; if (s.y > CH + 5) { s.y = -5; s.x = rd() * CW } } }
+            if (M.thunder) {
+                tn -= dt / 60; if (tn <= 0) { flash = 1; tn = 2 + rd() * 6; bolt = mkBolt() }
+                if (flash > .02) {
+                    g.fillStyle = `rgba(235,240,255,${flash * .5})`; g.fillRect(0, 0, CW, CH);
+                    if (bolt) { g.strokeStyle = `rgba(255,255,255,${flash})`; g.lineWidth = 2.5; g.shadowBlur = 18; g.shadowColor = "#bcd4ff"; g.beginPath(); bolt.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.stroke(); g.shadowBlur = 0 }
+                    flash *= Math.pow(.9, dt)
+                }
+            }
+        }
+        rs(); addEventListener("resize", rs); requestAnimationFrame(frame);
+
+        /* ---------- red ---------- */
+        async function J(u) { const c = new AbortController(), t = setTimeout(() => c.abort(), 12000); try { const r = await fetch(u, { signal: c.signal }); if (!r.ok) throw new Error(r.status); return await r.json() } finally { clearTimeout(t) } }
+        function show(v) { view = v; $("home").hidden = v !== "home"; $("detail").hidden = v !== "detail"; scrollTo(0, 0) }
+        const dayName = (s, o) => new Date(s + "T12:00").toLocaleDateString("es", o);
+
+        /* ---------- inicio: favoritos ---------- */
+        async function home() {
+            show("home"); scene(2, true, null); const F = $("fav");
+            if (!favs.length) { F.innerHTML = '<div class="empty glass" style="grid-column:1/-1"><span class="wi" style="font-size:64px"><b class="sun p"></b><b class="cld"></b></span><p>Todavía no tenés lugares favoritos.<br>Buscá una ciudad o un país y tocá la estrella para guardarlo.</p></div>'; HD = null; return }
+            F.innerHTML = favs.map(() => '<div class="sk glass"></div>').join("");
+            try {
+                const r = await J(`https://api.open-meteo.com/v1/forecast?latitude=${favs.map(f => f.lat)}&longitude=${favs.map(f => f.lon)}&current=temperature_2m,apparent_temperature,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto`);
+                HD = Array.isArray(r) ? r : [r]; homeDraw();
+            } catch (e) { F.innerHTML = '<div class="empty glass" style="grid-column:1/-1"><p>No pudimos cargar el clima de tus lugares.</p></div>'; cartel({ title: "Sin conexión", msg: "No pudimos obtener el clima. Revisá tu internet y tocá actualizar.", icon: "warn" }) }
+        }
+        function homeDraw() {
+            if (!HD) return;
+            $("fav").innerHTML = favs.map((f, i) => {
+                const d = HD[i]; if (!d || !d.current) return ""; const c = d.current;
+                return `<article class="fc glass" data-i="${i}" tabindex="0" role="button" aria-label="Ver clima de ${esc(f.name)}"><div class="fl"><b>${esc(f.name)}</b><small>${esc(f.sub || "")} · ${c.time.slice(11, 16)}</small><span class="fd">${wd(c.weather_code)}</span><span class="fh">Sensación ${T(c.apparent_temperature)} · Máx ${T(d.daily.temperature_2m_max[0])} · Mín ${T(d.daily.temperature_2m_min[0])}</span></div><div class="fr">${wi(c.weather_code, c.is_day, 46)}<span class="ft">${T(c.temperature_2m)}</span></div><button class="fs on" data-s="${i}" aria-label="Quitar de favoritos">${ico("star")}</button></article>`
+            }).join("");
+        }
+        $("fav").onclick = async e => {
+            const s = e.target.closest("[data-s]");
+            if (s) { const f = favs[+s.dataset.s]; if (await cartel({ title: "¿Quitar de favoritos?", msg: `${f.name} va a dejar de aparecer en tu inicio.`, ok: "Quitar", no: "Cancelar", danger: true })) { favs.splice(+s.dataset.s, 1); LS.set("favs", favs); home() } return }
+            const c = e.target.closest(".fc"); if (c) openPlace(favs[+c.dataset.i]);
+        };
+        $("fav").onkeydown = e => { if (e.key === "Enter" && e.target.classList.contains("fc")) e.target.click() };
+
+        /* ---------- búsqueda de ciudades y países ---------- */
+        async function loadCountries() {
+            if (!countries.length) {
+                try {
+                    const r = await J("https://restcountries.com/v3.1/all?fields=name,cca2,capital,capitalInfo,translations");
+                    countries = r.map(c => ({ n: (c.translations && c.translations.spa && c.translations.spa.common) || c.name.common, c: c.cca2, cap: c.capital && c.capital[0], ll: c.capitalInfo && c.capitalInfo.latlng })).sort((a, b) => a.n.localeCompare(b.n, "es")); LS.set("countries", countries)
+                } catch (e) { }
+            }
+            $("cs").insertAdjacentHTML("beforeend", countries.map(c => `<option value="${esc(c.c)}">${esc(c.n)}</option>`).join(""));
+        }
+        let qt, qn = 0;
+        $("q").oninput = () => { clearTimeout(qt); qt = setTimeout(search, 350) }; $("cs").onchange = search;
+        $("q").onkeydown = e => { if (e.key === "Enter") { const r = document.querySelector("#res .rr"); if (r) r.click() } };
+        async function search() {
+            const raw = $("q").value.trim(), Rs = $("res"); if (raw.length < 2) { Rs.hidden = true; return }
+            const id = ++qn, parts = raw.split(",").map(s => s.trim()); let code = $("cs").value;
+            if (parts[1]) { const c = countries.find(c => norm(c.n).startsWith(norm(parts[1]))); if (c) code = c.c }
+            const cm = code ? [] : countries.filter(c => c.ll && norm(c.n).includes(norm(raw))).slice(0, 3);
+            Rs.hidden = false; Rs.innerHTML = '<div class="rm">Buscando...</div>';
+            let items = [], err = false;
+            try { items = (await J(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(parts[0])}&count=10&language=es&format=json${code ? "&countryCode=" + code : ""}`)).results || [] } catch (e) { err = true }
+            if (id !== qn) return;
+            RES = [...cm.map(c => ({ name: c.cap || c.n, sub: c.n, lat: c.ll[0], lon: c.ll[1], pais: c.n, cap: c.cap })), ...items.map(r => ({ name: r.name, sub: [r.admin1, r.country].filter(Boolean).join(", "), lat: r.latitude, lon: r.longitude }))];
+            if (!RES.length) { Rs.innerHTML = `<div class="rm">${err ? "No se pudo buscar. Revisá tu conexión." : "No encontramos resultados."}</div>`; return }
+            Rs.innerHTML = RES.map((p, i) => `<div class="rr" role="button" tabindex="0" data-r="${i}"><div><b>${esc(p.pais || p.name)}</b>${p.pais ? '<em class="pl">País</em>' : ""}<small>${esc(p.pais ? "Capital: " + (p.cap || p.pais) : p.sub)}</small></div><button class="fs ${isFav(p) ? "on" : ""}" data-f="${i}" aria-label="Agregar a favoritos">${ico("star")}</button></div>`).join("");
+        }
+        $("res").onclick = e => {
+            const f = e.target.closest("[data-f]");
+            if (f) { e.stopPropagation(); const p = RES[+f.dataset.f]; toggleFav(p); f.classList.toggle("on", isFav(p)); return }
+            const r = e.target.closest(".rr"); if (r) openPlace(RES[+r.dataset.r]);
+        };
+        $("res").onkeydown = e => { if (e.key === "Enter" && e.target.classList.contains("rr")) e.target.click() };
+        document.addEventListener("click", e => { if (!e.target.closest(".sb")) $("res").hidden = true });
+        function toggleFav(p) {
+            const k = key(p), i = favs.findIndex(f => key(f) === k);
+            if (i >= 0) { favs.splice(i, 1); toast("Quitado de favoritos") } else { favs.push({ name: p.name, sub: p.sub, lat: p.lat, lon: p.lon }); toast("Agregado a favoritos") }
+            LS.set("favs", favs);
+        }
+
+        /* ---------- detalle ---------- */
+        async function openPlace(p) {
+            cur = p; sel = 0; $("res").hidden = true; show("detail");
+            $("detail").innerHTML = '<div class="dh"><button class="ib" id="bk" aria-label="Volver"></button><div class="dt"><h2>' + esc(p.name) + '</h2></div></div><div class="sk glass" style="margin-top:14px"></div>';
+            $("bk").innerHTML = ico("back"); $("bk").onclick = home;
+            await load();
+        }
+        async function load() {
+            const la = cur.lat, lo = cur.lon;
+            try {
+                const [w, a] = await Promise.all([
+                    J(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,dew_point_2m,precipitation_probability,precipitation,weather_code,pressure_msl,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,uv_index,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,daylight_duration,uv_index_max,precipitation_sum,snowfall_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max&timezone=auto&forecast_days=8`),
+                    J(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${la}&longitude=${lo}&current=us_aqi,pm2_5,pm10&timezone=auto`).catch(() => null)]);
+                DATA = w; AQ = a && a.current; draw();
+            } catch (e) { await cartel({ title: "No pudimos cargar el clima", msg: "Revisá tu conexión a internet e intentá de nuevo.", icon: "warn" }); home() }
+        }
+        const tile = (k, v, s, x) => `<div class="tl glass"><span class="tk">${k}</span><b>${v}</b><small>${s || ""}</small>${x || ""}</div>`;
+        const uvl = u => u < 3 ? "Bajo" : u < 6 ? "Moderado" : u < 8 ? "Alto" : u < 11 ? "Muy alto" : "Extremo";
+        const aql = a => a <= 50 ? "Buena" : a <= 100 ? "Moderada" : a <= 150 ? "Dañina para sensibles" : a <= 200 ? "Dañina" : a <= 300 ? "Muy dañina" : "Peligrosa";
+        function draw() {
+            const w = DATA, c = w.current, dl = w.daily, h = w.hourly, i0 = sel * 24, hi = Math.max(0, h.time.indexOf(c.time.slice(0, 13) + ":00"));
+            const code = sel ? dl.weather_code[sel] : c.weather_code, day = sel ? 1 : c.is_day;
+            scene(code, day, sel ? null : c.cloud_cover);
+            const av = k => { const a = h[k].slice(i0, i0 + 24).filter(v => v != null); return a.length ? a.reduce((x, y) => x + y, 0) / a.length : null };
+            const ds0 = $("ds") ? $("ds").scrollLeft : 0;
+            /* resumen de lluvia */
+            let sm = "";
+            if (!sel) {
+                let j = -1; for (let n = hi; n < Math.min(h.time.length, hi + 24); n++)if (h.precipitation[n] >= .1 || h.precipitation_probability[n] >= 50) { j = n; break }
+                sm = j < 0 ? "Sin precipitaciones previstas en las próximas 24 h" : j === hi ? "Hay precipitaciones ahora (" + (h.precipitation_probability[j] || 0) + "%)" : "Precipitaciones posibles a las " + h.time[j].slice(11, 16) + " (" + (h.precipitation_probability[j] || 0) + "%)"
+            }
+            else sm = "Prob. de precipitación " + (dl.precipitation_probability_max[sel] || 0) + "% · Total " + Pr(dl.precipitation_sum[sel]);
+            const dstr = sel ? dayName(dl.time[sel], { weekday: "long", day: "numeric", month: "long" }) : new Date(c.time).toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" }) + " · " + c.time.slice(11, 16) + " hora local";
+            const big = sel ? T(dl.temperature_2m_max[sel]) : T(c.temperature_2m);
+            const ln = sel ? "Mín " + T(dl.temperature_2m_min[sel]) + " · Sensación máx " + T(dl.apparent_temperature_max[sel]) : "Sensación térmica " + T(c.apparent_temperature) + " · Máx " + T(dl.temperature_2m_max[0]) + " · Mín " + T(dl.temperature_2m_min[0]);
+            /* días */
+            const days = dl.time.map((t, i) => `<button class="dc ${i === sel ? "on" : ""}" data-d="${i}" aria-label="Ver ${esc(dayName(t, { weekday: "long", day: "numeric", month: "long" }))}"><b>${i === 0 ? "Hoy" : i === 1 ? "Mañana" : dayName(t, { weekday: "short" }).replace(".", "")}</b><small>${dayName(t, { day: "numeric", month: "short" }).replace(".", "")}</small>${wi(dl.weather_code[i], 1, 34)}<span>${T(dl.temperature_2m_max[i])} / ${T(dl.temperature_2m_min[i])}</span><small>${dl.precipitation_probability_max[i] || 0}% lluvia</small></button>`).join("");
+            /* horas del día, de 00:00 a 23:00, con curva de temperatura */
+            const tv = h.temperature_2m.slice(i0, i0 + 24), mn = Math.min(...tv), mx = Math.max(...tv), sp = mx - mn || 1;
+            const pts = tv.map((v, i) => [(i + .5) * 64, 50 - (v - mn) / sp * 38]);
+            const curve = `<svg width="1536" height="64" viewBox="0 0 1536 64" aria-hidden="true"><path d="M${pts.map(p => p.join(",")).join("L")}L1504,64L32,64Z" fill="rgba(255,255,255,.14)"/><polyline points="${pts.map(p => p.join(",")).join(" ")}" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>${pts.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#fff"/>`).join("")}</svg>`;
+            let hrs = ""; for (let j = i0; j < i0 + 24; j++) { const now = !sel && j === hi; hrs += `<div class="hc ${now ? "now" : ""}"><span>${now ? "Ahora" : h.time[j].slice(11, 16)}</span>${wi(h.weather_code[j], h.is_day[j], 30)}<b>${T(h.temperature_2m[j])}</b><small>${h.precipitation_probability[j] || 0}%</small></div>` }
+            /* métricas */
+            const sr = dl.sunrise[sel].slice(11, 16), ss = dl.sunset[sel].slice(11, 16), dur = dl.daylight_duration[sel], T2 = [];
+            const arrow = d => `<span class="cp" aria-hidden="true"><i style="transform:rotate(${(d + 180) % 360}deg)"></i></span>`;
+            if (!sel) {
+                const df = c.apparent_temperature - c.temperature_2m, pd = h.pressure_msl[hi] - h.pressure_msl[Math.max(0, hi - 3)], uv = h.uv_index[hi] || 0;
+                T2.push(tile("Sensación térmica", T(c.apparent_temperature), Math.abs(df) < 1.5 ? "Similar a la real" : df > 0 ? "Se siente más cálido" : "Se siente más frío"),
+                    tile("Humedad", c.relative_humidity_2m + "%", "Punto de rocío " + T(h.dew_point_2m[hi]), `<div class="bar"><i style="width:${c.relative_humidity_2m}%"></i></div>`),
+                    tile("Viento", Wn(c.wind_speed_10m), "Del " + card(c.wind_direction_10m) + " (" + Math.round(c.wind_direction_10m) + "°)", arrow(c.wind_direction_10m)),
+                    tile("Ráfagas", Wn(c.wind_gusts_10m), "Máx. hoy " + Wn(dl.wind_gusts_10m_max[0])),
+                    tile("Precipitación", Pr(c.precipitation), "Hoy: " + Pr(dl.precipitation_sum[0]) + " · " + dl.precipitation_hours[0] + " h"),
+                    tile("Prob. de lluvia", (h.precipitation_probability[hi] || 0) + "%", "Máx. hoy " + (dl.precipitation_probability_max[0] || 0) + "%"),
+                    tile("Presión", Math.round(c.pressure_msl) + " hPa", pd > 1 ? "Subiendo" : pd < -1 ? "Bajando" : "Estable"),
+                    tile("Índice UV", Math.round(uv), uvl(uv) + " · Máx. hoy " + Math.round(dl.uv_index_max[0] || 0)),
+                    tile("Visibilidad", Vi(h.visibility[hi]), ""),
+                    tile("Nubosidad", c.cloud_cover + "%", c.cloud_cover < 20 ? "Cielo despejado" : c.cloud_cover < 60 ? "Algo nublado" : "Muy nublado", `<div class="bar"><i style="width:${c.cloud_cover}%"></i></div>`));
+                if (AQ && AQ.us_aqi != null) T2.push(tile("Calidad del aire", Math.round(AQ.us_aqi), aql(AQ.us_aqi) + " · PM2.5 " + Math.round(AQ.pm2_5) + " µg/m³"));
+            } else {
+                const sn = dl.snowfall_sum[sel] || 0, wn = Math.max(...h.wind_speed_10m.slice(i0, i0 + 24));
+                T2.push(tile("Sensación térmica", T(dl.apparent_temperature_max[sel]) + " / " + T(dl.apparent_temperature_min[sel]), "Máxima / mínima"),
+                    tile("Humedad", Math.round(av("relative_humidity_2m")) + "%", "Promedio del día", `<div class="bar"><i style="width:${av("relative_humidity_2m")}%"></i></div>`),
+                    tile("Viento máx.", Wn(dl.wind_speed_10m_max[sel]), "Del " + card(av("wind_direction_10m") || 0), arrow(av("wind_direction_10m") || 0)),
+                    tile("Ráfagas máx.", Wn(dl.wind_gusts_10m_max[sel]), ""),
+                    tile("Precipitación", Pr(dl.precipitation_sum[sel]), dl.precipitation_hours[sel] + " h con precipitación"),
+                    tile("Prob. de lluvia", (dl.precipitation_probability_max[sel] || 0) + "%", "Máxima del día"),
+                    tile("Nieve", Sn(sn), sn > 0 ? "Se espera nieve" : "Sin nieve prevista"),
+                    tile("Presión", Math.round(av("pressure_msl")) + " hPa", "Promedio del día"),
+                    tile("Índice UV máx.", Math.round(dl.uv_index_max[sel] || 0), uvl(dl.uv_index_max[sel] || 0)),
+                    tile("Visibilidad", Vi(av("visibility")), "Promedio del día"),
+                    tile("Nubosidad", Math.round(av("cloud_cover")) + "%", "Promedio del día", `<div class="bar"><i style="width:${av("cloud_cover")}%"></i></div>`));
+            }
+            T2.push(tile("Amanecer", sr, "Hora local"), tile("Atardecer", ss, "Hora local"), tile("Duración del día", Math.floor(dur / 3600) + " h " + Math.round(dur % 3600 / 60) + " min", ""));
+            $("detail").innerHTML = `<div class="dh"><button class="ib" id="bk" aria-label="Volver">${ico("back")}</button><div class="dt"><h2>${esc(cur.name)}</h2><small>${esc(cur.sub || "")}</small></div><button class="ib ${isFav(cur) ? "on" : ""}" id="fv" aria-label="Favorito">${ico("star")}</button></div>
+ <section class="hero"><div class="big">${wi(code, day, 104)}<span class="tmp">${big}</span></div><div class="ds2">${wd(code)}</div><div class="ln">${ln}</div><div class="ln" style="text-transform:capitalize;font-size:.85rem">${esc(dstr)}</div><span class="sm">${esc(sm)}</span></section>
+ <h3 class="sec">Próximos 7 días</h3><div class="strip" id="ds">${days}</div>
+ <h3 class="sec">${sel ? "Todo el día, hora por hora" : "Hoy, hora por hora (00:00 a 23:00)"}</h3><div class="hs glass" id="hs"><div class="hw">${curve}<div class="hr">${hrs}</div></div></div>
+ <h3 class="sec" style="margin-top:16px">Detalles</h3><div class="tiles">${T2.join("")}</div>
+ <p class="upd">Actualizado ${new Date().toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}</p>`;
+            $("bk").onclick = home;
+            $("fv").onclick = () => { toggleFav(cur); $("fv").classList.toggle("on", isFav(cur)) };
+            $("ds").scrollLeft = ds0;
+            $("ds").onclick = e => { const b = e.target.closest("[data-d]"); if (b) { sel = +b.dataset.d; draw() } };
+            const hs = $("hs"); hs.scrollLeft = sel === 0 ? Math.max(0, (hi - 2) * 64) : 7 * 64;
+        }
+
+        /* ---------- controles ---------- */
+        function unitsLabel() { $("un").textContent = imp ? "°F" : "°C" } unitsLabel();
+        $("un").onclick = () => { imp = !imp; LS.set("imp", imp); unitsLabel(); view === "home" ? homeDraw() : DATA && draw() };
+        $("rf").onclick = () => { view === "home" ? home() : load() };
+        $("loc").onclick = () => {
+            if (!navigator.geolocation) return cartel({ title: "Ubicación no disponible", msg: "Tu navegador no permite obtener la ubicación.", icon: "pin" });
+            navigator.geolocation.getCurrentPosition(p => openPlace({ name: "Mi ubicación", sub: "Ubicación actual", lat: p.coords.latitude, lon: p.coords.longitude }), () => cartel({ title: "No pudimos ubicarte", msg: "Permití el acceso a la ubicación o buscá tu ciudad a mano.", icon: "pin" }), { timeout: 10000 });
+        };
+        addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("res").hidden) $("res").hidden = true; else if (view === "detail") home() } });
+        setInterval(() => { if (!document.hidden) view === "home" ? home() : load() }, 600000);
+        loadCountries(); home();
+    </script>
+    <!-- ===== Pichisoft - Estado de sesión ===== -->
+    <div id="pichisoft-session-status" role="status" aria-live="polite">
+        <span class="ps-check">✓</span>
+        <span class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span>
+    </div>
+
+    <div id="pichisoft-session-profile">
+        <div id="pichisoft-profile-picture"></div>
+        <span id="pichisoft-profile-name"></span>
+    </div>
+
+    <script>
+        (function () {
+            /* Todo va dentro de esta función para no chocar con las variables de la app */
+            var CFG = {
+                apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+                authDomain: "pichisoft.firebaseapp.com",
+                projectId: "pichisoft",
+                storageBucket: "pichisoft.firebasestorage.app",
+                messagingSenderId: "690032082295",
+                appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+                measurementId: "G-K7HRKR8BJ1"
+            };
+            var V = "https://www.gstatic.com/firebasejs/12.3.0/";
+            var DUR_INICIO = 12000;   // "Iniciando sesión..."
+            var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+
+            var box = document.getElementById("pichisoft-session-status");
+            var txt = box.querySelector(".ps-text");
+            var prof = document.getElementById("pichisoft-session-profile");
+            var pic = document.getElementById("pichisoft-profile-picture");
+            var nameEl = document.getElementById("pichisoft-profile-name");
+            var t0 = Date.now();
+
+            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
+               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
+            async function comprobar() {
+                try {
+                    var m = await Promise.all([
+                        import(V + "firebase-app.js"),
+                        import(V + "firebase-auth.js"),
+                        import(V + "firebase-firestore.js")
+                    ]);
+                    var app = m[0].initializeApp(CFG);
+                    var auth = m[1].getAuth(app);
+                    var db = m[2].getFirestore(app);
+
+                    var user = await Promise.race([
+                        new Promise(function (res) {
+                            m[1].onAuthStateChanged(auth, function (u) {
+                                window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
+                                res(u);
+                            });
+                        }),
+                        wait(15000).then(function () { throw new Error("tiempo agotado"); })
+                    ]);
+
+                    var perfil = {};
+                    if (user) {
+                        try {
+                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+                            if (snap.exists()) perfil = snap.data();
+                        } catch (e) {
+                            console.error("Pichisoft: no se pudo leer el perfil", e);
+                        }
+                    }
+                    return { user: user, perfil: perfil };
+                } catch (e) {
+                    console.error("Pichisoft:", e);
+                    return { error: true };
+                }
+            }
+
+            async function aviso(texto) {
+                txt.textContent = texto;
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+            }
+
+            (async function () {
+                var r = await comprobar();
+                await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
+
+                if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
+                if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
+
+                box.classList.add("success");
+                txt.textContent = "Sesión iniciada";
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+
+                var nombre = r.perfil.username || "Usuario";
+                nameEl.textContent = nombre;
+                var foto = r.perfil.photo;
+                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
+                    var img = new Image();
+                    img.src = foto;
+                    img.alt = "Foto de perfil";
+                    pic.replaceChildren(img);
+                } else {
+                    var ph = document.createElement("div");
+                    ph.className = "profile-placeholder";
+                    ph.textContent = nombre.charAt(0).toUpperCase();
+                    pic.replaceChildren(ph);
+                }
+                await wait(450);
+                prof.classList.add("visible");
+            })();
+        })();
+    </script>
+    <!-- ============================================================
+     PICHISOFT · BOTÓN DE AYUDA (estilo premium)
+     Pegar al final del <body> de cada app.
+     Cambiar SOLO el objeto CONFIG (titulo, descripcion, top, right).
+     ============================================================ -->
+    <script>
+        (function () {
+            'use strict';
+
+            /* ============================================================
+               CONFIGURACIÓN — CAMBIAR POR APP
+               ============================================================
+               titulo       → título del panel (Times New Roman, dorado)
+               descripcion  → contenido. Respeta saltos de línea. Admite:
+                              <strong>negrita</strong>, <i>cursiva</i>,
+                              <a href="...">link</a>
+               top          → distancia desde arriba (ajustar según header)
+               right        → distancia desde la derecha (ajustar para quedar
+                              a la izquierda de los carteles de sesión y del
+                              link Pichisoft)
+               ============================================================ */
+            const CONFIG = {
+                titulo: 'Ayuda para PichonWeather',
+                descripcion: `PichonWeather es una app que sirve para ver el clima hasta incluso 7 días completos. Puedes añadir tus lugares favoritos para tenerlos fijos en la app, tanto ciudades de tu mismo país como ciudades de <i>cualquier</i> país del mundo.
+Puede sugerir mejoras para esta app <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank"
+                rel="noopener">aquí</a>.`,
+                top: '86px',
+                right: '40px'
+            };
+            /* ============================================================ */
+
+            // Evitar duplicados si se carga dos veces
+            if (document.getElementById('psHelpBtn')) return;
+
+            // ─── CSS ───
+            const css = document.createElement('style');
+            css.textContent = `
+/* Botón flotante */
+#psHelpBtn {
+    position: fixed;
+    top: ${CONFIG.top};
+    right: ${CONFIG.right};
+    z-index: 9998;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid #d4af37;
+    background: linear-gradient(135deg, #2b2107, #100c02);
+    color: #f1d98a;
+    font: bold 20px/1 "Times New Roman", Times, serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.1);
+    transition: transform .25s, background .25s, color .25s, box-shadow .25s;
+}
+#psHelpBtn:hover {
+    background: linear-gradient(135deg, #d4af37, #a67c12);
+    color: #111;
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(212,175,55,.45);
+}
+#psHelpBtn:focus-visible {
+    outline: 2px solid #f1d98a;
+    outline-offset: 2px;
+}
+
+/* Overlay */
+#psHelpOv {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    box-sizing: border-box;
+    overflow: auto;
+    background: rgba(0,0,0,.72);
+    backdrop-filter: blur(0);
+    -webkit-backdrop-filter: blur(0);
+    opacity: 0;
+    transition: opacity .35s ease, backdrop-filter .35s ease;
+}
+#psHelpOv.on {
+    opacity: 1;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+/* Card */
+#psHelpCard {
+    position: relative;
+    width: min(560px, 100%);
+    margin: auto;
+    box-sizing: border-box;
+    padding: 22px 24px 20px;
+    color: #fff;
+    background: linear-gradient(180deg, #181818, #0b0b0b);
+    border: 2px solid #d4af37;
+    border-radius: 16px;
+    box-shadow: 0 0 0 1px rgba(212,175,55,.18), 0 30px 80px rgba(0,0,0,.85), 0 0 44px rgba(212,175,55,.12);
+    opacity: 0;
+    transform: translateY(24px) scale(.95);
+    transition: opacity .4s ease, transform .5s cubic-bezier(.2,.9,.25,1.08);
+}
+#psHelpOv.on #psHelpCard {
+    opacity: 1;
+    transform: none;
+}
+
+/* Título */
+#psHelpCard h2 {
+    margin: 0 40px 14px 0;
+    font: bold 1.7rem "Times New Roman", Times, serif;
+    color: #fff;
+    line-height: 1.2;
+}
+
+/* Contenido */
+#psHelpBody {
+    font: bold .95rem/1.7 Verdana, "Open Sans", sans-serif;
+    color: #fff;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+#psHelpBody a,
+#psHelpBody a:visited {
+    color: #4da3ff;
+    text-decoration: underline;
+    font-weight: bold;
+}
+#psHelpBody a:hover { color: #8cc4ff; }
+#psHelpBody i { font-style: italic; font-weight: bold; }
+#psHelpBody strong { font-weight: bold; color: #fff; }
+
+/* Botón X (CSS puro) */
+#psHelpX {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1.5px solid #d4af37;
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+    transition: transform .3s, background .2s;
+}
+#psHelpX::before,
+#psHelpX::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 12px;
+    height: 2px;
+    margin: -1px 0 0 -6px;
+    border-radius: 2px;
+    background: #f1d98a;
+    transition: background .2s;
+}
+#psHelpX::before { transform: rotate(45deg); }
+#psHelpX::after { transform: rotate(-45deg); }
+#psHelpX:hover {
+    transform: rotate(90deg);
+    background: #d4af37;
+}
+#psHelpX:hover::before,
+#psHelpX:hover::after { background: #111; }
+#psHelpX:focus-visible {
+    outline: 2px solid #f1d98a;
+    outline-offset: 2px;
+}
+
+/* Botón Entendido */
+#psHelpClose {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #f1d98a;
+    cursor: pointer;
+    color: #fff;
+    font: bold 1rem Georgia, "Times New Roman", serif;
+    background: linear-gradient(135deg, #2b2107, #100c02);
+    transition: background .3s, color .2s, transform .2s;
+}
+#psHelpClose:hover {
+    background: linear-gradient(135deg, #d4af37, #a67c12);
+    color: #111;
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    #psHelpBtn {
+        top: ${CONFIG.top};
+        right: ${CONFIG.right};
+        width: 34px;
+        height: 34px;
+        font-size: 18px;
+    }
+    #psHelpCard { padding: 18px 16px 16px; }
+    #psHelpCard h2 { font-size: 1.4rem; margin-right: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #psHelpBtn, #psHelpOv, #psHelpCard, #psHelpX, #psHelpClose { transition: none !important; animation: none !important; }
+}
+`;
+            document.head.appendChild(css);
+
+            // ─── Botón flotante ───
+            const btn = document.createElement('button');
+            btn.id = 'psHelpBtn';
+            btn.type = 'button';
+            btn.setAttribute('aria-label', 'Ayuda');
+            btn.title = 'Ayuda';
+            btn.textContent = '?';
+            document.body.appendChild(btn);
+
+            // ─── Lógica ───
+            let ov = null;
+            let onEsc = null;
+
+            function abrir() {
+                if (ov) return;
+
+                ov = document.createElement('div');
+                ov.id = 'psHelpOv';
+                ov.setAttribute('role', 'dialog');
+                ov.setAttribute('aria-modal', 'true');
+                ov.setAttribute('aria-labelledby', 'psHelpTitle');
+                ov.innerHTML = `
+            <div id="psHelpCard">
+                <button id="psHelpX" type="button" aria-label="Cerrar ayuda" title="Cerrar"></button>
+                <h2 id="psHelpTitle"></h2>
+                <div id="psHelpBody"></div>
+                <button id="psHelpClose" type="button">Entendido</button>
+            </div>
+        `;
+                // Título (texto plano, seguro) y cuerpo (HTML configurado por el dueño de la app)
+                ov.querySelector('#psHelpTitle').textContent = CONFIG.titulo;
+                ov.querySelector('#psHelpBody').innerHTML = CONFIG.descripcion;
+                document.body.appendChild(ov);
+
+                // Forzar reflow para que la animación funcione
+                void ov.offsetHeight;
+                requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
+
+                // Bloquear scroll de fondo
+                document.documentElement.style.overflow = 'hidden';
+
+                // Eventos
+                ov.querySelector('#psHelpX').onclick = cerrar;
+                ov.querySelector('#psHelpClose').onclick = cerrar;
+                ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
+
+                onEsc = e => { if (e.key === 'Escape') cerrar(); };
+                document.addEventListener('keydown', onEsc);
+
+                // Foco al botón de cerrar
+                setTimeout(() => { try { ov.querySelector('#psHelpX').focus(); } catch { } }, 300);
+            }
+
+            function cerrar() {
+                if (!ov) return;
+                const el = ov;
+                ov = null;
+                el.classList.remove('on');
+                if (onEsc) { document.removeEventListener('keydown', onEsc); onEsc = null; }
+                document.documentElement.style.overflow = '';
+                setTimeout(() => el.remove(), 400);
+            }
+
+            btn.onclick = abrir;
+
+            // API pública por si querés abrirlo desde código
+            window.PichisoftAyuda = { abrir, cerrar };
+        })();
+    </script>
+    <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
+            href="https://pichisoft.cc" target="_blank" style="color:#4db8ff; text-decoration: underline;">Pichisoft</a>
+    </p>
+</body>
+
+</html>
