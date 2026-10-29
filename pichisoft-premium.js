@@ -209,14 +209,14 @@ body.prem .p-gear{display:flex}
     /* Para ponerle un prefijo a una app, agregá su clave en "t": ej. t:['beta'] */
     const APPS = [
         { n: 'PichonTutorial', u: 'pichontutorial', t: ['cancelado', 'ultimos'] },
-        { n: 'PichonInfo', u: 'pichoninfo', t: ['nuevo'] },
-        { n: 'PichonRules', u: 'pichonrules', t: ['nuevo'] },
+        { n: 'PichonInfo', u: 'pichoninfo' },
+        { n: 'PichonRules', u: 'pichonrules' },
         { n: 'PichonAlarm', u: 'pichonalarm' },
         { n: 'PichonBirthday', u: 'pichonbirthday' },
         { n: 'PichonCalc', u: 'pichoncalc' },
         { n: 'PichonCalendar', u: 'pichoncalendar' },
-        { n: 'PichonChess', u: 'pichonchess', t: ['nuevo', 'actualizado'] },
-        { n: 'PichonCode', u: 'pichoncode', t: ['nuevo', 'beta'] },
+        { n: 'PichonChess', u: 'pichonchess' },
+        { n: 'PichonCode', u: 'pichoncode' },
         { n: 'PichonDestiny', u: 'pichondestiny' },
         { n: 'PichonDocs', u: 'pichondocs' },
         { n: 'PichonFood', u: 'pichonfood' },
@@ -225,7 +225,7 @@ body.prem .p-gear{display:flex}
         { n: 'PichonMorse', u: 'pichonmorse' },
         { n: 'PichonOlympus', t: ['proximo'] },
         { n: 'PichonOpinion', t: ['proximo'] },
-        { n: 'PichonPaint', u: 'pichonpaint', t: ['nuevo', 'beta'] },
+        { n: 'PichonPaint', u: 'pichonpaint', t: ['actualizado'] },
         { n: 'PichonPass', u: 'pichonpass' },
         { n: 'PichonRandom', u: 'pichonrandom' },
         { n: 'PichonSnake', u: 'pichonsnake' },
@@ -258,7 +258,7 @@ body.prem .p-gear{display:flex}
     /* Carteles de aviso: "solo" limita quién lo ve (invitado = sin cuenta, premium = con cuenta) */
     const CARTELES = [
         { id: 'reg', solo: 'invitado', html: 'Ya está disponible nuestra versión premium para PichonApps. ¿Quiere obtenerla? Hágase una cuenta, en esta misma app, apretando el botón "Ingresar".' },
-        { id: 'tut', solo: 'premium', html: '¿Tiene una duda acerca de nuestras apps? <a data-b href="' + B + '/pichontutorial.html">Vea el tutorial de cada una.</a>' },
+        { id: 'tut', html: 'PichonTutorial ya tiene su reemplazo: cada app ahora tiene su propia ayuda en el botón "?".' },
         { id: 'con', html: '<a data-mail href="#" role="button">¿Tiene una duda?→ Comuníquese con nosotros.</a>' }
     ];
 
