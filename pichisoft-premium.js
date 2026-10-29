@@ -230,15 +230,16 @@ body.prem .p-gear{display:flex}
         { n: 'PichonRandom', u: 'pichonrandom' },
         { n: 'PichonSnake', u: 'pichonsnake' },
         { n: 'PichonTraffic', u: 'pichontraffic', t: ['nuevo'] },
-        { n: 'PichonWatch', u: 'pichonwatch' }
+        { n: 'PichonWatch', u: 'pichonwatch' },
+        { n: 'PichonWeather', u: 'pichonweather', t: ['nuevo'] }
     ];
     APPS.forEach(a => a.t = a.t || []);
     const MAP = Object.fromEntries(APPS.map(a => [a.n, a]));
     const CATS = [
-        { id: 'utiles', nombre: 'Herramientas', apps: ['PichonTutorial', 'PichonInfo', 'PichonRules', 'PichonCode', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonCalc', 'PichonCalendar', 'PichonAlarm'] },
+        { id: 'utiles', nombre: 'Herramientas', apps: ['PichonTutorial', 'PichonInfo', 'PichonRules', 'PichonCode', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonWeather', 'PichonCalc', 'PichonCalendar', 'PichonPaint', 'PichonAlarm'] },
         { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake', 'PichonChess', 'PichonTraffic', 'PichonMan'] },
         { id: 'azar', nombre: 'Azar', apps: ['PichonDestiny', 'PichonRandom'] },
-        { id: 'divertidas', nombre: 'Diversión', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonPaint', 'PichonWatch'] }
+        { id: 'divertidas', nombre: 'Diversión', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonWatch'] }
     ];
     const has = (a, k) => a.t.includes(k);
     const GR = [
