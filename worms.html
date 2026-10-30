@@ -1,397 +1,198 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>PichonWorms</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#12161c;color:#eee;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center}
+#wrap{position:relative;width:min(100vw,1200px)}canvas{width:100%;display:block;background:#000;touch-action:none}
+#hud{position:absolute;top:8px;left:8px;background:#000a;padding:6px 10px;border-radius:8px;font-size:14px;border-left:5px solid #fff}
+.ov{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:5}.ov[hidden]{display:none}
+.card{background:#1e2530;padding:22px;border-radius:14px;width:min(92vw,380px);display:flex;flex-direction:column;gap:10px}
+h1,h3{margin:0}input,button{font:inherit;padding:10px;border-radius:8px;border:0}input{background:#0e1218;color:#fff}
+button{background:#3d8bff;color:#fff;cursor:pointer}button.s{background:#39414f}#err{color:#ff7b7b;margin:0;font-size:13px}
+#pad{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:8px}#pad button{min-width:52px;touch-action:none;user-select:none}
+#v1,#v2{display:flex;flex-direction:column;gap:10px}#lst{display:flex;flex-direction:column;gap:6px}[hidden]{display:none!important}
+#help{font-size:12px;opacity:.7;padding:0 10px 10px;text-align:center}
+</style></head><body>
+<div id="wrap"><canvas id="cv"></canvas><div id="hud"></div></div>
+<div id="pad">
+<button data-k="ArrowLeft">◀</button><button data-k="ArrowRight">▶</button><button data-k="ArrowUp">⬆</button><button data-k="ArrowDown">⬇</button>
+<button data-k="Enter">Salto</button><button id="wpb" class="s">Arma</button><button data-k=" ">🚀 Disparar</button></div>
+<div id="help">←/→ mover · ↑/↓ apuntar · Enter saltar · 1/2 arma · mantené Espacio para cargar y soltá para disparar</div>
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-    <title>PichonWorms</title>
-    <style>
-        * {
-            box-sizing: border-box
-        }
+<div id="lob" class="ov"><div class="card"><h1>🪱 PichonWorms</h1>
+<div id="v1">
+<input id="nm" maxlength="16" placeholder="Tu nombre"><button id="cr">Crear partida</button>
+<h3>Partidas abiertas</h3><div id="lst"></div></div>
+<div id="v2" hidden><h3>Sala de espera</h3><div id="pl"></div>
+<button id="st" hidden>Iniciar partida</button><button id="lv" class="s">Salir</button></div>
+<p id="err"></p></div></div>
+<div id="end" class="ov" hidden><div class="card"><h1 id="win"></h1><button id="bk">Volver al lobby</button></div></div>
 
-        body {
-            margin: 0;
-            background: #12161c;
-            color: #eee;
-            font-family: system-ui, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center
-        }
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+// ====== PEGÁ ACÁ TU CONFIG DE FIREBASE ======
+const firebaseConfig = { /* apiKey:"...", authDomain:"...", projectId:"...", appId:"..." */ };
+// ============================================
+const $=id=>document.getElementById(id);
+const W=1200,H=600,G=900,COL=['#e74c3c','#3498db','#2ecc71','#f1c40f'];
+const cv=$('cv'),ctx=cv.getContext('2d');cv.width=W;cv.height=H;
+const tc=document.createElement('canvas');tc.width=W;tc.height=H;const tx=tc.getContext('2d');
+let tdata=null,uid=null,db,unsub=null,S=newS();const K={};
+function newS(){return{id:null,g:null,ready:null,worms:[],proj:[],fx:[],cr:[],phase:'wait',turn:-2,shotN:-1,aim:{a:45,p:0,ch:false},fuel:0,wp:0,tl:0,sd:0,ending:0,open:S&&S.open}}
+const err=m=>$('err').textContent=m||'';
 
-        #wrap {
-            position: relative;
-            width: min(100vw, 1200px)
-        }
+/* ---------- Terreno ---------- */
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function genTerrain(seed){const r=rng(seed),p=[r()*6,r()*6,r()*6];tx.clearRect(0,0,W,H);
+ for(let x=0;x<W;x++){const h=Math.round(H*.55+Math.sin(x*.004+p[0])*70+Math.sin(x*.011+p[1])*35+Math.sin(x*.027+p[2])*12);
+  tx.fillStyle='#7a5230';tx.fillRect(x,h,1,H-h);tx.fillStyle='#4caf50';tx.fillRect(x,h,1,6)}
+ refresh()}
+const refresh=()=>{tdata=tx.getImageData(0,0,W,H).data};
+const solid=(x,y)=>x>=0&&x<W&&y>=0&&y<H&&tdata[((y|0)*W+(x|0))*4+3]>128;
+function crater(x,y,r){tx.globalCompositeOperation='destination-out';tx.beginPath();tx.arc(x,y,r,0,7);tx.fill();tx.globalCompositeOperation='source-over'}
 
-        canvas {
-            width: 100%;
-            display: block;
-            background: #000;
-            touch-action: none
-        }
+/* ---------- Física ---------- */
+const ground=a=>solid(a.x,a.y+1);
+function walk(a,dx){const nx=a.x+dx;if(nx<8||nx>W-8)return false;
+ for(let k=0;k<=7;k++)if(!solid(nx,a.y-k)&&!solid(nx,a.y-k-9)){a.x=nx;a.y-=k;return true}return false}
+function fall(a,dt){
+ if(a.vx){if(!walk(a,a.vx*dt))a.vx=0;a.vx*=Math.pow(.05,dt);if(Math.abs(a.vx)<8)a.vx=0}
+ if(a.vy<0){if(solid(a.x,a.y-12))a.vy=0;else{a.y+=a.vy*dt;a.vy+=G*dt;return}}
+ if(solid(a.x,a.y+1)){if(a.vy>600)a.hp=Math.max(0,a.hp-Math.round((a.vy-600)/25));a.vy=0;return}
+ a.vy+=G*dt;let dy=a.vy*dt;while(dy>0&&!solid(a.x,a.y+1)){const s=Math.min(1,dy);a.y+=s;dy-=s}
+ if(a.y>=H-2)a.hp=0}
+const hitW=(x,y,o)=>S.worms.some(a=>a!==o&&a.hp>0&&Math.abs(a.x-x)<9&&y>a.y-18&&y<a.y+2);
+function boom(x,y,r,dmg){x=Math.round(x);y=Math.round(y);S.fx.push({x,y,r,t:0});crater(x,y,r);refresh();S.cr.push(x,y,r);
+ for(const a of S.worms){if(a.hp<=0)continue;const dx=a.x-x,dy=a.y-8-y,d=Math.hypot(dx,dy);
+  if(d<r+12){const f=1-d/(r+12);a.hp=Math.max(0,a.hp-Math.round(dmg*f));a.vx=dx/(d||1)*500*f;a.vy=-250-300*f}}}
+function launch(w,wp,a,p){const ang=a*Math.PI/180,sp=150+p*750;
+ S.proj.push({x:w.x+w.d*12,y:w.y-10,vx:Math.cos(ang)*w.d*sp,vy:-Math.sin(ang)*sp,wp,tm:3,own:w})}
+function stepP(p,dt){
+ p.vy+=G*dt;if(p.wp==0)p.vx+=S.g.wind*30*dt;
+ const n=Math.max(1,Math.ceil(Math.hypot(p.vx,p.vy)*dt/2));
+ for(let i=0;i<n;i++){const nx=p.x+p.vx*dt/n,ny=p.y+p.vy*dt/n;
+  if(ny>=H||(p.wp==0&&(nx<-50||nx>W+50))){p.dead=1;return}
+  if(p.wp==0){if(solid(nx,ny)||hitW(nx,ny,p.own)){boom(nx,ny,32,55);p.dead=1;return}p.x=nx;p.y=ny}
+  else{if(nx<0||nx>W){p.vx*=-.6;break}
+   if(solid(nx,ny)){const a=solid(nx,p.y),b=solid(p.x,ny);if(a||!b)p.vx*=-.5;if(b||!a){p.vy*=-.5;p.vx*=.8}break}
+   p.x=nx;p.y=ny}}
+ if(p.wp==1){p.tm-=dt;if(p.tm<=0){boom(p.x,p.y,40,60);p.dead=1}}}
 
-        #hud {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: #000a;
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 14px;
-            border-left: 5px solid #fff
-        }
+/* ---------- Turnos ---------- */
+const myIdx=()=>S.g?S.g.players.indexOf(uid):-1;
+function endTurn(){
+ if(S.ending)return;S.ending=1;S.phase='wait';
+ const g=S.g,n=g.players.length,alive=t=>S.worms.filter(a=>a.t==t&&a.hp>0);
+ const teams=[...Array(n).keys()].filter(t=>alive(t).length);
+ const u={worms:S.worms.map(a=>({t:a.t,x:Math.round(a.x),y:Math.floor(a.y),hp:a.hp,d:a.d})),craters:S.cr,turn:g.turn+1,shot:null,wind:Math.round(Math.random()*10-5)};
+ if(teams.length<2){u.status='done';u.winner=teams.length?g.names[teams[0]]:'Nadie (empate)';u.cur=g.cur;u.aw=g.aw}
+ else{let c=g.cur;do c=(c+1)%n;while(!alive(c).length);const L=alive(c);u.cur=c;u.aw=S.worms.indexOf(L[Math.floor(g.turn/n)%L.length])}
+ db.doc('worms_games/'+S.id).update(u).catch(e=>err(e.message))}
+function fire(){const w=S.worms[S.g.aw],a=S.aim.a,p=S.aim.p;S.aim.ch=false;S.aim.p=0;S.phase='fly';S.sd=0;S.shotN=S.turn;
+ db.doc('worms_games/'+S.id).update({shot:{n:S.turn,x:Math.round(w.x),y:Math.floor(w.y),d:w.d,a,p,wp:S.wp}}).catch(e=>err(e.message));
+ launch(w,S.wp,a,p)}
+function step(dt){
+ const g=S.g;if(g.status=='done')return;
+ S.fx.forEach(f=>f.t+=dt);S.fx=S.fx.filter(f=>f.t<.4);
+ if(S.phase=='aim'){const a=S.worms[g.aw];
+  if(!a||a.hp<=0){endTurn();return}
+  const mv=(K.ArrowRight||K.d?1:0)-(K.ArrowLeft||K.a?1:0);
+  if(mv&&S.fuel>0&&ground(a)){a.d=mv;if(walk(a,mv*60*dt))S.fuel-=60*dt}
+  if(K.ArrowUp||K.w)S.aim.a=Math.min(90,S.aim.a+60*dt);
+  if(K.ArrowDown||K.s)S.aim.a=Math.max(-30,S.aim.a-60*dt);
+  if(K.Enter&&ground(a)){a.vy=-380;a.vx=a.d*140;K.Enter=0}
+  if(K[' ']){S.aim.ch=true;S.aim.p=Math.min(1,S.aim.p+dt/1.2)}else if(S.aim.ch)fire();
+  S.tl-=dt;if(S.tl<=0&&S.phase=='aim')endTurn()}
+ else S.tl-=dt;
+ for(const a of S.worms)if(a.hp>0)fall(a,dt);
+ if(S.phase=='fly'){
+  for(const p of S.proj)stepP(p,dt);S.proj=S.proj.filter(p=>!p.dead);S.sd+=dt;
+  if(!S.proj.length&&S.sd>.6&&S.worms.every(a=>a.hp<=0||(!a.vx&&!a.vy&&ground(a)))){
+   if(g.cur==myIdx())endTurn();else S.phase='wait'}}}
 
-        .ov {
-            position: fixed;
-            inset: 0;
-            background: #000b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 5
-        }
+/* ---------- Sincronización ---------- */
+function onGame(d){
+ S.g=d;
+ if(d.status=='waiting'){$('v1').hidden=true;$('v2').hidden=false;
+  $('pl').innerHTML=d.names.map((n,i)=>`<div style="color:${COL[i]}">● ${n}</div>`).join('');
+  $('st').hidden=!(d.host==uid&&d.players.length>=2);return}
+ if(S.ready!==S.id){genTerrain(d.seed);S.ready=S.id;S.turn=-2}
+ $('lob').hidden=true;
+ for(let i=S.nc||0;i<d.craters.length;i+=3)crater(d.craters[i],d.craters[i+1],d.craters[i+2]);
+ S.nc=d.craters.length;refresh();
+ if(d.turn!==S.turn){S.turn=d.turn;S.worms=d.worms.map(w=>({...w,vx:0,vy:0}));S.proj=[];S.cr=d.craters.slice();S.ending=0;
+  if(d.status=='done'){S.phase='over';$('win').textContent='🏆 Ganó '+d.winner;$('end').hidden=false}
+  else{S.phase=d.cur==myIdx()?'aim':'wait';S.tl=30;S.fuel=150;S.aim.p=0;S.aim.ch=false}}
+ else if(d.shot&&S.shotN!==d.shot.n&&d.cur!==myIdx()){
+  S.shotN=d.shot.n;const w=S.worms[d.aw];w.x=d.shot.x;w.y=d.shot.y;w.d=d.shot.d;
+  launch(w,d.shot.wp,d.shot.a,d.shot.p);S.phase='fly';S.sd=0}}
 
-        .ov[hidden] {
-            display: none
-        }
+/* ---------- Dibujo ---------- */
+function draw(){
+ const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#5dade2');g.addColorStop(1,'#d6eaf8');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ if(!S.g||S.g.status=='waiting'||S.ready!==S.id)return;
+ ctx.drawImage(tc,0,0);ctx.fillStyle='rgba(30,90,200,.6)';ctx.fillRect(0,H-14,W,14);
+ ctx.textAlign='center';ctx.font='bold 12px sans-serif';
+ S.worms.forEach((a,i)=>{if(a.hp<=0)return;
+  ctx.fillStyle=COL[a.t];ctx.beginPath();ctx.ellipse(a.x,a.y-8,7,9,0,0,7);ctx.fill();
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(a.x+a.d*3,a.y-11,3,0,7);ctx.fill();
+  ctx.fillStyle='#000';ctx.beginPath();ctx.arc(a.x+a.d*4,a.y-11,1.3,0,7);ctx.fill();
+  ctx.fillStyle='#000';ctx.fillText(a.hp+' · '+S.g.names[a.t],a.x,a.y-26);
+  if(i==S.g.aw&&S.g.status=='play'){ctx.fillStyle='#fff';ctx.fillText('▼',a.x,a.y-38+Math.sin(performance.now()/200)*3)}});
+ const w=S.worms[S.g.aw];
+ if(S.phase=='aim'&&w&&S.g.cur==myIdx()){const r=a=>a*Math.PI/180,ca=r(S.aim.a);
+  ctx.strokeStyle='#e00';ctx.lineWidth=2;ctx.beginPath();ctx.arc(w.x+w.d*Math.cos(ca)*50,w.y-10-Math.sin(ca)*50,6,0,7);ctx.stroke();
+  ctx.fillStyle='#0008';ctx.fillRect(w.x-20,w.y+6,40,5);ctx.fillStyle='#ff0';ctx.fillRect(w.x-20,w.y+6,40*S.aim.p,5)}
+ for(const p of S.proj){ctx.fillStyle=p.wp?'#2e7d32':'#222';ctx.beginPath();ctx.arc(p.x,p.y,p.wp?4:3,0,7);ctx.fill()}
+ for(const f of S.fx){ctx.fillStyle=`rgba(255,140,0,${1-f.t/.4})`;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(.6+f.t),0,7);ctx.fill()}
+ const gg=S.g;$('hud').textContent=`Turno: ${gg.names[gg.cur]} · ⏱ ${Math.max(0,S.tl|0)}s · Viento ${gg.wind<0?'◀':'▶'} ${Math.abs(gg.wind)} · ${['Bazooka','Granada'][S.wp]}`;
+ $('hud').style.borderColor=COL[gg.cur]}
+let last=performance.now(),acc=0;
+function loop(t){acc+=Math.min(.05,(t-last)/1000);last=t;
+ while(acc>=1/60){if(S.g&&S.g.status!='waiting'&&S.ready===S.id)step(1/60);acc-=1/60}
+ draw();requestAnimationFrame(loop)}
 
-        .card {
-            background: #1e2530;
-            padding: 22px;
-            border-radius: 14px;
-            width: min(92vw, 380px);
-            display: flex;
-            flex-direction: column;
-            gap: 10px
-        }
+/* ---------- Lobby ---------- */
+const nm=()=>$('nm').value.trim().slice(0,16)||'Gusano';
+function sub(id){S.id=id;S.ready=null;unsub&&unsub();
+ unsub=db.doc('worms_games/'+id).onSnapshot(s=>{if(!s.exists){leave();return}onGame(s.data())},e=>err(e.message))}
+async function create(){try{err();
+ const r=await db.collection('worms_games').add({host:uid,players:[uid],names:[nm()],status:'waiting',seed:Math.floor(Math.random()*1e9),t:firebase.firestore.FieldValue.serverTimestamp()});sub(r.id)}catch(e){err(e.message)}}
+async function join(id){try{err();const ref=db.doc('worms_games/'+id);
+ await db.runTransaction(async t=>{const d=(await t.get(ref)).data();
+  if(d.status!='waiting'||d.players.length>=4)throw Error('Partida llena o ya iniciada');
+  if(!d.players.includes(uid))t.update(ref,{players:[...d.players,uid],names:[...d.names,nm()]})});sub(id)}catch(e){err(e.message)}}
+function startGame(){const g=S.g,n=g.players.length,ts=[];for(let t=0;t<n;t++)ts.push(t,t);ts.sort(()=>Math.random()-.5);
+ genTerrain(g.seed);const ws=ts.map((t,i)=>{const x=Math.round((i+1)*W/(ts.length+1));let y=0;while(y<H&&!solid(x,y+1))y++;return{t,x,y,hp:100,d:i%2?-1:1}});
+ db.doc('worms_games/'+S.id).update({status:'play',worms:ws,craters:[],turn:0,cur:0,aw:ws.findIndex(a=>a.t==0),wind:Math.round(Math.random()*10-5),shot:null}).catch(e=>err(e.message))}
+function leave(){unsub&&unsub();unsub=null;
+ if(S.g&&S.g.status=='waiting'&&S.g.host==uid)db.doc('worms_games/'+S.id).delete().catch(()=>{});
+ S=newS();$('lob').hidden=false;$('end').hidden=true;$('v1').hidden=false;$('v2').hidden=true;rlist()}
+function rlist(){const el=$('lst');el.innerHTML='';const now=Date.now();
+ (S.open||[]).filter(d=>!d.t||now-d.t.toMillis()<72e5).forEach(d=>{const b=document.createElement('button');b.className='s';
+  b.textContent=`${d.names[0]} (${d.players.length}/4) · Unirse`;b.onclick=()=>join(d.id);el.append(b)});
+ if(!el.children.length)el.textContent='No hay partidas abiertas.'}
 
-        h1,
-        h3 {
-            margin: 0
-        }
+/* ---------- Input ---------- */
+const norm=k=>k.length==1?k.toLowerCase():k;
+addEventListener('keydown',e=>{const k=norm(e.key);K[k]=1;
+ if(S.phase=='aim'){if(k=='1')S.wp=0;if(k=='2')S.wp=1;if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k)&&!$('lob').offsetParent)e.preventDefault()}});
+addEventListener('keyup',e=>K[norm(e.key)]=0);
+document.querySelectorAll('[data-k]').forEach(b=>{const k=b.dataset.k;
+ b.onpointerdown=e=>{e.preventDefault();K[k]=1};b.onpointerup=b.onpointerleave=()=>K[k]=0});
+$('wpb').onclick=()=>{if(S.phase=='aim')S.wp^=1};
+$('cr').onclick=create;$('st').onclick=startGame;$('lv').onclick=leave;$('bk').onclick=leave;
+try{$('nm').value=localStorage.pw_name||''}catch(e){}$('nm').oninput=()=>{try{localStorage.pw_name=$('nm').value}catch(e){}};
 
-        input,
-        button {
-            font: inherit;
-            padding: 10px;
-            border-radius: 8px;
-            border: 0
-        }
-
-        input {
-            background: #0e1218;
-            color: #fff
-        }
-
-        button {
-            background: #3d8bff;
-            color: #fff;
-            cursor: pointer
-        }
-
-        button.s {
-            background: #39414f
-        }
-
-        #err {
-            color: #ff7b7b;
-            margin: 0;
-            font-size: 13px
-        }
-
-        #pad {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 8px
-        }
-
-        #pad button {
-            min-width: 52px;
-            touch-action: none;
-            user-select: none
-        }
-
-        #help {
-            font-size: 12px;
-            opacity: .7;
-            padding: 0 10px 10px;
-            text-align: center
-        }
-    </style>
-</head>
-
-<body>
-    <div id="wrap"><canvas id="cv"></canvas>
-        <div id="hud"></div>
-    </div>
-    <div id="pad">
-        <button data-k="ArrowLeft">◀</button><button data-k="ArrowRight">▶</button><button
-            data-k="ArrowUp">⬆</button><button data-k="ArrowDown">⬇</button>
-        <button data-k="Enter">Salto</button><button id="wpb" class="s">Arma</button><button data-k=" ">🚀
-            Disparar</button>
-    </div>
-    <div id="help">←/→ mover · ↑/↓ apuntar · Enter saltar · 1/2 arma · mantené Espacio para cargar y soltá para disparar
-    </div>
-
-    <div id="lob" class="ov">
-        <div class="card">
-            <h1>🪱 PichonWorms</h1>
-            <div id="v1" style="display:flex;flex-direction:column;gap:10px">
-                <input id="nm" maxlength="16" placeholder="Tu nombre"><button id="cr">Crear partida</button>
-                <h3>Partidas abiertas</h3>
-                <div id="lst" style="display:flex;flex-direction:column;gap:6px"></div>
-            </div>
-            <div id="v2" hidden style="flex-direction:column;gap:10px">
-                <h3>Sala de espera</h3>
-                <div id="pl"></div>
-                <button id="st" hidden>Iniciar partida</button><button id="lv" class="s">Salir</button>
-            </div>
-            <p id="err"></p>
-        </div>
-    </div>
-    <div id="end" class="ov" hidden>
-        <div class="card">
-            <h1 id="win"></h1><button id="bk">Volver al lobby</button>
-        </div>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script>
-        // ====== PEGÁ ACÁ TU CONFIG DE FIREBASE ======
-        const firebaseConfig = { /* apiKey:"...", authDomain:"...", projectId:"...", appId:"..." */ };
-        // ============================================
-        const $ = id => document.getElementById(id);
-        const W = 1200, H = 600, G = 900, COL = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f'];
-        const cv = $('cv'), ctx = cv.getContext('2d'); cv.width = W; cv.height = H;
-        const tc = document.createElement('canvas'); tc.width = W; tc.height = H; const tx = tc.getContext('2d');
-        let tdata = null, uid = null, db, unsub = null, S = newS(); const K = {};
-        function newS() { return { id: null, g: null, ready: null, worms: [], proj: [], fx: [], cr: [], phase: 'wait', turn: -2, shotN: -1, aim: { a: 45, p: 0, ch: false }, fuel: 0, wp: 0, tl: 0, sd: 0, ending: 0, open: S && S.open } }
-        const err = m => $('err').textContent = m || '';
-
-        /* ---------- Terreno ---------- */
-        function rng(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 } }
-        function genTerrain(seed) {
-            const r = rng(seed), p = [r() * 6, r() * 6, r() * 6]; tx.clearRect(0, 0, W, H);
-            for (let x = 0; x < W; x++) {
-                const h = Math.round(H * .55 + Math.sin(x * .004 + p[0]) * 70 + Math.sin(x * .011 + p[1]) * 35 + Math.sin(x * .027 + p[2]) * 12);
-                tx.fillStyle = '#7a5230'; tx.fillRect(x, h, 1, H - h); tx.fillStyle = '#4caf50'; tx.fillRect(x, h, 1, 6)
-            }
-            refresh()
-        }
-        const refresh = () => { tdata = tx.getImageData(0, 0, W, H).data };
-        const solid = (x, y) => x >= 0 && x < W && y >= 0 && y < H && tdata[((y | 0) * W + (x | 0)) * 4 + 3] > 128;
-        function crater(x, y, r) { tx.globalCompositeOperation = 'destination-out'; tx.beginPath(); tx.arc(x, y, r, 0, 7); tx.fill(); tx.globalCompositeOperation = 'source-over' }
-
-        /* ---------- Física ---------- */
-        const ground = a => solid(a.x, a.y + 1);
-        function walk(a, dx) {
-            const nx = a.x + dx; if (nx < 8 || nx > W - 8) return false;
-            for (let k = 0; k <= 7; k++)if (!solid(nx, a.y - k) && !solid(nx, a.y - k - 9)) { a.x = nx; a.y -= k; return true } return false
-        }
-        function fall(a, dt) {
-            if (a.vx) { if (!walk(a, a.vx * dt)) a.vx = 0; a.vx *= Math.pow(.05, dt); if (Math.abs(a.vx) < 8) a.vx = 0 }
-            if (a.vy < 0) { if (solid(a.x, a.y - 12)) a.vy = 0; else { a.y += a.vy * dt; a.vy += G * dt; return } }
-            if (solid(a.x, a.y + 1)) { if (a.vy > 600) a.hp = Math.max(0, a.hp - Math.round((a.vy - 600) / 25)); a.vy = 0; return }
-            a.vy += G * dt; let dy = a.vy * dt; while (dy > 0 && !solid(a.x, a.y + 1)) { const s = Math.min(1, dy); a.y += s; dy -= s }
-            if (a.y >= H - 2) a.hp = 0
-        }
-        const hitW = (x, y, o) => S.worms.some(a => a !== o && a.hp > 0 && Math.abs(a.x - x) < 9 && y > a.y - 18 && y < a.y + 2);
-        function boom(x, y, r, dmg) {
-            x = Math.round(x); y = Math.round(y); S.fx.push({ x, y, r, t: 0 }); crater(x, y, r); refresh(); S.cr.push(x, y, r);
-            for (const a of S.worms) {
-                if (a.hp <= 0) continue; const dx = a.x - x, dy = a.y - 8 - y, d = Math.hypot(dx, dy);
-                if (d < r + 12) { const f = 1 - d / (r + 12); a.hp = Math.max(0, a.hp - Math.round(dmg * f)); a.vx = dx / (d || 1) * 500 * f; a.vy = -250 - 300 * f }
-            }
-        }
-        function launch(w, wp, a, p) {
-            const ang = a * Math.PI / 180, sp = 150 + p * 750;
-            S.proj.push({ x: w.x + w.d * 12, y: w.y - 10, vx: Math.cos(ang) * w.d * sp, vy: -Math.sin(ang) * sp, wp, tm: 3, own: w })
-        }
-        function stepP(p, dt) {
-            p.vy += G * dt; if (p.wp == 0) p.vx += S.g.wind * 30 * dt;
-            const n = Math.max(1, Math.ceil(Math.hypot(p.vx, p.vy) * dt / 2));
-            for (let i = 0; i < n; i++) {
-                const nx = p.x + p.vx * dt / n, ny = p.y + p.vy * dt / n;
-                if (ny >= H || (p.wp == 0 && (nx < -50 || nx > W + 50))) { p.dead = 1; return }
-                if (p.wp == 0) { if (solid(nx, ny) || hitW(nx, ny, p.own)) { boom(nx, ny, 32, 55); p.dead = 1; return } p.x = nx; p.y = ny }
-                else {
-                    if (nx < 0 || nx > W) { p.vx *= -.6; break }
-                    if (solid(nx, ny)) { const a = solid(nx, p.y), b = solid(p.x, ny); if (a || !b) p.vx *= -.5; if (b || !a) { p.vy *= -.5; p.vx *= .8 } break }
-                    p.x = nx; p.y = ny
-                }
-            }
-            if (p.wp == 1) { p.tm -= dt; if (p.tm <= 0) { boom(p.x, p.y, 40, 60); p.dead = 1 } }
-        }
-
-        /* ---------- Turnos ---------- */
-        const myIdx = () => S.g ? S.g.players.indexOf(uid) : -1;
-        function endTurn() {
-            if (S.ending) return; S.ending = 1; S.phase = 'wait';
-            const g = S.g, n = g.players.length, alive = t => S.worms.filter(a => a.t == t && a.hp > 0);
-            const teams = [...Array(n).keys()].filter(t => alive(t).length);
-            const u = { worms: S.worms.map(a => ({ t: a.t, x: Math.round(a.x), y: Math.floor(a.y), hp: a.hp, d: a.d })), craters: S.cr, turn: g.turn + 1, shot: null, wind: Math.round(Math.random() * 10 - 5) };
-            if (teams.length < 2) { u.status = 'done'; u.winner = teams.length ? g.names[teams[0]] : 'Nadie (empate)'; u.cur = g.cur; u.aw = g.aw }
-            else { let c = g.cur; do c = (c + 1) % n; while (!alive(c).length); const L = alive(c); u.cur = c; u.aw = S.worms.indexOf(L[Math.floor(g.turn / n) % L.length]) }
-            db.doc('worms_games/' + S.id).update(u).catch(e => err(e.message))
-        }
-        function fire() {
-            const w = S.worms[S.g.aw], a = S.aim.a, p = S.aim.p; S.aim.ch = false; S.aim.p = 0; S.phase = 'fly'; S.sd = 0; S.shotN = S.turn;
-            db.doc('worms_games/' + S.id).update({ shot: { n: S.turn, x: Math.round(w.x), y: Math.floor(w.y), d: w.d, a, p, wp: S.wp } }).catch(e => err(e.message));
-            launch(w, S.wp, a, p)
-        }
-        function step(dt) {
-            const g = S.g; if (g.status == 'done') return;
-            S.fx.forEach(f => f.t += dt); S.fx = S.fx.filter(f => f.t < .4);
-            if (S.phase == 'aim') {
-                const a = S.worms[g.aw];
-                if (!a || a.hp <= 0) { endTurn(); return }
-                const mv = (K.ArrowRight || K.d ? 1 : 0) - (K.ArrowLeft || K.a ? 1 : 0);
-                if (mv && S.fuel > 0 && ground(a)) { a.d = mv; if (walk(a, mv * 60 * dt)) S.fuel -= 60 * dt }
-                if (K.ArrowUp || K.w) S.aim.a = Math.min(90, S.aim.a + 60 * dt);
-                if (K.ArrowDown || K.s) S.aim.a = Math.max(-30, S.aim.a - 60 * dt);
-                if (K.Enter && ground(a)) { a.vy = -380; a.vx = a.d * 140; K.Enter = 0 }
-                if (K[' ']) { S.aim.ch = true; S.aim.p = Math.min(1, S.aim.p + dt / 1.2) } else if (S.aim.ch) fire();
-                S.tl -= dt; if (S.tl <= 0 && S.phase == 'aim') endTurn()
-            }
-            else S.tl -= dt;
-            for (const a of S.worms) if (a.hp > 0) fall(a, dt);
-            if (S.phase == 'fly') {
-                for (const p of S.proj) stepP(p, dt); S.proj = S.proj.filter(p => !p.dead); S.sd += dt;
-                if (!S.proj.length && S.sd > .6 && S.worms.every(a => a.hp <= 0 || (!a.vx && !a.vy && ground(a)))) {
-                    if (g.cur == myIdx()) endTurn(); else S.phase = 'wait'
-                }
-            }
-        }
-
-        /* ---------- Sincronización ---------- */
-        function onGame(d) {
-            S.g = d;
-            if (d.status == 'waiting') {
-                $('v1').hidden = true; $('v2').hidden = false; $('v2').style.display = 'flex';
-                $('pl').innerHTML = d.names.map((n, i) => `<div style="color:${COL[i]}">● ${n}</div>`).join('');
-                $('st').hidden = !(d.host == uid && d.players.length >= 2); return
-            }
-            if (S.ready !== S.id) { genTerrain(d.seed); S.ready = S.id; S.turn = -2 }
-            $('lob').hidden = true;
-            for (let i = S.nc || 0; i < d.craters.length; i += 3)crater(d.craters[i], d.craters[i + 1], d.craters[i + 2]);
-            S.nc = d.craters.length; refresh();
-            if (d.turn !== S.turn) {
-                S.turn = d.turn; S.worms = d.worms.map(w => ({ ...w, vx: 0, vy: 0 })); S.proj = []; S.cr = d.craters.slice(); S.ending = 0;
-                if (d.status == 'done') { S.phase = 'over'; $('win').textContent = '🏆 Ganó ' + d.winner; $('end').hidden = false }
-                else { S.phase = d.cur == myIdx() ? 'aim' : 'wait'; S.tl = 30; S.fuel = 150; S.aim.p = 0; S.aim.ch = false }
-            }
-            else if (d.shot && S.shotN !== d.shot.n && d.cur !== myIdx()) {
-                S.shotN = d.shot.n; const w = S.worms[d.aw]; w.x = d.shot.x; w.y = d.shot.y; w.d = d.shot.d;
-                launch(w, d.shot.wp, d.shot.a, d.shot.p); S.phase = 'fly'; S.sd = 0
-            }
-        }
-
-        /* ---------- Dibujo ---------- */
-        function draw() {
-            const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#5dade2'); g.addColorStop(1, '#d6eaf8'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-            if (!S.g || S.g.status == 'waiting' || S.ready !== S.id) return;
-            ctx.drawImage(tc, 0, 0); ctx.fillStyle = 'rgba(30,90,200,.6)'; ctx.fillRect(0, H - 14, W, 14);
-            ctx.textAlign = 'center'; ctx.font = 'bold 12px sans-serif';
-            S.worms.forEach((a, i) => {
-                if (a.hp <= 0) return;
-                ctx.fillStyle = COL[a.t]; ctx.beginPath(); ctx.ellipse(a.x, a.y - 8, 7, 9, 0, 0, 7); ctx.fill();
-                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(a.x + a.d * 3, a.y - 11, 3, 0, 7); ctx.fill();
-                ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(a.x + a.d * 4, a.y - 11, 1.3, 0, 7); ctx.fill();
-                ctx.fillStyle = '#000'; ctx.fillText(a.hp + ' · ' + S.g.names[a.t], a.x, a.y - 26);
-                if (i == S.g.aw && S.g.status == 'play') { ctx.fillStyle = '#fff'; ctx.fillText('▼', a.x, a.y - 38 + Math.sin(performance.now() / 200) * 3) }
-            });
-            const w = S.worms[S.g.aw];
-            if (S.phase == 'aim' && w && S.g.cur == myIdx()) {
-                const r = a => a * Math.PI / 180, ca = r(S.aim.a);
-                ctx.strokeStyle = '#e00'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(w.x + w.d * Math.cos(ca) * 50, w.y - 10 - Math.sin(ca) * 50, 6, 0, 7); ctx.stroke();
-                ctx.fillStyle = '#0008'; ctx.fillRect(w.x - 20, w.y + 6, 40, 5); ctx.fillStyle = '#ff0'; ctx.fillRect(w.x - 20, w.y + 6, 40 * S.aim.p, 5)
-            }
-            for (const p of S.proj) { ctx.fillStyle = p.wp ? '#2e7d32' : '#222'; ctx.beginPath(); ctx.arc(p.x, p.y, p.wp ? 4 : 3, 0, 7); ctx.fill() }
-            for (const f of S.fx) { ctx.fillStyle = `rgba(255,140,0,${1 - f.t / .4})`; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (.6 + f.t), 0, 7); ctx.fill() }
-            const gg = S.g; $('hud').textContent = `Turno: ${gg.names[gg.cur]} · ⏱ ${Math.max(0, S.tl | 0)}s · Viento ${gg.wind < 0 ? '◀' : '▶'} ${Math.abs(gg.wind)} · ${['Bazooka', 'Granada'][S.wp]}`;
-            $('hud').style.borderColor = COL[gg.cur]
-        }
-        let last = performance.now(), acc = 0;
-        function loop(t) {
-            acc += Math.min(.05, (t - last) / 1000); last = t;
-            while (acc >= 1 / 60) { if (S.g && S.g.status != 'waiting' && S.ready === S.id) step(1 / 60); acc -= 1 / 60 }
-            draw(); requestAnimationFrame(loop)
-        }
-
-        /* ---------- Lobby ---------- */
-        const nm = () => $('nm').value.trim().slice(0, 16) || 'Gusano';
-        function sub(id) {
-            S.id = id; S.ready = null; unsub && unsub();
-            unsub = db.doc('worms_games/' + id).onSnapshot(s => { if (!s.exists) { leave(); return } onGame(s.data()) }, e => err(e.message))
-        }
-        async function create() {
-            try {
-                err();
-                const r = await db.collection('worms_games').add({ host: uid, players: [uid], names: [nm()], status: 'waiting', seed: Math.floor(Math.random() * 1e9), t: firebase.firestore.FieldValue.serverTimestamp() }); sub(r.id)
-            } catch (e) { err(e.message) }
-        }
-        async function join(id) {
-            try {
-                err(); const ref = db.doc('worms_games/' + id);
-                await db.runTransaction(async t => {
-                    const d = (await t.get(ref)).data();
-                    if (d.status != 'waiting' || d.players.length >= 4) throw Error('Partida llena o ya iniciada');
-                    if (!d.players.includes(uid)) t.update(ref, { players: [...d.players, uid], names: [...d.names, nm()] })
-                }); sub(id)
-            } catch (e) { err(e.message) }
-        }
-        function startGame() {
-            const g = S.g, n = g.players.length, ts = []; for (let t = 0; t < n; t++)ts.push(t, t); ts.sort(() => Math.random() - .5);
-            genTerrain(g.seed); const ws = ts.map((t, i) => { const x = Math.round((i + 1) * W / (ts.length + 1)); let y = 0; while (y < H && !solid(x, y + 1)) y++; return { t, x, y, hp: 100, d: i % 2 ? -1 : 1 } });
-            db.doc('worms_games/' + S.id).update({ status: 'play', worms: ws, craters: [], turn: 0, cur: 0, aw: ws.findIndex(a => a.t == 0), wind: Math.round(Math.random() * 10 - 5), shot: null }).catch(e => err(e.message))
-        }
-        function leave() {
-            unsub && unsub(); unsub = null;
-            if (S.g && S.g.status == 'waiting' && S.g.host == uid) db.doc('worms_games/' + S.id).delete().catch(() => { });
-            S = newS(); $('lob').hidden = false; $('end').hidden = true; $('v1').hidden = false; $('v2').hidden = true; rlist()
-        }
-        function rlist() {
-            const el = $('lst'); el.innerHTML = ''; const now = Date.now();
-            (S.open || []).filter(d => !d.t || now - d.t.toMillis() < 72e5).forEach(d => {
-                const b = document.createElement('button'); b.className = 's';
-                b.textContent = `${d.names[0]} (${d.players.length}/4) · Unirse`; b.onclick = () => join(d.id); el.append(b)
-            });
-            if (!el.children.length) el.textContent = 'No hay partidas abiertas.'
-        }
-
-        /* ---------- Input ---------- */
-        const norm = k => k.length == 1 ? k.toLowerCase() : k;
-        addEventListener('keydown', e => {
-            const k = norm(e.key); K[k] = 1;
-            if (S.phase == 'aim') { if (k == '1') S.wp = 0; if (k == '2') S.wp = 1; if ([' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(k) && !$('lob').offsetParent) e.preventDefault() }
-        });
-        addEventListener('keyup', e => K[norm(e.key)] = 0);
-        document.querySelectorAll('[data-k]').forEach(b => {
-            const k = b.dataset.k;
-            b.onpointerdown = e => { e.preventDefault(); K[k] = 1 }; b.onpointerup = b.onpointerleave = () => K[k] = 0
-        });
-        $('wpb').onclick = () => { if (S.phase == 'aim') S.wp ^= 1 };
-        $('cr').onclick = create; $('st').onclick = startGame; $('lv').onclick = leave; $('bk').onclick = leave;
-        try { $('nm').value = localStorage.pw_name || '' } catch (e) { } $('nm').oninput = () => { try { localStorage.pw_name = $('nm').value } catch (e) { } };
-
-        /* ---------- Init ---------- */
-        if (!firebaseConfig.apiKey) { err('Pegá tu firebaseConfig en el código.') }
-        else {
-            firebase.initializeApp(firebaseConfig); db = firebase.firestore();
-            firebase.auth().onAuthStateChanged(u => {
-                if (!u) { firebase.auth().signInAnonymously().catch(e => err(e.message)); return }
-                uid = u.uid;
-                db.collection('worms_games').where('status', '==', 'waiting').limit(20).onSnapshot(q => { S.open = q.docs.map(x => ({ id: x.id, ...x.data() })); if (!S.id) rlist() }, e => err(e.message))
-            })
-        }
-        rlist(); requestAnimationFrame(loop);
-    </script>
-</body>
-
-</html>
+/* ---------- Init ---------- */
+if(!firebaseConfig.apiKey){err('Pegá tu firebaseConfig en el código.')}
+else{firebase.initializeApp(firebaseConfig);db=firebase.firestore();
+ firebase.auth().onAuthStateChanged(u=>{
+  if(!u){firebase.auth().signInAnonymously().catch(e=>err(e.message));return}
+  uid=u.uid;
+  db.collection('worms_games').where('status','==','waiting').limit(20).onSnapshot(q=>{S.open=q.docs.map(x=>({id:x.id,...x.data()}));if(!S.id)rlist()},e=>err(e.message))})}
+rlist();requestAnimationFrame(loop);
+</script></body></html>
