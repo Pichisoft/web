@@ -202,15 +202,14 @@ body.prem .p-gear{display:flex}
     const LOGO = (document.querySelector('link[rel~="icon"]') || {}).href || '';
     const TAGS = {
         nuevo: ['NUEVO', 'et-nuevo'], actualizado: ['ACTUALIZADO', 'et-actualizado'], beta: ['BETA', 'et-beta'],
-        cancelado: ['ELIMINADA' /*en realidad es 'CANCELADO', lo cambié temporalmente para pichontutorial*/, 'et-cancelado'], ultimos: ['DISPONIBLE HASTA EL 31 DE OCTUBRE DE 2026', 'et-ultimos'],
+        cancelado: ['ELIMINADA' /*en realidad es 'CANCELADO', lo cambié temporalmente para apps eliminadas*/, 'et-cancelado'], ultimos: ['DISPONIBLE HASTA EL 10 DE NOVIEMBRE DE 2026', 'et-ultimos'],
         actcancelada: ['ACTUALIZACIÓN CANCELADA', 'et-act-cancelada'], mantenimiento: ['EN MANTENIMIENTO', 'et-mantenimiento'],
         premium: ['VERSIÓN PREMIUM', 'et-premium'], proximo: ['PRÓXIMAMENTE', 'et-proximo']
     };
     /* Para ponerle un prefijo a una app, agregá su clave en "t": ej. t:['beta'] */
     const APPS = [
-        { n: 'PichonTutorial', u: 'pichontutorial', t: ['cancelado', 'ultimos'] },
-        { n: 'PichonInfo', u: 'pichoninfo' },
-        { n: 'PichonRules', u: 'pichonrules' },
+        { n: 'PichonInfo', u: 'pichoninfo', t: ['cancelado', 'ultimos'] },
+        { n: 'PichonRules', u: 'pichonrules', t: ['cancelado', 'ultimos'] },
         { n: 'PichonAlarm', u: 'pichonalarm' },
         { n: 'PichonBirthday', u: 'pichonbirthday' },
         { n: 'PichonCalc', u: 'pichoncalc' },
@@ -236,7 +235,7 @@ body.prem .p-gear{display:flex}
     APPS.forEach(a => a.t = a.t || []);
     const MAP = Object.fromEntries(APPS.map(a => [a.n, a]));
     const CATS = [
-        { id: 'utiles', nombre: 'Herramientas', apps: ['PichonTutorial', 'PichonInfo', 'PichonRules', 'PichonCode', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonWeather', 'PichonCalc', 'PichonCalendar', 'PichonPaint', 'PichonAlarm'] },
+        { id: 'utiles', nombre: 'Herramientas', apps: ['PichonInfo', 'PichonRules', 'PichonCode', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonWeather', 'PichonCalc', 'PichonCalendar', 'PichonPaint', 'PichonAlarm'] },
         { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake', 'PichonChess', 'PichonTraffic', 'PichonMan'] },
         { id: 'azar', nombre: 'Azar', apps: ['PichonDestiny', 'PichonRandom'] },
         { id: 'divertidas', nombre: 'Diversión', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonWatch'] }
