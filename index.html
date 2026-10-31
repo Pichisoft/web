@@ -33,7 +33,8 @@
         }
 
         .titulo {
-            font-family: "Times New Roman", Times, serif
+            font-family: "Times New Roman", Times, serif;
+            user-select: none;
         }
 
         .by {
@@ -41,7 +42,8 @@
             font-size: 18px;
             font-weight: normal;
             font-style: italic;
-            color: #bbb
+            color: #bbb;
+            user-select: none;
         }
 
         .nuevo::after {
@@ -49,7 +51,8 @@
             background-color: rgb(167, 28, 28);
             padding: 4px;
             font-size: .7em;
-            border-radius: 6px
+            border-radius: 6px;
+            user-select: none;
         }
 
         .actualizado::after {
@@ -57,7 +60,8 @@
             background-color: rgb(44, 167, 28);
             padding: 4px;
             font-size: .7em;
-            border-radius: 6px
+            border-radius: 6px;
+            user-select: none;
         }
 
         .eliminadas::after {
@@ -65,7 +69,8 @@
             background-color: rgb(167, 165, 28);
             padding: 4px;
             font-size: .7em;
-            border-radius: 6px
+            border-radius: 6px;
+            user-select: none;
         }
 
         .proximo::after {
@@ -73,7 +78,8 @@
             background-color: rgb(28, 65, 167);
             padding: 4px;
             font-size: .7em;
-            border-radius: 6px
+            border-radius: 6px;
+            user-select: none;
         }
 
         .etiqueta {
@@ -82,40 +88,49 @@
             padding: 4px;
             font-size: .7em;
             border-radius: 6px;
-            margin-left: 6px
+            margin-left: 6px;
+            user-select: none;
         }
 
         .et-nuevo {
-            background-color: rgb(167, 28, 28)
+            background-color: rgb(167, 28, 28);
+            user-select: none;
         }
 
         .et-actualizado {
-            background-color: rgb(44, 167, 28)
+            background-color: rgb(44, 167, 28);
+            user-select: none;
         }
 
         .et-beta {
-            background-color: rgb(193, 35, 207)
+            background-color: rgb(193, 35, 207);
+            user-select: none;
         }
 
         .et-cancelado {
-            background-color: rgb(92, 15, 15)
+            background-color: rgb(92, 15, 15);
+            user-select: none;
         }
 
         .et-ultimos {
-            background-color: rgb(167, 165, 28)
+            background-color: rgb(167, 165, 28);
+            user-select: none;
         }
 
         .et-act-cancelada {
-            background-color: rgb(92, 15, 15)
+            background-color: rgb(92, 15, 15);
+            user-select: none;
         }
 
         .et-mantenimiento {
-            background-color: rgb(36, 150, 170)
+            background-color: rgb(36, 150, 170);
+            user-select: none;
         }
 
         .et-premium {
             background: #575757;
-            color: #caa016
+            color: #caa016;
+            user-select: none;
         }
 
         /* ===== Pichisoft cuenta ===== */
@@ -126,11 +141,13 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            z-index: 50
+            z-index: 50;
+            user-select: none;
         }
 
         #cuenta .nom {
-            font-size: .9em
+            font-size: .9em;
+            user-select: none;
         }
 
         #cuenta small {
@@ -138,7 +155,8 @@
             color: #888;
             font-size: .65em;
             cursor: pointer;
-            text-align: right
+            text-align: right;
+            user-select: none;
         }
 
         #cuenta .cuenta-accion {
@@ -152,25 +170,30 @@
             text-align: right;
             padding: 0;
             margin: 3px 0 0 auto;
+            user-select: none;
         }
 
         #cuenta .cuenta-accion:hover {
             color: #ccc;
+            user-select: none;
         }
 
         #cuenta .cuenta-acciones {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
+            user-select: none;
         }
 
         #cuenta .cuenta-acciones button {
             font-family: inherit;
+            user-select: none;
         }
 
         .perfil-seccion {
             margin-top: 18px;
             padding-top: 4px;
+            user-select: none;
         }
 
         .perfil-password-toggle {
@@ -186,24 +209,29 @@
             padding: 10px 0;
             cursor: pointer;
             text-align: left;
+            user-select: none;
         }
 
         .perfil-password-toggle:hover {
             color: #ccc;
+            user-select: none;
         }
 
         .perfil-password-flecha {
             font-size: 1.2em;
             margin-left: 10px;
+            user-select: none;
         }
 
         .perfil-password-panel {
             display: none;
             padding-bottom: 4px;
+            user-select: none;
         }
 
         .perfil-password-panel.abierto {
             display: block;
+            user-select: none;
         }
 
         @media (max-width: 480px) {
@@ -211,47 +239,57 @@
                 right: 10px;
                 top: 10px;
                 gap: 8px;
+                user-select: none;
             }
 
             #cuenta .cuenta-accion,
             #cuenta small {
                 font-size: .7em;
+                user-select: none;
             }
 
             .ov {
                 padding: 10px;
+                user-select: none;
             }
 
             .ov.sem .box,
             .ov.sem2 .box {
                 padding: 18px;
+                user-select: none;
             }
         }
 
         .linkdemail {
-            color: rgb(0, 247, 255)
+            color: rgb(0, 247, 255);
+            user-select: none;
         }
 
         .linkdemail {
-            text-decoration: underline
+            text-decoration: underline;
+            user-select: none;
         }
 
         .linkdemail:hover {
-            color: rgb(0, 183, 255)
+            color: rgb(0, 183, 255);
+            user-select: none;
         }
 
         .linkdemail:hover {
-            background-color: #000000
+            background-color: #000000;
+            user-select: none;
         }
 
         #cuenta small:hover {
-            color: #ccc
+            color: #ccc;
+            user-select: none;
         }
 
         .avwrap {
             position: relative;
             width: 44px;
-            height: 44px
+            height: 44px;
+            user-select: none;
         }
 
         .av {
@@ -264,13 +302,15 @@
             align-items: center;
             justify-content: center;
             font-size: 1.1em;
-            overflow: hidden
+            overflow: hidden;
+            user-select: none;
         }
 
         .av img {
             width: 100%;
             height: 100%;
-            object-fit: cover
+            object-fit: cover;
+            user-select: none;
         }
 
         .lapiz {
@@ -283,11 +323,13 @@
             cursor: pointer;
             font-size: 15px;
             padding: 0;
-            line-height: 1
+            line-height: 1;
+            user-select: none;
         }
 
         .lapiz:hover {
-            color: #fff
+            color: #fff;
+            user-select: none;
         }
 
         .ov {
@@ -300,16 +342,19 @@
             justify-content: center;
             overflow: auto;
             padding: 16px;
-            box-sizing: border-box
+            box-sizing: border-box;
+            user-select: none;
         }
 
         .ov.sem {
             background: rgba(0, 0, 0, .85);
-            z-index: 110
+            z-index: 110;
+            user-select: none;
         }
 
         .ov.sem2 {
-            z-index: 120
+            z-index: 120;
+            user-select: none;
         }
 
         .box {
@@ -317,7 +362,8 @@
             width: 100%;
             margin: auto;
             color: whitesmoke;
-            background: #000
+            background: #000;
+            user-select: none;
         }
 
         .ov.sem .box,
@@ -325,24 +371,28 @@
             background: #111;
             padding: 22px;
             border-radius: 12px;
-            border: 1px solid #333
+            border: 1px solid #333;
+            user-select: none;
         }
 
         .t {
             font-family: "Times New Roman", Times, serif;
             font-weight: bold;
             font-size: 1.7em;
-            margin: 0 0 12px
+            margin: 0 0 12px;
+            user-select: none;
         }
 
         .g {
-            font-family: Georgia, serif
+            font-family: Georgia, serif;
+            user-select: none;
         }
 
         .peq {
             font-size: .72em;
             color: #999;
-            line-height: 1.5
+            line-height: 1.5;
+            user-select: none;
         }
 
         .opt {
@@ -356,18 +406,21 @@
             text-align: left;
             padding: 10px 4px;
             cursor: pointer;
-            margin-top: 4px
+            margin-top: 4px;
+            user-select: none;
         }
 
         .opt:hover {
             background: whitesmoke;
-            color: #222
+            color: #222;
+            user-select: none;
         }
 
         .box label {
             display: block;
             margin: 14px 0 4px;
-            font-size: .85em
+            font-size: .85em;
+            user-select: none;
         }
 
         .box input[type=text],
@@ -381,7 +434,8 @@
             padding: 9px;
             font-size: .9em;
             border-radius: 6px;
-            font-family: inherit
+            font-family: inherit;
+            user-select: none;
         }
 
         .btn {
@@ -393,12 +447,14 @@
             font-size: .85em;
             cursor: pointer;
             margin: 12px 8px 0 0;
-            font-family: inherit
+            font-family: inherit;
+            user-select: none;
         }
 
         .btn:hover {
             background: whitesmoke;
-            color: #222
+            color: #222;
+            user-select: none;
         }
 
         .lnk {
@@ -407,14 +463,16 @@
             cursor: pointer;
             text-decoration: underline;
             margin-top: 14px;
-            display: inline-block
+            display: inline-block;
+            user-select: none;
         }
 
         .err {
             color: #ff7b7b;
             font-size: .8em;
             min-height: 1.2em;
-            margin-top: 10px
+            margin-top: 10px;
+            user-select: none;
         }
 
         .circ {
@@ -431,13 +489,15 @@
             color: whitesmoke;
             font-size: 2.4em;
             cursor: pointer;
-            padding: 0
+            padding: 0;
+            user-select: none;
         }
 
         .circ img {
             width: 100%;
             height: 100%;
-            object-fit: cover
+            object-fit: cover;
+            user-select: none;
         }
 
         .codigo {
@@ -446,7 +506,8 @@
             text-align: center;
             font-family: monospace;
             margin: 14px 0;
-            user-select: all
+            user-select: all;
+            user-select: none;
         }
 
         .cropw {
@@ -457,11 +518,13 @@
             overflow: hidden;
             touch-action: none;
             cursor: grab;
-            background: #222
+            background: #222;
+            user-select: none;
         }
 
         .cropw canvas {
-            display: block
+            display: block;
+            user-select: none;
         }
 
         .cropw .mask {
@@ -469,7 +532,8 @@
             inset: 0;
             border-radius: 50%;
             box-shadow: 0 0 0 999px rgba(0, 0, 0, .65);
-            pointer-events: none
+            pointer-events: none;
+            user-select: none;
         }
 
         .grid {
@@ -478,7 +542,8 @@
             gap: 6px;
             margin-top: 12px;
             max-height: 45vh;
-            overflow: auto
+            overflow: auto;
+            user-select: none;
         }
 
         .grid img {
@@ -486,15 +551,18 @@
             aspect-ratio: 1;
             object-fit: cover;
             cursor: pointer;
-            border-radius: 6px
+            border-radius: 6px;
+            user-select: none;
         }
 
         .grid img:hover {
-            outline: 2px solid #fff
+            outline: 2px solid #fff;
+            user-select: none;
         }
 
         .c {
-            text-align: center
+            text-align: center;
+            user-select: none;
         }
 
         /* Confirmación de cierre de sesión */
@@ -503,6 +571,7 @@
             font-size: 1em;
             line-height: 1.5;
             margin: 16px 0 22px;
+            user-select: none;
         }
 
         .confirmacion-opcion {
@@ -515,31 +584,37 @@
             font-family: Georgia, serif;
             font-size: 1em;
             cursor: pointer;
+            user-select: none;
         }
 
         .confirmacion-no {
             background: #292929;
             color: whitesmoke;
+            user-select: none;
         }
 
         .confirmacion-si {
             background: #000;
             color: whitesmoke;
+            user-select: none;
         }
 
         .confirmacion-no:hover {
             background: #444;
+            user-select: none;
         }
 
         .confirmacion-si:hover {
             background: #ffffff;
-            color: rgb(0, 0, 0)
+            color: rgb(0, 0, 0);
+            user-select: none;
         }
 
         @media (max-width: 480px) {
             .confirmacion-opcion {
                 font-size: .95em;
                 padding: 11px;
+                user-select: none;
             }
         }
 
@@ -557,16 +632,19 @@
             font-weight: normal;
             line-height: 1.5;
             margin: 12px 0 18px;
+            user-select: none;
         }
 
         /* ===== PichonApps en celular (solo hasta 600px: la PC no cambia) ===== */
         @media (max-width: 600px) {
             html {
                 font-size: 16px;
+                user-select: none;
             }
 
             body {
                 padding-top: 56px;
+                user-select: none;
             }
 
             /* Cuenta: arriba a la derecha, en su propia franja, y se va con el scroll */
@@ -575,6 +653,7 @@
                 top: 8px;
                 right: 10px;
                 gap: 8px;
+                user-select: none;
             }
 
             #cuenta .nom {
@@ -583,21 +662,25 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
+                user-select: none;
             }
 
             #cuenta .cuenta-accion,
             #cuenta small {
                 font-size: .7rem;
+                user-select: none;
             }
 
             .avwrap,
             .av {
                 width: 38px;
                 height: 38px;
+                user-select: none;
             }
 
             .av {
                 font-size: 1rem;
+                user-select: none;
             }
 
             /* Título más chico y el "- By Pichisoft -" en su propio renglón */
@@ -605,16 +688,19 @@
                 font-size: 1.5rem;
                 line-height: 1.2;
                 margin: .3em 0 .2em;
+                user-select: none;
             }
 
             .by {
                 display: block;
                 font-size: .78rem;
                 margin-top: 3px;
+                user-select: none;
             }
 
             h3 {
                 font-size: 1.05rem;
+                user-select: none;
             }
 
             /* Lista de apps y etiquetas más chicas (entran varias por renglón) */
@@ -622,6 +708,7 @@
                 font-size: .92rem;
                 line-height: 2;
                 margin-bottom: 8px;
+                user-select: none;
             }
 
             .nuevo::after,
@@ -629,6 +716,7 @@
             .eliminadas::after,
             .proximo::after {
                 display: inline-block;
+                user-select: none;
             }
 
             .nuevo::after,
@@ -640,19 +728,23 @@
                 padding: 2px 6px;
                 margin-left: 5px;
                 white-space: nowrap;
+                user-select: none;
             }
 
             /* Paneles (registro, perfil, etc.) */
             .t {
                 font-size: 1.4rem;
+                user-select: none;
             }
 
             .opt {
                 font-size: 1.25rem;
+                user-select: none;
             }
 
             .codigo {
                 font-size: 2rem;
+                user-select: none;
             }
         }
     </style>
@@ -1810,11 +1902,13 @@
     <style>
         :root {
             --fiesta-alto: max(52px, 8.6vw);
+            user-select: none;
             /* alto del cartel (se adapta al ancho de la pantalla) */
         }
 
         html {
             padding-top: var(--fiesta-alto);
+            user-select: none;
             /* empuja la página hacia abajo para que el cartel no tape nada */
         }
 
@@ -1829,12 +1923,14 @@
             pointer-events: none;
             /* no bloquea los clics */
             filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .6));
+            user-select: none;
         }
 
         #fiesta svg {
             display: block;
             width: 100%;
             height: 100%;
+            user-select: none;
         }
 
         #fiesta text {
@@ -1843,12 +1939,14 @@
             font-weight: bold;
             letter-spacing: 3px;
             fill: #000;
+            user-select: none;
             /* color del texto */
         }
 
         /* baja tu botón de cuenta para que no quede debajo del cartel */
         #cuenta {
             top: calc(var(--fiesta-alto) + 10px) !important;
+            user-select: none;
         }
     </style>
     <!-- ===== FIN CARTEL DE FIESTA ===== -->
