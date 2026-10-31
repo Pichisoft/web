@@ -1796,7 +1796,63 @@
     <script src="pichisoft-premium.js"></script>
     <script type="module" src="pichisoft-messages.js"></script>
     <script src="pichisoft-carteles.js?v=5"></script>
+    <!-- ===== CARTEL DE FIESTA (para borrarlo, eliminá todo este bloque) ===== -->
+    <div id="fiesta">
+        <svg viewBox="0 0 1000 90" preserveAspectRatio="xMidYMin slice" xmlns="http://www.w3.org/2000/svg">
+            <!-- borde oscuro -->
+            <path d="M-60,6 Q500,100 1060,6" fill="none" stroke="#8a3d00" stroke-width="58" />
+            <!-- fondo del cartel -->
+            <path id="fiesta-curva" d="M-60,6 Q500,100 1060,6" fill="none" stroke="#ff7a00" stroke-width="52" />
+            <text dy="0.33em">
+                <textPath href="#fiesta-curva" startOffset="50%" text-anchor="middle">🎃 Feliz Halloween 🎃</textPath>
+            </text>
+        </svg>
+    </div>
+    <style>
+        :root {
+            --fiesta-alto: max(52px, 8.6vw);
+            /* alto del cartel (se adapta al ancho de la pantalla) */
+        }
 
+        html {
+            padding-top: var(--fiesta-alto);
+            /* empuja la página hacia abajo para que el cartel no tape nada */
+        }
+
+        #fiesta {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--fiesta-alto);
+            z-index: 90;
+            /* arriba de la página, debajo de los paneles de login/perfil */
+            pointer-events: none;
+            /* no bloquea los clics */
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .6));
+        }
+
+        #fiesta svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #fiesta text {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 60px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            fill: #000;
+            /* color del texto */
+        }
+
+        /* baja tu botón de cuenta para que no quede debajo del cartel */
+        #cuenta {
+            top: calc(var(--fiesta-alto) + 10px) !important;
+        }
+    </style>
+    <!-- ===== FIN CARTEL DE FIESTA ===== -->
 </body>
 
 </html>
