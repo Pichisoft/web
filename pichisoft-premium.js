@@ -226,7 +226,7 @@ body.prem .p-gear{display:flex}
         { n: 'PichonOpinion', t: ['proximo'] },
         { n: 'PichonPaint', u: 'pichonpaint', t: ['actualizado'] },
         { n: 'PichonPass', u: 'pichonpass' },
-        { n: 'PichonPush', u: 'pichonpush' },
+        { n: 'PichonPush', u: 'pichonpush', t: ['nuevo'] },
         { n: 'PichonRandom', u: 'pichonrandom' },
         { n: 'PichonSnake', u: 'pichonsnake' },
         { n: 'PichonTraffic', u: 'pichontraffic', t: ['nuevo'] },
