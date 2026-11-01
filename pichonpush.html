@@ -1,318 +1,517 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>PichonPush</title>
-<style>
-  :root { --bg:#fafafa; --ink:#111; --mut:#888; --me:#2563eb; --opp:#ef4444; }
-  * { box-sizing:border-box; margin:0; -webkit-tap-highlight-color:transparent; }
-  html,body { height:100%; background:var(--bg); color:var(--ink);
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; overflow:hidden; user-select:none; }
-  #board { position:fixed; inset:0; touch-action:manipulation; }
-  .goal { position:absolute; left:0; right:0; height:10px; }
-  .goal.top { top:0; background:var(--me); }      /* donde yo anoto */
-  .goal.bottom { bottom:0; background:var(--opp); }
-  .mid { position:absolute; left:0; right:0; top:50%; border-top:2px dashed #ddd; }
-  .tag { position:absolute; left:0; right:0; text-align:center; font-weight:700; }
-  .tag small { display:block; color:var(--mut); font-weight:500; font-size:.8rem; }
-  .tag b { font-size:2.4rem; line-height:1; }
-  #oppTag { top:22px; } #meTag { bottom:60px; }
-  #oppTag b { color:var(--opp); } #meTag b { color:var(--me); }
-  #ball { position:absolute; left:50%; top:50%; width:30px; height:30px; margin:-15px 0 0 -15px;
-    background:#000; border-radius:50%; transition:top .09s linear, transform .08s; }
-  #ball.bump { transform:scale(1.25); }
-  #hint { position:absolute; bottom:22px; left:0; right:0; text-align:center; color:var(--mut);
-    font-size:.9rem; letter-spacing:.08em; animation:pulse 1.2s infinite; }
-  @keyframes pulse { 50% { opacity:.35; } }
-  #banner { position:absolute; top:40%; left:0; right:0; text-align:center; font-size:2rem; font-weight:800;
-    opacity:0; transition:opacity .25s; pointer-events:none; }
-  #banner.show { opacity:1; }
-  .overlay { position:fixed; inset:0; background:rgba(250,250,250,.94); display:none;
-    align-items:center; justify-content:center; flex-direction:column; gap:14px; padding:24px; text-align:center; z-index:10; }
-  .overlay.on { display:flex; }
-  h1 { font-size:2.2rem; } h2 { font-size:1.8rem; }
-  p { color:var(--mut); max-width:340px; line-height:1.4; }
-  input { font:inherit; padding:12px 14px; border:2px solid #ddd; border-radius:12px; width:240px; text-align:center; background:#fff; }
-  button { font:inherit; font-weight:700; padding:12px 22px; border:0; border-radius:12px; background:#111; color:#fff; cursor:pointer; min-width:240px; }
-  button.alt { background:#e5e5e5; color:#111; }
-  .link { font-size:.8rem; background:#eee; padding:8px 10px; border-radius:8px; word-break:break-all; max-width:340px; user-select:all; }
-  #err { color:var(--opp); min-height:1.2em; font-size:.9rem; }
-  canvas#confetti { position:fixed; inset:0; pointer-events:none; z-index:20; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>PichonPush</title>
+    <style>
+        :root {
+            --bg: #fafafa;
+            --ink: #111;
+            --mut: #888;
+            --me: #2563eb;
+            --opp: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            height: 100%;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #board {
+            position: fixed;
+            inset: 0;
+            touch-action: manipulation;
+        }
+
+        .goal {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 10px;
+        }
+
+        .goal.top {
+            top: 0;
+            background: var(--me);
+        }
+
+        /* donde yo anoto */
+        .goal.bottom {
+            bottom: 0;
+            background: var(--opp);
+        }
+
+        .mid {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            border-top: 2px dashed #ddd;
+        }
+
+        .tag {
+            position: absolute;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .tag small {
+            display: block;
+            color: var(--mut);
+            font-weight: 500;
+            font-size: .8rem;
+        }
+
+        .tag b {
+            font-size: 2.4rem;
+            line-height: 1;
+        }
+
+        #oppTag {
+            top: 22px;
+        }
+
+        #meTag {
+            bottom: 60px;
+        }
+
+        #oppTag b {
+            color: var(--opp);
+        }
+
+        #meTag b {
+            color: var(--me);
+        }
+
+        #ball {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 30px;
+            height: 30px;
+            margin: -15px 0 0 -15px;
+            background: #000;
+            border-radius: 50%;
+            transition: top .09s linear, transform .08s;
+        }
+
+        #ball.bump {
+            transform: scale(1.25);
+        }
+
+        #hint {
+            position: absolute;
+            bottom: 22px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: var(--mut);
+            font-size: .9rem;
+            letter-spacing: .08em;
+            animation: pulse 1.2s infinite;
+        }
+
+        @keyframes pulse {
+            50% {
+                opacity: .35;
+            }
+        }
+
+        #banner {
+            position: absolute;
+            top: 40%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            opacity: 0;
+            transition: opacity .25s;
+            pointer-events: none;
+        }
+
+        #banner.show {
+            opacity: 1;
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(250, 250, 250, .94);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 14px;
+            padding: 24px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .overlay.on {
+            display: flex;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+        }
+
+        p {
+            color: var(--mut);
+            max-width: 340px;
+            line-height: 1.4;
+        }
+
+        input {
+            font: inherit;
+            padding: 12px 14px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            width: 240px;
+            text-align: center;
+            background: #fff;
+        }
+
+        button {
+            font: inherit;
+            font-weight: 700;
+            padding: 12px 22px;
+            border: 0;
+            border-radius: 12px;
+            background: #111;
+            color: #fff;
+            cursor: pointer;
+            min-width: 240px;
+        }
+
+        button.alt {
+            background: #e5e5e5;
+            color: #111;
+        }
+
+        .link {
+            font-size: .8rem;
+            background: #eee;
+            padding: 8px 10px;
+            border-radius: 8px;
+            word-break: break-all;
+            max-width: 340px;
+            user-select: all;
+        }
+
+        #err {
+            color: var(--opp);
+            min-height: 1.2em;
+            font-size: .9rem;
+        }
+
+        canvas#confetti {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 20;
+        }
+    </style>
 </head>
+
 <body>
 
-<div id="board">
-  <div class="goal top"></div><div class="goal bottom"></div><div class="mid"></div>
-  <div class="tag" id="oppTag"><small id="oppName">Rival</small><b id="oppScore">0</b></div>
-  <div id="ball"></div>
-  <div id="banner"></div>
-  <div class="tag" id="meTag"><b id="meScore">0</b><small id="meName">Vos</small></div>
-  <div id="hint">ESPACIO (o tocá la pantalla) 🡅</div>
-</div>
+    <div id="board">
+        <div class="goal top"></div>
+        <div class="goal bottom"></div>
+        <div class="mid"></div>
+        <div class="tag" id="oppTag"><small id="oppName">Rival</small><b id="oppScore">0</b></div>
+        <div id="ball"></div>
+        <div id="banner"></div>
+        <div class="tag" id="meTag"><b id="meScore">0</b><small id="meName">Vos</small></div>
+        <div id="hint">ESPACIO (o tocá la pantalla) 🡅</div>
+    </div>
 
-<!-- Lobby -->
-<div class="overlay on" id="lobby">
-  <h1>⚫ PichonPush</h1>
-  <p>Tirá la bola al lado de tu rival apretando espacio lo más rápido que puedas. El primero en llegar a 5 gana.</p>
-  <input id="nameIn" maxlength="16" placeholder="Tu nombre">
-  <button id="btnPlay">Buscar partida</button>
-  <button id="btnPriv" class="alt">Crear partida privada</button>
-  <div id="err"></div>
-</div>
+    <!-- Lobby -->
+    <div class="overlay on" id="lobby">
+        <h1>⚫ PichonPush</h1>
+        <p>Tirá la bola al lado de tu rival apretando espacio lo más rápido que puedas. El primero en llegar a 5 gana.
+        </p>
+        <input id="nameIn" maxlength="16" placeholder="Tu nombre">
+        <button id="btnPlay">Buscar partida</button>
+        <button id="btnPriv" class="alt">Crear partida privada</button>
+        <div id="err"></div>
+    </div>
 
-<!-- Esperando -->
-<div class="overlay" id="waiting">
-  <h2>Esperando rival…</h2>
-  <p>Pasale este link a tu amigo (o esperá a que alguien busque partida):</p>
-  <div class="link" id="linkBox"></div>
-  <button id="btnCopy" class="alt">Copiar link</button>
-  <button id="btnCancel" class="alt">Cancelar</button>
-</div>
+    <!-- Esperando -->
+    <div class="overlay" id="waiting">
+        <h2>Esperando rival…</h2>
+        <p>Pasale este link a tu amigo (o esperá a que alguien busque partida):</p>
+        <div class="link" id="linkBox"></div>
+        <button id="btnCopy" class="alt">Copiar link</button>
+        <button id="btnCancel" class="alt">Cancelar</button>
+    </div>
 
-<!-- Resultado -->
-<div class="overlay" id="result" style="background:rgba(250,250,250,.8)">
-  <h2 id="resTitle"></h2>
-  <p id="resSub"></p>
-  <button id="btnAgain">Volver al inicio</button>
-</div>
+    <!-- Resultado -->
+    <div class="overlay" id="result" style="background:rgba(250,250,250,.8)">
+        <h2 id="resTitle"></h2>
+        <p id="resSub"></p>
+        <button id="btnAgain">Volver al inicio</button>
+    </div>
 
-<canvas id="confetti"></canvas>
+    <canvas id="confetti"></canvas>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc,
-         onSnapshot, query, where, limit, runTransaction, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getFirestore, collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc,
+            onSnapshot, query, where, limit, runTransaction, increment
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* ============ 1) PEGÁ ACÁ TU CONFIG DE FIREBASE ============ */
-const firebaseConfig = {
-  apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
-  authDomain: "pichisoft.firebaseapp.com",
-  projectId: "pichisoft",
-  appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572"
-};
-/* =========================================================== */
+        /* ============ 1) PEGÁ ACÁ TU CONFIG DE FIREBASE ============ */
+        const firebaseConfig = {
+            apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+            authDomain: "pichisoft.firebaseapp.com",
+            projectId: "pichisoft",
+            appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572"
+        };
+        /* =========================================================== */
 
-const N = 20;   // pulsaciones de diferencia para llegar al borde (tiene que coincidir con las reglas)
-const WIN = 5;  // puntos para ganar (idem)
-const COL = "ball_games";
+        const N = 20;   // pulsaciones de diferencia para llegar al borde (tiene que coincidir con las reglas)
+        const WIN = 5;  // puntos para ganar (idem)
+        const COL = "ball_games";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const $ = id => document.getElementById(id);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const $ = id => document.getElementById(id);
 
-let uid = null, name = "", gid = null, role = null, ref = null, unsub = null;
-let g = null, pending = 0, flushTimer = null, goalBusy = false, lockUntil = 0;
-let prevScore = null, celebrated = false;
+        let uid = null, name = "", gid = null, role = null, ref = null, unsub = null;
+        let g = null, pending = 0, flushTimer = null, goalBusy = false, lockUntil = 0;
+        let prevScore = null, celebrated = false;
 
-/* ---------- Auth ---------- */
-$("nameIn").value = localStorage.getItem("pp_name") || ("Pichon" + Math.floor(Math.random() * 900 + 100));
-onAuthStateChanged(auth, u => {
-  if (u) { uid = u.uid; const p = new URLSearchParams(location.search).get("g"); if (p && !gid) joinById(p); }
-  else signInAnonymously(auth).catch(e => showErr("No se pudo iniciar sesión: " + e.message));
-});
+        /* ---------- Auth ---------- */
+        $("nameIn").value = localStorage.getItem("pp_name") || ("Pichon" + Math.floor(Math.random() * 900 + 100));
+        // Sin cuentas: cada navegador se identifica con un id aleatorio guardado localmente
+        uid = localStorage.getItem("pp_uid");
+        if (!uid) {
+            uid = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()).replace(/-/g, "");
+            localStorage.setItem("pp_uid", uid);
+        }
+        { const p = new URLSearchParams(location.search).get("g"); if (p) joinById(p); }
 
-function showErr(m) { $("err").textContent = m || ""; }
-function readName() {
-  name = $("nameIn").value.trim().slice(0, 16) || "Jugador";
-  localStorage.setItem("pp_name", name);
-}
-function overlay(id) { ["lobby", "waiting", "result"].forEach(k => $(k).classList.toggle("on", k === id)); }
+        function showErr(m) { $("err").textContent = m || ""; }
+        function readName() {
+            name = $("nameIn").value.trim().slice(0, 16) || "Jugador";
+            localStorage.setItem("pp_name", name);
+        }
+        function overlay(id) { ["lobby", "waiting", "result"].forEach(k => $(k).classList.toggle("on", k === id)); }
 
-/* ---------- Lobby ---------- */
-$("btnPlay").onclick = async () => {
-  if (!uid) return showErr("Conectando…");
-  readName(); showErr("");
-  try {
-    const snap = await getDocs(query(collection(db, COL), where("status", "==", "waiting"), limit(15)));
-    const now = Date.now();
-    for (const d of snap.docs) {
-      const x = d.data();
-      if (x.host === uid || now - (x.t || 0) > 120000) continue;
-      if (await tryJoin(d.id)) return;
-    }
-    await createGame();
-  } catch (e) { showErr(e.message); }
-};
-$("btnPriv").onclick = async () => {
-  if (!uid) return showErr("Conectando…");
-  readName(); showErr("");
-  try { await createGame(); } catch (e) { showErr(e.message); }
-};
-$("btnCopy").onclick = () => { navigator.clipboard?.writeText($("linkBox").textContent); $("btnCopy").textContent = "¡Copiado!"; };
-$("btnCancel").onclick = () => leave();
-$("btnAgain").onclick = () => leave();
+        /* ---------- Lobby ---------- */
+        $("btnPlay").onclick = async () => {
+            if (!uid) return showErr("Conectando…");
+            readName(); showErr("");
+            try {
+                const snap = await getDocs(query(collection(db, COL), where("status", "==", "waiting"), limit(15)));
+                const now = Date.now();
+                for (const d of snap.docs) {
+                    const x = d.data();
+                    if (x.host === uid || now - (x.t || 0) > 120000) continue;
+                    if (await tryJoin(d.id)) return;
+                }
+                await createGame();
+            } catch (e) { showErr(e.message); }
+        };
+        $("btnPriv").onclick = async () => {
+            if (!uid) return showErr("Conectando…");
+            readName(); showErr("");
+            try { await createGame(); } catch (e) { showErr(e.message); }
+        };
+        $("btnCopy").onclick = () => { navigator.clipboard?.writeText($("linkBox").textContent); $("btnCopy").textContent = "¡Copiado!"; };
+        $("btnCancel").onclick = () => leave();
+        $("btnAgain").onclick = () => leave();
 
-async function createGame() {
-  const d = await addDoc(collection(db, COL), {
-    host: uid, guest: null, hn: name, gn: "", status: "waiting",
-    a: 0, b: 0, base: 0, sh: 0, sg: 0, winner: null, t: Date.now()
-  });
-  attach(d.id, "host");
-}
-async function tryJoin(id) {
-  try {
-    await updateDoc(doc(db, COL, id), { guest: uid, gn: name, status: "play" });
-    attach(id, "guest");
-    return true;
-  } catch { return false; }
-}
-async function joinById(id) {
-  readName();
-  const s = await getDoc(doc(db, COL, id)).catch(() => null);
-  if (!s || !s.exists()) return showErr("Esa partida no existe.");
-  const x = s.data();
-  if (x.host === uid) return attach(id, "host");
-  if (x.guest === uid) return attach(id, "guest");
-  if (x.status === "waiting" && await tryJoin(id)) return;
-  showErr("Esa partida ya está completa.");
-}
+        async function createGame() {
+            const d = await addDoc(collection(db, COL), {
+                host: uid, guest: null, hn: name, gn: "", status: "waiting",
+                a: 0, b: 0, base: 0, sh: 0, sg: 0, winner: null, t: Date.now()
+            });
+            attach(d.id, "host");
+        }
+        async function tryJoin(id) {
+            try {
+                await updateDoc(doc(db, COL, id), { guest: uid, gn: name, status: "play" });
+                attach(id, "guest");
+                return true;
+            } catch { return false; }
+        }
+        async function joinById(id) {
+            readName();
+            const s = await getDoc(doc(db, COL, id)).catch(() => null);
+            if (!s || !s.exists()) return showErr("Esa partida no existe.");
+            const x = s.data();
+            if (x.host === uid) return attach(id, "host");
+            if (x.guest === uid) return attach(id, "guest");
+            if (x.status === "waiting" && await tryJoin(id)) return;
+            showErr("Esa partida ya está completa.");
+        }
 
-/* ---------- Partida ---------- */
-function attach(id, r) {
-  gid = id; role = r; ref = doc(db, COL, id);
-  g = null; pending = 0; prevScore = null; celebrated = false; lockUntil = 0;
-  history.replaceState(null, "", "?g=" + id);
-  $("linkBox").textContent = location.origin + location.pathname + "?g=" + id;
-  $("btnCopy").textContent = "Copiar link";
-  overlay(r === "host" ? "waiting" : null);
-  unsub = onSnapshot(ref, snap => {
-    if (!snap.exists()) { if (gid) leave("La partida se cerró."); return; }
-    g = snap.data(); render(); checkGoal();
-  }, e => { leave("Error: " + e.message); });
-}
+        /* ---------- Partida ---------- */
+        function attach(id, r) {
+            gid = id; role = r; ref = doc(db, COL, id);
+            g = null; pending = 0; prevScore = null; celebrated = false; lockUntil = 0;
+            history.replaceState(null, "", "?g=" + id);
+            $("linkBox").textContent = location.origin + location.pathname + "?g=" + id;
+            $("btnCopy").textContent = "Copiar link";
+            overlay(r === "host" ? "waiting" : null);
+            unsub = onSnapshot(ref, snap => {
+                if (!snap.exists()) { if (gid) leave("La partida se cerró."); return; }
+                g = snap.data(); render(); checkGoal();
+            }, e => { leave("Error: " + e.message); });
+        }
 
-async function leave(msg) {
-  const r = ref, st = g?.status, rl = role;
-  unsub && unsub(); unsub = null;
-  gid = null; ref = null; g = null; role = null; pending = 0;
-  clearTimeout(flushTimer); flushTimer = null;
-  history.replaceState(null, "", location.pathname);
-  if (r && ((rl === "host" && st === "waiting") || st === "done")) deleteDoc(r).catch(() => {});
-  resetBoard(); overlay("lobby"); showErr(msg || "");
-}
-window.addEventListener("beforeunload", () => { if (ref && role === "host" && g?.status === "waiting") deleteDoc(ref); });
+        async function leave(msg) {
+            const r = ref, st = g?.status, rl = role;
+            unsub && unsub(); unsub = null;
+            gid = null; ref = null; g = null; role = null; pending = 0;
+            clearTimeout(flushTimer); flushTimer = null;
+            history.replaceState(null, "", location.pathname);
+            if (r && ((rl === "host" && st === "waiting") || st === "done")) deleteDoc(r).catch(() => { });
+            resetBoard(); overlay("lobby"); showErr(msg || "");
+        }
+        window.addEventListener("beforeunload", () => { if (ref && role === "host" && g?.status === "waiting") deleteDoc(ref); });
 
-function resetBoard() {
-  $("ball").style.top = "50%"; $("meScore").textContent = "0"; $("oppScore").textContent = "0";
-}
+        function resetBoard() {
+            $("ball").style.top = "50%"; $("meScore").textContent = "0"; $("oppScore").textContent = "0";
+        }
 
-/* ---------- Lógica ---------- */
-const sign = () => role === "host" ? 1 : -1;
-const localD = () => g.a - g.b - g.base + sign() * pending;   // + = la bola va hacia el lado del invitado (arriba para el host)
+        /* ---------- Lógica ---------- */
+        const sign = () => role === "host" ? 1 : -1;
+        const localD = () => g.a - g.b - g.base + sign() * pending;   // + = la bola va hacia el lado del invitado (arriba para el host)
 
-function render() {
-  if (!g) return;
-  const host = role === "host";
-  $("meName").textContent = host ? g.hn : g.gn;
-  $("oppName").textContent = (host ? g.gn : g.hn) || "…";
-  const me = host ? g.sh : g.sg, opp = host ? g.sg : g.sh;
-  $("meScore").textContent = me; $("oppScore").textContent = opp;
+        function render() {
+            if (!g) return;
+            const host = role === "host";
+            $("meName").textContent = host ? g.hn : g.gn;
+            $("oppName").textContent = (host ? g.gn : g.hn) || "…";
+            const me = host ? g.sh : g.sg, opp = host ? g.sg : g.sh;
+            $("meScore").textContent = me; $("oppScore").textContent = opp;
 
-  if (g.status === "waiting") { overlay("waiting"); }
-  else if (g.status === "play") { $("waiting").classList.remove("on"); $("lobby").classList.remove("on"); }
+            if (g.status === "waiting") { overlay("waiting"); }
+            else if (g.status === "play") { $("waiting").classList.remove("on"); $("lobby").classList.remove("on"); }
 
-  // detectar punto
-  const key = g.sh + "-" + g.sg;
-  if (prevScore !== null && prevScore !== key) {
-    const iScored = (me + opp) > 0 && ((host && key.split("-")[0] > prevScore.split("-")[0]) || (!host && key.split("-")[1] > prevScore.split("-")[1]));
-    banner(iScored ? "¡Punto para vos!" : "Punto del rival", iScored ? "var(--me)" : "var(--opp)");
-    lockUntil = performance.now() + 900; pending = 0;
-  }
-  prevScore = key;
+            // detectar punto
+            const key = g.sh + "-" + g.sg;
+            if (prevScore !== null && prevScore !== key) {
+                const iScored = (me + opp) > 0 && ((host && key.split("-")[0] > prevScore.split("-")[0]) || (!host && key.split("-")[1] > prevScore.split("-")[1]));
+                banner(iScored ? "¡Punto para vos!" : "Punto del rival", iScored ? "var(--me)" : "var(--opp)");
+                lockUntil = performance.now() + 900; pending = 0;
+            }
+            prevScore = key;
 
-  // bola
-  const v = Math.max(-1, Math.min(1, sign() * localD() / N));  // v>0 = hacia mi objetivo (arriba)
-  $("ball").style.top = (50 - v * 47) + "%";
+            // bola
+            const v = Math.max(-1, Math.min(1, sign() * localD() / N));  // v>0 = hacia mi objetivo (arriba)
+            $("ball").style.top = (50 - v * 47) + "%";
 
-  if (g.status === "done" && !celebrated) {
-    celebrated = true;
-    const iWon = g.winner === uid;
-    const winnerName = g.winner === g.host ? g.hn : g.gn;
-    $("resTitle").textContent = iWon ? "🏆 ¡Ganaste!" : "Ganó " + winnerName;
-    $("resSub").textContent = `${host ? g.hn : g.gn} ${me} – ${opp} ${host ? g.gn : g.hn}`;
-    overlay("result");
-    confetti();
-  }
-}
+            if (g.status === "done" && !celebrated) {
+                celebrated = true;
+                const iWon = g.winner === uid;
+                const winnerName = g.winner === g.host ? g.hn : g.gn;
+                $("resTitle").textContent = iWon ? "🏆 ¡Ganaste!" : "Ganó " + winnerName;
+                $("resSub").textContent = `${host ? g.hn : g.gn} ${me} – ${opp} ${host ? g.gn : g.hn}`;
+                overlay("result");
+                confetti();
+            }
+        }
 
-function banner(txt, color) {
-  const b = $("banner"); b.textContent = txt; b.style.color = color; b.classList.add("show");
-  setTimeout(() => b.classList.remove("show"), 800);
-}
+        function banner(txt, color) {
+            const b = $("banner"); b.textContent = txt; b.style.color = color; b.classList.add("show");
+            setTimeout(() => b.classList.remove("show"), 800);
+        }
 
-function press() {
-  if (!g || g.status !== "play" || performance.now() < lockUntil) return;
-  if (Math.abs(sign() * localD()) >= N && sign() * localD() > 0) return;   // ya llegó, esperando confirmación
-  pending++;
-  const bl = $("ball"); bl.classList.add("bump"); setTimeout(() => bl.classList.remove("bump"), 70);
-  render();
-  if (sign() * localD() >= N) flush();
-  else if (!flushTimer) flushTimer = setTimeout(flush, 120);
-}
-function flush() {
-  clearTimeout(flushTimer); flushTimer = null;
-  if (!pending || !ref) return;
-  const k = Math.min(pending, 10); pending -= k;
-  updateDoc(ref, { [role === "host" ? "a" : "b"]: increment(k) }).catch(console.error);
-  if (pending) flushTimer = setTimeout(flush, 120);
-}
+        function press() {
+            if (!g || g.status !== "play" || performance.now() < lockUntil) return;
+            if (Math.abs(sign() * localD()) >= N && sign() * localD() > 0) return;   // ya llegó, esperando confirmación
+            pending++;
+            const bl = $("ball"); bl.classList.add("bump"); setTimeout(() => bl.classList.remove("bump"), 70);
+            render();
+            if (sign() * localD() >= N) flush();
+            else if (!flushTimer) flushTimer = setTimeout(flush, 120);
+        }
+        function flush() {
+            clearTimeout(flushTimer); flushTimer = null;
+            if (!pending || !ref) return;
+            const k = Math.min(pending, 10); pending -= k;
+            updateDoc(ref, { [role === "host" ? "a" : "b"]: increment(k) }).catch(console.error);
+            if (pending) flushTimer = setTimeout(flush, 120);
+        }
 
-// Cualquiera de los dos jugadores puede confirmar el gol (transacción: solo uno gana)
-function checkGoal() {
-  if (!g || g.status !== "play" || goalBusy) return;
-  const d = g.a - g.b - g.base;
-  if (d < N && d > -N) return;
-  goalBusy = true;
-  runTransaction(db, async tx => {
-    const s = await tx.get(ref); if (!s.exists()) return;
-    const x = s.data(); if (x.status !== "play") return;
-    const dd = x.a - x.b - x.base, base = x.a - x.b;
-    if (dd >= N) {
-      const n = x.sh + 1;
-      tx.update(ref, n >= WIN ? { sh: n, base, status: "done", winner: x.host } : { sh: n, base });
-    } else if (dd <= -N) {
-      const n = x.sg + 1;
-      tx.update(ref, n >= WIN ? { sg: n, base, status: "done", winner: x.guest } : { sg: n, base });
-    }
-  }).catch(() => {}).finally(() => { goalBusy = false; });
-}
+        // Cualquiera de los dos jugadores puede confirmar el gol (transacción: solo uno gana)
+        function checkGoal() {
+            if (!g || g.status !== "play" || goalBusy) return;
+            const d = g.a - g.b - g.base;
+            if (d < N && d > -N) return;
+            goalBusy = true;
+            runTransaction(db, async tx => {
+                const s = await tx.get(ref); if (!s.exists()) return;
+                const x = s.data(); if (x.status !== "play") return;
+                const dd = x.a - x.b - x.base, base = x.a - x.b;
+                if (dd >= N) {
+                    const n = x.sh + 1;
+                    tx.update(ref, n >= WIN ? { sh: n, base, status: "done", winner: x.host } : { sh: n, base });
+                } else if (dd <= -N) {
+                    const n = x.sg + 1;
+                    tx.update(ref, n >= WIN ? { sg: n, base, status: "done", winner: x.guest } : { sg: n, base });
+                }
+            }).catch(() => { }).finally(() => { goalBusy = false; });
+        }
 
-/* ---------- Input ---------- */
-addEventListener("keydown", e => {
-  if (e.code === "Space" && e.target.tagName !== "INPUT") {
-    e.preventDefault();
-    if (!e.repeat) press();
-  }
-});
-$("board").addEventListener("pointerdown", press);
-document.querySelectorAll("button").forEach(b => b.addEventListener("click", () => b.blur()));
+        /* ---------- Input ---------- */
+        addEventListener("keydown", e => {
+            if (e.code === "Space" && e.target.tagName !== "INPUT") {
+                e.preventDefault();
+                if (!e.repeat) press();
+            }
+        });
+        $("board").addEventListener("pointerdown", press);
+        document.querySelectorAll("button").forEach(b => b.addEventListener("click", () => b.blur()));
 
-/* ---------- Confeti ---------- */
-function confetti() {
-  const c = $("confetti"), ctx = c.getContext("2d");
-  c.width = innerWidth; c.height = innerHeight;
-  const cols = ["#ef4444", "#2563eb", "#f59e0b", "#10b981", "#a855f7", "#ec4899"];
-  const ps = Array.from({ length: 220 }, () => ({
-    x: Math.random() * c.width, y: -20 - Math.random() * c.height * 0.6,
-    w: 6 + Math.random() * 6, h: 8 + Math.random() * 8,
-    vx: -2 + Math.random() * 4, vy: 2 + Math.random() * 4,
-    r: Math.random() * 6, vr: -.2 + Math.random() * .4, col: cols[(Math.random() * cols.length) | 0]
-  }));
-  const end = performance.now() + 6000;
-  (function frame() {
-    ctx.clearRect(0, 0, c.width, c.height);
-    ps.forEach(p => {
-      p.x += p.vx; p.y += p.vy; p.r += p.vr; p.vy += .03;
-      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
-      ctx.fillStyle = p.col; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
-    });
-    if (performance.now() < end) requestAnimationFrame(frame); else ctx.clearRect(0, 0, c.width, c.height);
-  })();
-}
-</script>
+        /* ---------- Confeti ---------- */
+        function confetti() {
+            const c = $("confetti"), ctx = c.getContext("2d");
+            c.width = innerWidth; c.height = innerHeight;
+            const cols = ["#ef4444", "#2563eb", "#f59e0b", "#10b981", "#a855f7", "#ec4899"];
+            const ps = Array.from({ length: 220 }, () => ({
+                x: Math.random() * c.width, y: -20 - Math.random() * c.height * 0.6,
+                w: 6 + Math.random() * 6, h: 8 + Math.random() * 8,
+                vx: -2 + Math.random() * 4, vy: 2 + Math.random() * 4,
+                r: Math.random() * 6, vr: -.2 + Math.random() * .4, col: cols[(Math.random() * cols.length) | 0]
+            }));
+            const end = performance.now() + 6000;
+            (function frame() {
+                ctx.clearRect(0, 0, c.width, c.height);
+                ps.forEach(p => {
+                    p.x += p.vx; p.y += p.vy; p.r += p.vr; p.vy += .03;
+                    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+                    ctx.fillStyle = p.col; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
+                });
+                if (performance.now() < end) requestAnimationFrame(frame); else ctx.clearRect(0, 0, c.width, c.height);
+            })();
+        }
+    </script>
 </body>
+
 </html>
