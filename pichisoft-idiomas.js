@@ -5,6 +5,7 @@
    Opcional:
        data-anchor="#selector"  -> el botón se ubica debajo de ese elemento (por defecto #cuenta)
        data-skip=".a,.b"        -> selectores extra que NO se deben traducir
+       data-pos="tl|tr|bl|br"   -> fuerza una esquina (top-left, top-right, bottom-left, bottom-right)
    Para que algo no se traduzca nunca, ponele translate="no" o class="notranslate".
    ===================================================================== */
 (function () {
@@ -19,6 +20,33 @@
         anchor: (SCRIPT && SCRIPT.dataset.anchor) || '#cuenta',
         skip: (SCRIPT && SCRIPT.dataset.skip) || ''
     };
+
+    /* -------------------- EXCEPCIONES POR APP --------------------
+       Si una app necesita una esquina fija, agregala acá.
+       match:   regex contra document.title + location.pathname (case-insensitive)
+       pos:     'tl' | 'tr' | 'bl' | 'br'
+       offsetX: píxeles EXTRA desde el borde horizontal (mueve el botón hacia adentro)
+       offsetY: píxeles EXTRA desde el borde vertical  (mueve el botón hacia arriba/abajo)
+    ------------------------------------------------------------- */
+    const APP_POSITIONS = [
+        { match: /pichonsnake/i, pos: 'tl' },                                // arriba a la izquierda
+        { match: /pichonpaint/i, pos: 'br', offsetX: 60 },                   // abajo-derecha, ~1.5x más a la izquierda
+        { match: /pichoncode/i,  pos: 'bl', offsetY: 60 },                   // abajo-izquierda, un botón más arriba
+        { match: /pichonpush/i,  pos: 'br' },                                // abajo-derecha
+    ];
+
+    function getAppPosition() {
+        if (SCRIPT && SCRIPT.dataset.pos) {
+            return { pos: SCRIPT.dataset.pos, offsetX: 0, offsetY: 0 };
+        }
+        const hay = (document.title + ' ' + location.pathname).toLowerCase();
+        for (const o of APP_POSITIONS) {
+            if (o.match.test(hay)) {
+                return { pos: o.pos, offsetX: o.offsetX || 0, offsetY: o.offsetY || 0 };
+            }
+        }
+        return null;
+    }
 
     const CODES = [...new Set(('ab ace af ak sq am ar an hy as av ay az ba bm eu be bn bho bi bs br bg my ca ceb ch ce ny zh-CN zh-TW cv kw co hr cs da dv nl dz en eo et ee fo fj tl fi fr ff gl lg ka de el gn gu ht ha haw he hi hmn hu is ig id ia ga it ja jv kl kn kr ks kk km rw kv kg ko ku ky lo la lv li ln lt lb mk mai mg ms ml mt mi mr mh mn na nv nd ne no nb nn nr oc or om os pap ps fa pl pt pa qu ro rm rn ru sm sg sa sc gd sr st sn sd si sk sl so es su sw ss sv tg ta tt te th bo ti ts tn to tr tk tw ug uk ur uz ve vi vo wa cy fy wo xh yi yo yue zu se iu ty ik ki lu oj pi sh ho hz ie io ng kj za ae').split(' '))];
 
@@ -264,8 +292,6 @@
     }
 
     /* ------------------------------ UI ------------------------------ */
-    /* BOTÓN COMPACTO: ícono solo, expande al hover/focus.
-       Footprint chico = menos chance de tapar botones de la app. */
     const CSS = `
 #psi-btn{position:fixed!important;z-index:2147483647;display:inline-flex!important;align-items:center;justify-content:center;gap:0;padding:10px;width:auto!important;max-width:max-content!important;min-width:0;box-sizing:border-box;visibility:visible!important;opacity:1!important;pointer-events:auto!important;white-space:nowrap;border-radius:6px;border:1px solid #d4af37;background:linear-gradient(135deg,#f1d98a,#c9a227 55%,#a67c10);color:#1a1405;font:bold 14px/1.1 Verdana,"Open Sans","Helvetica Neue",sans-serif;letter-spacing:.02em;cursor:pointer;user-select:none;-webkit-user-select:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 12px rgba(0,0,0,.45);transition:padding .18s,filter .15s,transform .15s}
 #psi-btn .psi-label{display:none;margin-left:7px}
@@ -400,11 +426,27 @@
     }
     function closePanel() { const o = $('#psi-ov'); if (o) o.remove(); }
 
-    /* -------------------- POSICIONAMIENTO INTELIGENTE -------------------- */
+    /* -------------------- POSICIONAMIENTO -------------------- */
     let placeRaf = 0;
     function placeSoon() { if (!placeRaf) placeRaf = requestAnimationFrame(() => { placeRaf = 0; place(); }); }
 
-    /* ¿El botón está tapado por algo? */
+    /* Aplica una esquina con offsets opcionales */
+    function applyCorner(cfg) {
+        const pos = typeof cfg === 'string' ? cfg : cfg.pos;
+        const ox = (typeof cfg === 'object' && cfg.offsetX) || 0;
+        const oy = (typeof cfg === 'object' && cfg.offsetY) || 0;
+        const GAP = 16;
+        btn.style.top = 'auto';
+        btn.style.right = 'auto';
+        btn.style.bottom = 'auto';
+        btn.style.left = 'auto';
+        if (pos === 'tl')      { btn.style.top = (GAP + oy) + 'px';    btn.style.left = (GAP + ox) + 'px'; }
+        else if (pos === 'tr') { btn.style.top = (GAP + oy) + 'px';    btn.style.right = (GAP + ox) + 'px'; }
+        else if (pos === 'bl') { btn.style.bottom = (GAP + oy) + 'px'; btn.style.left = (GAP + ox) + 'px'; }
+        else if (pos === 'br') { btn.style.bottom = (GAP + oy) + 'px'; btn.style.right = (GAP + ox) + 'px'; }
+    }
+
+    /* ¿Algo tapa al botón? */
     function isCovered() {
         const r = btn.getBoundingClientRect();
         if (r.width < 5 || r.height < 5) return false;
@@ -421,8 +463,27 @@
         return false;
     }
 
-    /* ¿El botón está tapando a OTROS botones/links/inputs? */
-    function coversInteractive() {
+    /* ¿Es un elemento que no queremos tapar? (interactivo o texto importante) */
+    function isImportant(el) {
+        if (!el || !el.tagName) return false;
+        const tag = el.tagName;
+        const role = el.getAttribute('role');
+        if (tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'SELECT' ||
+            tag === 'TEXTAREA' || tag === 'LABEL' ||
+            role === 'button' || role === 'link' || role === 'menuitem' ||
+            role === 'tab' || role === 'checkbox' || role === 'switch' ||
+            el.hasAttribute('onclick')) return true;
+        if (/^H[1-6]$/.test(tag)) return true;
+        if (role === 'heading') return true;
+        const cls = (typeof el.className === 'string') ? el.className : '';
+        const id = el.id || '';
+        const hay = (cls + ' ' + id).toLowerCase();
+        if (/\b(logo|brand|marca|title|titulo|header|banner|hero|heading|footer|status)\b/.test(hay)) return true;
+        return false;
+    }
+
+    /* ¿El botón tapa algo importante? */
+    function coversImportant() {
         const r = btn.getBoundingClientRect();
         if (r.width < 5 || r.height < 5) return false;
         const pts = [
@@ -434,7 +495,6 @@
             if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) continue;
             const els = document.elementsFromPoint(x, y);
             if (!els.length) continue;
-            // Si nuestro botón no es el topmost, ya lo maneja isCovered()
             if (els[0] !== btn && !btn.contains(els[0])) continue;
             for (let i = 1; i < els.length; i++) {
                 const el = els[i];
@@ -443,19 +503,9 @@
                 const cs = getComputedStyle(el);
                 if (cs.pointerEvents === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) < 0.05) continue;
                 const er = el.getBoundingClientRect();
-                // Ignorar wrappers gigantes (contenedores de página, overlays fullscreen)
                 if (er.width >= innerWidth - 4 && er.height >= innerHeight - 4) continue;
                 if (er.width * er.height > innerWidth * innerHeight * 0.5) continue;
-                // ¿Es interactivo?
-                const tag = el.tagName;
-                const role = el.getAttribute('role');
-                if (tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'SELECT' ||
-                    tag === 'TEXTAREA' || tag === 'LABEL' ||
-                    role === 'button' || role === 'link' || role === 'menuitem' ||
-                    role === 'tab' || role === 'checkbox' || role === 'switch' ||
-                    el.hasAttribute('onclick')) {
-                    return true;
-                }
+                if (isImportant(el)) return true;
             }
         }
         return false;
@@ -464,7 +514,11 @@
     function place() {
         if (!btn || btn.hidden) return;
 
-        // 1. Calcular posición preferida (debajo del anchor / engranaje)
+        // 1. ¿La app pidió una esquina específica?
+        const forced = getAppPosition();
+        if (forced) { applyCorner(forced); return; }
+
+        // 2. Posición preferida: debajo del anchor / engranaje
         let prefTop = 14, prefRight = 16;
         const a = $(CFG.anchor);
         if (a) {
@@ -484,13 +538,13 @@
         prefTop = Math.max(8, Math.min(prefTop, innerHeight - bh - 8));
         prefRight = Math.max(8, Math.min(prefRight, innerWidth - bw - 8));
 
-        // 2. Probar posiciones en orden hasta encontrar una libre
+        // 3. Probar en orden hasta encontrar una esquina limpia
         const positions = [
-            { top: prefTop + 'px', right: prefRight + 'px', bottom: 'auto', left: 'auto' }, // preferida
-            { top: '14px', right: '16px', bottom: 'auto', left: 'auto' },                    // TR
-            { top: 'auto', right: '16px', bottom: '14px', left: 'auto' },                    // BR
-            { top: '14px', right: 'auto', bottom: 'auto', left: '16px' },                    // TL
-            { top: 'auto', right: 'auto', bottom: '14px', left: '16px' }                     // BL
+            { top: prefTop + 'px', right: prefRight + 'px', bottom: 'auto', left: 'auto' },
+            { top: '14px', right: '16px', bottom: 'auto', left: 'auto' },
+            { top: 'auto', right: '16px', bottom: '14px', left: 'auto' },
+            { top: '14px', right: 'auto', bottom: 'auto', left: '16px' },
+            { top: 'auto', right: 'auto', bottom: '14px', left: '16px' }
         ];
 
         for (const p of positions) {
@@ -498,9 +552,8 @@
             btn.style.right = p.right;
             btn.style.bottom = p.bottom;
             btn.style.left = p.left;
-            if (!isCovered() && !coversInteractive()) return;
+            if (!isCovered() && !coversImportant()) return;
         }
-        // Si ninguna funciona, dejar la preferida (al menos es la más predecible)
         btn.style.top = positions[0].top;
         btn.style.right = positions[0].right;
         btn.style.bottom = positions[0].bottom;
