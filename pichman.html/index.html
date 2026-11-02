@@ -237,46 +237,46 @@
         <span class="title">PichMan</span>
         <span class="credit">- By Pichisoft and MofetaStudios- </span>
     </div>
-       <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
-            href="https://pichisoft.cc" target="_blank"
-            style="color:#4db8ff; text-decoration: underline;">Pichisoft</a></p>
-<!-- ============================================================
+    <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
+            href="https://pichisoft.cc" target="_blank" style="color:#4db8ff; text-decoration: underline;">Pichisoft</a>
+    </p>
+    <!-- ============================================================
      PICHISOFT · BOTÓN DE AYUDA (estilo premium)
      Pegar al final del <body> de cada app.
      Cambiar SOLO el objeto CONFIG (titulo, descripcion, top, right).
      ============================================================ -->
-<script>
-(function () {
-    'use strict';
+    <script>
+        (function () {
+            'use strict';
 
-    /* ============================================================
-       CONFIGURACIÓN — CAMBIAR POR APP
-       ============================================================
-       titulo       → título del panel (Times New Roman, dorado)
-       descripcion  → contenido. Respeta saltos de línea. Admite:
-                      <strong>negrita</strong>, <i>cursiva</i>,
-                      <a href="...">link</a>
-       top          → distancia desde arriba (ajustar según header)
-       right        → distancia desde la derecha (ajustar para quedar
-                      a la izquierda de los carteles de sesión y del
-                      link Pichisoft)
-       ============================================================ */
-    const CONFIG = {
-        titulo: 'Ayuda para PichMan',
-        descripcion: `PichMan es el juego más exitoso de nuestro repositorio. Este juego es una serie de episodios y el primero ya fue estrenado: "PichMan series: El Rescate del Pichón". Debe rescatar al pichón y llevarlo a la base (punto de regeneración). Además, para ganarlo debes haber introducido los códigos con los 8 documentos, eliminar al objetivo y capturar la bandera.
+            /* ============================================================
+               CONFIGURACIÓN — CAMBIAR POR APP
+               ============================================================
+               titulo       → título del panel (Times New Roman, dorado)
+               descripcion  → contenido. Respeta saltos de línea. Admite:
+                              <strong>negrita</strong>, <i>cursiva</i>,
+                              <a href="...">link</a>
+               top          → distancia desde arriba (ajustar según header)
+               right        → distancia desde la derecha (ajustar para quedar
+                              a la izquierda de los carteles de sesión y del
+                              link Pichisoft)
+               ============================================================ */
+            const CONFIG = {
+                titulo: 'Ayuda para PichMan',
+                descripcion: `PichMan es el juego más exitoso de nuestro repositorio. Este juego es una serie de episodios y el primero ya fue estrenado: "PichMan series: El Rescate del Pichón". Debe rescatar al pichón y llevarlo a la base (punto de regeneración). Además, para ganarlo debes haber introducido los códigos con los 8 documentos, eliminar al objetivo y capturar la bandera.
 Puede sugerir mejoras para esta app <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank"
                 rel="noopener">aquí</a>.`,
-        top: '98px',
-        right: '40px'
-    };
-    /* ============================================================ */
+                top: '98px',
+                right: '40px'
+            };
+            /* ============================================================ */
 
-    // Evitar duplicados si se carga dos veces
-    if (document.getElementById('psHelpBtn')) return;
+            // Evitar duplicados si se carga dos veces
+            if (document.getElementById('psHelpBtn')) return;
 
-    // ─── CSS ───
-    const css = document.createElement('style');
-    css.textContent = `
+            // ─── CSS ───
+            const css = document.createElement('style');
+            css.textContent = `
 /* Botón flotante */
 #psHelpBtn {
     position: fixed;
@@ -457,30 +457,30 @@ Puede sugerir mejoras para esta app <a href="https://mail.google.com/mail/?view=
     #psHelpBtn, #psHelpOv, #psHelpCard, #psHelpX, #psHelpClose { transition: none !important; animation: none !important; }
 }
 `;
-    document.head.appendChild(css);
+            document.head.appendChild(css);
 
-    // ─── Botón flotante ───
-    const btn = document.createElement('button');
-    btn.id = 'psHelpBtn';
-    btn.type = 'button';
-    btn.setAttribute('aria-label', 'Ayuda');
-    btn.title = 'Ayuda';
-    btn.textContent = '?';
-    document.body.appendChild(btn);
+            // ─── Botón flotante ───
+            const btn = document.createElement('button');
+            btn.id = 'psHelpBtn';
+            btn.type = 'button';
+            btn.setAttribute('aria-label', 'Ayuda');
+            btn.title = 'Ayuda';
+            btn.textContent = '?';
+            document.body.appendChild(btn);
 
-    // ─── Lógica ───
-    let ov = null;
-    let onEsc = null;
+            // ─── Lógica ───
+            let ov = null;
+            let onEsc = null;
 
-    function abrir() {
-        if (ov) return;
+            function abrir() {
+                if (ov) return;
 
-        ov = document.createElement('div');
-        ov.id = 'psHelpOv';
-        ov.setAttribute('role', 'dialog');
-        ov.setAttribute('aria-modal', 'true');
-        ov.setAttribute('aria-labelledby', 'psHelpTitle');
-        ov.innerHTML = `
+                ov = document.createElement('div');
+                ov.id = 'psHelpOv';
+                ov.setAttribute('role', 'dialog');
+                ov.setAttribute('aria-modal', 'true');
+                ov.setAttribute('aria-labelledby', 'psHelpTitle');
+                ov.innerHTML = `
             <div id="psHelpCard">
                 <button id="psHelpX" type="button" aria-label="Cerrar ayuda" title="Cerrar"></button>
                 <h2 id="psHelpTitle"></h2>
@@ -488,46 +488,47 @@ Puede sugerir mejoras para esta app <a href="https://mail.google.com/mail/?view=
                 <button id="psHelpClose" type="button">Entendido</button>
             </div>
         `;
-        // Título (texto plano, seguro) y cuerpo (HTML configurado por el dueño de la app)
-        ov.querySelector('#psHelpTitle').textContent = CONFIG.titulo;
-        ov.querySelector('#psHelpBody').innerHTML = CONFIG.descripcion;
-        document.body.appendChild(ov);
+                // Título (texto plano, seguro) y cuerpo (HTML configurado por el dueño de la app)
+                ov.querySelector('#psHelpTitle').textContent = CONFIG.titulo;
+                ov.querySelector('#psHelpBody').innerHTML = CONFIG.descripcion;
+                document.body.appendChild(ov);
 
-        // Forzar reflow para que la animación funcione
-        void ov.offsetHeight;
-        requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
+                // Forzar reflow para que la animación funcione
+                void ov.offsetHeight;
+                requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
 
-        // Bloquear scroll de fondo
-        document.documentElement.style.overflow = 'hidden';
+                // Bloquear scroll de fondo
+                document.documentElement.style.overflow = 'hidden';
 
-        // Eventos
-        ov.querySelector('#psHelpX').onclick = cerrar;
-        ov.querySelector('#psHelpClose').onclick = cerrar;
-        ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
+                // Eventos
+                ov.querySelector('#psHelpX').onclick = cerrar;
+                ov.querySelector('#psHelpClose').onclick = cerrar;
+                ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
 
-        onEsc = e => { if (e.key === 'Escape') cerrar(); };
-        document.addEventListener('keydown', onEsc);
+                onEsc = e => { if (e.key === 'Escape') cerrar(); };
+                document.addEventListener('keydown', onEsc);
 
-        // Foco al botón de cerrar
-        setTimeout(() => { try { ov.querySelector('#psHelpX').focus(); } catch { } }, 300);
-    }
+                // Foco al botón de cerrar
+                setTimeout(() => { try { ov.querySelector('#psHelpX').focus(); } catch { } }, 300);
+            }
 
-    function cerrar() {
-        if (!ov) return;
-        const el = ov;
-        ov = null;
-        el.classList.remove('on');
-        if (onEsc) { document.removeEventListener('keydown', onEsc); onEsc = null; }
-        document.documentElement.style.overflow = '';
-        setTimeout(() => el.remove(), 400);
-    }
+            function cerrar() {
+                if (!ov) return;
+                const el = ov;
+                ov = null;
+                el.classList.remove('on');
+                if (onEsc) { document.removeEventListener('keydown', onEsc); onEsc = null; }
+                document.documentElement.style.overflow = '';
+                setTimeout(() => el.remove(), 400);
+            }
 
-    btn.onclick = abrir;
+            btn.onclick = abrir;
 
-    // API pública por si querés abrirlo desde código
-    window.PichisoftAyuda = { abrir, cerrar };
-})();
-</script>
+            // API pública por si querés abrirlo desde código
+            window.PichisoftAyuda = { abrir, cerrar };
+        })();
+    </script>
+    <script src="/pichisoft-idiomas.js"></script>
 </body>
 
 
