@@ -50,6 +50,7 @@
     const all = new Set(), waiting = new Map(), queued = new Set(), failed = new Set(), queue = [];
     let cssItems = [], quotaShown = false;
     let defaultLang = null, visible = true, btn = null;
+    let btnKey = null;
 
     function readDefault() {
         let d = ls.get('psi_default');
@@ -271,7 +272,7 @@
 
     /* ------------------------------ UI ------------------------------ */
     const CSS = `
-#psi-btn{position:fixed;top:14px;right:16px;z-index:51;display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:6px;border:1px solid #d4af37;background:linear-gradient(135deg,#f1d98a,#c9a227 55%,#a67c10);color:#1a1405;font:bold 14px/1.1 Verdana,"Open Sans","Helvetica Neue",sans-serif;letter-spacing:.02em;cursor:pointer;user-select:none;-webkit-user-select:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 12px rgba(0,0,0,.45);transition:filter .15s,transform .15s}
+#psi-btn{position:fixed!important;top:14px;right:16px;z-index:9997;display:inline-flex!important;align-items:center;gap:8px;padding:9px 14px;width:auto!important;max-width:max-content!important;min-width:0;box-sizing:border-box;visibility:visible!important;opacity:1!important;pointer-events:auto!important;white-space:nowrap;border-radius:6px;border:1px solid #d4af37;background:linear-gradient(135deg,#f1d98a,#c9a227 55%,#a67c10);color:#1a1405;font:bold 14px/1.1 Verdana,"Open Sans","Helvetica Neue",sans-serif;letter-spacing:.02em;cursor:pointer;user-select:none;-webkit-user-select:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 12px rgba(0,0,0,.45);transition:filter .15s,transform .15s}
 #psi-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
 #psi-btn:active{transform:none}
 #psi-btn:focus-visible{outline:2px solid #f1d98a;outline-offset:2px}
@@ -408,14 +409,32 @@
         if (!btn || btn.hidden) return;
         let top = 14, right = 16;
         const a = $(CFG.anchor);
-        if (a) { const r = a.getBoundingClientRect(); if (r.height) { top = r.bottom + 8; right = Math.max(8, innerWidth - r.right); } }
+        if (a) {
+            const r = a.getBoundingClientRect();
+            // Solo usar el anchor si está realmente visible en pantalla
+            if (r.height > 0 && r.right > 0 && r.bottom > 0 && r.top < innerHeight) {
+                top = r.bottom + 8;
+                right = innerWidth - r.right;
+            }
+        }
         const g = $('#pGear');
-        if (g && getComputedStyle(g).display !== 'none') top = Math.max(top, g.getBoundingClientRect().bottom + 8);
-        btn.style.top = Math.max(8, top) + 'px'; btn.style.right = right + 'px';
+        if (g && getComputedStyle(g).display !== 'none') {
+            const gr = g.getBoundingClientRect();
+            if (gr.height > 0 && gr.top < innerHeight) top = Math.max(top, gr.bottom + 8);
+        }
+        // Clamp: nunca dejar el botón fuera del viewport
+        const bw = btn.offsetWidth || 120;
+        const bh = btn.offsetHeight || 40;
+        top = Math.max(8, Math.min(top, innerHeight - bh - 8));
+        right = Math.max(8, Math.min(right, innerWidth - bw - 8));
+        btn.style.top = top + 'px';
+        btn.style.right = right + 'px';
+        btn.style.bottom = 'auto';
+        btn.style.left = 'auto';
     }
 
     function setVisible(v) {
-        visible = !!v; ls.set('psi_btn', visible ? '1' : '0');
+        visible = !!v; ls.set(btnKey || 'psi_btn', visible ? '1' : '0');
         if (btn) { btn.hidden = !visible; placeSoon(); }
         if (!visible) closePanel();
     }
@@ -427,9 +446,24 @@
         btn = document.createElement('button'); btn.id = 'psi-btn'; btn.type = 'button';
         btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 2.6 2.8 15.4 0 18M12 3c-2.8 2.6-2.8 15.4 0 18"/></svg><span>Traducir</span>';
         btn.onclick = openPanel;
-        document.body.appendChild(btn);
+        // Refuerzo por si el CSS de la app tiene !important en button{...}
+        btn.style.position = 'fixed';
+        btn.style.zIndex = '9997';
+        btn.style.width = 'auto';
+        btn.style.maxWidth = 'max-content';
+        btn.style.boxSizing = 'border-box';
+        btn.style.display = 'inline-flex';
+        btn.style.visibility = 'visible';
+        btn.style.opacity = '1';
+        // Si <body> tiene transform/filter/perspective, position:fixed deja de ser "fixed al viewport".
+        // En ese caso lo cuelgo de <html> (hermano de <body>) para escapar del containing block.
+        const bcs = getComputedStyle(document.body);
+        const bodyBreaksFixed = bcs.transform !== 'none' || bcs.filter !== 'none' || bcs.perspective !== 'none';
+        (bodyBreaksFixed ? document.documentElement : document.body).appendChild(btn);
 
-        visible = typeof window.PSI_VISIBLE === 'boolean' ? window.PSI_VISIBLE : ls.get('psi_btn') !== '0';
+        btnKey = 'psi_btn_' + (location.pathname || '/');
+        const savedVis = ls.get(btnKey) !== null ? ls.get(btnKey) : ls.get('psi_btn');
+        visible = typeof window.PSI_VISIBLE === 'boolean' ? window.PSI_VISIBLE : savedVis !== '0';
         btn.hidden = !visible;
         addEventListener('pichisoft:traductor', e => setVisible(e.detail && e.detail.visible));
 
@@ -447,6 +481,9 @@
         addEventListener('scroll', placeSoon, { passive: true });
         addEventListener('load', placeSoon);
         place();
+        setTimeout(place, 300);
+        setTimeout(place, 1000);
+        setTimeout(place, 3000);
 
         defaultLang = readDefault();
         const sess = ss.get('psi_cur');
