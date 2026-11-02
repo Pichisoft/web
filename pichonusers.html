@@ -1,365 +1,206 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PichonUsers</title>
-   
-    <style>
-        html {
-            background: #222;
-            color: whitesmoke;
-            font-family: Verdana, "Open Sans", "Helvetica Neue", sans-serif;
-            font-size: 16px
-        }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>PichonTraffic</title>
 
-        body {
-            margin: 0;
-            padding: 18px;
-            max-width: 980px;
-            margin: auto
-        }
-
-        .titulo {
-            font-family: "Times New Roman", Times, serif;
-            font-weight: bold;
-            font-size: 2.2rem;
-            color: #fff;
-            margin: .2em 0
-        }
-
-        .by {
-            font-family: Verdana, sans-serif;
-            font-size: 1rem;
-            font-weight: normal;
-            font-style: italic;
-            color: #bbb
-        }
-
-        a {
-            color: #fff
-        }
-
-        .bar {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-            margin: 14px 0
-        }
-
-        input,
-        textarea,
-        select {
-            background: #222;
-            border: 1px solid #555;
-            color: #fff;
-            border-radius: 6px;
-            padding: 10px;
-            font: inherit;
-            font-size: .9rem;
-            box-sizing: border-box
-        }
-
-        #q {
-            flex: 1;
-            min-width: 180px
-        }
-
-        .btn {
-            background: #333;
-            color: #fff;
-            border: 1px solid #666;
-            border-radius: 6px;
-            padding: 9px 14px;
-            font: inherit;
-            font-size: .85rem;
-            cursor: pointer
-        }
-
-        .btn:hover {
-            background: #fff;
-            color: #222
-        }
-
-        .btn.red {
-            border-color: #a33
-        }
-
-        .btn:disabled {
-            opacity: .5;
-            cursor: default
-        }
-
-        #cnt {
-            color: #999;
-            font-size: .85rem
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-            gap: 12px
-        }
-
-        .u {
-            background: #161616;
-            border: 1px solid #333;
-            border-radius: 14px;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px
-        }
-
-        .u.off {
-            border-color: #7a2a2a
-        }
-
-        .top {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            min-width: 0
-        }
-
-        .av {
-            flex: none;
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            background: #444;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            overflow: hidden
-        }
-
-        .av img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover
-        }
-
-        .info {
-            min-width: 0
-        }
-
-        .nom {
-            font-weight: bold;
-            word-break: break-word
-        }
-
-        .mail {
-            font-size: .8rem;
-            color: #bbb;
-            word-break: break-all
-        }
-
-        .uid {
-            font-family: monospace;
-            font-size: .72rem;
-            color: #999;
-            word-break: break-all;
-            cursor: pointer;
-            user-select: all
-        }
-
-        .tag {
-            display: inline-block;
-            font-size: .65rem;
-            padding: 2px 6px;
-            border-radius: 5px;
-            margin-left: 6px;
-            background: #7a2a2a;
-            vertical-align: middle
-        }
-
-        .acts {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap
-        }
-
-        .ov {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, .8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-            z-index: 10
-        }
-
-        .box {
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 20px;
-            width: min(480px, 100%);
-            box-sizing: border-box
-        }
-
-        .box textarea {
-            width: 100%;
-            min-height: 140px;
-            resize: vertical
-        }
-
-        .err {
-            color: #ff7b7b;
-            font-size: .8rem;
-            min-height: 1.2em
-        }
-
-        #den {
-            text-align: center;
-            margin-top: 20vh;
-            font-family: Georgia, serif
-        }
-    </style>
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-    <div id="den" hidden>Acceso denegado.<br><br><a href="/">Volver a PichonApps</a></div>
-    <div id="app" hidden>
-        <h1 class="titulo">PichonUsers <span class="by">- By Pichisoft -</span></h1>
-        <div class="bar">
-            <input id="q" type="text" placeholder="Buscar por usuario, email o UID…" autocomplete="off">
-            <button class="btn" id="rec">Actualizar</button>
-            <a class="btn" href="/" style="text-decoration:none">PichonApps</a>
-        </div>
-        <div id="cnt"></div><br>
-        <div class="grid" id="lista"></div>
+
+    <div class="header">
+        <span class="title">PichonTraffic</span>
+        <span class="credit">- By Pichisoft and MofetaStudios-</span>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-        import { getFirestore, collection, getDocs, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+    <div class="game-wrap">
+        <canvas id="game" width="400" height="620"></canvas>
 
-        /* ADMINS con acceso a PichonUsers.
-           Para agregar más: sumá su UID de Firebase acá, ej: ['XIY1...', 'OTRO_UID'],
-           y también en la función isAdmin() de las reglas de Firestore (si no, no podrán leer los datos). */
-        const ADMINS = ['XIY1FfjUDodaSBSGema6NgixKRs1', 'n0XOUeFku1SxKWbrPWsA0V86kfc2'];
-        const app = initializeApp({
-            apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8", authDomain: "pichisoft.firebaseapp.com",
-            projectId: "pichisoft", storageBucket: "pichisoft.firebasestorage.app",
-            messagingSenderId: "690032082295", appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572"
-        });
-        const auth = getAuth(app), db = getFirestore(app);
-        const $ = s => document.querySelector(s);
-        const okFoto = f => (typeof f === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(f)) ? f : '';
-        let users = [], flags = {}, yo = null;
+        <div class="hud">
+            <div class="hud-item">
+                <span class="label">Puntos</span>
+                <span id="score">0</span>
+            </div>
+            <div class="hud-item right">
+                <span class="label">Récord</span>
+                <span id="best">0</span>
+            </div>
+        </div>
 
-        onAuthStateChanged(auth, async u => {
-            if (!u || !ADMINS.includes(u.uid)) { $('#app').hidden = true; $('#den').hidden = false; return; }
-            yo = u; $('#den').hidden = true; $('#app').hidden = false;
-            cargar();
-        });
+        <div class="hud-ammo">
+            <span class="label">Balas</span>
+            <span id="ammo">5</span>
+        </div>
 
-        async function cargar() {
-            $('#cnt').textContent = 'Cargando…';
-            try {
-                const [us, fl] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'admin_flags'))]);
-                users = us.docs.map(d => ({ uid: d.id, ...d.data() }));
-                users.sort((a, b) => String(a.username).toLowerCase().localeCompare(String(b.username).toLowerCase()));
-                flags = {}; fl.docs.forEach(d => flags[d.id] = !!d.data().disabled);
-                pintar();
-            } catch (e) { $('#cnt').textContent = 'Error: ' + e.message + ' (¿actualizaste las reglas de Firestore?)'; }
-        }
+        <div class="overlay" id="overlay">
+            <div class="panel">
+                <h1 id="ovTitle">🚗 Esquiva el Tráfico</h1>
+                <p id="ovText">
+                    Muévete con <strong>← →</strong> o <strong>A / D</strong>.<br>
+                    Dispara con <strong>Espacio</strong>.<br>
+                    Cada 5 autos que esquives, ¡+1 bala!
+                </p>
+                <button id="ovBtn">Jugar</button>
+            </div>
+        </div>
+    </div>
 
-        function pintar() {
-            const t = $('#q').value.trim().toLowerCase(), L = $('#lista'); L.innerHTML = '';
-            const v = users.filter(u => !t || [u.username, u.email, u.uid].some(x => String(x || '').toLowerCase().includes(t)));
-            $('#cnt').textContent = v.length + ' de ' + users.length + ' usuarios';
-            v.forEach(u => {
-                const off = flags[u.uid], c = document.createElement('div'); c.className = 'u' + (off ? ' off' : '');
-                const top = document.createElement('div'); top.className = 'top';
-                const av = document.createElement('div'); av.className = 'av';
-                if (okFoto(u.photo)) { const i = document.createElement('img'); i.src = u.photo; i.alt = ''; av.append(i); }
-                else av.textContent = String(u.username || '?')[0].toUpperCase();
-                const inf = document.createElement('div'); inf.className = 'info';
-                const n = document.createElement('div'); n.className = 'nom'; n.textContent = u.username || '(sin nombre)';
-                if (off) { const g = document.createElement('span'); g.className = 'tag'; g.textContent = 'INHABILITADA'; n.append(g); }
-                const m = document.createElement('div'); m.className = 'mail'; m.textContent = u.email || '';
-                const id = document.createElement('div'); id.className = 'uid'; id.textContent = u.uid; id.title = 'Click para copiar';
-                id.onclick = () => navigator.clipboard && navigator.clipboard.writeText(u.uid);
-                inf.append(n, m, id); top.append(av, inf);
-                const ac = document.createElement('div'); ac.className = 'acts';
-                const b1 = document.createElement('button'); b1.className = 'btn'; b1.textContent = 'Enviar mensaje'; b1.onclick = () => msg(u);
-                ac.append(b1);
-                if (!ADMINS.includes(u.uid)) {
-                    const b2 = document.createElement('button'); b2.className = 'btn red'; b2.textContent = off ? 'Habilitar cuenta' : 'Inhabilitar cuenta';
-                    b2.onclick = async () => {
-                        if (!confirm((off ? 'Habilitar' : 'Inhabilitar') + ' la cuenta de ' + u.username + '?')) return;
-                        b2.disabled = true;
-                        try { await setDoc(doc(db, 'admin_flags', u.uid), { disabled: !off, at: Date.now() }); flags[u.uid] = !off; pintar(); }
-                        catch (e) { alert('Error: ' + e.message); b2.disabled = false; }
-                    };
-                    ac.append(b2);
-                }
-                c.append(top, ac); L.append(c);
-            });
-        }
+    <script src="script.js"></script>
+    <!-- ===== Pichisoft - Estado de sesión ===== -->
+    <div id="pichisoft-session-status" role="status" aria-live="polite">
+        <span class="ps-check">✓</span>
+        <span class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span>
+    </div>
 
-        function msg(u) {
-            const o = document.createElement('div'); o.className = 'ov';
-            o.innerHTML = '<div class="box"><h3 style="font-family:Times New Roman,serif;margin:0 0 10px">Mensaje para <span id="nn"></span></h3><textarea id="t" maxlength="450" placeholder="Escribí el mensaje (máx. 450 caracteres)…"></textarea><div class="err" id="e"></div><button class="btn" id="s">Enviar</button> <button class="btn" id="c">Cancelar</button></div>';
-            o.querySelector('#nn').textContent = u.username;
-            document.body.append(o);
-            o.querySelector('#c').onclick = () => o.remove();
-            o.onclick = e => { if (e.target === o) o.remove(); };
-            o.querySelector('#s').onclick = async e => {
-                const t = o.querySelector('#t').value.trim(); if (!t) { o.querySelector('#e').textContent = 'Escribí un mensaje.'; return; }
-                e.target.disabled = true;
-                try { await addDoc(collection(db, 'messages'), { to: u.uid, text: t, at: Date.now(), read: false, from: yo.uid }); o.remove(); alert('Mensaje enviado.'); }
-                catch (x) { o.querySelector('#e').textContent = x.message; e.target.disabled = false; }
+    <div id="pichisoft-session-profile">
+        <div id="pichisoft-profile-picture"></div>
+        <span id="pichisoft-profile-name"></span>
+    </div>
+
+    <script>
+        (function () {
+            /* Todo va dentro de esta función para no chocar con las variables de la app */
+            var CFG = {
+                apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+                authDomain: "pichisoft.firebaseapp.com",
+                projectId: "pichisoft",
+                storageBucket: "pichisoft.firebasestorage.app",
+                messagingSenderId: "690032082295",
+                appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+                measurementId: "G-K7HRKR8BJ1"
             };
-        }
-        $('#q').oninput = pintar; $('#rec').onclick = cargar;
+            var V = "https://www.gstatic.com/firebasejs/12.3.0/";
+            var DUR_INICIO = 12000;   // "Iniciando sesión..."
+            var DUR_MENSAJE = 6000;   // "Sesión iniciada" / avisos
+
+            var box = document.getElementById("pichisoft-session-status");
+            var txt = box.querySelector(".ps-text");
+            var prof = document.getElementById("pichisoft-session-profile");
+            var pic = document.getElementById("pichisoft-profile-picture");
+            var nameEl = document.getElementById("pichisoft-profile-name");
+            var t0 = Date.now();
+
+            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+            /* Espera a que Firebase confirme si hay sesión y lee el perfil.
+               Si algo falla (sin internet, permisos, etc.) devuelve {error:true} en vez de quedarse trabado. */
+            async function comprobar() {
+                try {
+                    var m = await Promise.all([
+                        import(V + "firebase-app.js"),
+                        import(V + "firebase-auth.js"),
+                        import(V + "firebase-firestore.js")
+                    ]);
+                    var app = m[0].initializeApp(CFG);
+                    var auth = m[1].getAuth(app);
+                    var db = m[2].getFirestore(app);
+
+                    var user = await Promise.race([
+                        new Promise(function (res) {
+                            m[1].onAuthStateChanged(auth, function (u) {
+                                window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
+                                res(u);
+                            });
+                        }),
+                        wait(15000).then(function () { throw new Error("tiempo agotado"); })
+                    ]);
+
+                    var perfil = {};
+                    if (user) {
+                        try {
+                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+                            if (snap.exists()) perfil = snap.data();
+                        } catch (e) {
+                            console.error("Pichisoft: no se pudo leer el perfil", e);
+                        }
+                    }
+                    return { user: user, perfil: perfil };
+                } catch (e) {
+                    console.error("Pichisoft:", e);
+                    return { error: true };
+                }
+            }
+
+            async function aviso(texto) {
+                txt.textContent = texto;
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+            }
+
+            (async function () {
+                var r = await comprobar();
+                await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
+
+                if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
+                if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
+
+                box.classList.add("success");
+                txt.textContent = "Sesión iniciada";
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+
+                var nombre = r.perfil.username || "Usuario";
+                nameEl.textContent = nombre;
+                var foto = r.perfil.photo;
+                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
+                    var img = new Image();
+                    img.src = foto;
+                    img.alt = "Foto de perfil";
+                    pic.replaceChildren(img);
+                } else {
+                    var ph = document.createElement("div");
+                    ph.className = "profile-placeholder";
+                    ph.textContent = nombre.charAt(0).toUpperCase();
+                    pic.replaceChildren(ph);
+                }
+                await wait(450);
+                prof.classList.add("visible");
+            })();
+        })();
     </script>
+    <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
+            href="https://pichisoft.cc" target="_blank" style="color:#4db8ff; text-decoration: underline;">Pichisoft</a>
+    </p>
     <!-- ============================================================
      PICHISOFT · BOTÓN DE AYUDA (estilo premium)
      Pegar al final del <body> de cada app.
      Cambiar SOLO el objeto CONFIG (titulo, descripcion, top, right).
      ============================================================ -->
-<script>
-(function () {
-    'use strict';
+    <script>
+        (function () {
+            'use strict';
 
-    /* ============================================================
-       CONFIGURACIÓN — CAMBIAR POR APP
-       ============================================================
-       titulo       → título del panel (Times New Roman, dorado)
-       descripcion  → contenido. Respeta saltos de línea. Admite:
-                      <strong>negrita</strong>, <i>cursiva</i>,
-                      <a href="...">link</a>
-       top          → distancia desde arriba (ajustar según header)
-       right        → distancia desde la derecha (ajustar para quedar
-                      a la izquierda de los carteles de sesión y del
-                      link Pichisoft)
-       ============================================================ */
-    const CONFIG = {
-        titulo: '¡Nuesta ayuda!-PichonUsers',
-        descripcion: `PichonUsers es la app donde solo los admins pueden acceder (vos (Angi) y yo).
-        Podemos enviarles mensajes a los usuarios o inhabilitarles y rehabillitarles sus cuentas.
+            /* ============================================================
+               CONFIGURACIÓN — CAMBIAR POR APP
+               ============================================================
+               titulo       → título del panel (Times New Roman, dorado)
+               descripcion  → contenido. Respeta saltos de línea. Admite:
+                              <strong>negrita</strong>, <i>cursiva</i>,
+                              <a href="...">link</a>
+               top          → distancia desde arriba (ajustar según header)
+               right        → distancia desde la derecha (ajustar para quedar
+                              a la izquierda de los carteles de sesión y del
+                              link Pichisoft)
+               ============================================================ */
+            const CONFIG = {
+                titulo: 'Ayuda para PichonTraffic',
+                descripcion: `PichonTraffic es un juego donde te mueves con tu autito y debes esquivar los obstáculos (autos y conos). Cada 5 obstáculos esquivados, ganas una bala. Disparas con Espacio o también puedes presionar Enter.
 Puede sugerir mejoras para esta app <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank"
                 rel="noopener">aquí</a>.`,
-        top: '86px',
-        right: '40px'
-    };
-    /* ============================================================ */
+                top: '108px',
+                right: '40px'
+            };
+            /* ============================================================ */
 
-    // Evitar duplicados si se carga dos veces
-    if (document.getElementById('psHelpBtn')) return;
+            // Evitar duplicados si se carga dos veces
+            if (document.getElementById('psHelpBtn')) return;
 
-    // ─── CSS ───
-    const css = document.createElement('style');
-    css.textContent = `
+            // ─── CSS ───
+            const css = document.createElement('style');
+            css.textContent = `
 /* Botón flotante */
 #psHelpBtn {
     position: fixed;
@@ -540,30 +381,30 @@ Puede sugerir mejoras para esta app <a href="https://mail.google.com/mail/?view=
     #psHelpBtn, #psHelpOv, #psHelpCard, #psHelpX, #psHelpClose { transition: none !important; animation: none !important; }
 }
 `;
-    document.head.appendChild(css);
+            document.head.appendChild(css);
 
-    // ─── Botón flotante ───
-    const btn = document.createElement('button');
-    btn.id = 'psHelpBtn';
-    btn.type = 'button';
-    btn.setAttribute('aria-label', 'Ayuda');
-    btn.title = 'Ayuda';
-    btn.textContent = '?';
-    document.body.appendChild(btn);
+            // ─── Botón flotante ───
+            const btn = document.createElement('button');
+            btn.id = 'psHelpBtn';
+            btn.type = 'button';
+            btn.setAttribute('aria-label', 'Ayuda');
+            btn.title = 'Ayuda';
+            btn.textContent = '?';
+            document.body.appendChild(btn);
 
-    // ─── Lógica ───
-    let ov = null;
-    let onEsc = null;
+            // ─── Lógica ───
+            let ov = null;
+            let onEsc = null;
 
-    function abrir() {
-        if (ov) return;
+            function abrir() {
+                if (ov) return;
 
-        ov = document.createElement('div');
-        ov.id = 'psHelpOv';
-        ov.setAttribute('role', 'dialog');
-        ov.setAttribute('aria-modal', 'true');
-        ov.setAttribute('aria-labelledby', 'psHelpTitle');
-        ov.innerHTML = `
+                ov = document.createElement('div');
+                ov.id = 'psHelpOv';
+                ov.setAttribute('role', 'dialog');
+                ov.setAttribute('aria-modal', 'true');
+                ov.setAttribute('aria-labelledby', 'psHelpTitle');
+                ov.innerHTML = `
             <div id="psHelpCard">
                 <button id="psHelpX" type="button" aria-label="Cerrar ayuda" title="Cerrar"></button>
                 <h2 id="psHelpTitle"></h2>
@@ -571,46 +412,47 @@ Puede sugerir mejoras para esta app <a href="https://mail.google.com/mail/?view=
                 <button id="psHelpClose" type="button">Entendido</button>
             </div>
         `;
-        // Título (texto plano, seguro) y cuerpo (HTML configurado por el dueño de la app)
-        ov.querySelector('#psHelpTitle').textContent = CONFIG.titulo;
-        ov.querySelector('#psHelpBody').innerHTML = CONFIG.descripcion;
-        document.body.appendChild(ov);
+                // Título (texto plano, seguro) y cuerpo (HTML configurado por el dueño de la app)
+                ov.querySelector('#psHelpTitle').textContent = CONFIG.titulo;
+                ov.querySelector('#psHelpBody').innerHTML = CONFIG.descripcion;
+                document.body.appendChild(ov);
 
-        // Forzar reflow para que la animación funcione
-        void ov.offsetHeight;
-        requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
+                // Forzar reflow para que la animación funcione
+                void ov.offsetHeight;
+                requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
 
-        // Bloquear scroll de fondo
-        document.documentElement.style.overflow = 'hidden';
+                // Bloquear scroll de fondo
+                document.documentElement.style.overflow = 'hidden';
 
-        // Eventos
-        ov.querySelector('#psHelpX').onclick = cerrar;
-        ov.querySelector('#psHelpClose').onclick = cerrar;
-        ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
+                // Eventos
+                ov.querySelector('#psHelpX').onclick = cerrar;
+                ov.querySelector('#psHelpClose').onclick = cerrar;
+                ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
 
-        onEsc = e => { if (e.key === 'Escape') cerrar(); };
-        document.addEventListener('keydown', onEsc);
+                onEsc = e => { if (e.key === 'Escape') cerrar(); };
+                document.addEventListener('keydown', onEsc);
 
-        // Foco al botón de cerrar
-        setTimeout(() => { try { ov.querySelector('#psHelpX').focus(); } catch { } }, 300);
-    }
+                // Foco al botón de cerrar
+                setTimeout(() => { try { ov.querySelector('#psHelpX').focus(); } catch { } }, 300);
+            }
 
-    function cerrar() {
-        if (!ov) return;
-        const el = ov;
-        ov = null;
-        el.classList.remove('on');
-        if (onEsc) { document.removeEventListener('keydown', onEsc); onEsc = null; }
-        document.documentElement.style.overflow = '';
-        setTimeout(() => el.remove(), 400);
-    }
+            function cerrar() {
+                if (!ov) return;
+                const el = ov;
+                ov = null;
+                el.classList.remove('on');
+                if (onEsc) { document.removeEventListener('keydown', onEsc); onEsc = null; }
+                document.documentElement.style.overflow = '';
+                setTimeout(() => el.remove(), 400);
+            }
 
-    btn.onclick = abrir;
+            btn.onclick = abrir;
 
-    // API pública por si querés abrirlo desde código
-    window.PichisoftAyuda = { abrir, cerrar };
-})();
-</script>
+            // API pública por si querés abrirlo desde código
+            window.PichisoftAyuda = { abrir, cerrar };
+        })();
+    </script>
+<script src="/pichisoft-idiomas.js"></script>
 </body>
 
 </html>
