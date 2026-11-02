@@ -48,7 +48,6 @@
             background: var(--me);
         }
 
-        /* donde yo anoto */
         .goal.bottom {
             bottom: 0;
             background: var(--opp);
@@ -230,6 +229,198 @@
             pointer-events: none;
             z-index: 20;
         }
+
+        #pichisoft-session-status {
+            position: fixed;
+            top: 52px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 8px 16px;
+            background: #000;
+            color: #20a84b;
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 22px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            font: 14px/1.3 Georgia, serif;
+            text-align: left;
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
+        }
+
+        #pichisoft-session-status.hidden {
+            opacity: 0;
+            transform: translateY(-12px);
+        }
+
+        #pichisoft-session-status.success {
+            font-weight: bold;
+        }
+
+        #pichisoft-session-status .ps-check {
+            display: none;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        #pichisoft-session-status.success .ps-check {
+            display: inline-block;
+            animation: pichisoftCheck 0.8s cubic-bezier(.17, .89, .32, 1.49) forwards;
+        }
+
+        @keyframes pichisoftCheck {
+            0% {
+                opacity: 0;
+                transform: scale(0.2) rotate(-25deg);
+            }
+
+            60% {
+                opacity: 1;
+                transform: scale(1.25) rotate(8deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        #pichisoft-session-profile {
+            position: fixed;
+            top: 52px;
+            right: 20px;
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: calc(100vw - 20px);
+            box-sizing: border-box;
+            padding: 5px 14px 5px 5px;
+            background: #000;
+            color: #fff;
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 25px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            font-family: Georgia, serif;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(-12px) scale(0.9);
+            transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.17, .89, .32, 1.3);
+            pointer-events: none;
+        }
+
+        #pichisoft-session-profile.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        #pichisoft-profile-picture img,
+        #pichisoft-profile-picture .profile-placeholder {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pichisoft-profile-picture .profile-placeholder {
+            background: #20a84b;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #pichisoft-profile-name {
+            font-size: 14px;
+            font-weight: bold;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                top: 16px;
+                left: 15px;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .byline {
+                font-size: 0.75rem;
+            }
+
+            #pichisoft-session-status,
+            #pichisoft-session-profile {
+                right: 10px;
+            }
+
+            #pichisoft-session-status {
+                font-size: 13px;
+                padding: 7px 14px;
+            }
+        }
+
+        /* ==========================================
+   HEADER DE LA APP
+   ========================================== */
+        .app-header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            z-index: 100;
+            pointer-events: none;
+            /* Para que no bloquee los clicks del juego */
+        }
+
+        .app-title {
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            font-size: 32px;
+            color: var(--ink);
+            /* Negro (#111) */
+            margin: 0;
+            line-height: 1;
+        }
+
+        .app-credit {
+            font-family: Verdana, sans-serif;
+            font-size: 14px;
+            font-style: italic;
+            color: var(--mut);
+            /* Gris (#888) */
+        }
+
+        @media (max-width: 600px) {
+            .app-header {
+                top: 15px;
+                left: 15px;
+                gap: 8px;
+            }
+
+            .app-title {
+                font-size: 24px;
+            }
+
+            .app-credit {
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 
@@ -246,9 +437,12 @@
         <div id="hint">ESPACIO (o tocá la pantalla) 🡅</div>
     </div>
 
-    <!-- Lobby -->
+    <div class="app-header">
+        <h1 class="app-title">PichonPush</h1>
+        <span class="app-credit">- By Pichisoft -</span>
+    </div>
+
     <div class="overlay on" id="lobby">
-        <h1>⚫ PichonPush</h1>
         <p>Tirá la bola al lado de tu rival apretando espacio lo más rápido que puedas. El primero en llegar a 5 gana.
         </p>
         <input id="nameIn" maxlength="16" placeholder="Tu nombre">
@@ -257,7 +451,6 @@
         <div id="err"></div>
     </div>
 
-    <!-- Esperando -->
     <div class="overlay" id="waiting">
         <h2>Esperando rival…</h2>
         <p>Pasale este link a tu amigo (o esperá a que alguien busque partida):</p>
@@ -266,7 +459,6 @@
         <button id="btnCancel" class="alt">Cancelar</button>
     </div>
 
-    <!-- Resultado -->
     <div class="overlay" id="result" style="background:rgba(250,250,250,.8)">
         <h2 id="resTitle"></h2>
         <p id="resSub"></p>
@@ -282,17 +474,15 @@
             onSnapshot, query, where, limit, runTransaction, increment
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        /* ============ 1) PEGÁ ACÁ TU CONFIG DE FIREBASE ============ */
         const firebaseConfig = {
             apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
             authDomain: "pichisoft.firebaseapp.com",
             projectId: "pichisoft",
             appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572"
         };
-        /* =========================================================== */
 
-        const N = 20;   // pulsaciones de diferencia para llegar al borde (tiene que coincidir con las reglas)
-        const WIN = 5;  // puntos para ganar (idem)
+        const N = 20;
+        const WIN = 5;
         const COL = "ball_games";
 
         const app = initializeApp(firebaseConfig);
@@ -303,9 +493,7 @@
         let g = null, pending = 0, flushTimer = null, goalBusy = false, lockUntil = 0;
         let prevScore = null, celebrated = false;
 
-        /* ---------- Auth ---------- */
         $("nameIn").value = localStorage.getItem("pp_name") || ("Pichon" + Math.floor(Math.random() * 900 + 100));
-        // Sin cuentas: cada navegador se identifica con un id aleatorio guardado localmente
         uid = localStorage.getItem("pp_uid");
         if (!uid) {
             uid = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()).replace(/-/g, "");
@@ -320,7 +508,6 @@
         }
         function overlay(id) { ["lobby", "waiting", "result"].forEach(k => $(k).classList.toggle("on", k === id)); }
 
-        /* ---------- Lobby ---------- */
         $("btnPlay").onclick = async () => {
             if (!uid) return showErr("Conectando…");
             readName(); showErr("");
@@ -369,7 +556,6 @@
             showErr("Esa partida ya está completa.");
         }
 
-        /* ---------- Partida ---------- */
         function attach(id, r) {
             gid = id; role = r; ref = doc(db, COL, id);
             g = null; pending = 0; prevScore = null; celebrated = false; lockUntil = 0;
@@ -398,9 +584,8 @@
             $("ball").style.top = "50%"; $("meScore").textContent = "0"; $("oppScore").textContent = "0";
         }
 
-        /* ---------- Lógica ---------- */
         const sign = () => role === "host" ? 1 : -1;
-        const localD = () => g.a - g.b - g.base + sign() * pending;   // + = la bola va hacia el lado del invitado (arriba para el host)
+        const localD = () => g.a - g.b - g.base + sign() * pending;
 
         function render() {
             if (!g) return;
@@ -413,7 +598,6 @@
             if (g.status === "waiting") { overlay("waiting"); }
             else if (g.status === "play") { $("waiting").classList.remove("on"); $("lobby").classList.remove("on"); }
 
-            // detectar punto
             const key = g.sh + "-" + g.sg;
             if (prevScore !== null && prevScore !== key) {
                 const iScored = (me + opp) > 0 && ((host && key.split("-")[0] > prevScore.split("-")[0]) || (!host && key.split("-")[1] > prevScore.split("-")[1]));
@@ -422,8 +606,7 @@
             }
             prevScore = key;
 
-            // bola
-            const v = Math.max(-1, Math.min(1, sign() * localD() / N));  // v>0 = hacia mi objetivo (arriba)
+            const v = Math.max(-1, Math.min(1, sign() * localD() / N));
             $("ball").style.top = (50 - v * 47) + "%";
 
             if (g.status === "done" && !celebrated) {
@@ -444,7 +627,7 @@
 
         function press() {
             if (!g || g.status !== "play" || performance.now() < lockUntil) return;
-            if (Math.abs(sign() * localD()) >= N && sign() * localD() > 0) return;   // ya llegó, esperando confirmación
+            if (Math.abs(sign() * localD()) >= N && sign() * localD() > 0) return;
             pending++;
             const bl = $("ball"); bl.classList.add("bump"); setTimeout(() => bl.classList.remove("bump"), 70);
             render();
@@ -459,7 +642,6 @@
             if (pending) flushTimer = setTimeout(flush, 120);
         }
 
-        // Cualquiera de los dos jugadores puede confirmar el gol (transacción: solo uno gana)
         function checkGoal() {
             if (!g || g.status !== "play" || goalBusy) return;
             const d = g.a - g.b - g.base;
@@ -479,7 +661,6 @@
             }).catch(() => { }).finally(() => { goalBusy = false; });
         }
 
-        /* ---------- Input ---------- */
         addEventListener("keydown", e => {
             if (e.code === "Space" && e.target.tagName !== "INPUT") {
                 e.preventDefault();
@@ -489,7 +670,6 @@
         $("board").addEventListener("pointerdown", press);
         document.querySelectorAll("button").forEach(b => b.addEventListener("click", () => b.blur()));
 
-        /* ---------- Confeti ---------- */
         function confetti() {
             const c = $("confetti"), ctx = c.getContext("2d");
             c.width = innerWidth; c.height = innerHeight;
@@ -513,6 +693,407 @@
         }
     </script>
     <script src="/pichisoft-idiomas.js"></script>
+
+    <div id="pichisoft-session-status" role="status" aria-live="polite">
+        <span class="ps-check">✓</span>
+        <span class="ps-text">Iniciando sesión en tu cuenta de Pichisoft...</span>
+    </div>
+
+    <div id="pichisoft-session-profile">
+        <div id="pichisoft-profile-picture"></div>
+        <span id="pichisoft-profile-name"></span>
+    </div>
+
+    <script>
+        (function () {
+            var CFG = {
+                apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
+                authDomain: "pichisoft.firebaseapp.com",
+                projectId: "pichisoft",
+                storageBucket: "pichisoft.firebasestorage.app",
+                messagingSenderId: "690032082295",
+                appId: "1:690032082295:web:b7f0e8cb8fcceb26e9b572",
+                measurementId: "G-K7HRKR8BJ1"
+            };
+            var V = "https://www.gstatic.com/firebasejs/12.3.0/";
+            var DUR_INICIO = 12000;
+            var DUR_MENSAJE = 6000;
+
+            var box = document.getElementById("pichisoft-session-status");
+            var txt = box.querySelector(".ps-text");
+            var prof = document.getElementById("pichisoft-session-profile");
+            var pic = document.getElementById("pichisoft-profile-picture");
+            var nameEl = document.getElementById("pichisoft-profile-name");
+            var t0 = Date.now();
+
+            function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+            async function comprobar() {
+                try {
+                    var m = await Promise.all([
+                        import(V + "firebase-app.js"),
+                        import(V + "firebase-auth.js"),
+                        import(V + "firebase-firestore.js")
+                    ]);
+                    var app = m[0].initializeApp(CFG);
+                    var auth = m[1].getAuth(app);
+                    var db = m[2].getFirestore(app);
+
+                    var user = await Promise.race([
+                        new Promise(function (res) {
+                            m[1].onAuthStateChanged(auth, function (u) {
+                                window.PichisoftFirebase = { auth: auth, db: db, currentUser: u };
+                                res(u);
+                            });
+                        }),
+                        wait(15000).then(function () { throw new Error("tiempo agotado"); })
+                    ]);
+
+                    var perfil = {};
+                    if (user) {
+                        try {
+                            var snap = await m[2].getDoc(m[2].doc(db, "users", user.uid));
+                            if (snap.exists()) perfil = snap.data();
+                        } catch (e) {
+                            console.error("Pichisoft: no se pudo leer el perfil", e);
+                        }
+                    }
+                    return { user: user, perfil: perfil };
+                } catch (e) {
+                    console.error("Pichisoft:", e);
+                    return { error: true };
+                }
+            }
+
+            async function aviso(texto) {
+                txt.textContent = texto;
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+            }
+
+            (async function () {
+                var r = await comprobar();
+                await wait(Math.max(0, DUR_INICIO - (Date.now() - t0)));
+
+                if (r.error) return aviso("No se pudo comprobar tu sesión de Pichisoft");
+                if (!r.user) return aviso("No tenés una sesión iniciada en Pichisoft");
+
+                box.classList.add("success");
+                txt.textContent = "Sesión iniciada";
+                await wait(DUR_MENSAJE);
+                box.classList.add("hidden");
+
+                var nombre = r.perfil.username || "Usuario";
+                nameEl.textContent = nombre;
+                var foto = r.perfil.photo;
+                if (typeof foto === "string" && /^(data:image\/|https:\/\/)/.test(foto)) {
+                    var img = new Image();
+                    img.src = foto;
+                    img.alt = "Foto de perfil";
+                    pic.replaceChildren(img);
+                } else {
+                    var ph = document.createElement("div");
+                    ph.className = "profile-placeholder";
+                    ph.textContent = nombre.charAt(0).toUpperCase();
+                    pic.replaceChildren(ph);
+                }
+                await wait(450);
+                prof.classList.add("visible");
+            })();
+        })();
+    </script>
+    <p style="position: fixed; top: 15px; right: 20px; font-weight: bold; margin: 0; z-index: 9999; color:#fff;"><a
+            href="https://pichisoft.cc" target="_blank" style="color:#4db8ff; text-decoration: underline;">Pichisoft</a>
+    </p>
+
+    <script>
+        (function () {
+            'use strict';
+
+            const CONFIG = {
+                titulo: 'Ayuda para PichonPush',
+                descripcion: `PichonPush es un juego online donde hay una bola en el medio de la pantalla, y debes apretar la tecla Espacio (o la pantalla, en el caso de que uses teléfono), y llevar la bola hacia el lado enemigo. Se gana al llegar a 5 puntos.
+Puede sugerir mejoras para esta app <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank"
+                rel="noopener">aquí</a>.`,
+                top: '138px',
+                right: '40px'
+            };
+
+            if (document.getElementById('psHelpBtn')) return;
+
+            const css = document.createElement('style');
+            css.textContent = `
+/* Botón flotante */
+#psHelpBtn {
+    position: fixed;
+    top: ${CONFIG.top};
+    right: ${CONFIG.right};
+    z-index: 9998;
+    width: 38px;
+    height: 38px;
+    min-width: 0 !important;
+    max-width: 38px !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 50%;
+    border: 2px solid #d4af37;
+    background: linear-gradient(135deg, #2b2107, #100c02);
+    color: #f1d98a;
+    font: bold 20px/1 "Times New Roman", Times, serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.1);
+    transition: transform .25s, background .25s, color .25s, box-shadow .25s;
+}
+#psHelpBtn:hover {
+    background: linear-gradient(135deg, #d4af37, #a67c12);
+    color: #111;
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(212,175,55,.45);
+}
+#psHelpBtn:focus-visible {
+    outline: 2px solid #f1d98a;
+    outline-offset: 2px;
+}
+
+/* Overlay */
+#psHelpOv {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    box-sizing: border-box;
+    overflow: auto;
+    background: rgba(0,0,0,.72);
+    backdrop-filter: blur(0);
+    -webkit-backdrop-filter: blur(0);
+    opacity: 0;
+    transition: opacity .35s ease, backdrop-filter .35s ease;
+}
+#psHelpOv.on {
+    opacity: 1;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+/* Card */
+#psHelpCard {
+    position: relative;
+    width: min(560px, 100%);
+    margin: auto;
+    box-sizing: border-box;
+    padding: 22px 24px 20px;
+    color: #fff;
+    background: linear-gradient(180deg, #181818, #0b0b0b);
+    border: 2px solid #d4af37;
+    border-radius: 16px;
+    box-shadow: 0 0 0 1px rgba(212,175,55,.18), 0 30px 80px rgba(0,0,0,.85), 0 0 44px rgba(212,175,55,.12);
+    opacity: 0;
+    transform: translateY(24px) scale(.95);
+    transition: opacity .4s ease, transform .5s cubic-bezier(.2,.9,.25,1.08);
+}
+#psHelpOv.on #psHelpCard {
+    opacity: 1;
+    transform: none;
+}
+
+/* Título */
+#psHelpCard h2 {
+    margin: 0 40px 14px 0;
+    font: bold 1.7rem "Times New Roman", Times, serif;
+    color: #fff;
+    line-height: 1.2;
+}
+
+/* Contenido */
+#psHelpBody {
+    font: bold .95rem/1.7 Verdana, "Open Sans", sans-serif;
+    color: #fff;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+#psHelpBody a,
+#psHelpBody a:visited {
+    color: #4da3ff;
+    text-decoration: underline;
+    font-weight: bold;
+}
+#psHelpBody a:hover { color: #8cc4ff; }
+#psHelpBody i { font-style: italic; font-weight: bold; }
+#psHelpBody strong { font-weight: bold; color: #fff; }
+
+/* Botón X (CSS puro) */
+#psHelpX {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    min-width: 0 !important;
+    max-width: 30px !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    border: 1.5px solid #d4af37;
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    transition: transform .3s, background .2s;
+}
+#psHelpX::before,
+#psHelpX::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 12px;
+    height: 2px;
+    margin: -1px 0 0 -6px;
+    border-radius: 2px;
+    background: #f1d98a;
+    transition: background .2s;
+}
+#psHelpX::before { transform: rotate(45deg); }
+#psHelpX::after { transform: rotate(-45deg); }
+#psHelpX:hover {
+    transform: rotate(90deg);
+    background: #d4af37;
+}
+#psHelpX:hover::before,
+#psHelpX:hover::after { background: #111; }
+#psHelpX:focus-visible {
+    outline: 2px solid #f1d98a;
+    outline-offset: 2px;
+}
+
+/* Botón Entendido */
+#psHelpClose {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin-top: 20px;
+    padding: 12px !important;
+    border-radius: 10px;
+    border: 1px solid #f1d98a;
+    cursor: pointer;
+    color: #fff;
+    font: bold 1rem Georgia, "Times New Roman", serif;
+    background: linear-gradient(135deg, #2b2107, #100c02);
+    transition: background .3s, color .2s, transform .2s;
+}
+#psHelpClose:hover {
+    background: linear-gradient(135deg, #d4af37, #a67c12);
+    color: #111;
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    #psHelpBtn {
+        top: ${CONFIG.top};
+        right: ${CONFIG.right};
+        width: 34px;
+        height: 34px;
+        min-width: 0 !important;
+        max-width: 34px !important;
+        font-size: 18px;
+    }
+    #psHelpCard { padding: 18px 16px 16px; }
+    #psHelpCard h2 { font-size: 1.4rem; margin-right: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #psHelpBtn, #psHelpOv, #psHelpCard, #psHelpX, #psHelpClose { transition: none !important; animation: none !important; }
+}
+`;
+            document.head.appendChild(css);
+
+            const btn = document.createElement('button');
+            btn.id = 'psHelpBtn';
+            btn.type = 'button';
+            btn.setAttribute('aria-label', 'Ayuda');
+            btn.title = 'Ayuda';
+            btn.textContent = '?';
+            // Refuerzo inline por si la app tiene `button { min-width: 240px !important; }`
+            btn.style.setProperty('min-width', '0', 'important');
+            btn.style.setProperty('max-width', '38px', 'important');
+            btn.style.setProperty('padding', '0', 'important');
+            btn.style.setProperty('box-sizing', 'border-box', 'important');
+            document.body.appendChild(btn);
+
+            let ov = null;
+            let onEsc = null;
+
+            function abrir() {
+                if (ov) return;
+
+                ov = document.createElement('div');
+                ov.id = 'psHelpOv';
+                ov.setAttribute('role', 'dialog');
+                ov.setAttribute('aria-modal', 'true');
+                ov.setAttribute('aria-labelledby', 'psHelpTitle');
+                ov.innerHTML = `
+            <div id="psHelpCard">
+                <button id="psHelpX" type="button" aria-label="Cerrar ayuda" title="Cerrar"></button>
+                <h2 id="psHelpTitle"></h2>
+                <div id="psHelpBody"></div>
+                <button id="psHelpClose" type="button">Entendido</button>
+            </div>
+        `;
+                ov.querySelector('#psHelpTitle').textContent = CONFIG.titulo;
+                ov.querySelector('#psHelpBody').innerHTML = CONFIG.descripcion;
+                document.body.appendChild(ov);
+
+                const btnX = ov.querySelector('#psHelpX');
+                btnX.style.setProperty('min-width', '0', 'important');
+                btnX.style.setProperty('max-width', '30px', 'important');
+                btnX.style.setProperty('padding', '0', 'important');
+                btnX.style.setProperty('box-sizing', 'border-box', 'important');
+
+                const btnClose = ov.querySelector('#psHelpClose');
+                btnClose.style.setProperty('min-width', '0', 'important');
+                btnClose.style.setProperty('box-sizing', 'border-box', 'important');
+
+                void ov.offsetHeight;
+                requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
+
+                document.documentElement.style.overflow = 'hidden';
+
+                btnX.onclick = cerrar;
+                btnClose.onclick = cerrar;
+                ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
+
+                onEsc = e => { if (e.key === 'Escape') cerrar(); };
+                document.addEventListener('keydown', onEsc);
+
+                setTimeout(() => { try { btnX.focus(); } catch { } }, 300);
+            }
+
+            function cerrar() {
+                if (!ov) return;
+                const el = ov;
+                ov = null;
+                el.classList.remove('on');
+                if (onEsc) { document.removeEventListener('keydown', onEsc); onEsc = null; }
+                document.documentElement.style.overflow = '';
+                setTimeout(() => el.remove(), 400);
+            }
+
+            btn.onclick = abrir;
+
+            window.PichisoftAyuda = { abrir, cerrar };
+        })();
+    </script>
 </body>
 
 </html>
