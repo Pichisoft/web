@@ -272,7 +272,7 @@
 
     /* ------------------------------ UI ------------------------------ */
     const CSS = `
-#psi-btn{position:fixed!important;top:14px;right:16px;z-index:9997;display:inline-flex!important;align-items:center;gap:8px;padding:9px 14px;width:auto!important;max-width:max-content!important;min-width:0;box-sizing:border-box;visibility:visible!important;opacity:1!important;pointer-events:auto!important;white-space:nowrap;border-radius:6px;border:1px solid #d4af37;background:linear-gradient(135deg,#f1d98a,#c9a227 55%,#a67c10);color:#1a1405;font:bold 14px/1.1 Verdana,"Open Sans","Helvetica Neue",sans-serif;letter-spacing:.02em;cursor:pointer;user-select:none;-webkit-user-select:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 12px rgba(0,0,0,.45);transition:filter .15s,transform .15s}
+#psi-btn{position:fixed!important;top:14px;right:16px;z-index:2147483647;display:inline-flex!important;align-items:center;gap:8px;padding:9px 14px;width:auto!important;max-width:max-content!important;min-width:0;box-sizing:border-box;visibility:visible!important;opacity:1!important;pointer-events:auto!important;white-space:nowrap;border-radius:6px;border:1px solid #d4af37;background:linear-gradient(135deg,#f1d98a,#c9a227 55%,#a67c10);color:#1a1405;font:bold 14px/1.1 Verdana,"Open Sans","Helvetica Neue",sans-serif;letter-spacing:.02em;cursor:pointer;user-select:none;-webkit-user-select:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 12px rgba(0,0,0,.45);transition:filter .15s,transform .15s}
 #psi-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
 #psi-btn:active{transform:none}
 #psi-btn:focus-visible{outline:2px solid #f1d98a;outline-offset:2px}
@@ -280,7 +280,7 @@
 #psi-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;flex:none}
 #psi-btn.busy svg{animation:psiSpin 1s linear infinite}
 @keyframes psiSpin{to{transform:rotate(360deg)}}
-.psi-ov{position:fixed;inset:0;z-index:140;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);user-select:none;-webkit-user-select:none}
+.psi-ov{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);user-select:none;-webkit-user-select:none}
 .psi-card{position:relative;display:flex;flex-direction:column;width:min(440px,100%);max-height:90vh;box-sizing:border-box;background:#141414;border:1px solid #3a3a3a;border-top:3px solid #d4af37;border-radius:14px;padding:24px 20px 18px;box-shadow:0 26px 70px rgba(0,0,0,.8);font-family:Verdana,"Open Sans",sans-serif;color:#fff;text-align:left}
 .psi-card h3{margin:0 34px 6px 0;font:bold 1.5rem "Times New Roman",Times,serif}
 .psi-sub{margin:0 0 14px;font-size:.8rem;line-height:1.5;color:#bdbdbd}
@@ -309,7 +309,7 @@
 #psi-st{min-height:1.2em;margin-top:8px;font-size:.8rem;color:#f1d98a}
 .psi-orig{margin-top:10px;width:100%;background:none;border:1px solid rgba(212,175,55,.26);color:#f1d98a;border-radius:10px;padding:11px;font:inherit;font-size:.85rem;cursor:pointer}
 .psi-orig:hover{background:rgba(212,175,55,.1)}
-.psi-toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:150;max-width:min(420px,calc(100vw - 24px));box-sizing:border-box;padding:12px 16px;background:rgba(20,20,20,.97);border:1px solid #d4af37;border-radius:12px;color:#fff;font:.8rem/1.5 Verdana,"Open Sans",sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.6);text-align:center}
+.psi-toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:2147483647;max-width:min(420px,calc(100vw - 24px));box-sizing:border-box;padding:12px 16px;background:rgba(20,20,20,.97);border:1px solid #d4af37;border-radius:12px;color:#fff;font:.8rem/1.5 Verdana,"Open Sans",sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.6);text-align:center}
 @media (max-width:600px){#psi-btn{right:10px;padding:7px 11px;font-size:13px}}
 @media (prefers-reduced-motion:reduce){#psi-btn,#psi-btn svg,.psi-x{animation:none!important;transition:none!important}}
 `;
@@ -405,6 +405,26 @@
     /* Botón: debajo de "Ingresar"/cuenta y del engranaje de configuración */
     let placeRaf = 0;
     function placeSoon() { if (!placeRaf) placeRaf = requestAnimationFrame(() => { placeRaf = 0; place(); }); }
+
+    function isObscured() {
+        const r = btn.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) return true;
+        // Probamos 5 puntos: centro + 4 esquinas
+        const pts = [
+            [r.left + r.width / 2, r.top + r.height / 2],
+            [r.left + 3, r.top + 3],
+            [r.right - 3, r.top + 3],
+            [r.left + 3, r.bottom - 3],
+            [r.right - 3, r.bottom - 3]
+        ];
+        for (const [x, y] of pts) {
+            if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) continue;
+            const el = document.elementFromPoint(x, y);
+            if (el && el !== btn && !btn.contains(el)) return true;
+        }
+        return false;
+    }
+
     function place() {
         if (!btn || btn.hidden) return;
         let top = 14, right = 16;
@@ -431,6 +451,15 @@
         btn.style.right = right + 'px';
         btn.style.bottom = 'auto';
         btn.style.left = 'auto';
+
+        // Fallback: si está tapado, lo movemos a la esquina opuesta
+        if (isObscured()) {
+            btn.style.top = '14px';
+            btn.style.left = '16px';
+            btn.style.right = 'auto';
+        } else {
+            btn.style.left = 'auto';
+        }
     }
 
     function setVisible(v) {
@@ -448,7 +477,7 @@
         btn.onclick = openPanel;
         // Refuerzo por si el CSS de la app tiene !important en button{...}
         btn.style.position = 'fixed';
-        btn.style.zIndex = '9997';
+        btn.style.zIndex = '2147483647';
         btn.style.width = 'auto';
         btn.style.maxWidth = 'max-content';
         btn.style.boxSizing = 'border-box';
