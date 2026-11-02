@@ -20,7 +20,6 @@
         skip: (SCRIPT && SCRIPT.dataset.skip) || ''
     };
 
-    /* ~185 idiomas. Los nombres salen de Intl.DisplayNames y se ordenan alfabéticamente. */
     const CODES = [...new Set(('ab ace af ak sq am ar an hy as av ay az ba bm eu be bn bho bi bs br bg my ca ceb ch ce ny zh-CN zh-TW cv kw co hr cs da dv nl dz en eo et ee fo fj tl fi fr ff gl lg ka de el gn gu ht ha haw he hi hmn hu is ig id ia ga it ja jv kl kn kr ks kk km rw kv kg ko ku ky lo la lv li ln lt lb mk mai mg ms ml mt mi mr mh mn na nv nd ne no nb nn nr oc or om os pap ps fa pl pt pa qu ro rm rn ru sm sg sa sc gd sr st sn sd si sk sl so es su sw ss sv tg ta tt te th bo ti ts tn to tr tk tw ug uk ur uz ve vi vo wa cy fy wo xh yi yo yue zu se iu ty ik ki lu oj pi sh ho hz ie io ng kj za ae').split(' '))];
 
     const SRC_ATTR = document.documentElement.getAttribute('lang') || 'es';
@@ -44,7 +43,6 @@
     const $ = s => document.querySelector(s);
     const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
-    /* ------------------------------ ESTADO ------------------------------ */
     let lang = null, gen = 0, active = 0, okCount = 0, failCount = 0, jobTotal = 0, jobDone = 0;
     let items = new WeakMap();
     const all = new Set(), waiting = new Map(), queued = new Set(), failed = new Set(), queue = [];
@@ -67,7 +65,6 @@
         refreshUI();
     }
 
-    /* ------------------------------ CACHÉ ------------------------------ */
     const caches = {}, dirty = new Set(); let saveT = 0;
     function cacheFor(to) {
         if (!caches[to]) { try { caches[to] = JSON.parse(ls.get(CK + to) || '{}') || {}; } catch { caches[to] = {}; } }
@@ -88,7 +85,6 @@
         }, 600);
     }
 
-    /* ------------------------- SERVICIO DE TRADUCCIÓN ------------------------- */
     const decode = t => new DOMParser().parseFromString(t, 'text/html').documentElement.textContent;
     function chunk(t, max) {
         if (t.length <= max) return [t];
@@ -121,7 +117,6 @@
         return out.join(' ').trim();
     }
 
-    /* ---------------------- ELEMENTOS A TRADUCIR ---------------------- */
     function attrItemOk(el, a) {
         if (a === 'value') return el.tagName === 'INPUT' && /^(button|submit|reset)$/i.test(el.type);
         return true;
@@ -131,9 +126,9 @@
         if (cur == null) return;
         let rec = items.get(node); const k = attr || '#', prev = rec && rec[k];
         if (prev && prev.dead) return;
-        if (prev && prev.tr !== null && cur === prev.tr) return;      // es nuestra propia traducción
+        if (prev && prev.tr !== null && cur === prev.tr) return;
         const key = cur.trim(), ch = prev ? prev.ch + 1 : 0;
-        if (ch > 4) { rec[k] = { dead: true }; return; }              // texto que cambia sin parar (relojes, etc.)
+        if (ch > 4) { rec[k] = { dead: true }; return; }
         if (!key || key.length > 3000 || !/\p{L}/u.test(key) || BRAND.test(key)) { if (prev) { all.delete(prev); delete rec[k]; } return; }
         if (!rec) { rec = {}; items.set(node, rec); }
         const i = cur.indexOf(key);
@@ -182,7 +177,6 @@
         const s = $('#psi-css'); if (s) s.textContent = '';
     }
 
-    /* Textos que viven en CSS (content:"NUEVO" en ::after / ::before) */
     function cssCollect() {
         cssItems = [];
         const seen = new Set();
@@ -214,7 +208,6 @@
         s.textContent = lang ? cssItems.filter(i => i.tr != null).map(i => i.sel + '{content:"' + i.tr.replace(/["\\\n]/g, ' ') + '"!important}').join('\n') : '';
     }
 
-    /* ------------------------------ COLA ------------------------------ */
     function enqueue(it) {
         if (failed.has(it.key)) return;
         let s = waiting.get(it.key); if (!s) { s = new Set(); waiting.set(it.key, s); }
@@ -271,8 +264,13 @@
     }
 
     /* ------------------------------ UI ------------------------------ */
+    /* BOTÓN COMPACTO: ícono solo, expande al hover/focus.
+       Footprint chico = menos chance de tapar botones de la app. */
     const CSS = `
-#psi-btn{position:fixed!important;top:14px;right:16px;z-index:2147483647;display:inline-flex!important;align-items:center;gap:8px;padding:9px 14px;width:auto!important;max-width:max-content!important;min-width:0;box-sizing:border-box;visibility:visible!important;opacity:1!important;pointer-events:auto!important;white-space:nowrap;border-radius:6px;border:1px solid #d4af37;background:linear-gradient(135deg,#f1d98a,#c9a227 55%,#a67c10);color:#1a1405;font:bold 14px/1.1 Verdana,"Open Sans","Helvetica Neue",sans-serif;letter-spacing:.02em;cursor:pointer;user-select:none;-webkit-user-select:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 12px rgba(0,0,0,.45);transition:filter .15s,transform .15s}
+#psi-btn{position:fixed!important;z-index:2147483647;display:inline-flex!important;align-items:center;justify-content:center;gap:0;padding:10px;width:auto!important;max-width:max-content!important;min-width:0;box-sizing:border-box;visibility:visible!important;opacity:1!important;pointer-events:auto!important;white-space:nowrap;border-radius:6px;border:1px solid #d4af37;background:linear-gradient(135deg,#f1d98a,#c9a227 55%,#a67c10);color:#1a1405;font:bold 14px/1.1 Verdana,"Open Sans","Helvetica Neue",sans-serif;letter-spacing:.02em;cursor:pointer;user-select:none;-webkit-user-select:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 12px rgba(0,0,0,.45);transition:padding .18s,filter .15s,transform .15s}
+#psi-btn .psi-label{display:none;margin-left:7px}
+#psi-btn:hover,#psi-btn:focus-visible{padding:10px 14px;gap:8px}
+#psi-btn:hover .psi-label,#psi-btn:focus-visible .psi-label{display:inline}
 #psi-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
 #psi-btn:active{transform:none}
 #psi-btn:focus-visible{outline:2px solid #f1d98a;outline-offset:2px}
@@ -310,7 +308,7 @@
 .psi-orig{margin-top:10px;width:100%;background:none;border:1px solid rgba(212,175,55,.26);color:#f1d98a;border-radius:10px;padding:11px;font:inherit;font-size:.85rem;cursor:pointer}
 .psi-orig:hover{background:rgba(212,175,55,.1)}
 .psi-toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:2147483647;max-width:min(420px,calc(100vw - 24px));box-sizing:border-box;padding:12px 16px;background:rgba(20,20,20,.97);border:1px solid #d4af37;border-radius:12px;color:#fff;font:.8rem/1.5 Verdana,"Open Sans",sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.6);text-align:center}
-@media (max-width:600px){#psi-btn{right:10px;padding:7px 11px;font-size:13px}}
+@media (max-width:600px){#psi-btn{padding:9px}}
 @media (prefers-reduced-motion:reduce){#psi-btn,#psi-btn svg,.psi-x{animation:none!important;transition:none!important}}
 `;
 
@@ -402,64 +400,111 @@
     }
     function closePanel() { const o = $('#psi-ov'); if (o) o.remove(); }
 
-    /* Botón: debajo de "Ingresar"/cuenta y del engranaje de configuración */
+    /* -------------------- POSICIONAMIENTO INTELIGENTE -------------------- */
     let placeRaf = 0;
     function placeSoon() { if (!placeRaf) placeRaf = requestAnimationFrame(() => { placeRaf = 0; place(); }); }
 
-    function isObscured() {
+    /* ¿El botón está tapado por algo? */
+    function isCovered() {
         const r = btn.getBoundingClientRect();
-        if (r.width === 0 || r.height === 0) return true;
-        // Probamos 5 puntos: centro + 4 esquinas
+        if (r.width < 5 || r.height < 5) return false;
         const pts = [
             [r.left + r.width / 2, r.top + r.height / 2],
-            [r.left + 3, r.top + 3],
-            [r.right - 3, r.top + 3],
-            [r.left + 3, r.bottom - 3],
-            [r.right - 3, r.bottom - 3]
+            [r.left + 4, r.top + 4],
+            [r.right - 4, r.bottom - 4]
         ];
         for (const [x, y] of pts) {
-            if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) continue;
-            const el = document.elementFromPoint(x, y);
-            if (el && el !== btn && !btn.contains(el)) return true;
+            if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) continue;
+            const top = document.elementFromPoint(x, y);
+            if (top && top !== btn && !btn.contains(top)) return true;
+        }
+        return false;
+    }
+
+    /* ¿El botón está tapando a OTROS botones/links/inputs? */
+    function coversInteractive() {
+        const r = btn.getBoundingClientRect();
+        if (r.width < 5 || r.height < 5) return false;
+        const pts = [
+            [r.left + r.width / 2, r.top + r.height / 2],
+            [r.left + 4, r.top + 4],
+            [r.right - 4, r.bottom - 4]
+        ];
+        for (const [x, y] of pts) {
+            if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) continue;
+            const els = document.elementsFromPoint(x, y);
+            if (!els.length) continue;
+            // Si nuestro botón no es el topmost, ya lo maneja isCovered()
+            if (els[0] !== btn && !btn.contains(els[0])) continue;
+            for (let i = 1; i < els.length; i++) {
+                const el = els[i];
+                if (el === btn || btn.contains(el) || el.contains(btn)) continue;
+                if (!el.tagName) continue;
+                const cs = getComputedStyle(el);
+                if (cs.pointerEvents === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) < 0.05) continue;
+                const er = el.getBoundingClientRect();
+                // Ignorar wrappers gigantes (contenedores de página, overlays fullscreen)
+                if (er.width >= innerWidth - 4 && er.height >= innerHeight - 4) continue;
+                if (er.width * er.height > innerWidth * innerHeight * 0.5) continue;
+                // ¿Es interactivo?
+                const tag = el.tagName;
+                const role = el.getAttribute('role');
+                if (tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'SELECT' ||
+                    tag === 'TEXTAREA' || tag === 'LABEL' ||
+                    role === 'button' || role === 'link' || role === 'menuitem' ||
+                    role === 'tab' || role === 'checkbox' || role === 'switch' ||
+                    el.hasAttribute('onclick')) {
+                    return true;
+                }
+            }
         }
         return false;
     }
 
     function place() {
         if (!btn || btn.hidden) return;
-        let top = 14, right = 16;
+
+        // 1. Calcular posición preferida (debajo del anchor / engranaje)
+        let prefTop = 14, prefRight = 16;
         const a = $(CFG.anchor);
         if (a) {
             const r = a.getBoundingClientRect();
-            // Solo usar el anchor si está realmente visible en pantalla
             if (r.height > 0 && r.right > 0 && r.bottom > 0 && r.top < innerHeight) {
-                top = r.bottom + 8;
-                right = innerWidth - r.right;
+                prefTop = r.bottom + 8;
+                prefRight = innerWidth - r.right;
             }
         }
         const g = $('#pGear');
         if (g && getComputedStyle(g).display !== 'none') {
             const gr = g.getBoundingClientRect();
-            if (gr.height > 0 && gr.top < innerHeight) top = Math.max(top, gr.bottom + 8);
+            if (gr.height > 0 && gr.top < innerHeight) prefTop = Math.max(prefTop, gr.bottom + 8);
         }
-        // Clamp: nunca dejar el botón fuera del viewport
-        const bw = btn.offsetWidth || 120;
+        const bw = btn.offsetWidth || 40;
         const bh = btn.offsetHeight || 40;
-        top = Math.max(8, Math.min(top, innerHeight - bh - 8));
-        right = Math.max(8, Math.min(right, innerWidth - bw - 8));
-        btn.style.top = top + 'px';
-        btn.style.right = right + 'px';
-        btn.style.bottom = 'auto';
-        btn.style.left = 'auto';
+        prefTop = Math.max(8, Math.min(prefTop, innerHeight - bh - 8));
+        prefRight = Math.max(8, Math.min(prefRight, innerWidth - bw - 8));
 
-        // Fallback: si está tapado, lo movemos a la esquina opuesta
-        if (isObscured()) {
-            btn.style.top = '14px';
-            btn.style.left = '16px';
-            btn.style.right = 'auto';
-        } else {
-            btn.style.left = 'auto';
+        // 2. Probar posiciones en orden hasta encontrar una libre
+        const positions = [
+            { top: prefTop + 'px', right: prefRight + 'px', bottom: 'auto', left: 'auto' }, // preferida
+            { top: '14px', right: '16px', bottom: 'auto', left: 'auto' },                    // TR
+            { top: 'auto', right: '16px', bottom: '14px', left: 'auto' },                    // BR
+            { top: '14px', right: 'auto', bottom: 'auto', left: '16px' },                    // TL
+            { top: 'auto', right: 'auto', bottom: '14px', left: '16px' }                     // BL
+        ];
+
+        for (const p of positions) {
+            btn.style.top = p.top;
+            btn.style.right = p.right;
+            btn.style.bottom = p.bottom;
+            btn.style.left = p.left;
+            if (!isCovered() && !coversInteractive()) return;
         }
+        // Si ninguna funciona, dejar la preferida (al menos es la más predecible)
+        btn.style.top = positions[0].top;
+        btn.style.right = positions[0].right;
+        btn.style.bottom = positions[0].bottom;
+        btn.style.left = positions[0].left;
     }
 
     function setVisible(v) {
@@ -473,19 +518,13 @@
         const st = document.createElement('style'); st.id = 'psi-style'; st.textContent = CSS; document.head.appendChild(st);
 
         btn = document.createElement('button'); btn.id = 'psi-btn'; btn.type = 'button';
-        btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 2.6 2.8 15.4 0 18M12 3c-2.8 2.6-2.8 15.4 0 18"/></svg><span>Traducir</span>';
+        btn.setAttribute('aria-label', 'Traducir');
+        btn.title = 'Traducir';
+        btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 2.6 2.8 15.4 0 18M12 3c-2.8 2.6-2.8 15.4 0 18"/></svg><span class="psi-label">Traducir</span>';
         btn.onclick = openPanel;
-        // Refuerzo por si el CSS de la app tiene !important en button{...}
         btn.style.position = 'fixed';
         btn.style.zIndex = '2147483647';
-        btn.style.width = 'auto';
-        btn.style.maxWidth = 'max-content';
         btn.style.boxSizing = 'border-box';
-        btn.style.display = 'inline-flex';
-        btn.style.visibility = 'visible';
-        btn.style.opacity = '1';
-        // Si <body> tiene transform/filter/perspective, position:fixed deja de ser "fixed al viewport".
-        // En ese caso lo cuelgo de <html> (hermano de <body>) para escapar del containing block.
         const bcs = getComputedStyle(document.body);
         const bodyBreaksFixed = bcs.transform !== 'none' || bcs.filter !== 'none' || bcs.perspective !== 'none';
         (bodyBreaksFixed ? document.documentElement : document.body).appendChild(btn);
