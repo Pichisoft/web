@@ -259,7 +259,6 @@ body.prem .p-gear{display:flex}
     /* Carteles de aviso: "solo" limita quién lo ve (invitado = sin cuenta, premium = con cuenta) */
     const CARTELES = [
         { id: 'reg', solo: 'invitado', html: 'Ya está disponible nuestra versión premium para PichonApps. ¿Quiere obtenerla? Hágase una cuenta, en esta misma app, apretando el botón "Ingresar".' },
-        { id: 'tut', html: 'PichonTutorial ya tiene su reemplazo: cada app ahora tiene su propia ayuda en el botón "?".' },
         { id: 'con', html: '<a data-mail href="#" role="button">¿Tiene una duda?→ Comuníquese con nosotros.</a>' }
     ];
 
@@ -268,6 +267,22 @@ body.prem .p-gear{display:flex}
     let lay = { cats: {}, flat: [] };
     const abierto = {};
     const cerrados = new Set(), pos = {};
+    
+    // NUEVO: Clave para guardar los carteles cerrados por invitados
+    const LS_CERRADOS_KEY = 'pichonapps-carteles-cerrados'; 
+    function getCerradosLS() {
+        try { return JSON.parse(localStorage.getItem(LS_CERRADOS_KEY)) || []; } catch { return []; }
+    }
+    function saveCerradoLS(id) {
+        try {
+            const arr = getCerradosLS();
+            if (!arr.includes(id)) {
+                arr.push(id);
+                localStorage.setItem(LS_CERRADOS_KEY, JSON.stringify(arr));
+            }
+        } catch {}
+    }
+
     const getD = (k, d) => { try { const v = Pichisoft.getData('PichonApps', k, d); return v == null ? d : v; } catch { return d; } };
     const setD = (k, v) => { try { Pichisoft.setData('PichonApps', k, v); } catch (e) { console.error(e); } };
 
@@ -513,6 +528,13 @@ body.prem .p-gear{display:flex}
         const prem = !!Pichisoft.user, box = $('#pCart');
         if (!box) return;
         if (prem && !cfg.carteles) { reservar(); return; }
+
+        // NUEVO: Si es invitado (sin cuenta), cargar los carteles cerrados desde LocalStorage
+        if (!prem) {
+            const lsCerrados = getCerradosLS();
+            lsCerrados.forEach(id => cerrados.add(id));
+        }
+
         CARTELES.forEach(c => {
             if ((c.solo === 'invitado' && prem) || (c.solo === 'premium' && !prem) || cerrados.has(c.id)) return;
             const d = document.createElement('div'); d.className = 'cartel'; d.dataset.id = c.id; d.innerHTML = c.html;
@@ -521,7 +543,13 @@ body.prem .p-gear{display:flex}
             d.querySelectorAll('a[data-mail]').forEach(a => { a.onclick = e => { e.preventDefault(); elegirMail(); }; });
             const x = document.createElement('button'); x.className = 'c-x'; x.setAttribute('aria-label', 'Cerrar aviso'); x.title = 'Cerrar';
             x.onpointerdown = e => e.stopPropagation();
-            x.onclick = () => { cerrados.add(c.id); delete pos[c.id]; d.remove(); reservar(); };
+            x.onclick = () => {
+                cerrados.add(c.id); 
+                if (!prem) saveCerradoLS(c.id); // NUEVO: Guardar en LocalStorage si es invitado
+                delete pos[c.id]; 
+                d.remove(); 
+                reservar(); 
+            };
             d.append(x);
             d.onpointerdown = e => moverCartel(e, d);
             if (pos[c.id]) { d.classList.add('suelto'); d.style.left = pos[c.id].l + 'px'; d.style.top = pos[c.id].t + 'px'; document.body.append(d); }
