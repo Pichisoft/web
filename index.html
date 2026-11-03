@@ -1892,6 +1892,402 @@
     <script type="module" src="pichisoft-messages.js"></script>
     <script src="pichisoft-carteles.js?v=5"></script>
     <script src="pichisoft-idiomas.js"></script>
+        <!-- ============================================================ -->
+    <!-- PIE DE PÁGINA Y MODALES INFORMATIVOS (ESTILO PREMIUM)        -->
+    <!-- ============================================================ -->
+    <style>
+        /* --- Barra de navegación que envuelve a los botones perfectamente --- */
+        .pf-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap; /* Permite bajar a la siguiente línea si la pantalla es chica */
+            gap: 35px; /* Separación perfecta entre botones */
+            width: max-content; /* La caja se ajusta justo al tamaño de los 4 botones */
+            max-width: calc(100% - 40px); /* Evita que se salga de la pantalla en celulares */
+            margin: 60px auto 80px auto;
+            padding: 20px 40px;
+            background: linear-gradient(180deg, #161616, #0a0a0a);
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            border-radius: 16px;
+            box-shadow: inset 0 0 25px rgba(0,0,0,0.6), 0 10px 30px rgba(0,0,0,0.4);
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* --- Opciones (sin fondos blancos, elegantes) --- */
+        .pf-btn {
+            background: transparent;
+            color: #b38b27; /* Dorado apagado */
+            border: none;
+            padding: 5px 0;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1.15rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            white-space: nowrap; /* Evita que el texto se rompa en dos líneas */
+            text-align: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Línea inferior animada */
+        .pf-btn::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            background-color: #f1d98a;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+            box-shadow: 0 0 8px #f1d98a;
+        }
+
+        /* Hover Premium: Forzamos que NO haya fondo blanco y que el texto brille */
+        .pf-btn:hover {
+            background-color: transparent !important; /* Anula el fondo de PichonApps */
+            color: #ffffff !important; /* Blanco puro para máximo contraste */
+            text-shadow: 0 0 12px rgba(241, 217, 138, 0.8);
+        }
+        
+        .pf-btn:hover::after {
+            width: 80%;
+        }
+
+        /* --- Modal --- */
+        .pf-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100000;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .pf-modal.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .pf-card {
+            background: linear-gradient(180deg, #141414, #0a0a0a);
+            border: 2px solid #d4af37;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 720px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(212, 175, 55, 0.15);
+            transform: translateY(20px) scale(0.98);
+            transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .pf-modal.open .pf-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .pf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            background: rgba(212, 175, 55, 0.03);
+            border-radius: 14px 14px 0 0;
+        }
+
+        .pf-header h2 {
+            margin: 0;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1.8rem;
+            color: #f1d98a;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(241, 217, 138, 0.3);
+        }
+
+        .pf-close {
+            background: transparent;
+            border: 1.5px solid #d4af37;
+            color: #d4af37;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .pf-close:hover {
+            background: #d4af37 !important; /* Forzamos el dorado */
+            color: #111 !important;
+            transform: rotate(90deg);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+        }
+
+        .pf-body {
+            padding: 24px;
+            overflow-y: auto;
+            color: #d4d4d4;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Scrollbar premium */
+        .pf-body::-webkit-scrollbar { width: 8px; }
+        .pf-body::-webkit-scrollbar-track { background: #0a0a0a; }
+        .pf-body::-webkit-scrollbar-thumb { background: #b38b27; border-radius: 4px; }
+        .pf-body::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+
+        /* Estilos de los textos (Sin blanco) */
+        .pf-body h3 {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1.5rem;
+            color: #f1d98a;
+            font-weight: bold;
+            margin: 28px 0 12px 0;
+            border-bottom: 1px dashed rgba(212, 175, 55, 0.2);
+            padding-bottom: 6px;
+        }
+
+        .pf-body h3:first-child {
+            margin-top: 0;
+        }
+
+        .pf-body p {
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #c9c9c9;
+            line-height: 1.6;
+            margin: 0 0 16px 0;
+        }
+
+        .pf-body p strong {
+            color: #f1d98a;
+        }
+        
+        /* Links dentro del texto: anulamos el fondo blanco global */
+        .pf-body a {
+            color: #d4af37;
+            text-decoration: underline;
+            transition: all 0.2s;
+        }
+
+        .pf-body a:hover {
+            background-color: transparent !important; /* Evita que se vuelva blanco */
+            color: #ffffff !important; /* Texto blanco puro */
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.8); /* Halo dorado */
+        }
+
+        /* --- RESPONSIVE (En celulares pasa a columna) --- */
+        @media (max-width: 750px) {
+            .pf-footer {
+                width: calc(100% - 40px);
+                flex-direction: column;
+                gap: 15px;
+                padding: 20px;
+            }
+            .pf-btn { 
+                font-size: 1rem; 
+            }
+            .pf-header h2 { font-size: 1.5rem; }
+            .pf-card { max-height: 90vh; }
+        }
+    </style>
+
+    <div class="pf-footer">
+        <button class="pf-btn" data-pf="sobre">Sobre nosotros</button>
+        <button class="pf-btn" data-pf="faq">Preguntas frecuentes</button>
+        <button class="pf-btn" data-pf="info">Información general</button>
+        <button class="pf-btn" data-pf="reglas">Nuestras reglas</button>
+    </div>
+
+    <div class="pf-modal" id="pf-modal">
+        <div class="pf-card">
+            <div class="pf-header">
+                <h2 id="pf-title"></h2>
+                <button class="pf-close" id="pf-close">✕</button>
+            </div>
+            <div class="pf-body" id="pf-body"></div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // Contenido limpiado y estructurado
+            const pfData = {
+                'sobre': {
+                    title: 'Sobre nosotros',
+                    html: `
+                        <p>Un tiempo atrás, decidimos crear lo que en principio pensábamos que sería un "Proyecto de GitHub", llamado Pichisoft. Fuimos creando aplicaciones que ni siquiera están (ni estuvieron nunca) en el repositorio de apps, como por ejemplo: "PichonAsteroids", "PichonBowman", "PichonTanks", "PichonTetris", etc. Pero todo empezó cuando dijimos: "¿Y si hacemos una aplicación de calculadora?". Hicimos el proyecto y estábamos pensando qué nombre ponerle... Y nos decidimos por "PichonCalc", tan solo porque nos parecía divertido combinar "Pichon" con una palabra que le diera significado a la app.</p>
+                        <p>Desde entonces, al crear PichonCalc, surgió otra idea más: "Podríamos hacer una app para que le preguntes algo y, al tocar la pantalla, te dé una respuesta al azar". Las primeras respuestas fueron las más obvias, como "Sí", "No", "Tal vez"... Pero luego fuimos añadiendo respuestas muy divertidas, volviendo a usar la palabra "Pichón": ¿Qué puedo hacer ahora? → "PREGUNTALE AL PICHÓN". Y se nos ocurrieron más ideas, tanto respuestas exageradas como "Preguntame de nuevo en 40 días", respuestas que parecían saber lo que alguien preguntaba, como "Sí, definitivamente", respuestas donde incluso PichonDestiny... espera, ¿qué? ¿¡PichonDestiny!? Entonces allí nació el nombre de la segunda app: PichonDestiny.</p>
+                        <p>Ahora sí, ¿en qué estábamos? Ah, en respuestas donde incluso PichonDestiny se sentía mal al responder. Por ejemplo, decía: "ESTOY NERVIOSO PARA RESPONDER A ESA PREGUNTA :(". Y fueron surgiendo más apps, algunas que no están, otras que pasaron todas las pruebas, y otras que se siguen actualizando más y más para estar en PichonApps. Entre las que pasaron las pruebas, están exactamente las que están en PichonApps: Primero y segundo, como ya sabemos, PichonCalc y PichonDestiny, respectivamente. Luego se creó PichonPass, PichonDocs (que era una simple aplicación sin fuentes, tamaños ni nada; solo para crear notas, pero eso fue hasta que llegó la actualización...), PichonCalendar... PichonList (diría que la más exitosa de las primeras 8)... PichonSnake y PichonWatch. Esa fue la primera etapa.</p>
+                        <p>Después aparecieron las aplicaciones más modernas: PichonTutorial; PichonAlarm y PichonRandom (es que las dos fueron creadas el mismo día), PichonBirthday; PichonFood; PichonMorse, PichonPaint y la más nueva de todas (pero que se estaba haciendo incluso antes de empezar con PichonCalc)... ¡PichonChess! Esas son las 16 apps actuales, en ese orden. Pronto se creará la aplicación PichonOpinion, pero antes queremos dejar PichonPaint y PichonChess ya listos para usar sin errores.</p>
+                        <p>Todo eso fue lo relacionado con las apps. Ahora, vamos a ver cómo fue nuestro crecimiento y cómo pensamos ahora: Se empezó a pensar en hacer apps públicas precisamente el 10 de mayo de este año, con nuestra ex-cuenta de GitHub llamada "Pichisama". Allí nacieron las primeras 8 apps, usando como siempre (y al igual que ahora) VS Code para programar, haciendo todo en apps de un solo archivo HTML Vanilla. ¡Al igual que ahora! Pero lamentablemente perdimos la cuenta (polémicamente, nos olvidamos los datos de Pichisama XD). Entonces creamos la nueva y definitiva cuenta de GitHub: Pichisoft. Desde que fue creada (el 25 de julio de este año) hasta ahora, es la cuenta que usamos para subir nuestros proyectos. Y desde el 07 de octubre de 2026, Pichisoft tiene su propio dominio: <a href="https://pichisoft.cc" target="_blank" rel="noopener">pichisoft.cc</a></p>
+                        <p>Somos un pequeño grupo (pero grande por el resultado) que hizo una <i>gran</i> "empresa" en poco tiempo.</p>
+                    `
+                },
+                'faq': {
+                    title: 'Preguntas frecuentes',
+                    html: `
+                        <h3>¿Me puedo unir al Equipo Pichisoft?</h3>
+                        <p>De momento no aceptamos solicitudes para formar parte de nuestro equipo. Sin embargo, nos pueden <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">enviar un email</a> para sugerirnos apps, juegos, modificaciones, actualizaciones, etc. (Probablemente agreguemos la función para poder ser parte del Equipo Pichisoft).</p>
+                        
+                        <h3>¿Cómo programa Pichisoft?</h3>
+                        <p>Usamos HTML, CSS, JS y LocalStorage. Para enviar emails automáticos y personalizados usamos EmailJS; para que se sincronicen los datos de tus apps en cualquier dispositivo con la misma cuenta usamos Firebase, y tenemos, también, nuestras propias reglas de Firestore.</p>
+                        
+                        <h3>¿Qué datos guardan ustedes cuando me creo una cuenta?</h3>
+                        <p>Nosotros guardamos solo tu email y tu UID generada aleatoriamente por Firebase Authentication.</p>
+                        
+                        <h3>¿Quiénes ven mis datos de Firebase?</h3>
+                        <p>Solo lo vemos nosotros en Firebase: Firebase no tiene acceso a tus datos, nosotros lo tenemos, y nadie más puede verlos.</p>
+                        
+                        <h3>¿Qué datos ven los usuarios de Pichisoft?</h3>
+                        <p>Solo ven tu nombre de usuario y tu foto de perfil: no tienen acceso ni a tu email ni contraseña, ni a tu UID.</p>
+                        
+                        <h3>Los datos que tengo en mis apps, ¿se suben a algún lado?</h3>
+                        <p>Para nada. Tus datos que tengas en nuestras apps los ves tú y solo tú: por ejemplo, si guardas una nota de PichonDocs o una contraseña de PichonPass, se guarda en tu almacenamiento local y en la app donde hayas guardado cada dato.</p>
+                        
+                        <h3>¿Qué pueden hacer con mi cuenta?</h3>
+                        <p>Con tu cuenta podemos hacer las siguientes 3 cosas: Restablecer tu contraseña, Inhabilitar tu cuenta y Borrar tu cuenta. (<i>Nota: solo realizaremos estas acciones si detectamos alguna infracción de <a href="https://pichisoft.cc/pichonrules" target="_blank" rel="noopener">nuestras normas</a></i>).</p>
+                        
+                        <h3>¿Qué es Firebase?</h3>
+                        <p>Firebase es la aplicación que aprovechamos usar para que se sincronicen los datos de tus apps en cualquier dispositivo con la misma cuenta, y, además, para poder hacer cosas online, como jugar PichonChess.</p>
+                        
+                        <h3>Para que se sincronicen los datos de mis apps en cualquier dispositivo con mi misma cuenta, ¿qué tengo que hacer?</h3>
+                        <p>Lo único que debes hacer es crearte la cuenta de Pichisoft, poniendo un email, un nombre de usuario y una contraseña. Si ya tienes cuenta pero no la tienes iniciada, debes iniciar sesión poniendo tu email y contraseña. Si olvidaste tu contraseña, debes poner "Olvidé mi contraseña", ingresar tu nombre de usuario y el código de verificación que le llegará a tu email. Si ya tienes cuenta, no tienes que hacer nada; tus datos en las apps de Pichisoft se sincronizarán automáticamente en todos tus dispositivos en los que tengas la misma cuenta.</p>
+                        
+                        <h3>¿Cuál es el motivo de todo esto?</h3>
+                        <p>Queremos lograr que Pichisoft sea una empresa gigante donde, al tener semejante cantidad de apps, la gente vaya específicamente a <a href="https://pichisoft.cc" target="_blank" rel="noopener">PichonApps</a> a usar cada una de las que tenemos, con el propósito de facilitar las cosas. (<i>Y no estamos lejos de lograrlo...</i>).</p>
+                        
+                        <h3>¿A dónde vamos ahora?</h3>
+                        <p>Tenemos muchos proyectos guardados para continuar cuando queramos, ya que los dejamos listos para seguir en el futuro. Además, estamos pensando en hacer más versiones premium para usar con cuenta de Pichisoft, y estamos haciendo la nueva app PichonOpinion.</p>
+                        
+                        <h3>¿Qué computadora usan para programar?</h3>
+                        <p>Esta respuesta te va a sorprender: ¡Usamos una de las computadoras lanzadas en 2010! ¡Sí! ¡Así es! Usamos la más fiel y linda ASUS K52F, y encima, ¡anda perfectamente bien!</p>
+                        
+                        <h3>¿No has encontrado lo que buscabas?</h3>
+                        <p><a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Comuníquese con nosotros</a> para decirnos cualquier cosa que quiera consultar.</p>
+                    `
+                },
+                'info': {
+                    title: 'Información general',
+                    html: `
+                        <h3>Desde:</h3>
+                        <p>10 de mayo de 2026</p>
+                        
+                        <h3>Link del perfil de Github:</h3>
+                        <p><a href="https://github.com/pichisoft" target="_blank" rel="noopener">https://github.com/pichisoft</a></p>
+                        
+                        <h3>Email de Pichisoft:</h3>
+                        <p><a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">contacto@pichisoft.cc</a></p>
+                        
+                        <h3>Link de PichonApps:</h3>
+                        <p><a href="https://pichisoft.cc" target="_blank" rel="noopener">pichisoft.cc</a></p>
+                    `
+                },
+                'reglas': {
+                    title: 'Nuestras reglas',
+                    html: `
+                        <h3>1. Cuenta y registro</h3>
+                        <p><strong>Tu email:</strong> El email que uses para tu cuenta debe ser <i>tuyo</i>: si pusiste un email que no sea tuyo, no podrás crearte la cuenta; pero si lo haces, ten en cuenta que podríamos banearte por <i>spam</i>.</p>
+                        <p><strong>Tu nombre de usuario:</strong> Que tu nombre de usuario sea <i>único</i>: evita usar un nombre de usuario que tenga contenido ofensivo. Además, evita usar nombres de usuario similares al de un administrador del equipo.</p>
+                        <p><strong>Tu foto de perfil:</strong> Evita usar una foto de perfil que tenga contenido ofensivo o que vaya en contra de un jugador. Además, no uses una foto de perfil similar o igual a la de un administrador del equipo. <i>Nota: no pasa nada si usas una foto de perfil común que sea igual o similar a la de un usuario o administrador; solamente evita usar la foto de perfil oficial del <a href="https://github.com/pichisoft" target="_blank" rel="noopener">administrador de Pichisoft</a>.</i></p>
+                        <p><strong>Tu contraseña:</strong> Recuerda que no tenemos acceso a tu contraseña, solo podemos restablecerla. Solo se puede pedir 5 veces el restablecimiento de la contraseña: recuerda guardarla en un lugar seguro.</p>
+
+                        <h3>2. Contacto</h3>
+                        <p><strong>Spam:</strong> Al contactar al <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Equipo Pichisoft</a>, no envíes mensajes que no tengan significado o que tengan contenido ofensivo.</p>
+                        <p><strong>Emails:</strong> Evita enviar emails repetitivos, como por ejemplo, preguntar una y otra vez algo que ya fue explicado por nuestro equipo.</p>
+
+                        <h3>3. Tus derechos</h3>
+                        <p><strong>Modificación de normas:</strong> Si hiciste algo en contra de una norma que fue modificada, eliminada o agregada, no haremos nada al respecto: las normas no son retroactivas, y no te banearíamos si cometiste algo en contra de una norma modificada, eliminada o agregada. ¿Fuiste baneado por cometer algo que no estaba en las normas actuales antes de que fueras baneado? <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Comunícate con nosotros.</a></p>
+                        <p><strong>Infracción de normas de otros usuarios:</strong> Si viste a un usuario cometer una infracción, sin importar si te afectó a ti o no, tienes todo el derecho a comunicarte con nosotros, decirnos su nombre de usuario, y nuestro equipo verá qué hacer al respecto.</p>
+                        <p><strong>Baneo:</strong> No te quedes de brazos cruzados si fuiste baneado sin alguna razón o por algo que no hayas hecho: <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Infórmanos</a>.</p>
+
+                        <h3>4. Acoso de infracción</h3>
+                        <p><strong>Si fuiste acosado:</strong> Si fuiste acosado por un usuario, no dudes en <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">comunicarte con nosotros</a>, para que podamos banear al otro usuario.</p>
+                        <p><strong>Acoso a otros usuarios:</strong> Si viste a un usuario cometer una infracción, no va a servir de nada si lo acosas: simplemente infórmanos de que un usuario está rompiendo las reglas.</p>
+
+                        <h3>5. Juegos y aplicaciones online</h3>
+                        <p><strong>Juego limpio:</strong> Al jugar en nuestros juegos online, recuerda jugar limpio: no hagas tiempo, no te burles del otro jugador, y no juegues partidas que no sean privadas contra el mismo jugador, porque podría ser una forma de farmear puntos de experiencia.</p>
+                        <p><strong>Aplicaciones:</strong> Por favor, al usar aplicaciones donde se permitan comentar (por ejemplo, PichonFood) evita hacer comentarios ofensivos.</p>
+
+                        <h3>6. Identidad</h3>
+                        <p><strong>Identidad y seguridad:</strong> No te hagas pasar por otro usuario, administrador o representante del Equipo Pichisoft.</p>
+                        <p>Tu cuenta es <i>tuya</i>: no dejes tu sesión abierta cuando otras personas tengan acceso a tu dispositivo o cuenta de Pichisoft.</p>
+
+                        <h3>7. Hacks</h3>
+                        <p><strong>Hacks:</strong> Evita hacer trampa en los juegos, especialmente en los juegos online como PichonChess.</p>
+
+                        <h3>8. Seguridad y contenido</h3>
+                        <p><strong>Enlaces y archivos maliciosos:</strong> Evita compartir enlaces o archivos que contengan virus, estafas (phishing) o cualquier tipo de software malicioso. Nuestra prioridad es mantener segura a la comunidad.</p>
+                        <p><strong>Respeto a los derechos de autor:</strong> No subas ni compartas material (imágenes, textos, etc.) que tenga derechos de autor sin el permiso correspondiente. Respeta el trabajo de los demás.</p>
+                        <p><strong>Privacidad de la información:</strong> Por tu propia seguridad, evita compartir información personal sensible (como direcciones, teléfonos o datos bancarios) en nuestras apps públicas. Protege tu privacidad.</p>
+                    `
+                }
+            };
+
+            const modal = document.getElementById('pf-modal');
+            const titleEl = document.getElementById('pf-title');
+            const bodyEl = document.getElementById('pf-body');
+            const closeBtn = document.getElementById('pf-close');
+
+            function abrirModal(key) {
+                if (!pfData[key]) return;
+                titleEl.textContent = pfData[key].title;
+                bodyEl.innerHTML = pfData[key].html;
+                modal.classList.add('open');
+                document.documentElement.style.overflow = 'hidden'; // Evita scroll de fondo
+            }
+
+            function cerrarModal() {
+                modal.classList.remove('open');
+                document.documentElement.style.overflow = '';
+            }
+
+            document.querySelectorAll('.pf-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    abrirModal(e.target.dataset.pf);
+                });
+            });
+
+            closeBtn.addEventListener('click', cerrarModal);
+            
+            // Cerrar haciendo click en el fondo oscuro
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) cerrarModal();
+            });
+
+            // Cerrar con la tecla Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('open')) cerrarModal();
+            });
+        })();
+    </script>
 </body>
 
 </html>
