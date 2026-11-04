@@ -573,14 +573,13 @@
         btn = document.createElement('button'); btn.id = 'psi-btn'; btn.type = 'button';
         btn.setAttribute('aria-label', 'Traducir');
         btn.title = 'Traducir';
-        btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 2.6 2.8 15.4 0 18M12 3c-2.8 2.6-2.8 15.4 0 18"/></svg><span class="psi-label">Traducir</span>';
         btn.onclick = openPanel;
         btn.style.position = 'fixed';
         btn.style.zIndex = '2147483647';
         btn.style.boxSizing = 'border-box';
         const bcs = getComputedStyle(document.body);
         const bodyBreaksFixed = bcs.transform !== 'none' || bcs.filter !== 'none' || bcs.perspective !== 'none';
-             const topbar = document.getElementById('pichisoft-topbar');
+                const topbar = document.getElementById('pichisoft-topbar');
         if (topbar) {
             btn.style.position = 'static';
             topbar.appendChild(btn);
