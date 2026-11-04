@@ -748,89 +748,10 @@
             }
         }
 
-        /* ===== TOPBAR PICHISOFT ===== */
-        #pichisoft-topbar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            position: fixed;
-            top: 14px;
-            right: 200px;
-            /* Alineado a la izquierda de la cuenta */
-            z-index: 9999;
-        }
-
-        .ps-top-btn {
-            background: linear-gradient(135deg, #2b2107, #100c02);
-            border: 1.5px solid #d4af37;
-            color: #f1d98a;
-            padding: 0 12px;
-            height: 36px;
-            border-radius: 6px;
-            font: bold .9rem Georgia, serif;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, .5);
-            transition: transform .2s, background .2s;
-            position: relative !important;
-            margin: 0 !important;
-        }
-
-        .ps-top-btn:hover {
-            background: #d4af37;
-            color: #111;
-            transform: translateY(-2px);
-        }
-
-        .ps-top-btn svg {
-            width: 18px;
-            height: 18px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-        }
-
-        .ps-top-btn .pcm-dot {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-        }
-
-        /* --- PANEL SUPERIOR PREMIUM --- */
-               /* --- PANEL SUPERIOR PREMIUM MINIMALISTA --- */
+              /* --- PANEL SUPERIOR PREMIUM MINIMALISTA --- */
         #pichisoft-topbar {
             position: fixed;
-            top: 14px;
-            right: 200px; /* Justo a la izquierda del perfil */
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(20, 20, 20, 0.85);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            padding: 6px 12px;
-            border: 1px solid rgba(212, 175, 55, 0.4);
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-            z-index: 9999;
-            user-select: none;
-            /* Animación de entrada al cargar la página */
-            animation: topbarIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        @keyframes topbarIn {
-            from { opacity: 0; transform: translateY(-15px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-               /* --- PANEL SUPERIOR PREMIUM MINIMALISTA --- */
-        #pichisoft-topbar {
-            position: fixed;
-            top: 10px;
+            top: 12px; /* Arriba de todo */
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -843,9 +764,9 @@
             border: 1px solid rgba(212, 175, 55, 0.4);
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-            z-index: 9999;
+            z-index: 999999;
             user-select: none;
-            animation: topbarIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
         /* Ocultar el panel cuando haya un modal abierto */
@@ -854,49 +775,41 @@
         body:has(.pm-ov) #pichisoft-topbar,
         body:has(.pcm-dov) #pichisoft-topbar,
         body:has(.ov) #pichisoft-topbar {
-            display: none !important;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -10px);
         }
 
-        @keyframes topbarIn {
-            from { opacity: 0; transform: translate(-50%, -15px) scale(0.95); }
-            to { opacity: 1; transform: translate(-50%, 0) scale(1); }
-        }
-
-        /* Forzamos a los 3 botones a comportarse como texto */
+        /* Estilo de texto premium para los botones */
         #pichisoft-topbar > * {
-            position: static !important;
             background: transparent !important;
             border: none !important;
             color: #b38b27 !important;
             font-family: "Times New Roman", Times, serif !important;
-            font-size: 0.85rem !important; /* Letra más chica */
+            font-size: 0.9rem !important;
             font-weight: bold !important;
             letter-spacing: 0.5px !important;
             cursor: pointer;
-            padding: 2px 6px !important;
+            padding: 2px 8px !important;
             margin: 0 !important;
-            border-radius: 4px !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            transition: all 0.2s ease !important;
             text-transform: uppercase;
             white-space: nowrap;
             height: auto !important;
             width: auto !important;
-            transform: none !important;
             box-shadow: none !important;
+            transition: all 0.2s !important;
+            position: static !important;
         }
 
         #pichisoft-topbar > *:hover {
-            background: rgba(212, 175, 55, 0.15) !important;
             color: #ffffff !important;
-            text-shadow: 0 0 6px rgba(241, 217, 138, 0.8);
-            transform: translateY(-1px) !important;
+            text-shadow: 0 0 8px rgba(241, 217, 138, 0.8);
         }
 
-        /* Ocultamos los íconos */
+        /* Ocultar íconos de los botones */
         #pichisoft-topbar svg,
-        #pichisoft-topbar .pcm-ic {
+        #pichisoft-topbar .pcm-ic,
+        #pichisoft-topbar .psi-label {
             display: none !important;
         }
     </style>
