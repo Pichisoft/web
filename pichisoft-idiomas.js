@@ -580,13 +580,13 @@
         btn.style.boxSizing = 'border-box';
         const bcs = getComputedStyle(document.body);
         const bodyBreaksFixed = bcs.transform !== 'none' || bcs.filter !== 'none' || bcs.perspective !== 'none';
-        const topbar = document.getElementById('pichisoft-topbar');
+             const topbar = document.getElementById('pichisoft-topbar');
         if (topbar) {
             btn.style.position = 'static';
             topbar.appendChild(btn);
         } else {
             (bodyBreaksFixed ? document.documentElement : document.body).appendChild(btn);
-        } (bodyBreaksFixed ? document.documentElement : document.body).appendChild(btn);
+        }
 
         btnKey = 'psi_btn_' + (location.pathname || '/');
         const savedVis = ls.get(btnKey) !== null ? ls.get(btnKey) : ls.get('psi_btn');
