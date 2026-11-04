@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy"
+    <meta http-equiv="Content-Security-Policy" media-src 'self' blob:;
         content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.emailjs.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.googleapis.com https://api.mymemory.translated.net ws://127.0.0.1:5500; base-uri 'self'; form-action 'self'">
     <title>PichonApps</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -1889,10 +1889,11 @@
         };
     </script>
     <script src="pichisoft-premium.js"></script>
+    <script type="module" src="pichisoft-community.js"></script> 
     <script type="module" src="pichisoft-messages.js"></script>
     <script src="pichisoft-carteles.js?v=5"></script>
     <script src="pichisoft-idiomas.js"></script>
-        <!-- ============================================================ -->
+    <!-- ============================================================ -->
     <!-- PIE DE PÁGINA Y MODALES INFORMATIVOS (ESTILO PREMIUM)        -->
     <!-- ============================================================ -->
     <style>
@@ -1901,16 +1902,20 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-wrap: wrap; /* Permite bajar a la siguiente línea si la pantalla es chica */
-            gap: 35px; /* Separación perfecta entre botones */
-            width: max-content; /* La caja se ajusta justo al tamaño de los 4 botones */
-            max-width: calc(100% - 40px); /* Evita que se salga de la pantalla en celulares */
+            flex-wrap: wrap;
+            /* Permite bajar a la siguiente línea si la pantalla es chica */
+            gap: 35px;
+            /* Separación perfecta entre botones */
+            width: max-content;
+            /* La caja se ajusta justo al tamaño de los 4 botones */
+            max-width: calc(100% - 40px);
+            /* Evita que se salga de la pantalla en celulares */
             margin: 60px auto 80px auto;
             padding: 20px 40px;
             background: linear-gradient(180deg, #161616, #0a0a0a);
             border: 1px solid rgba(212, 175, 55, 0.35);
             border-radius: 16px;
-            box-shadow: inset 0 0 25px rgba(0,0,0,0.6), 0 10px 30px rgba(0,0,0,0.4);
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.6), 0 10px 30px rgba(0, 0, 0, 0.4);
             box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
@@ -1919,7 +1924,8 @@
         /* --- Opciones (sin fondos blancos, elegantes) --- */
         .pf-btn {
             background: transparent;
-            color: #b38b27; /* Dorado apagado */
+            color: #b38b27;
+            /* Dorado apagado */
             border: none;
             padding: 5px 0;
             font-family: "Times New Roman", Times, serif;
@@ -1930,7 +1936,8 @@
             position: relative;
             transition: all 0.3s ease;
             text-transform: uppercase;
-            white-space: nowrap; /* Evita que el texto se rompa en dos líneas */
+            white-space: nowrap;
+            /* Evita que el texto se rompa en dos líneas */
             text-align: center;
             user-select: none;
             -webkit-user-select: none;
@@ -1952,11 +1959,13 @@
 
         /* Hover Premium: Forzamos que NO haya fondo blanco y que el texto brille */
         .pf-btn:hover {
-            background-color: transparent !important; /* Anula el fondo de PichonApps */
-            color: #ffffff !important; /* Blanco puro para máximo contraste */
+            background-color: transparent !important;
+            /* Anula el fondo de PichonApps */
+            color: #ffffff !important;
+            /* Blanco puro para máximo contraste */
             text-shadow: 0 0 12px rgba(241, 217, 138, 0.8);
         }
-        
+
         .pf-btn:hover::after {
             width: 80%;
         }
@@ -2042,7 +2051,8 @@
         }
 
         .pf-close:hover {
-            background: #d4af37 !important; /* Forzamos el dorado */
+            background: #d4af37 !important;
+            /* Forzamos el dorado */
             color: #111 !important;
             transform: rotate(90deg);
             box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
@@ -2057,10 +2067,22 @@
         }
 
         /* Scrollbar premium */
-        .pf-body::-webkit-scrollbar { width: 8px; }
-        .pf-body::-webkit-scrollbar-track { background: #0a0a0a; }
-        .pf-body::-webkit-scrollbar-thumb { background: #b38b27; border-radius: 4px; }
-        .pf-body::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+        .pf-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .pf-body::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .pf-body::-webkit-scrollbar-thumb {
+            background: #b38b27;
+            border-radius: 4px;
+        }
+
+        .pf-body::-webkit-scrollbar-thumb:hover {
+            background: #d4af37;
+        }
 
         /* Estilos de los textos (Sin blanco) */
         .pf-body h3 {
@@ -2089,7 +2111,7 @@
         .pf-body p strong {
             color: #f1d98a;
         }
-        
+
         /* Links dentro del texto: anulamos el fondo blanco global */
         .pf-body a {
             color: #d4af37;
@@ -2098,9 +2120,12 @@
         }
 
         .pf-body a:hover {
-            background-color: transparent !important; /* Evita que se vuelva blanco */
-            color: #ffffff !important; /* Texto blanco puro */
-            text-shadow: 0 0 8px rgba(212, 175, 55, 0.8); /* Halo dorado */
+            background-color: transparent !important;
+            /* Evita que se vuelva blanco */
+            color: #ffffff !important;
+            /* Texto blanco puro */
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.8);
+            /* Halo dorado */
         }
 
         /* --- RESPONSIVE (En celulares pasa a columna) --- */
@@ -2111,11 +2136,18 @@
                 gap: 15px;
                 padding: 20px;
             }
-            .pf-btn { 
-                font-size: 1rem; 
+
+            .pf-btn {
+                font-size: 1rem;
             }
-            .pf-header h2 { font-size: 1.5rem; }
-            .pf-card { max-height: 90vh; }
+
+            .pf-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .pf-card {
+                max-height: 90vh;
+            }
         }
     </style>
 
@@ -2137,7 +2169,7 @@
     </div>
 
     <script>
-        (function() {
+        (function () {
             // Contenido limpiado y estructurado
             const pfData = {
                 'sobre': {
@@ -2276,7 +2308,7 @@
             });
 
             closeBtn.addEventListener('click', cerrarModal);
-            
+
             // Cerrar haciendo click en el fondo oscuro
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) cerrarModal();
