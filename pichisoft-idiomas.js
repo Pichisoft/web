@@ -584,7 +584,7 @@
         if (topbar) {
             // Limpiamos estilos e ID para que no pelee con el CSS del panel
             btn.removeAttribute('id');
-            btn.style.cssText = 'position:static !important; background:transparent !important; border:none !important; color:#b38b27 !important; font-family:"Times New Roman", Times, serif !important; font-size:0.9rem !important; font-weight:bold !important; letter-spacing:0.5px !important; cursor:pointer; padding:2px 8px !important; margin:0 !important; text-transform:uppercase; white-space:nowrap; height:auto !important; width:auto !important; box-shadow:none !important; order: 3 !important;';
+           btn.style.cssText = 'position:static !important; background:transparent !important; border:none !important; font-family:"Times New Roman", Times, serif !important; font-size:0.9rem !important; font-weight:bold !important; letter-spacing:0.5px !important; cursor:pointer; padding:2px 8px !important; margin:0 !important; text-transform:uppercase; white-space:nowrap; height:auto !important; width:auto !important; box-shadow:none !important; order: 3 !important;';
             topbar.appendChild(btn);
         } else {
             (bodyBreaksFixed ? document.documentElement : document.body).appendChild(btn);
