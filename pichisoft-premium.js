@@ -267,9 +267,9 @@ body.prem .p-gear{display:flex}
     let lay = { cats: {}, flat: [] };
     const abierto = {};
     const cerrados = new Set(), pos = {};
-    
+
     // NUEVO: Clave para guardar los carteles cerrados por invitados
-    const LS_CERRADOS_KEY = 'pichonapps-carteles-cerrados'; 
+    const LS_CERRADOS_KEY = 'pichonapps-carteles-cerrados';
     function getCerradosLS() {
         try { return JSON.parse(localStorage.getItem(LS_CERRADOS_KEY)) || []; } catch { return []; }
     }
@@ -280,7 +280,7 @@ body.prem .p-gear{display:flex}
                 arr.push(id);
                 localStorage.setItem(LS_CERRADOS_KEY, JSON.stringify(arr));
             }
-        } catch {}
+        } catch { }
     }
 
     const getD = (k, d) => { try { const v = Pichisoft.getData('PichonApps', k, d); return v == null ? d : v; } catch { return d; } };
@@ -314,10 +314,24 @@ body.prem .p-gear{display:flex}
   <div id="pBody"></div>
   <p class="p-no" id="pNo" hidden>No encontramos ninguna app con ese nombre. ¿Quiere sugerir una? <a class="linkdemail" href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Cuéntenos</a>.</p>
 </div>`);
-        document.body.insertAdjacentHTML('beforeend', `
-<button class="p-gear" id="pGear" aria-label="Configuración" title="Configuración"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
-<div id="pCart"></div>`);
-        $('#pGear').onclick = abrirConfig;
+        document.body.insertAdjacentHTML('beforeend', `<div id="pCart"></div>`);
+
+        const pGear = document.createElement('button');
+        pGear.className = 'p-gear';
+        pGear.id = 'pGear';
+        pGear.setAttribute('aria-label', 'Configuración');
+        pGear.title = 'Configuración';
+        pGear.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+        pGear.onclick = abrirConfig;
+
+        const topbar = document.getElementById('pichisoft-topbar');
+        if (topbar) {
+            pGear.classList.add('ps-top-btn');
+            pGear.style.padding = '0 8px';
+            topbar.appendChild(pGear);
+        } else {
+            document.body.appendChild(pGear);
+        }
         $('#pQ').oninput = e => {
             if (/^pichon/i.test(e.target.value)) e.target.value = e.target.value.replace(/^pichon\s*/i, '');
             filtrar();
@@ -544,11 +558,11 @@ body.prem .p-gear{display:flex}
             const x = document.createElement('button'); x.className = 'c-x'; x.setAttribute('aria-label', 'Cerrar aviso'); x.title = 'Cerrar';
             x.onpointerdown = e => e.stopPropagation();
             x.onclick = () => {
-                cerrados.add(c.id); 
+                cerrados.add(c.id);
                 if (!prem) saveCerradoLS(c.id); // NUEVO: Guardar en LocalStorage si es invitado
-                delete pos[c.id]; 
-                d.remove(); 
-                reservar(); 
+                delete pos[c.id];
+                d.remove();
+                reservar();
             };
             d.append(x);
             d.onpointerdown = e => moverCartel(e, d);
