@@ -284,15 +284,17 @@ function actualizarBadge() {
 function crearBoton() {
     if (btn) return;
     const st = h('style'); st.textContent = CSS; document.head.append(st);
-    btn = h('button', 'pcm-fab'); btn.type = 'button'; btn.setAttribute('aria-label', 'Mensajería');
-    btn.innerHTML = '<span class="pcm-ic"></span><span>Mensajería</span><b class="pcm-dot" hidden></b>';
-    dotFab = btn.querySelector('.pcm-dot'); btn.onclick = abrir;
+    btn = h('button'); btn.type = 'button'; btn.setAttribute('aria-label', 'Mensajería');
+    btn.innerHTML = 'Mensajería'; // Solo texto, sin íconos
+    btn.onclick = abrir;
 
     const topbar = document.getElementById('pichisoft-topbar');
     if (topbar) {
-        btn.className = 'ps-top-btn';
         topbar.appendChild(btn);
     } else {
+        btn.className = 'pcm-fab';
+        btn.innerHTML = '<span class="pcm-ic"></span><span>Mensajería</span><b class="pcm-dot" hidden></b>';
+        dotFab = btn.querySelector('.pcm-dot');
         document.body.append(btn);
     }
 }
