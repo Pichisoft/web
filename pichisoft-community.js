@@ -1,5 +1,8 @@
 /* =====================================================================
    PICHISOFT COMMUNITY · Mensajería (chat, 👍 en CSS, amigos, reportes)
+   Se carga en index.html con:
+       <script type="module" src="pichisoft-community.js"></script>
+   Solo funciona con cuenta de Pichisoft iniciada. Sin emojis ni alert().
    ===================================================================== */
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
@@ -15,9 +18,11 @@ const app = getApps()[0] || initializeApp({
 });
 const auth = getAuth(app), db = getFirestore(app);
 
+/* Admins: tienen prefijo ADMIN y pueden adjuntar fotos/videos, borrar mensajes
+   y editar mensajes ajenos. Tienen que coincidir con isAdmin() de firestore.rules */
 const ADMINS = ['XIY1FfjUDodaSBSGema6NgixKRs1', 'n0XOUeFku1SxKWbrPWsA0V86kfc2'];
-const CH = 700000;                 
-const MAX_VIDEO = 6 * 1024 * 1024; 
+const CH = 700000;                 // tamaño de cada pedazo de video (caracteres base64)
+const MAX_VIDEO = 6 * 1024 * 1024; // 6 MB
 const KS = 'pichonapps-community-seen-';
 const MOTIVOS = [
     ['ofensivo', 'Mensajes de contenido ofensivo'],
@@ -42,7 +47,7 @@ const CSS = `
 @keyframes pcmPulse{0%{box-shadow:0 0 0 0 rgba(255,90,90,.6)}70%{box-shadow:0 0 0 9px rgba(255,90,90,0)}100%{box-shadow:0 0 0 0 rgba(255,90,90,0)}}
 @keyframes pcmIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-.pcm-ov{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:14px;box-sizing:border-box;background:#0a0a0a; user-select:none;-webkit-user-select:none;animation:pcmIn .25s ease}
+.pcm-ov{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:14px;box-sizing:border-box;background:#0a0a0a; /* SOLID BLACK */ user-select:none;-webkit-user-select:none;animation:pcmIn .25s ease}
 .pcm-card{display:flex;flex-direction:column;width:min(720px,100%);height:min(88vh,780px);box-sizing:border-box;background:linear-gradient(180deg,#181818,#0b0b0b);border:2px solid #d4af37;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.85),0 0 44px rgba(212,175,55,.12);color:#fff;font-family:Verdana,"Open Sans",sans-serif;overflow:hidden}
 .pcm-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid rgba(212,175,55,.3);background:rgba(212,175,55,.04)}
 .pcm-hd h2{margin:0;font:bold 1.6rem "Times New Roman",Times,serif;color:#f1d98a}
@@ -74,6 +79,7 @@ const CSS = `
 @keyframes pcmBlink{0%,100%{background:transparent}50%{background:rgba(212,175,55,0.3)}}
 .pcm-msg.highlight .pcm-mc{animation:pcmBlink 0.5s 3; border-color:#d4af37;}
 
+/* Caja de respuesta citada */
 .pcm-rep-box{background:rgba(212,175,55,.08);border-left:3px solid #d4af37;padding:6px 10px;margin-bottom:8px;border-radius:4px;font-size:.75rem;color:#bdbdbd;word-break:break-word;user-select:none;cursor:pointer;max-height:100px;overflow:hidden;}
 .pcm-rep-box:hover{background:rgba(212,175,55,.15)}
 .pcm-rep-box b{color:#f1d98a;display:block;margin-bottom:2px}
@@ -82,14 +88,9 @@ const CSS = `
 .pcm-video{display:block;max-width:100%;max-height:320px;margin-top:8px;border-radius:10px;background:#000}
 .pcm-vid{margin-top:8px;background:#000;color:#f1d98a;border:1px solid #d4af37;border-radius:10px;padding:10px 14px;font:bold .85rem Georgia,serif;cursor:pointer}
 .pcm-vid:hover{background:#d4af37;color:#111}
+.pcm-ac{display:none;} /* Actions hidden, now in context menu */
 
-/* Menú de acciones para el Like (Rápido) */
-.pcm-ac{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.pcm-ac button{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid #333;color:#9a9a9a;border-radius:8px;padding:4px 9px;font:inherit;font-size:.72rem;cursor:pointer;transition:border-color .15s,color .15s,background .15s}
-.pcm-ac button:hover{border-color:#d4af37;color:#f1d98a}
-.pcm-like.on{color:#f1d98a!important;border-color:#d4af37!important;background:rgba(212,175,55,.12)}
-
-/* MENÚ CONTEXTUAL (CLICK DERECHO / LONG PRESS) */
+/* MENÚ CONTEXTUAL */
 .pcm-ctx{position:fixed;z-index:9999;background:linear-gradient(180deg,#1b1b1b,#131313);border:1px solid #d4af37;border-radius:10px;padding:6px;display:flex;flex-direction:column;min-width:150px;box-shadow:0 10px 30px rgba(0,0,0,.8);animation:pcmIn .15s ease}
 .pcm-ctx button{background:none;border:0;color:#fff;padding:10px 14px;text-align:left;font:inherit;font-size:.85rem;cursor:pointer;border-radius:6px;transition:background .15s}
 .pcm-ctx button:hover{background:rgba(212,175,55,.15)}
@@ -174,6 +175,7 @@ function aviso(t, tipo) {
     d.onclick = () => d.remove(); c.append(d); setTimeout(() => d.remove(), 4200);
 }
 
+/* Diálogo premium genérico. build(caja, cerrar) arma el contenido */
 function dialogo(titulo, build, alCerrar, extra) {
     const o = h('div', 'pcm-dov' + (extra ? ' ' + extra : '')), b = h('div', 'pcm-dlg');
     b.setAttribute('role', 'dialog'); b.setAttribute('aria-modal', 'true');
@@ -217,11 +219,8 @@ async function syncPerfil() {
     const u = window.Pichisoft && window.Pichisoft.user; if (!u || !uid) return;
     const photo = (okFoto(u.photo) && u.photo.length <= 300000) ? u.photo : '';
     const f = u.name + '|' + photo.length + '|' + uid; if (f === firma) return;
-    try {
-        await setDoc(doc(db, 'public_profiles', uid), { username: u.name, lc: u.name.toLowerCase(), photo: photo || '' });
-        firma = f; 
-        perfiles[uid] = Promise.resolve({ username: u.name, photo: photo || '' });
-    } catch(e) { console.error('Error sync profile', e); }
+    await setDoc(doc(db, 'public_profiles', uid), { username: u.name, lc: u.name.toLowerCase(), photo });
+    firma = f; perfiles[uid] = Promise.resolve({ username: u.name, photo });
 }
 
 /* ------------------------------ ACTIVAR / DESACTIVAR ------------------------------ */
@@ -233,7 +232,7 @@ function refresh() {
         if (uid !== auth.currentUser.uid) { 
             parar(); 
             uid = auth.currentUser.uid; 
-            syncPerfil().catch(e => console.error(e)); // SINCRONIZA AL ENTRAR PARA QUE APAREZCA EN BÚSQUEDA
+            syncPerfil().catch(e => console.error(e)); // <-- ESTO FALTABA: Registra al usuario apenas entra
             iniciar(); 
         }
     } else {
@@ -345,13 +344,16 @@ function abrir() {
 
     ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 110) + 'px'; });
     
-    ta.addEventListener('keydown', e => { 
-        if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) e.stopPropagation();
+    // PREVENIR QUE SE DISPARE LA BÚSQUEDA GLOBAL CON LA BARRA /
+      ta.addEventListener('keydown', e => { 
+        // ESTO EVITA QUE LA BARRA DE BÚSQUEDA SE ACTIVE AL ESCRIBIR /
+        if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) e.stopPropagation(); 
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); } 
     });
 
+    // PEGAR IMAGEN/VIDEO (CTRL+V)
     ta.addEventListener('paste', async e => {
-        if (!esAdm() && !modoDM) return;
+        if (!esAdm() && !modoDM) return; // Validación de seguridad básica (luego Firestore lo chequea)
         const items = (e.clipboardData || e.originalEvent.clipboardData).items;
         for (let i = 0; i < items.length; i++) {
             if (items[i].kind === 'file') {
@@ -423,6 +425,7 @@ function abrirDM(otherUid, otherName) {
 
     if (dmUnsub) dmUnsub();
     const chatId = [uid, otherUid].sort().join('_');
+    
     dmUnsub = onSnapshot(query(collection(db, 'private_messages'), where('chatId', '==', chatId), orderBy('ts', 'desc'), limit(60)), s => {
         dmMsgs = s.docs.map(d => {
             const x = d.data();
@@ -516,6 +519,8 @@ function mostrarCtx(x, y, m) {
     };
     
     addBtn('Responder', () => citar(m));
+    const l = m.likes || {};
+    addBtn(l[uid] ? 'Quitar me gusta' : 'Me gusta', () => like(m, !!l[uid]));
     
     if (m.uid !== uid) {
         addBtn('Reportar', () => reportar(m), 'danger');
@@ -536,6 +541,7 @@ function burbuja(m) {
     const d = h('div', 'pcm-msg' + (mine ? ' mine' : '') + (adm ? ' adm' : ''));
     d.id = 'msg-' + m.id;
     d.append(avatar(m.uid, m.n));
+    
     const c = h('div', 'pcm-mc'), top = h('div', 'pcm-top');
     if (adm) top.append(h('span', 'pcm-adm', 'ADMIN'));
     const tm = h('time', 'pcm-tm', fecha(m));
@@ -549,7 +555,6 @@ function burbuja(m) {
     if (m.replyTo) {
         const rb = h('div', 'pcm-rep-box');
         rb.innerHTML = `<b>${String(m.replyTo.n).replace(/</g,'&lt;')}</b>${String(m.replyTo.t).replace(/</g,'&lt;')}`;
-        
         rb.onclick = (e) => {
             e.stopPropagation();
             const orig = document.getElementById('msg-' + m.replyTo.id);
@@ -561,14 +566,13 @@ function burbuja(m) {
                 aviso('El mensaje original ya no está disponible.', 'err');
             }
         };
-        
         c.append(rb);
     }
 
     if (m.t) c.append(h('div', 'pcm-tx', m.t));
     if (m.media) c.append(mediaEl(m));
     
-    // BOTÓN DE LIKE RÁPIDO DEBAJO DEL MENSAJE
+    // ACCIÓN RÁPIDA: BOTÓN DE LIKE CON PULGAR CSS
     const ac = h('div', 'pcm-ac');
     const lb = h('button', 'pcm-like'); lb.type = 'button'; lb.title = 'Me gusta';
     lb.innerHTML = '<span class="pcm-th"><i></i></span>'; lb.append(h('span', '', ''));
@@ -576,7 +580,7 @@ function burbuja(m) {
     pintarLike(lb, m);
     c.append(ac); 
 
-    // LONG PRESS Y RIGHT CLICK PARA ACCIONES
+    // MENÚ CONTEXTUAL (Click derecho o Long press)
     let pressTimer;
     d.onpointerdown = e => {
         if (e.button === 2) return;
@@ -589,7 +593,6 @@ function burbuja(m) {
 
     d.append(c); return d;
 }
-
 function pintarChat() {
     if (!lista) return;
     const arr = modoDM ? dmMsgs : msgs;
@@ -764,7 +767,7 @@ async function quitar(r, texto, titulo, okTxt) {
 const bt = (t, f, c) => { const b = h('button', 'pcm-b' + (c ? ' ' + c : ''), t); b.type = 'button'; b.onclick = () => f(b); return b; };
 function fila(id, nombre, botones, isFriend) {
     const f = h('div', 'pcm-per'), bs = h('div', 'bs'); 
-    if (isFriend) bs.append(bt('Mensaje', () => { abrirDM(id, nombre); }, 'no')); 
+    if (isFriend) bs.append(bt('Mensaje', () => { abrirDM(id, nombre); }, 'no')); // <-- BOTÓN DE DM
     bs.append(...botones);
     f.append(avatar(id, nombre, 'sm'), h('div', 'n', nombre || '?'), bs); return f;
 }
