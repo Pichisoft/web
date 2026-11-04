@@ -75,6 +75,11 @@ const CSS = `
 .pcm-tm.ed{color:#caa016}
 .pcm-adm{background:linear-gradient(135deg,#f1d98a,#b8901f);color:#111;font:bold .62rem Verdana,sans-serif;padding:2px 6px;border-radius:5px;margin-right:6px;letter-spacing:.07em}
 .pcm-tx{font-size:.88rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;user-select:text;-webkit-user-select:text}
+
+/* Caja de respuesta citada */
+.pcm-rep-box{background:rgba(212,175,55,.08);border-left:3px solid #d4af37;padding:6px 10px;margin-bottom:8px;border-radius:4px;font-size:.75rem;color:#bdbdbd;word-break:break-word;user-select:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pcm-rep-box b{color:#f1d98a;display:block;margin-bottom:2px}
+
 .pcm-img{display:block;max-width:100%;max-height:300px;margin-top:8px;border-radius:10px;border:1px solid #3a3a3a;cursor:zoom-in}
 .pcm-video{display:block;max-width:100%;max-height:320px;margin-top:8px;border-radius:10px;background:#000}
 .pcm-vid{margin-top:8px;background:#000;color:#f1d98a;border:1px solid #d4af37;border-radius:10px;padding:10px 14px;font:bold .85rem Georgia,serif;cursor:pointer}
@@ -96,6 +101,13 @@ const CSS = `
 .pcm-comp{border-top:1px solid rgba(212,175,55,.3);padding:12px 14px;background:#0f0f0f}
 .pcm-prev{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;font-size:.78rem;color:#f1d98a;word-break:break-all}
 .pcm-prev button{background:none;border:0;color:#9a9a9a;text-decoration:underline;cursor:pointer;font:inherit;font-size:.75rem}
+
+/* Barra superior de "Respondiendo a..." */
+.pcm-rep-bar{display:flex;align-items:center;justify-content:space-between;background:#161616;border:1px solid #3a3a3a;border-bottom:0;border-radius:8px 8px 0 0;padding:8px 12px;font-size:.75rem;color:#bdbdbd;margin-bottom:-1px}
+.pcm-rep-bar b{color:#f1d98a}
+.pcm-rep-bar button{background:none;border:0;color:#9a9a9a;cursor:pointer;font:inherit;font-size:1.2rem;line-height:1;padding:0 4px}
+.pcm-rep-bar button:hover{color:#ff7b7b}
+
 .pcm-row{display:flex;align-items:flex-end;gap:8px}
 .pcm-in{width:100%;box-sizing:border-box;background:#161616;border:1px solid #3a3a3a;border-radius:10px;color:#fff;font:inherit;font-size:.9rem;padding:10px;outline:0;user-select:text;-webkit-user-select:text}
 .pcm-in:focus{border-color:#d4af37;box-shadow:0 0 0 3px rgba(212,175,55,.14)}
@@ -186,6 +198,7 @@ function confirmar(titulo, texto, okTxt) {
 let uid = null, unsubs = [], msgs = [], reqIn = [], reqOut = [], seen = null;
 let btn = null, dotFab = null, panel = null, tab = 'chat';
 let lista, vacio, paneChat, paneAm, listaAm, resBusq, ta, sendBtn, prevBox, adj = null, enviando = false, ultimo = 0;
+let replyTo = null, replyBar = null, replyName = null, replyTxt = null;
 const els = new Map(), perfiles = {};
 let firma = '';
 const esAdm = () => ADMINS.includes(uid);
@@ -275,6 +288,10 @@ function abrir() {
   <div class="pcm-list"><div class="pcm-empty">Todavía no hay mensajes. ¡Escribí el primero!</div></div>
   <div class="pcm-comp">
    <div class="pcm-prev" hidden><span></span><button type="button">Quitar</button></div>
+   <div class="pcm-rep-bar" hidden>
+       <span>Respondiendo a <b class="pcm-rep-nm"></b>: <span class="pcm-rep-tx"></span></span>
+       <button type="button" class="pcm-rep-cancel" title="Cancelar respuesta">×</button>
+   </div>
    <div class="pcm-row">
     <button class="pcm-clip" type="button" title="Adjuntar foto o video" aria-label="Adjuntar foto o video" hidden></button>
     <input type="file" accept="image/*,video/mp4,video/webm" hidden>
@@ -296,6 +313,12 @@ function abrir() {
     paneChat = panel.querySelector('#pcmChat'); paneAm = panel.querySelector('#pcmAm');
     listaAm = panel.querySelector('#pcmListaAm'); resBusq = panel.querySelector('#pcmRes');
     ta = panel.querySelector('textarea'); sendBtn = panel.querySelector('.pcm-send'); prevBox = panel.querySelector('.pcm-prev');
+    
+    replyBar = panel.querySelector('.pcm-rep-bar');
+    replyName = panel.querySelector('.pcm-rep-nm');
+    replyTxt = panel.querySelector('.pcm-rep-tx');
+    panel.querySelector('.pcm-rep-cancel').onclick = limpiarReply;
+
     const clip = panel.querySelector('.pcm-clip'), fi = panel.querySelector('input[type=file]');
 
     panel.addEventListener('click', e => { if (e.target === panel) cerrarPanel(); });
@@ -338,6 +361,15 @@ function setTab(t) {
     actualizarBadge();
 }
 function limpiarAdj() { adj = null; if (prevBox) prevBox.hidden = true; }
+function limpiarReply() { replyTo = null; if (replyBar) replyBar.hidden = true; }
+
+function citar(m) {
+    replyTo = m;
+    replyBar.hidden = false;
+    replyName.textContent = m.n || '?';
+    replyTxt.textContent = m.t ? (m.t.length > 40 ? m.t.slice(0, 40) + '…' : m.t) : '[Multimedia]';
+    ta.focus();
+}
 
 /* ------------------------------ CHAT ------------------------------ */
 function fecha(m) {
@@ -395,12 +427,22 @@ function burbuja(m) {
         top.append(marca);
     }
     c.append(top);
+
+    if (m.replyTo) {
+        const rb = h('div', 'pcm-rep-box');
+        rb.innerHTML = `<b>${String(m.replyTo.n).replace(/</g,'&lt;')}</b>${String(m.replyTo.t).replace(/</g,'&lt;')}`;
+        c.append(rb);
+    }
+
     if (m.t) c.append(h('div', 'pcm-tx', m.t));
     if (m.media) c.append(mediaEl(m));
     const ac = h('div', 'pcm-ac');
     const lb = h('button', 'pcm-like'); lb.type = 'button'; lb.title = 'Me gusta';
     lb.innerHTML = '<span class="pcm-th"><i></i></span>'; lb.append(h('span', '', ''));
     ac.append(lb);
+
+    const rb = h('button', '', 'Responder'); rb.type = 'button'; rb.onclick = () => citar(m); ac.append(rb);
+
     if (!mine) {
         const r = rel(m.uid);
         if (r === 'amigo') ac.append(h('span', 'pcm-tag', 'Amigos'));
@@ -432,6 +474,7 @@ function pintarChat() {
     for (const [id, x] of els) if (!ids.has(id)) { x.el.remove(); els.delete(id); }
     msgs.forEach(m => {
         const sig = (m.t || '') + '|' + (m.edited ? 'E' + (m.editedBy || '') : '') + '|'
+                  + (m.replyTo ? 'R' + m.replyTo.id : '') + '|'
                   + (m.media ? m.media.k + (m.media.n || '') : '') + '|' + rel(m.uid);
         let x = els.get(m.id);
         if (!x || x.sig !== sig) {
@@ -524,9 +567,19 @@ async function enviar() {
         await syncPerfil();
         const ref = doc(collection(db, 'community_messages'));
         const data = { uid, n: miNombre(), t, ts: serverTimestamp(), likes: {} };
+        
+        if (replyTo) {
+            data.replyTo = {
+                id: replyTo.id,
+                n: replyTo.n || '?',
+                t: replyTo.t || '[Multimedia]'
+            };
+        }
+
         if (adj && esAdm()) data.media = await subirMedia(ref.id, adj);
         await setDoc(ref, data);
-        ta.value = ''; ta.style.height = 'auto'; limpiarAdj(); ultimo = Date.now();
+        
+        ta.value = ''; ta.style.height = 'auto'; limpiarAdj(); limpiarReply(); ultimo = Date.now();
     } catch (e) { aviso(errTxt(e), 'err'); }
     enviando = false; sendBtn.disabled = false; sendBtn.textContent = 'Enviar';
 }
