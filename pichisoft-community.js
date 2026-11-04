@@ -47,7 +47,7 @@ const CSS = `
 @keyframes pcmPulse{0%{box-shadow:0 0 0 0 rgba(255,90,90,.6)}70%{box-shadow:0 0 0 9px rgba(255,90,90,0)}100%{box-shadow:0 0 0 0 rgba(255,90,90,0)}}
 @keyframes pcmIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-.pcm-ov{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:14px;box-sizing:border-box;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:pcmIn .25s ease;user-select:none;-webkit-user-select:none}
+.pcm-ov{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:14px;box-sizing:border-box;background:#0a0a0a; /* SOLID BLACK */ user-select:none;-webkit-user-select:none;animation:pcmIn .25s ease}
 .pcm-card{display:flex;flex-direction:column;width:min(720px,100%);height:min(88vh,780px);box-sizing:border-box;background:linear-gradient(180deg,#181818,#0b0b0b);border:2px solid #d4af37;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.85),0 0 44px rgba(212,175,55,.12);color:#fff;font-family:Verdana,"Open Sans",sans-serif;overflow:hidden}
 .pcm-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid rgba(212,175,55,.3);background:rgba(212,175,55,.04)}
 .pcm-hd h2{margin:0;font:bold 1.6rem "Times New Roman",Times,serif;color:#f1d98a}
@@ -62,11 +62,11 @@ const CSS = `
 .pcm-list,.pcm-am{flex:1;min-height:0;overflow-y:auto;padding:14px 16px;scrollbar-width:thin;scrollbar-color:#b38b27 #0a0a0a}
 .pcm-list{display:flex;flex-direction:column;gap:12px}
 .pcm-empty,.pcm-mut{color:#8d8d8d;font-size:.82rem;text-align:center;padding:18px 6px;line-height:1.5}
-.pcm-msg{display:flex;gap:10px;align-items:flex-start}
+.pcm-msg{display:flex;gap:10px;align-items:flex-start;position:relative}
 .pcm-av{flex:none;width:38px;height:38px;border-radius:50%;background:#444;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:1rem}
 .pcm-av img{width:100%;height:100%;object-fit:cover}
 .pcm-av.sm{width:32px;height:32px;font-size:.9rem}
-.pcm-mc{min-width:0;max-width:calc(100% - 50px);background:#161616;border:1px solid #2b2b2b;border-radius:4px 14px 14px 14px;padding:9px 12px}
+.pcm-mc{min-width:0;max-width:calc(100% - 50px);background:#161616;border:1px solid #2b2b2b;border-radius:4px 14px 14px 14px;padding:9px 12px;transition:background .3s,border-color .3s;}
 .pcm-msg.mine .pcm-mc{border-color:#443f27}
 .pcm-msg.adm .pcm-mc{border-color:rgba(212,175,55,.6);background:linear-gradient(180deg,#201b0b,#151209)}
 .pcm-top{display:flex;align-items:center;flex-wrap:wrap;gap:4px 0;margin-bottom:4px}
@@ -76,22 +76,27 @@ const CSS = `
 .pcm-adm{background:linear-gradient(135deg,#f1d98a,#b8901f);color:#111;font:bold .62rem Verdana,sans-serif;padding:2px 6px;border-radius:5px;margin-right:6px;letter-spacing:.07em}
 .pcm-tx{font-size:.88rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;user-select:text;-webkit-user-select:text}
 
+@keyframes pcmBlink{0%,100%{background:transparent}50%{background:rgba(212,175,55,0.3)}}
+.pcm-msg.highlight .pcm-mc{animation:pcmBlink 0.5s 3; border-color:#d4af37;}
+
 /* Caja de respuesta citada */
-.pcm-rep-box{background:rgba(212,175,55,.08);border-left:3px solid #d4af37;padding:6px 10px;margin-bottom:8px;border-radius:4px;font-size:.75rem;color:#bdbdbd;word-break:break-word;user-select:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pcm-rep-box{background:rgba(212,175,55,.08);border-left:3px solid #d4af37;padding:6px 10px;margin-bottom:8px;border-radius:4px;font-size:.75rem;color:#bdbdbd;word-break:break-word;user-select:none;cursor:pointer;max-height:100px;overflow:hidden;}
+.pcm-rep-box:hover{background:rgba(212,175,55,.15)}
 .pcm-rep-box b{color:#f1d98a;display:block;margin-bottom:2px}
 
 .pcm-img{display:block;max-width:100%;max-height:300px;margin-top:8px;border-radius:10px;border:1px solid #3a3a3a;cursor:zoom-in}
 .pcm-video{display:block;max-width:100%;max-height:320px;margin-top:8px;border-radius:10px;background:#000}
 .pcm-vid{margin-top:8px;background:#000;color:#f1d98a;border:1px solid #d4af37;border-radius:10px;padding:10px 14px;font:bold .85rem Georgia,serif;cursor:pointer}
 .pcm-vid:hover{background:#d4af37;color:#111}
-.pcm-ac{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.pcm-ac button,.pcm-tag{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid #333;color:#9a9a9a;border-radius:8px;padding:4px 9px;font:inherit;font-size:.72rem;cursor:pointer;transition:border-color .15s,color .15s,background .15s}
-.pcm-ac button:hover{border-color:#d4af37;color:#f1d98a}
-.pcm-ac button:disabled{opacity:.5;cursor:default}.pcm-ac button:disabled:hover{border-color:#333;color:#9a9a9a}
-.pcm-tag{cursor:default;color:#caa016;border-color:#4a4326}
-.pcm-ac .pcm-del:hover{color:#ff7b7b;border-color:#a33}
-.pcm-like.on{color:#f1d98a!important;border-color:#d4af37!important;background:rgba(212,175,55,.12)}
-/* Pulgar arriba dibujado con CSS */
+.pcm-ac{display:none;} /* Actions hidden, now in context menu */
+
+/* MENÚ CONTEXTUAL */
+.pcm-ctx{position:fixed;z-index:9999;background:linear-gradient(180deg,#1b1b1b,#131313);border:1px solid #d4af37;border-radius:10px;padding:6px;display:flex;flex-direction:column;min-width:150px;box-shadow:0 10px 30px rgba(0,0,0,.8);animation:pcmIn .15s ease}
+.pcm-ctx button{background:none;border:0;color:#fff;padding:10px 14px;text-align:left;font:inherit;font-size:.85rem;cursor:pointer;border-radius:6px;transition:background .15s}
+.pcm-ctx button:hover{background:rgba(212,175,55,.15)}
+.pcm-ctx button.danger{color:#ff7b7b}
+.pcm-ctx button.danger:hover{background:rgba(255,123,123,.15)}
+
 .pcm-th{position:relative;display:inline-block;width:20px;height:20px;flex:none}
 .pcm-th::before{content:"";position:absolute;box-sizing:border-box;left:0;top:9px;width:6px;height:10px;border:2px solid currentColor;border-radius:2px}
 .pcm-th::after{content:"";position:absolute;box-sizing:border-box;left:7px;top:8px;width:12px;height:11px;border:2px solid currentColor;border-radius:2px 2px 4px 4px}
@@ -102,7 +107,6 @@ const CSS = `
 .pcm-prev{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;font-size:.78rem;color:#f1d98a;word-break:break-all}
 .pcm-prev button{background:none;border:0;color:#9a9a9a;text-decoration:underline;cursor:pointer;font:inherit;font-size:.75rem}
 
-/* Barra superior de "Respondiendo a..." */
 .pcm-rep-bar{display:flex;align-items:center;justify-content:space-between;background:#161616;border:1px solid #3a3a3a;border-bottom:0;border-radius:8px 8px 0 0;padding:8px 12px;font-size:.75rem;color:#bdbdbd;margin-bottom:-1px}
 .pcm-rep-bar b{color:#f1d98a}
 .pcm-rep-bar button{background:none;border:0;color:#9a9a9a;cursor:pointer;font:inherit;font-size:1.2rem;line-height:1;padding:0 4px}
@@ -129,7 +133,7 @@ const CSS = `
 .pcm-b:hover:not(:disabled){background:#fff;color:#000}.pcm-b:disabled{opacity:.55;cursor:default}
 .pcm-b.no{background:#8c8c8c;color:#000;border-color:#8c8c8c}.pcm-b.no:hover:not(:disabled){background:#d2d2d2}
 
-.pcm-dov{position:fixed;inset:0;z-index:320;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);animation:pcmIn .2s ease;user-select:none;-webkit-user-select:none}
+.pcm-dov{position:fixed;inset:0;z-index:320;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);animation:pcmIn .2s ease;user-select:none;-webkit-user-select:none}
 .pcm-dlg{width:min(430px,100%);max-height:92vh;overflow:auto;box-sizing:border-box;background:#141414;border:1px solid #3a3a3a;border-top:3px solid #d4af37;border-radius:14px;padding:24px 22px 18px;box-shadow:0 26px 70px rgba(0,0,0,.8);color:#fff;font-family:Verdana,"Open Sans",sans-serif}
 .pcm-dlg h3{margin:0 0 10px;font:bold 1.5rem "Times New Roman",Times,serif;line-height:1.2}
 .pcm-dlg p{margin:0 0 16px;font-size:.82rem;line-height:1.6;color:#bdbdbd}
@@ -195,10 +199,12 @@ function confirmar(titulo, texto, okTxt) {
 }
 
 /* ------------------------------ ESTADO ------------------------------ */
-let uid = null, unsubs = [], msgs = [], reqIn = [], reqOut = [], seen = null;
+let uid = null, unsubs = [], dmUnsub = null, msgs = [], dmMsgs = [], reqIn = [], reqOut = [], seen = null;
 let btn = null, dotFab = null, panel = null, tab = 'chat';
 let lista, vacio, paneChat, paneAm, listaAm, resBusq, ta, sendBtn, prevBox, adj = null, enviando = false, ultimo = 0;
 let replyTo = null, replyBar = null, replyName = null, replyTxt = null;
+let modoDM = false, dmUid = null, dmName = '';
+let ctx = null;
 const els = new Map(), perfiles = {};
 let firma = '';
 const esAdm = () => ADMINS.includes(uid);
@@ -223,14 +229,20 @@ const activo = () => !!(window.Pichisoft && window.Pichisoft.user && auth.curren
 function refresh() {
     if (activo()) {
         crearBoton(); btn.classList.add('on');
-        if (uid !== auth.currentUser.uid) { parar(); uid = auth.currentUser.uid; iniciar(); }
+        if (uid !== auth.currentUser.uid) { 
+            parar(); 
+            uid = auth.currentUser.uid; 
+            syncPerfil().catch(e => console.error(e)); // <-- SINCRONIZA AL ENTRAR PARA QUE APAREZCA EN BÚSQUEDA
+            iniciar(); 
+        }
     } else {
         parar(); uid = null; cerrarPanel(); if (btn) btn.classList.remove('on');
     }
 }
 function parar() {
     unsubs.forEach(f => { try { f(); } catch { } }); unsubs = [];
-    msgs = []; reqIn = []; reqOut = []; seen = null; firma = '';
+    if (dmUnsub) { try { dmUnsub(); } catch {} dmUnsub = null; }
+    msgs = []; dmMsgs = []; reqIn = []; reqOut = []; seen = null; firma = '';
     Object.keys(perfiles).forEach(k => delete perfiles[k]);
     if (dotFab) dotFab.hidden = true;
 }
@@ -239,7 +251,7 @@ function iniciar() {
     unsubs.push(onSnapshot(query(collection(db, 'community_messages'), orderBy('ts', 'desc'), limit(60)), s => {
         msgs = s.docs.map(d => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) })).reverse();
         if (seen === null) { seen = msgs.reduce((a, m) => Math.max(a, tms(m)), 0); localStorage.setItem(KS + uid, String(seen)); }
-        if (panel && tab === 'chat') { pintarChat(); marcarVisto(); }
+        if (panel && tab === 'chat' && !modoDM) { pintarChat(); marcarVisto(); }
         actualizarBadge();
     }, e => console.error('community_messages', e)));
     unsubs.push(onSnapshot(query(collection(db, 'friend_requests'), where('to', '==', uid)), s => {
@@ -249,7 +261,7 @@ function iniciar() {
         reqOut = s.docs.map(d => ({ id: d.id, ...d.data() })); cambioAmigos();
     }, e => console.error('friend_requests out', e)));
 }
-function cambioAmigos() { if (panel) { pintarAmigos(); if (tab === 'chat') pintarChat(); } actualizarBadge(); }
+function cambioAmigos() { if (panel) { pintarAmigos(); if (tab === 'chat' && !modoDM) pintarChat(); } actualizarBadge(); }
 function marcarVisto() {
     const mx = msgs.filter(m => m.uid !== uid).reduce((a, m) => Math.max(a, tms(m)), seen || 0);
     if (mx !== seen) { seen = mx; try { localStorage.setItem(KS + uid, String(mx)); } catch { } }
@@ -276,14 +288,18 @@ function crearBoton() {
 }
 
 /* ------------------------------ PANEL ------------------------------ */
-const onEsc = e => { if (e.key === 'Escape' && panel && !$('.pcm-dov')) cerrarPanel(); };
+const onEsc = e => { if (e.key === 'Escape' && panel && !$('.pcm-dov') && !ctx) cerrarPanel(); };
 function abrir() {
     if (panel || !uid) return;
     syncPerfil().catch(e => console.error(e));
     panel = h('div', 'pcm-ov');
     panel.innerHTML = `<div class="pcm-card" role="dialog" aria-modal="true" aria-label="Mensajería">
- <div class="pcm-hd"><h2>Mensajería</h2><button class="pcm-x" type="button" aria-label="Cerrar" title="Cerrar"></button></div>
- <div class="pcm-tabs"><button type="button" data-t="chat">Chat<b class="pcm-dot pcm-sm" hidden></b></button><button type="button" data-t="amigos">Amigos<b class="pcm-dot pcm-sm" hidden></b></button></div>
+ <div class="pcm-hd">
+   <button class="pcm-b" id="pcmDmBack" style="display:none; border:0; padding:0 10px 0 0; background:none; color:#f1d98a; font-size:1.5rem; cursor:pointer;" title="Volver">←</button>
+   <h2 id="pcmHdTitle">Mensajería</h2>
+   <button class="pcm-x" type="button" aria-label="Cerrar" title="Cerrar"></button>
+ </div>
+ <div class="pcm-tabs" id="pcmTabs"><button type="button" data-t="chat">Chat<b class="pcm-dot pcm-sm" hidden></b></button><button type="button" data-t="amigos">Amigos<b class="pcm-dot pcm-sm" hidden></b></button></div>
  <div class="pcm-pane" id="pcmChat">
   <div class="pcm-list"><div class="pcm-empty">Todavía no hay mensajes. ¡Escribí el primero!</div></div>
   <div class="pcm-comp">
@@ -324,9 +340,37 @@ function abrir() {
     panel.addEventListener('click', e => { if (e.target === panel) cerrarPanel(); });
     panel.querySelector('.pcm-x').onclick = cerrarPanel;
     panel.querySelectorAll('.pcm-tabs button').forEach(b => b.onclick = () => setTab(b.dataset.t));
+    panel.querySelector('#pcmDmBack').onclick = () => setTab('amigos');
 
     ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 110) + 'px'; });
-    ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); } });
+    
+    // PREVENIR QUE SE DISPARE LA BÚSQUEDA GLOBAL CON LA BARRA /
+    ta.addEventListener('keydown', e => { 
+        if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) e.stopPropagation();
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); } 
+    });
+
+    // PEGAR IMAGEN/VIDEO (CTRL+V)
+    ta.addEventListener('paste', async e => {
+        if (!esAdm() && !modoDM) return; // Validación de seguridad básica (luego Firestore lo chequea)
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].kind === 'file') {
+                const blob = items[i].getAsFile();
+                if (blob.type.startsWith('image/') || blob.type.startsWith('video/')) {
+                    if (blob.type.startsWith('video/') && blob.size > MAX_VIDEO) {
+                        return aviso('El video pesa demasiado (máximo 6 MB).', 'err');
+                    }
+                    adj = blob;
+                    prevBox.hidden = false;
+                    prevBox.firstChild.textContent = (blob.type.startsWith('video/') ? 'Video: ' : 'Foto: ') + 'Pegado';
+                    e.preventDefault();
+                    return;
+                }
+            }
+        }
+    });
+
     sendBtn.onclick = enviar;
 
     if (esAdm()) {
@@ -349,11 +393,14 @@ function abrir() {
 }
 function cerrarPanel() {
     if (!panel) return;
+    pararDM();
     panel.remove(); panel = null; els.clear(); adj = null;
     document.documentElement.style.overflow = ''; document.removeEventListener('keydown', onEsc);
     actualizarBadge();
+    if (ctx) { ctx.remove(); ctx = null; }
 }
 function setTab(t) {
+    if (t !== 'chat') pararDM();
     tab = t;
     panel.querySelectorAll('.pcm-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
     paneChat.hidden = t !== 'chat'; paneAm.hidden = t !== 'amigos';
@@ -362,6 +409,40 @@ function setTab(t) {
 }
 function limpiarAdj() { adj = null; if (prevBox) prevBox.hidden = true; }
 function limpiarReply() { replyTo = null; if (replyBar) replyBar.hidden = true; }
+
+function abrirDM(otherUid, otherName) {
+    modoDM = true;
+    dmUid = otherUid;
+    dmName = otherName;
+    panel.querySelector('.pcm-hd h2').textContent = 'Chat con ' + otherName;
+    panel.querySelector('#pcmDmBack').style.display = 'block';
+    panel.querySelector('.pcm-tabs').style.display = 'none';
+    
+    if (dmUnsub) dmUnsub();
+    const chatId = [uid, otherUid].sort().join('_');
+    dmUnsub = onSnapshot(query(collection(db, 'private_messages'), where('chatId', '==', chatId), orderBy('ts', 'desc'), limit(60)), s => {
+        dmMsgs = s.docs.map(d => {
+            const x = d.data();
+            return { id: d.id, uid: x.from, n: x.n || (x.from === uid ? miNombre() : dmName), t: x.t, ts: x.ts, likes: x.likes, media: x.media, replyTo: x.replyTo, edited: x.edited };
+        }).reverse();
+        if (panel && modoDM) { pintarChat(); lista.scrollTop = lista.scrollHeight; }
+    }, e => console.error('private_messages', e));
+    
+    pintarChat();
+}
+
+function pararDM() {
+    if (!modoDM) return;
+    modoDM = false;
+    dmUid = null;
+    if (dmUnsub) { dmUnsub(); dmUnsub = null; }
+    dmMsgs = [];
+    if (panel) {
+        panel.querySelector('.pcm-hd h2').textContent = 'Mensajería';
+        panel.querySelector('#pcmDmBack').style.display = 'none';
+        panel.querySelector('.pcm-tabs').style.display = 'flex';
+    }
+}
 
 function citar(m) {
     replyTo = m;
@@ -388,7 +469,7 @@ function rel(o) {
 function pintarLike(b, m) {
     if (!b) return;
     const l = m.likes || {}, n = Object.keys(l).length, on = !!l[uid];
-    b.classList.toggle('on', on); b.lastChild.textContent = n ? String(n) : ''; b.onclick = () => like(m, on);
+    b.classList.toggle('on', on); b.lastChild.textContent = n ? String(n) : ''; b.onclick = (e) => { e.stopPropagation(); like(m, on); };
 }
 function mediaEl(m) {
     const md = m.media;
@@ -400,7 +481,7 @@ function mediaEl(m) {
         b.onclick = async () => {
             b.disabled = true; b.textContent = 'Cargando…';
             try {
-                const s = await getDocs(collection(db, 'community_messages', m.id, 'chunks'));
+                const s = await getDocs(collection(db, modoDM ? 'private_messages' : 'community_messages', m.id, 'chunks'));
                 const partes = s.docs.sort((a, c) => a.id < c.id ? -1 : 1).map(d => Uint8Array.from(atob(d.data().d), c => c.charCodeAt(0)));
                 const v = h('video', 'pcm-video'); v.controls = true; v.playsInline = true;
                 v.src = URL.createObjectURL(new Blob(partes, { type: md.mime || 'video/mp4' }));
@@ -414,9 +495,40 @@ function mediaEl(m) {
 function verImg(src) {
     dialogo('', (b, c) => { b.style.cssText = 'background:none;border:0;padding:0;box-shadow:none;width:auto;max-width:100%'; const i = h('img'); i.src = src; i.alt = ''; i.onclick = c; b.append(i); }, null, 'pcm-viz');
 }
+
+function mostrarCtx(x, y, m) {
+    if (ctx) ctx.remove();
+    ctx = h('div', 'pcm-ctx');
+    ctx.style.cssText = `top:${Math.min(y, innerHeight - 200)}px;left:${Math.min(x, innerWidth - 160)}px;`;
+    
+    const addBtn = (txt, fn, color) => {
+        const b = h('button', color || '', txt);
+        b.onclick = (e) => { e.stopPropagation(); fn(); ctx.remove(); ctx = null; };
+        ctx.append(b);
+    };
+    
+    addBtn('Responder', () => citar(m));
+    const l = m.likes || {};
+    addBtn(l[uid] ? 'Quitar me gusta' : 'Me gusta', () => like(m, !!l[uid]));
+    
+    if (m.uid !== uid) {
+        addBtn('Reportar', () => reportar(m), 'danger');
+    }
+    if (m.uid === uid || esAdm()) {
+        addBtn('Editar', () => editar(m));
+        addBtn('Eliminar', () => borrar(m), 'danger');
+    }
+    
+    document.body.append(ctx);
+    setTimeout(() => {
+        document.addEventListener('click', () => { if (ctx) { ctx.remove(); ctx = null; } }, { once: true });
+    }, 10);
+}
+
 function burbuja(m) {
     const mine = m.uid === uid, adm = ADMINS.includes(m.uid);
     const d = h('div', 'pcm-msg' + (mine ? ' mine' : '') + (adm ? ' adm' : ''));
+    d.id = 'msg-' + m.id;
     d.append(avatar(m.uid, m.n));
     const c = h('div', 'pcm-mc'), top = h('div', 'pcm-top');
     if (adm) top.append(h('span', 'pcm-adm', 'ADMIN'));
@@ -431,48 +543,54 @@ function burbuja(m) {
     if (m.replyTo) {
         const rb = h('div', 'pcm-rep-box');
         rb.innerHTML = `<b>${String(m.replyTo.n).replace(/</g,'&lt;')}</b>${String(m.replyTo.t).replace(/</g,'&lt;')}`;
+        
+        // --- IR AL MENSAJE Y TITILAR ---
+        rb.onclick = (e) => {
+            e.stopPropagation();
+            const orig = document.getElementById('msg-' + m.replyTo.id);
+            if (orig) {
+                orig.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                orig.classList.add('highlight');
+                setTimeout(() => orig.classList.remove('highlight'), 1600);
+            } else {
+                aviso('El mensaje original ya no está disponible.', 'err');
+            }
+        };
+        
         c.append(rb);
     }
 
     if (m.t) c.append(h('div', 'pcm-tx', m.t));
     if (m.media) c.append(mediaEl(m));
+    
     const ac = h('div', 'pcm-ac');
     const lb = h('button', 'pcm-like'); lb.type = 'button'; lb.title = 'Me gusta';
     lb.innerHTML = '<span class="pcm-th"><i></i></span>'; lb.append(h('span', '', ''));
     ac.append(lb);
+    pintarLike(lb, m);
+    c.append(ac); 
 
-    const rb = h('button', '', 'Responder'); rb.type = 'button'; rb.onclick = () => citar(m); ac.append(rb);
+    // LONG PRESS Y RIGHT CLICK
+    let pressTimer;
+    d.onpointerdown = e => {
+        if (e.button === 2) return;
+        pressTimer = setTimeout(() => mostrarCtx(e.clientX, e.clientY, m), 600);
+    };
+    d.onpointerup = () => clearTimeout(pressTimer);
+    d.onpointercancel = () => clearTimeout(pressTimer);
+    d.onpointerleave = () => clearTimeout(pressTimer);
+    d.oncontextmenu = e => { e.preventDefault(); mostrarCtx(e.clientX, e.clientY, m); };
 
-    if (!mine) {
-        const r = rel(m.uid);
-        if (r === 'amigo') ac.append(h('span', 'pcm-tag', 'Amigos'));
-        else {
-            const b = h('button', '', r === 'enviada' ? 'Solicitud enviada' : r === 'recibida' ? 'Responder solicitud' : 'Agregar amigo');
-            b.type = 'button'; b.disabled = r === 'enviada';
-            b.onclick = () => r === 'recibida' ? setTab('amigos') : solicitar(m.uid, m.n);
-            ac.append(b);
-        }
-        const rp = h('button', '', 'Reportar'); rp.type = 'button'; rp.onclick = () => reportar(m); ac.append(rp);
-    }
-    if (mine || esAdm()) {
-        const ed = h('button', '', 'Editar');
-        ed.type = 'button';
-        ed.onclick = () => editar(m);
-        ac.append(ed);
-
-        const x = h('button', 'pcm-del', 'Eliminar');
-        x.type = 'button';
-        x.onclick = () => borrar(m);
-        ac.append(x);
-    }
-    c.append(ac); d.append(c); return d;
+    d.append(c); return d;
 }
+
 function pintarChat() {
     if (!lista) return;
+    const arr = modoDM ? dmMsgs : msgs;
     const cerca = lista.scrollHeight - lista.scrollTop - lista.clientHeight < 90;
-    const ids = new Set(msgs.map(m => m.id));
+    const ids = new Set(arr.map(m => m.id));
     for (const [id, x] of els) if (!ids.has(id)) { x.el.remove(); els.delete(id); }
-    msgs.forEach(m => {
+    arr.forEach(m => {
         const sig = (m.t || '') + '|' + (m.edited ? 'E' + (m.editedBy || '') : '') + '|'
                   + (m.replyTo ? 'R' + m.replyTo.id : '') + '|'
                   + (m.media ? m.media.k + (m.media.n || '') : '') + '|' + rel(m.uid);
@@ -482,25 +600,27 @@ function pintarChat() {
             if (x) x.el.replaceWith(el); else lista.append(el);
             x = { el, sig }; els.set(m.id, x);
         }
-        pintarLike(x.el.querySelector('.pcm-like'), m);
     });
-    vacio.hidden = msgs.length > 0;
+    vacio.hidden = arr.length > 0;
     if (cerca) lista.scrollTop = lista.scrollHeight;
 }
+
 async function like(m, on) {
-    try { await updateDoc(doc(db, 'community_messages', m.id), { ['likes.' + uid]: on ? deleteField() : true }); }
+    try { await updateDoc(doc(db, modoDM ? 'private_messages' : 'community_messages', m.id), { ['likes.' + uid]: on ? deleteField() : true }); }
     catch (e) { aviso(errTxt(e), 'err'); }
 }
 async function borrar(m) {
     if (!await confirmar('¿Eliminar mensaje?', 'Esta acción no se puede deshacer.', 'Eliminar mensaje')) return;
     try {
+        const col = modoDM ? 'private_messages' : 'community_messages';
         if (m.media && m.media.k === 'vid' && esAdm())
-            for (let i = 0; i < (m.media.n || 0); i++) await deleteDoc(doc(db, 'community_messages', m.id, 'chunks', String(i).padStart(3, '0'))).catch(() => { });
-        await deleteDoc(doc(db, 'community_messages', m.id)); aviso('Mensaje eliminado.');
+            for (let i = 0; i < (m.media.n || 0); i++) await deleteDoc(doc(db, col, m.id, 'chunks', String(i).padStart(3, '0'))).catch(() => { });
+        await deleteDoc(doc(db, col, m.id)); aviso('Mensaje eliminado.');
     } catch (e) { aviso(errTxt(e), 'err'); }
 }
 
 function editar(m) {
+    if (modoDM) return aviso('No podés editar mensajes privados.', 'err');
     dialogo('Editar mensaje', (b, c) => {
         b.append(h('p', '', 'Modificá el texto del mensaje. Quedará marcado como editado para todos.'));
         const d = h('textarea', 'pcm-in');
@@ -552,12 +672,14 @@ async function comprimir(f) {
     }
 }
 async function subirMedia(id, f) {
+    const col = modoDM ? 'private_messages' : 'community_messages';
     if (f.type.startsWith('image/')) return { k: 'img', d: await comprimir(f) };
     const b64 = (await leer(f)).split(',')[1], n = Math.ceil(b64.length / CH);
     for (let i = 0; i < n; i++)
-        await setDoc(doc(db, 'community_messages', id, 'chunks', String(i).padStart(3, '0')), { d: b64.slice(i * CH, (i + 1) * CH) });
+        await setDoc(doc(db, col, id, 'chunks', String(i).padStart(3, '0')), { d: b64.slice(i * CH, (i + 1) * CH) });
     return { k: 'vid', mime: f.type, n };
 }
+
 async function enviar() {
     if (enviando) return;
     const t = ta.value.trim(); if (!t && !adj) return;
@@ -565,18 +687,21 @@ async function enviar() {
     enviando = true; sendBtn.disabled = true; sendBtn.textContent = adj ? 'Subiendo…' : 'Enviando…';
     try {
         await syncPerfil();
-        const ref = doc(collection(db, 'community_messages'));
-        const data = { uid, n: miNombre(), t, ts: serverTimestamp(), likes: {} };
+        const col = modoDM ? 'private_messages' : 'community_messages';
+        const ref = doc(collection(db, col));
+        
+        let data = {};
+        if (modoDM) {
+            data = { from: uid, to: dmUid, n: miNombre(), chatId: [uid, dmUid].sort().join('_'), t, ts: serverTimestamp(), likes: {} };
+        } else {
+            data = { uid, n: miNombre(), t, ts: serverTimestamp(), likes: {} };
+        }
         
         if (replyTo) {
-            data.replyTo = {
-                id: replyTo.id,
-                n: replyTo.n || '?',
-                t: replyTo.t || '[Multimedia]'
-            };
+            data.replyTo = { id: replyTo.id, n: replyTo.n || '?', t: replyTo.t || '[Multimedia]' };
         }
 
-        if (adj && esAdm()) data.media = await subirMedia(ref.id, adj);
+        if (adj) data.media = await subirMedia(ref.id, adj);
         await setDoc(ref, data);
         
         ta.value = ''; ta.style.height = 'auto'; limpiarAdj(); limpiarReply(); ultimo = Date.now();
@@ -631,8 +756,10 @@ async function quitar(r, texto, titulo, okTxt) {
     try { await deleteDoc(doc(db, 'friend_requests', r.id)); aviso('Listo.'); } catch (e) { aviso(errTxt(e), 'err'); }
 }
 const bt = (t, f, c) => { const b = h('button', 'pcm-b' + (c ? ' ' + c : ''), t); b.type = 'button'; b.onclick = () => f(b); return b; };
-function fila(id, nombre, botones) {
-    const f = h('div', 'pcm-per'), bs = h('div', 'bs'); bs.append(...botones);
+function fila(id, nombre, botones, isFriend) {
+    const f = h('div', 'pcm-per'), bs = h('div', 'bs'); 
+    if (isFriend) bs.append(bt('Mensaje', () => { abrirDM(id, nombre); }, 'no')); // <-- BOTÓN DE DM
+    bs.append(...botones);
     f.append(avatar(id, nombre, 'sm'), h('div', 'n', nombre || '?'), bs); return f;
 }
 function seccion(titulo, arr, mk, vacioTxt) {
@@ -648,7 +775,7 @@ function pintarAmigos() {
     const ami = [...reqIn, ...reqOut].filter(r => r.status === 'accepted').sort((a, b) => nom(a).localeCompare(nom(b)));
     seccion('Solicitudes recibidas', rec, r => fila(r.from, r.fn, [bt('Aceptar', () => responder(r, 'accepted')), bt('Rechazar', () => responder(r, 'declined'), 'no')]), 'No tenés solicitudes pendientes.');
     seccion('Solicitudes enviadas', env, r => fila(r.to, r.tn, [bt('Cancelar', () => quitar(r, 'Se cancelará tu solicitud de amistad.', '¿Cancelar solicitud?', 'Cancelar solicitud'), 'no')]), 'No enviaste solicitudes.');
-    seccion('Mis amigos', ami, r => fila(r.from === uid ? r.to : r.from, r.from === uid ? r.tn : r.fn, [bt('Eliminar', () => quitar(r, 'Dejarán de ser amigos.', '¿Eliminar amigo?', 'Eliminar amigo'), 'no')]), 'Todavía no tenés amigos.');
+    seccion('Mis amigos', ami, r => fila(r.from === uid ? r.to : r.from, r.from === uid ? r.tn : r.fn, [bt('Eliminar', () => quitar(r, 'Dejarán de ser amigos.', '¿Eliminar amigo?', 'Eliminar amigo'), 'no')], true), 'Todavía no tenés amigos.');
 }
 async function buscar(txt) {
     const t = String(txt).trim().toLowerCase(); resBusq.textContent = '';
@@ -661,9 +788,9 @@ async function buscar(txt) {
             const p = d.data(), r = rel(d.id); let b;
             if (r === 'amigo') { b = bt('Ya son amigos', () => { }); b.disabled = true; }
             else if (r === 'enviada') { b = bt('Solicitud enviada', () => { }); b.disabled = true; }
-            else if (r === 'recibida') b = bt('Ver solicitud', () => { pintarAmigos(); resBusq.textContent = ''; });
+            else if (r === 'recibida') b = bt('Ver solicitud', () => { setTab('amigos'); resBusq.textContent = ''; });
             else b = bt('Enviar solicitud', bb => solicitar(d.id, p.username, bb));
-            resBusq.append(fila(d.id, p.username, [b]));
+            resBusq.append(fila(d.id, p.username, [b], r === 'amigo'));
         });
     } catch (e) { aviso(errTxt(e), 'err'); }
 }
