@@ -18,8 +18,8 @@ const app = getApps()[0] || initializeApp({
 });
 const auth = getAuth(app), db = getFirestore(app);
 
-/* Admins: tienen prefijo ADMIN y pueden adjuntar fotos/videos y borrar mensajes.
-   Tienen que coincidir con isAdmin() de firestore.rules */
+/* Admins: tienen prefijo ADMIN y pueden adjuntar fotos/videos, borrar mensajes
+   y editar mensajes ajenos. Tienen que coincidir con isAdmin() de firestore.rules */
 const ADMINS = ['XIY1FfjUDodaSBSGema6NgixKRs1', 'n0XOUeFku1SxKWbrPWsA0V86kfc2'];
 const CH = 700000;                 // tamaño de cada pedazo de video (caracteres base64)
 const MAX_VIDEO = 6 * 1024 * 1024; // 6 MB
@@ -72,6 +72,7 @@ const CSS = `
 .pcm-top{display:flex;align-items:center;flex-wrap:wrap;gap:4px 0;margin-bottom:4px}
 .pcm-nm{font-size:.82rem;margin-right:8px;word-break:break-word}
 .pcm-tm{color:#7d7d7d;font-size:.68rem}
+.pcm-tm.ed{color:#caa016}
 .pcm-adm{background:linear-gradient(135deg,#f1d98a,#b8901f);color:#111;font:bold .62rem Verdana,sans-serif;padding:2px 6px;border-radius:5px;margin-right:6px;letter-spacing:.07em}
 .pcm-tx{font-size:.88rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;user-select:text;-webkit-user-select:text}
 .pcm-img{display:block;max-width:100%;max-height:300px;margin-top:8px;border-radius:10px;border:1px solid #3a3a3a;cursor:zoom-in}
@@ -387,7 +388,12 @@ function burbuja(m) {
     d.append(avatar(m.uid, m.n));
     const c = h('div', 'pcm-mc'), top = h('div', 'pcm-top');
     if (adm) top.append(h('span', 'pcm-adm', 'ADMIN'));
-    top.append(h('b', 'pcm-nm', m.n || '?'), h('time', 'pcm-tm', fecha(m)));
+    const tm = h('time', 'pcm-tm', fecha(m));
+    top.append(h('b', 'pcm-nm', m.n || '?'), tm);
+    if (m.edited) {
+        const marca = h('span', 'pcm-tm ed', m.editedBy && m.editedBy !== m.uid ? ' · editado por admin' : ' · editado');
+        top.append(marca);
+    }
     c.append(top);
     if (m.t) c.append(h('div', 'pcm-tx', m.t));
     if (m.media) c.append(mediaEl(m));
@@ -406,7 +412,17 @@ function burbuja(m) {
         }
         const rp = h('button', '', 'Reportar'); rp.type = 'button'; rp.onclick = () => reportar(m); ac.append(rp);
     }
-    if (mine || esAdm()) { const x = h('button', 'pcm-del', 'Eliminar'); x.type = 'button'; x.onclick = () => borrar(m); ac.append(x); }
+    if (mine || esAdm()) {
+        const ed = h('button', '', 'Editar');
+        ed.type = 'button';
+        ed.onclick = () => editar(m);
+        ac.append(ed);
+
+        const x = h('button', 'pcm-del', 'Eliminar');
+        x.type = 'button';
+        x.onclick = () => borrar(m);
+        ac.append(x);
+    }
     c.append(ac); d.append(c); return d;
 }
 function pintarChat() {
@@ -415,7 +431,8 @@ function pintarChat() {
     const ids = new Set(msgs.map(m => m.id));
     for (const [id, x] of els) if (!ids.has(id)) { x.el.remove(); els.delete(id); }
     msgs.forEach(m => {
-        const sig = (m.t || '') + '|' + (m.media ? m.media.k + (m.media.n || '') : '') + '|' + rel(m.uid);
+        const sig = (m.t || '') + '|' + (m.edited ? 'E' + (m.editedBy || '') : '') + '|'
+                  + (m.media ? m.media.k + (m.media.n || '') : '') + '|' + rel(m.uid);
         let x = els.get(m.id);
         if (!x || x.sig !== sig) {
             const el = burbuja(m);
@@ -438,6 +455,44 @@ async function borrar(m) {
             for (let i = 0; i < (m.media.n || 0); i++) await deleteDoc(doc(db, 'community_messages', m.id, 'chunks', String(i).padStart(3, '0'))).catch(() => { });
         await deleteDoc(doc(db, 'community_messages', m.id)); aviso('Mensaje eliminado.');
     } catch (e) { aviso(errTxt(e), 'err'); }
+}
+
+function editar(m) {
+    dialogo('Editar mensaje', (b, c) => {
+        b.append(h('p', '', 'Modificá el texto del mensaje. Quedará marcado como editado para todos.'));
+        const d = h('textarea', 'pcm-in');
+        d.rows = 4; d.maxLength = 500; d.value = m.t || '';
+        b.append(d);
+
+        const ok = h('button', 'pcm-b', 'Guardar cambios');
+        const no = h('button', 'pcm-b no', 'Cancelar');
+        no.onclick = c;
+
+        ok.onclick = async () => {
+            const txt = d.value.trim();
+            if (!txt && !m.media) { aviso('El mensaje no puede quedar vacío.', 'err'); return; }
+            if (txt === (m.t || '')) { c(); return; }
+
+            ok.disabled = true; no.disabled = true;
+            try {
+                await updateDoc(doc(db, 'community_messages', m.id), {
+                    t: txt,
+                    edited: true,
+                    editedBy: uid,
+                    editedAt: serverTimestamp()
+                });
+                c();
+                aviso(esAdm() && m.uid !== uid ? 'Mensaje editado (como admin).' : 'Mensaje editado.');
+            } catch (e) {
+                ok.disabled = false; no.disabled = false;
+                aviso(errTxt(e), 'err');
+            }
+        };
+
+        b.append(ok, no);
+        d.focus();
+        d.setSelectionRange(d.value.length, d.value.length);
+    });
 }
 
 async function comprimir(f) {
