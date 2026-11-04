@@ -747,6 +747,58 @@
                 user-select: none;
             }
         }
+
+        /* ===== TOPBAR PICHISOFT ===== */
+        #pichisoft-topbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: fixed;
+            top: 14px;
+            right: 200px;
+            /* Alineado a la izquierda de la cuenta */
+            z-index: 9999;
+        }
+
+        .ps-top-btn {
+            background: linear-gradient(135deg, #2b2107, #100c02);
+            border: 1.5px solid #d4af37;
+            color: #f1d98a;
+            padding: 0 12px;
+            height: 36px;
+            border-radius: 6px;
+            font: bold .9rem Georgia, serif;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .5);
+            transition: transform .2s, background .2s;
+            position: relative !important;
+            margin: 0 !important;
+        }
+
+        .ps-top-btn:hover {
+            background: #d4af37;
+            color: #111;
+            transform: translateY(-2px);
+        }
+
+        .ps-top-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+
+        .ps-top-btn .pcm-dot {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+        }
     </style>
 </head>
 
@@ -1889,7 +1941,7 @@
         };
     </script>
     <script src="pichisoft-premium.js"></script>
-    <script type="module" src="pichisoft-community.js"></script> 
+    <script type="module" src="pichisoft-community.js"></script>
     <script type="module" src="pichisoft-messages.js"></script>
     <script src="pichisoft-carteles.js?v=5"></script>
     <script src="pichisoft-idiomas.js"></script>
