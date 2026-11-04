@@ -16,8 +16,8 @@ const app = getApps()[0] || initializeApp({
 const auth = getAuth(app), db = getFirestore(app);
 
 const ADMINS = ['XIY1FfjUDodaSBSGema6NgixKRs1', 'n0XOUeFku1SxKWbrPWsA0V86kfc2'];
-const CH = 700000;                 
-const MAX_VIDEO = 6 * 1024 * 1024; 
+const CH = 700000;
+const MAX_VIDEO = 6 * 1024 * 1024;
 const KS = 'pichonapps-community-seen-';
 const MOTIVOS = [
     ['ofensivo', 'Mensajes de contenido ofensivo'],
@@ -220,9 +220,9 @@ async function syncPerfil() {
     const f = u.name + '|' + photo.length + '|' + uid; if (f === firma) return;
     try {
         await setDoc(doc(db, 'public_profiles', uid), { username: u.name, lc: u.name.toLowerCase(), photo: photo || '' });
-        firma = f; 
+        firma = f;
         perfiles[uid] = Promise.resolve({ username: u.name, photo: photo || '' });
-    } catch(e) { console.error('Error sync profile', e); }
+    } catch (e) { console.error('Error sync profile', e); }
 }
 
 /* ------------------------------ ACTIVAR / DESACTIVAR ------------------------------ */
@@ -231,11 +231,11 @@ const activo = () => !!(window.Pichisoft && window.Pichisoft.user && auth.curren
 function refresh() {
     if (activo()) {
         crearBoton(); btn.classList.add('on');
-        if (uid !== auth.currentUser.uid) { 
-            parar(); 
-            uid = auth.currentUser.uid; 
-            syncPerfil().catch(e => console.error(e)); 
-            iniciar(); 
+        if (uid !== auth.currentUser.uid) {
+            parar();
+            uid = auth.currentUser.uid;
+            syncPerfil().catch(e => console.error(e));
+            iniciar();
         }
     } else {
         parar(); uid = null; cerrarPanel(); if (btn) btn.classList.remove('on');
@@ -243,7 +243,7 @@ function refresh() {
 }
 function parar() {
     unsubs.forEach(f => { try { f(); } catch { } }); unsubs = [];
-    if (dmUnsub) { try { dmUnsub(); } catch {} dmUnsub = null; }
+    if (dmUnsub) { try { dmUnsub(); } catch { } dmUnsub = null; }
     msgs = []; dmMsgs = []; reqIn = []; reqOut = []; seen = null; firma = '';
     Object.keys(perfiles).forEach(k => delete perfiles[k]);
     if (dotFab) dotFab.hidden = true;
@@ -286,7 +286,15 @@ function crearBoton() {
     const st = h('style'); st.textContent = CSS; document.head.append(st);
     btn = h('button', 'pcm-fab'); btn.type = 'button'; btn.setAttribute('aria-label', 'Mensajería');
     btn.innerHTML = '<span class="pcm-ic"></span><span>Mensajería</span><b class="pcm-dot" hidden></b>';
-    dotFab = btn.querySelector('.pcm-dot'); btn.onclick = abrir; document.body.append(btn);
+    dotFab = btn.querySelector('.pcm-dot'); btn.onclick = abrir;
+
+    const topbar = document.getElementById('pichisoft-topbar');
+    if (topbar) {
+        btn.className = 'ps-top-btn';
+        topbar.appendChild(btn);
+    } else {
+        document.body.append(btn);
+    }
 }
 
 /* ------------------------------ PANEL ------------------------------ */
@@ -331,7 +339,7 @@ function abrir() {
     paneChat = panel.querySelector('#pcmChat'); paneAm = panel.querySelector('#pcmAm');
     listaAm = panel.querySelector('#pcmListaAm'); resBusq = panel.querySelector('#pcmRes');
     ta = panel.querySelector('textarea'); sendBtn = panel.querySelector('.pcm-send'); prevBox = panel.querySelector('.pcm-prev');
-    
+
     replyBar = panel.querySelector('.pcm-rep-bar');
     replyName = panel.querySelector('.pcm-rep-nm');
     replyTxt = panel.querySelector('.pcm-rep-tx');
@@ -345,12 +353,12 @@ function abrir() {
     panel.querySelector('#pcmDmBack').onclick = () => setTab('amigos');
 
     ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 110) + 'px'; });
-    
-    ta.addEventListener('keydown', e => { 
+
+    ta.addEventListener('keydown', e => {
         if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) {
-            e.stopImmediatePropagation(); 
+            e.stopImmediatePropagation();
         }
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); } 
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); }
     });
 
     ta.addEventListener('paste', async e => {
@@ -389,9 +397,9 @@ function abrir() {
 
     const inp = panel.querySelector('.pcm-srch input'), bb = panel.querySelector('.pcm-srch button');
     bb.onclick = () => buscar(inp.value);
-    inp.addEventListener('keydown', e => { 
+    inp.addEventListener('keydown', e => {
         if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) e.stopImmediatePropagation();
-        if (e.key === 'Enter') buscar(inp.value); 
+        if (e.key === 'Enter') buscar(inp.value);
     });
 
     pintarAmigos(); setTab('chat');
@@ -422,7 +430,7 @@ function abrirDM(otherUid, otherName) {
     panel.querySelector('.pcm-hd h2').textContent = 'Chat con ' + otherName;
     panel.querySelector('#pcmDmBack').style.display = 'block';
     panel.querySelector('.pcm-tabs').style.display = 'none';
-    
+
     // ESTO FALTABA: Oculta la pestaña de amigos y muestra el chat con su input
     paneChat.hidden = false;
     paneAm.hidden = true;
@@ -433,17 +441,17 @@ function abrirDM(otherUid, otherName) {
 
     if (dmUnsub) dmUnsub();
     const chatId = [uid, otherUid].sort().join('_');
-    
+
     // Quitamos el orderBy para evitar el error de índice de Firestore
     dmUnsub = onSnapshot(query(collection(db, 'private_messages'), where('chatId', '==', chatId), limit(100)), s => {
         dmMsgs = s.docs.map(d => {
             const x = d.data();
             return { id: d.id, uid: x.from, n: x.n || (x.from === uid ? miNombre() : dmName), t: x.t, ts: x.ts, likes: x.likes, media: x.media, replyTo: x.replyTo, edited: x.edited };
         }).sort((a, b) => tms(a) - tms(b)); // Ordenamos en JS
-        
+
         if (panel && modoDM) { pintarChat(); lista.scrollTop = lista.scrollHeight; }
     }, e => console.error('private_messages', e));
-    
+
     pintarChat();
 }
 
@@ -462,7 +470,7 @@ function pararDM() {
         els.clear();
         lista.innerHTML = '';
         lista.append(vacio);
-        pintarChat(); 
+        pintarChat();
         lista.scrollTop = lista.scrollHeight;
     }
 }
@@ -523,15 +531,15 @@ function mostrarCtx(x, y, m) {
     if (ctx) ctx.remove();
     ctx = h('div', 'pcm-ctx');
     ctx.style.cssText = `top:${Math.min(y, innerHeight - 200)}px;left:${Math.min(x, innerWidth - 160)}px;`;
-    
+
     const addBtn = (txt, fn, color) => {
         const b = h('button', color || '', txt);
         b.onclick = (e) => { e.stopPropagation(); fn(); ctx.remove(); ctx = null; };
         ctx.append(b);
     };
-    
+
     addBtn('Responder', () => citar(m));
-    
+
     if (m.uid !== uid) {
         addBtn('Reportar', () => reportar(m), 'danger');
     }
@@ -539,7 +547,7 @@ function mostrarCtx(x, y, m) {
         addBtn('Editar', () => editar(m));
         addBtn('Eliminar', () => borrar(m), 'danger');
     }
-    
+
     document.body.append(ctx);
     setTimeout(() => {
         document.addEventListener('click', () => { if (ctx) { ctx.remove(); ctx = null; } }, { once: true });
@@ -551,7 +559,7 @@ function burbuja(m) {
     const d = h('div', 'pcm-msg' + (mine ? ' mine' : '') + (adm ? ' adm' : ''));
     d.id = 'msg-' + m.id;
     d.append(avatar(m.uid, m.n));
-    
+
     const c = h('div', 'pcm-mc'), top = h('div', 'pcm-top');
     if (adm) top.append(h('span', 'pcm-adm', 'ADMIN'));
     const tm = h('time', 'pcm-tm', fecha(m));
@@ -564,7 +572,7 @@ function burbuja(m) {
 
     if (m.replyTo) {
         const rb = h('div', 'pcm-rep-box');
-        rb.innerHTML = `<b>${String(m.replyTo.n).replace(/</g,'&lt;')}</b>${String(m.replyTo.t).replace(/</g,'&lt;')}`;
+        rb.innerHTML = `<b>${String(m.replyTo.n).replace(/</g, '&lt;')}</b>${String(m.replyTo.t).replace(/</g, '&lt;')}`;
         rb.onclick = (e) => {
             e.stopPropagation();
             const orig = document.getElementById('msg-' + m.replyTo.id);
@@ -581,14 +589,14 @@ function burbuja(m) {
 
     if (m.t) c.append(h('div', 'pcm-tx', m.t));
     if (m.media) c.append(mediaEl(m));
-    
+
     // BOTÓN DE LIKE CSS
     const ac = h('div', 'pcm-ac');
     const lb = h('button', 'pcm-like'); lb.type = 'button'; lb.title = 'Me gusta';
     lb.innerHTML = '<span class="pcm-th"><i></i></span>'; lb.append(h('span', '', ''));
     ac.append(lb);
     pintarLike(lb, m);
-    c.append(ac); 
+    c.append(ac);
 
     // MENÚ CONTEXTUAL
     let pressTimer;
@@ -612,8 +620,8 @@ function pintarChat() {
     for (const [id, x] of els) if (!ids.has(id)) { x.el.remove(); els.delete(id); }
     arr.forEach(m => {
         const sig = (m.t || '') + '|' + (m.edited ? 'E' + (m.editedBy || '') : '') + '|'
-                  + (m.replyTo ? 'R' + m.replyTo.id : '') + '|'
-                  + (m.media ? m.media.k + (m.media.n || '') : '') + '|' + rel(m.uid);
+            + (m.replyTo ? 'R' + m.replyTo.id : '') + '|'
+            + (m.media ? m.media.k + (m.media.n || '') : '') + '|' + rel(m.uid) + '|' + JSON.stringify(m.likes || {});
         let x = els.get(m.id);
         if (!x || x.sig !== sig) {
             const el = burbuja(m);
@@ -709,21 +717,21 @@ async function enviar() {
         await syncPerfil();
         const col = modoDM ? 'private_messages' : 'community_messages';
         const ref = doc(collection(db, col));
-        
+
         let data = {};
         if (modoDM) {
             data = { from: uid, to: dmUid, n: miNombre(), chatId: [uid, dmUid].sort().join('_'), t, ts: serverTimestamp(), likes: {} };
         } else {
             data = { uid, n: miNombre(), t, ts: serverTimestamp(), likes: {} };
         }
-        
+
         if (replyTo) {
             data.replyTo = { id: replyTo.id, n: replyTo.n || '?', t: replyTo.t || '[Multimedia]' };
         }
 
         if (adj) data.media = await subirMedia(ref.id, adj);
         await setDoc(ref, data);
-        
+
         ta.value = ''; ta.style.height = 'auto'; limpiarAdj(); limpiarReply(); ultimo = Date.now();
     } catch (e) { aviso(errTxt(e), 'err'); }
     enviando = false; sendBtn.disabled = false; sendBtn.textContent = 'Enviar';
@@ -777,8 +785,8 @@ async function quitar(r, texto, titulo, okTxt) {
 }
 const bt = (t, f, c) => { const b = h('button', 'pcm-b' + (c ? ' ' + c : ''), t); b.type = 'button'; b.onclick = () => f(b); return b; };
 function fila(id, nombre, botones, isFriend) {
-    const f = h('div', 'pcm-per'), bs = h('div', 'bs'); 
-    if (isFriend) bs.append(bt('Mensaje', () => { abrirDM(id, nombre); }, 'no')); 
+    const f = h('div', 'pcm-per'), bs = h('div', 'bs');
+    if (isFriend) bs.append(bt('Mensaje', () => { abrirDM(id, nombre); }, 'no'));
     bs.append(...botones);
     f.append(avatar(id, nombre, 'sm'), h('div', 'n', nombre || '?'), bs); return f;
 }
