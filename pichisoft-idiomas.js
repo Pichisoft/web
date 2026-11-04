@@ -513,7 +513,7 @@
 
     function place() {
         if (!btn || btn.hidden) return;
-
+        if (btn.parentElement && btn.parentElement.id === 'pichisoft-topbar') return;
         // 1. ¿La app pidió una esquina específica?
         const forced = getAppPosition();
         if (forced) { applyCorner(forced); return; }
@@ -573,15 +573,18 @@
         btn = document.createElement('button'); btn.id = 'psi-btn'; btn.type = 'button';
         btn.setAttribute('aria-label', 'Traducir');
         btn.title = 'Traducir';
+        btn.textContent = 'Traducir'; // <--- AGREGÁ ESTO
         btn.onclick = openPanel;
         btn.style.position = 'fixed';
         btn.style.zIndex = '2147483647';
         btn.style.boxSizing = 'border-box';
         const bcs = getComputedStyle(document.body);
         const bodyBreaksFixed = bcs.transform !== 'none' || bcs.filter !== 'none' || bcs.perspective !== 'none';
-                const topbar = document.getElementById('pichisoft-topbar');
+        const topbar = document.getElementById('pichisoft-topbar');
         if (topbar) {
-            btn.style.position = 'static';
+            // Limpiamos estilos e ID para que no pelee con el CSS del panel
+            btn.removeAttribute('id');
+            btn.style.cssText = 'position:static !important; background:transparent !important; border:none !important; color:#b38b27 !important; font-family:"Times New Roman", Times, serif !important; font-size:0.9rem !important; font-weight:bold !important; letter-spacing:0.5px !important; cursor:pointer; padding:2px 8px !important; margin:0 !important; text-transform:uppercase; white-space:nowrap; height:auto !important; width:auto !important; box-shadow:none !important; order: 3 !important;';
             topbar.appendChild(btn);
         } else {
             (bodyBreaksFixed ? document.documentElement : document.body).appendChild(btn);
