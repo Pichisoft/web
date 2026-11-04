@@ -3,38 +3,51 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ==========================================
-    // ADMIN DE PICHISOFT
-    // Para agregar más admins, sumá su UID a esta lista
-    // (y también al array ADMINS de pichonusers.html)
-    // ==========================================
     function isAdmin() {
       return request.auth != null && request.auth.uid in ['XIY1FfjUDodaSBSGema6NgixKRs1', 'n0XOUeFku1SxKWbrPWsA0V86kfc2'];
     }
 
-    match /gifts/{giftId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+    // Cuenta no inhabilitada (para enviar mensajes, solicitudes y reportes)
+    function notDisabled() {
+      return !(exists(/databases/$(database)/documents/admin_flags/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admin_flags/$(request.auth.uid)).data.disabled == true);
     }
 
-    // Perfil de cada usuario (el admin puede leer todos, para PichonUsers)
+    // ==========================================
+    // PICHONBIRTHDAY · REGALOS
+    // ==========================================
+    match /gifts/{giftId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['json', 'uid', 't'])
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if request.auth != null
+        && resource.data.uid == request.auth.uid;
+    }
+
+    // ==========================================
+    // USUARIOS
+    // ==========================================
     match /users/{userId} {
       allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
       allow write: if request.auth != null && request.auth.uid == userId;
 
-      // Datos privados del usuario (PichonCode guarda acá: data/pichoncode)
       match /data/{docId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
 
-    // Cuentas inhabilitadas (solo el admin escribe; cada usuario puede leer la suya)
+    // ==========================================
+    // CUENTAS INHABILITADAS
+    // ==========================================
     match /admin_flags/{uid} {
       allow get: if request.auth != null && (request.auth.uid == uid || isAdmin());
       allow list, write: if isAdmin();
     }
 
-    // Mensajes privados del admin hacia los usuarios
+    // ==========================================
+    // MENSAJES PRIVADOS (de admin a usuario)
+    // ==========================================
     match /messages/{id} {
       allow create: if isAdmin();
       allow read: if request.auth != null && (isAdmin() || resource.data.to == request.auth.uid);
@@ -44,12 +57,140 @@ service cloud.firestore {
       allow delete: if isAdmin() || (request.auth != null && resource.data.to == request.auth.uid);
     }
 
+    // ==========================================
+    // MENSAJERÍA · PERFILES PÚBLICOS (solo usuario y foto)
+    // ==========================================
+    match /public_profiles/{pid} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == pid
+        && request.resource.data.keys().hasOnly(['username', 'lc', 'photo'])
+        && request.resource.data.username is string
+        && request.resource.data.username.size() >= 3
+        && request.resource.data.username.size() <= 20
+        && request.resource.data.lc == request.resource.data.username.lower()
+        && request.resource.data.photo is string
+        && request.resource.data.photo.size() <= 300000;
+      allow delete: if false;
+    }
+
+    // ==========================================
+    // MENSAJERÍA · CHAT GLOBAL
+    // - Crear: usuario logueado y no inhabilitado. Solo admins pueden adjuntar media.
+    // - Update: solo se puede tocar la PROPIA reacción (likes[uid]).
+    // - Borrar: admin (cualquiera) o el autor (el suyo).
+    // ==========================================
+    match /community_messages/{mid} {
+      allow read: if request.auth != null;
+
+      allow create: if request.auth != null && notDisabled()
+        && request.resource.data.keys().hasOnly(['uid', 'n', 't', 'ts', 'likes', 'media'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.n == get(/databases/$(database)/documents/public_profiles/$(request.auth.uid)).data.username
+        && request.resource.data.t is string
+        && request.resource.data.t.size() <= 500
+        && request.resource.data.ts == request.time
+        && request.resource.data.likes.size() == 0
+        && (!('media' in request.resource.data)
+            || (isAdmin() && request.resource.data.media.k in ['img', 'vid']))
+        && (request.resource.data.t.size() > 0 || 'media' in request.resource.data);
+
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
+        && request.resource.data.likes.diff(resource.data.likes).affectedKeys().hasOnly([request.auth.uid]);
+
+      allow delete: if request.auth != null && (isAdmin() || resource.data.uid == request.auth.uid);
+
+      // Pedazos de video (solo admins)
+      match /chunks/{cid} {
+        allow read: if request.auth != null;
+        allow create: if isAdmin()
+          && request.resource.data.keys().hasOnly(['d'])
+          && request.resource.data.d is string
+          && request.resource.data.d.size() <= 700000;
+        allow delete: if isAdmin();
+      }
+    }
+
+    // ==========================================
+    // MENSAJERÍA · SOLICITUDES DE AMISTAD
+    // id = remitente_destinatario
+    // ==========================================
+    match /friend_requests/{rid} {
+      allow read: if request.auth != null
+        && (isAdmin() || resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+
+      allow create: if request.auth != null && notDisabled()
+        && rid == request.auth.uid + '_' + request.resource.data.to
+        && request.resource.data.keys().hasOnly(['from', 'to', 'fn', 'tn', 'status', 'at'])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to is string
+        && request.resource.data.to != request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.fn == get(/databases/$(database)/documents/public_profiles/$(request.auth.uid)).data.username
+        && request.resource.data.tn is string
+        && request.resource.data.tn.size() <= 20
+        && request.resource.data.at == request.time;
+
+      // Solo el destinatario acepta/rechaza
+      allow update: if request.auth != null
+        && resource.data.to == request.auth.uid
+        && resource.data.status == 'pending'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['accepted', 'declined'];
+
+      allow delete: if request.auth != null && (
+        (resource.data.from == request.auth.uid && resource.data.status in ['pending', 'declined'])
+        || (request.auth.uid in [resource.data.from, resource.data.to] && resource.data.status == 'accepted'));
+    }
+
+    // ==========================================
+    // MENSAJERÍA · REPORTES (solo los admins los pueden leer)
+    // id = reportante_mensaje (evita reportes duplicados)
+    // ==========================================
+    match /reports/{rid} {
+      allow read, update, delete: if isAdmin();
+
+      allow create: if request.auth != null && notDisabled()
+        && rid == request.auth.uid + '_' + request.resource.data.mid
+        && request.resource.data.keys().hasOnly(['by', 'tu', 'tn', 'mid', 'mt', 'mk', 'r', 'd', 'ts'])
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.tu is string
+        && request.resource.data.tu != request.auth.uid
+        && request.resource.data.tn is string && request.resource.data.tn.size() <= 20
+        && request.resource.data.mid is string
+        && request.resource.data.mt is string && request.resource.data.mt.size() <= 300
+        && request.resource.data.mk is string && request.resource.data.mk.size() <= 3
+        && request.resource.data.r in ['ofensivo', 'perfil', 'hacks', 'spam', 'sucio']
+        && request.resource.data.d is string && request.resource.data.d.size() <= 500
+        && request.resource.data.ts == request.time;
+    }
+
+    // ==========================================
+    // RECETAS (PICHONFOOD)
+    // ==========================================
     match /recipes/{recipeId} {
       allow read: if true;
 
-      allow create: if request.auth != null && request.resource.data.authorId == request.auth.uid && !('prize' in request.resource.data);
+      allow create: if request.auth != null
+        && request.resource.data.authorId == request.auth.uid
+        && !('prize' in request.resource.data);
 
-      allow update: if (request.auth != null && request.auth.uid in ['XIY1FfjUDodaSBSGema6NgixKRs1'] && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prize','prizeAt'])) || (request.auth != null && resource.data.authorId == request.auth.uid && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['prize','prizeAt','authorId'])) || (request.auth != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes','ratings','comments']));
+      allow update: if
+        (isAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prize', 'prizeAt']))
+
+        || (request.auth != null
+          && resource.data.authorId == request.auth.uid
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['prize', 'prizeAt', 'authorId', 'createdAt']))
+
+        || (request.auth != null
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'ratings', 'comments'])
+          && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['likes'])
+              || request.resource.data.likes.diff(resource.data.likes).affectedKeys().hasOnly([request.auth.uid]))
+          && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['ratings'])
+              || request.resource.data.ratings.diff(resource.data.ratings).affectedKeys().hasOnly([request.auth.uid]))
+          && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['comments'])
+              || request.resource.data.comments.size() <= resource.data.comments.size() + 1));
 
       allow delete: if request.auth != null && resource.data.authorId == request.auth.uid;
     }
@@ -57,7 +198,6 @@ service cloud.firestore {
     // ==========================================
     // PICHONCHESS
     // ==========================================
-
     match /pichonchess_users/{uid} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.auth.uid == uid
@@ -92,7 +232,6 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/pichonchess_users/$(request.auth.uid)).data.username.lower() == name;
     }
 
-    // Estilos guardados de cada jugador (sincronizados entre dispositivos)
     match /pichonchess_styles/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow create, update: if request.auth != null && request.auth.uid == uid
@@ -103,39 +242,28 @@ service cloud.firestore {
       allow delete: if request.auth != null && request.auth.uid == uid;
     }
 
-    // PARTIDAS (también se pueden espectar las públicas)
     match /pichonchess_games/{gameId} {
-
       function gdata() {
         return get(/databases/$(database)/documents/pichonchess_games/$(gameId)).data;
       }
-
       allow get: if request.auth != null;
       allow list: if request.auth != null && (resource.data.priv == false || resource.data.get('inv', null) == request.auth.uid);
-
       allow create: if request.auth != null
         && request.resource.data.w == request.auth.uid
         && request.resource.data.b == null
         && request.resource.data.status == 'waiting'
         && request.resource.data.moves.size() == 0;
-
       allow update: if request.auth != null
         && (request.auth.uid in [resource.data.w, resource.data.b]
             || (resource.data.status == 'waiting' && request.resource.data.b == request.auth.uid));
-
       allow delete: if request.auth != null
         && resource.data.w == request.auth.uid
         && resource.data.status == 'waiting';
 
-      // CHAT de la partida
       match /chat/{mid} {
-        // Lo leen los jugadores y, si la partida es pública, cualquiera con sesión
         allow read: if request.auth != null
           && (gdata().get('priv', false) == false
               || request.auth.uid in [gdata().get('w', ''), gdata().get('b', '')]);
-
-        // Se puede escribir como jugador (w/b) o como espectador (s) en partidas públicas.
-        // Los mensajes no se pueden editar ni borrar.
         allow create: if request.auth != null
           && request.resource.data.keys().hasOnly(['u', 'n', 'r', 't', 'ts'])
           && request.resource.data.u == request.auth.uid
@@ -148,14 +276,12 @@ service cloud.firestore {
           && ((request.resource.data.r == 'w' && gdata().get('w', '') == request.auth.uid)
               || (request.resource.data.r == 'b' && gdata().get('b', '') == request.auth.uid)
               || (request.resource.data.r == 's' && gdata().get('priv', false) == false));
-
         allow update, delete: if false;
       }
     }
 
     match /pichonchess_tournaments/{tid} {
       allow read: if request.auth != null;
-
       allow create: if request.auth != null
         && request.resource.data.keys().hasOnly(['name', 'owner', 'type', 'tc', 'players', 'pn', 'status', 'rounds', 'rd', 'pairs', 'startAt', 'endAt'])
         && request.resource.data.owner == request.auth.uid
@@ -177,8 +303,6 @@ service cloud.firestore {
               && request.resource.data.get('pairs', [1]).size() == 0));
 
       allow update: if request.auth != null && (
-
-        // Unirse
         ((resource.data.status == 'open' || (resource.data.get('type', '') == 'arena' && request.time.toMillis() < resource.data.get('endAt', 0)))
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['players', 'pn'])
           && request.resource.data.players.size() == resource.data.players.size() + 1
@@ -186,8 +310,6 @@ service cloud.firestore {
           && request.resource.data.pn.size() == request.resource.data.players.size()
           && request.resource.data.players[0:resource.data.players.size()] == resource.data.players
           && request.resource.data.players[resource.data.players.size()] == request.auth.uid)
-
-        // Suizo: el creador arma la ronda siguiente
         || (resource.data.owner == request.auth.uid
           && resource.data.get('type', '') == 'swiss'
           && resource.data.status in ['open', 'run']
@@ -197,13 +319,111 @@ service cloud.firestore {
           && request.resource.data.rd <= resource.data.rounds
           && request.resource.data.pairs.size() > resource.data.pairs.size()
           && request.resource.data.pairs[0:resource.data.pairs.size()] == resource.data.pairs)
-
-        // Suizo: el creador lo finaliza
         || (resource.data.owner == request.auth.uid
           && resource.data.status == 'run'
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
           && request.resource.data.status == 'done')
       );
+    }
+
+    // ==========================================
+    // PICHONWORMS
+    // ==========================================
+    match /worms_games/{gid} {
+      allow read: if request.auth != null;
+
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['host', 'players', 'names', 'status', 'seed', 't'])
+        && request.resource.data.host == request.auth.uid
+        && request.resource.data.players == [request.auth.uid]
+        && request.resource.data.names.size() == 1
+        && request.resource.data.names[0] is string
+        && request.resource.data.names[0].size() <= 16
+        && request.resource.data.status == 'waiting'
+        && request.resource.data.seed is number;
+
+      allow update: if request.auth != null && (
+        (resource.data.status == 'waiting'
+          && !(request.auth.uid in resource.data.players)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['players', 'names'])
+          && request.resource.data.players.size() == resource.data.players.size() + 1
+          && request.resource.data.players.size() <= 4
+          && request.resource.data.names.size() == request.resource.data.players.size()
+          && request.resource.data.players[0:resource.data.players.size()] == resource.data.players
+          && request.resource.data.players[resource.data.players.size()] == request.auth.uid)
+
+        || (resource.data.status == 'waiting'
+          && resource.data.host == request.auth.uid
+          && resource.data.players.size() >= 2
+          && request.resource.data.status == 'play'
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['status', 'worms', 'craters', 'turn', 'cur', 'aw', 'wind', 'shot']))
+
+        || (resource.data.status == 'play'
+          && resource.data.players[resource.data.cur] == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['worms', 'craters', 'turn', 'cur', 'aw', 'wind', 'shot', 'status', 'winner']))
+      );
+
+      allow delete: if request.auth != null && resource.data.host == request.auth.uid;
+    }
+
+    // ==========================================
+    // PICHONPUSH (sin login)
+    // ==========================================
+    match /ball_games/{gid} {
+      allow read: if true;
+
+      allow create: if request.resource.data.keys().hasOnly(['host', 'guest', 'hn', 'gn', 'status', 'a', 'b', 'base', 'sh', 'sg', 'winner', 't'])
+        && request.resource.data.host is string
+        && request.resource.data.guest == null
+        && request.resource.data.status == 'waiting'
+        && request.resource.data.hn is string
+        && request.resource.data.hn.size() <= 16
+        && request.resource.data.a == 0 && request.resource.data.b == 0
+        && request.resource.data.base == 0
+        && request.resource.data.sh == 0 && request.resource.data.sg == 0
+        && request.resource.data.winner == null;
+
+      allow update:
+        if (resource.data.status == 'waiting'
+          && resource.data.guest == null
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['guest', 'gn', 'status'])
+          && request.resource.data.guest is string
+          && request.resource.data.guest != resource.data.host
+          && request.resource.data.gn is string
+          && request.resource.data.gn.size() <= 16
+          && request.resource.data.status == 'play')
+
+        || (resource.data.status == 'play'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['a'])
+          && request.resource.data.a - resource.data.a >= 1
+          && request.resource.data.a - resource.data.a <= 10)
+
+        || (resource.data.status == 'play'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['b'])
+          && request.resource.data.b - resource.data.b >= 1
+          && request.resource.data.b - resource.data.b <= 10)
+
+        || (resource.data.status == 'play'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sh', 'base', 'status', 'winner'])
+          && resource.data.a - resource.data.b - resource.data.base >= 20
+          && request.resource.data.sh == resource.data.sh + 1
+          && request.resource.data.base == resource.data.a - resource.data.b
+          && ((request.resource.data.sh < 5 && request.resource.data.status == 'play')
+              || (request.resource.data.sh == 5 && request.resource.data.status == 'done'
+                  && request.resource.data.winner == resource.data.host)))
+
+        || (resource.data.status == 'play'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sg', 'base', 'status', 'winner'])
+          && resource.data.a - resource.data.b - resource.data.base <= -20
+          && request.resource.data.sg == resource.data.sg + 1
+          && request.resource.data.base == resource.data.a - resource.data.b
+          && ((request.resource.data.sg < 5 && request.resource.data.status == 'play')
+              || (request.resource.data.sg == 5 && request.resource.data.status == 'done'
+                  && request.resource.data.winner == resource.data.guest)));
+
+      allow delete: if resource.data.status in ['waiting', 'done'];
     }
 
   }
