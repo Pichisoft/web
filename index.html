@@ -801,67 +801,102 @@
         }
 
         /* --- PANEL SUPERIOR PREMIUM --- */
+               /* --- PANEL SUPERIOR PREMIUM MINIMALISTA --- */
         #pichisoft-topbar {
-            position: absolute;
-            top: 20px;
+            position: fixed;
+            top: 14px;
+            right: 200px; /* Justo a la izquierda del perfil */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(20, 20, 20, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 6px 12px;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            z-index: 9999;
+            user-select: none;
+            /* Animación de entrada al cargar la página */
+            animation: topbarIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        @keyframes topbarIn {
+            from { opacity: 0; transform: translateY(-15px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+               /* --- PANEL SUPERIOR PREMIUM MINIMALISTA --- */
+        #pichisoft-topbar {
+            position: fixed;
+            top: 10px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            justify-content: center;
             align-items: center;
-            gap: 30px;
-            width: max-content;
-            max-width: calc(100% - 40px);
-            padding: 15px 35px;
-            background: linear-gradient(180deg, #161616, #0a0a0a);
-            border: 1px solid rgba(212, 175, 55, 0.35);
-            border-radius: 16px;
-            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.6), 0 10px 30px rgba(0, 0, 0, 0.4);
-            z-index: 99999;
+            gap: 15px;
+            background: rgba(20, 20, 20, 0.9);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 6px 16px;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            z-index: 9999;
             user-select: none;
+            animation: topbarIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        /* Forzar a que los botones inyectados se vean como el pie de página */
-        #pichisoft-topbar>* {
+        /* Ocultar el panel cuando haya un modal abierto */
+        body:has(.psi-ov) #pichisoft-topbar,
+        body:has(.pcm-ov) #pichisoft-topbar,
+        body:has(.pm-ov) #pichisoft-topbar,
+        body:has(.pcm-dov) #pichisoft-topbar,
+        body:has(.ov) #pichisoft-topbar {
+            display: none !important;
+        }
+
+        @keyframes topbarIn {
+            from { opacity: 0; transform: translate(-50%, -15px) scale(0.95); }
+            to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+        }
+
+        /* Forzamos a los 3 botones a comportarse como texto */
+        #pichisoft-topbar > * {
             position: static !important;
             background: transparent !important;
             border: none !important;
             color: #b38b27 !important;
             font-family: "Times New Roman", Times, serif !important;
-            font-size: 1.15rem !important;
+            font-size: 0.85rem !important; /* Letra más chica */
             font-weight: bold !important;
             letter-spacing: 0.5px !important;
             cursor: pointer;
-            transition: all 0.3s ease;
+            padding: 2px 6px !important;
+            margin: 0 !important;
+            border-radius: 4px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            transition: all 0.2s ease !important;
             text-transform: uppercase;
             white-space: nowrap;
-            text-align: center;
-            box-shadow: none !important;
-            padding: 5px 0 !important;
-            margin: 0 !important;
-            width: auto !important;
             height: auto !important;
-            display: inline-flex !important;
-            align-items: center;
-            gap: 8px;
+            width: auto !important;
             transform: none !important;
+            box-shadow: none !important;
         }
 
-        #pichisoft-topbar>*:hover {
-            background-color: transparent !important;
+        #pichisoft-topbar > *:hover {
+            background: rgba(212, 175, 55, 0.15) !important;
             color: #ffffff !important;
-            text-shadow: 0 0 12px rgba(241, 217, 138, 0.8);
+            text-shadow: 0 0 6px rgba(241, 217, 138, 0.8);
+            transform: translateY(-1px) !important;
         }
 
-        /* Ajustamos los íconos SVG para que queden del mismo tamaño */
-        #pichisoft-topbar svg {
-            width: 20px !important;
-            height: 20px !important;
-            margin: 0 !important;
-        }
-
-        /* Ocultamos los puntitos de notificación rojos para que quede limpio */
-        #pichisoft-topbar .pcm-dot {
+        /* Ocultamos los íconos */
+        #pichisoft-topbar svg,
+        #pichisoft-topbar .pcm-ic {
             display: none !important;
         }
     </style>
@@ -2438,35 +2473,39 @@
             });
         })();
     </script>
-        <script>
+          <script>
         (function() {
             const topbar = document.getElementById('pichisoft-topbar');
             if (!topbar) return;
 
             function moverBotones() {
-                // 1. Botón Traducir
+                // 1. Traducir (Forzamos su entrada)
                 const btnTraducir = document.getElementById('psi-btn');
-                if (btnTraducir && btnTraducir.parentNode !== topbar) {
-                    topbar.appendChild(btnTraducir);
+                if (btnTraducir) {
+                    btnTraducir.innerHTML = 'Traducir';
+                    btnTraducir.style.cssText = 'position: static !important; background: transparent !important; border: none !important; padding: 2px 6px !important; margin: 0 !important; color: #b38b27 !important; font-family: "Times New Roman", Times, serif !important; font-size: 0.85rem !important; font-weight: bold !important; text-transform: uppercase;';
+                    if (btnTraducir.parentNode !== topbar) topbar.appendChild(btnTraducir);
                 }
                 
-                // 2. Botón Mensajería
+                // 2. Mensajería
                 const btnMensajeria = document.querySelector('.pcm-fab');
                 if (btnMensajeria && btnMensajeria.parentNode !== topbar) {
+                    btnMensajeria.innerHTML = 'Mensajería';
                     topbar.appendChild(btnMensajeria);
                 }
                 
-                // 3. Botón Configuración (Engranaje)
+                // 3. Configuración
                 const btnConfig = document.getElementById('pGear');
                 if (btnConfig && btnConfig.parentNode !== topbar) {
+                    btnConfig.innerHTML = 'Configuración';
                     topbar.appendChild(btnConfig);
                 }
             }
 
-            // Intentar moverlos cada 500ms (por si cargan asincrónicamente)
-            setInterval(moverBotones, 500);
+            // Ejecutamos cada 300ms por si los scripts tardan en cargar
+            setInterval(moverBotones, 300);
             
-            // También usar un observador por si acaso
+            // Y también forzamos cuando el DOM cambie
             new MutationObserver(moverBotones).observe(document.body, { childList: true, subtree: true });
         })();
     </script>
