@@ -2386,43 +2386,7 @@
             });
         })();
     </script>
-          <script>
-        (function() {
-            const topbar = document.getElementById('pichisoft-topbar');
-            if (!topbar) return;
-
-            function moverBotones() {
-                // 1. Traducir (Forzamos su entrada)
-                const btnTraducir = document.getElementById('psi-btn');
-                if (btnTraducir) {
-                    btnTraducir.innerHTML = 'Traducir';
-                    btnTraducir.style.cssText = 'position: static !important; background: transparent !important; border: none !important; padding: 2px 6px !important; margin: 0 !important; color: #b38b27 !important; font-family: "Times New Roman", Times, serif !important; font-size: 0.85rem !important; font-weight: bold !important; text-transform: uppercase;';
-                    if (btnTraducir.parentNode !== topbar) topbar.appendChild(btnTraducir);
-                }
-                
-                // 2. Mensajería
-                const btnMensajeria = document.querySelector('.pcm-fab');
-                if (btnMensajeria && btnMensajeria.parentNode !== topbar) {
-                    btnMensajeria.innerHTML = 'Mensajería';
-                    topbar.appendChild(btnMensajeria);
-                }
-                
-                // 3. Configuración
-                const btnConfig = document.getElementById('pGear');
-                if (btnConfig && btnConfig.parentNode !== topbar) {
-                    btnConfig.innerHTML = 'Configuración';
-                    topbar.appendChild(btnConfig);
-                }
-            }
-
-            // Ejecutamos cada 300ms por si los scripts tardan en cargar
-            setInterval(moverBotones, 300);
-            
-            // Y también forzamos cuando el DOM cambie
-            new MutationObserver(moverBotones).observe(document.body, { childList: true, subtree: true });
-        })();
-    </script>
-
+        
 </body>
 
 </html>
