@@ -156,6 +156,59 @@ const CSS = `
  .pcm-hd h2{font-size:1.35rem}.pcm-mc{max-width:calc(100% - 46px)}
 }
 @media (prefers-reduced-motion:reduce){.pcm-ov,.pcm-dov,.pcm-t,.pcm-dot,.pcm-fab,.pcm-x{animation:none!important;transition:none!important}}
+/* ===== RESPONSIVE MENSAJERÍA ===== */
+.pcm-msg{-webkit-touch-callout:none}
+.pcm-hd h2{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcm-x{flex:none;margin-left:10px}
+.pcm-list,.pcm-am{overscroll-behavior:contain}
+.pcm-srch .pcm-in{min-width:0}
+.pcm-comp{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+.pcm-tabs{overflow-x:auto;scrollbar-width:none}
+.pcm-tabs button{white-space:nowrap}
+.pcm-ctx button{min-height:40px}
+
+@supports (height:100dvh){
+ .pcm-card{height:min(88dvh,780px)}
+}
+
+@media (hover:none) and (pointer:coarse){
+ .pcm-ac button{padding:8px 14px}
+ .pcm-ctx button{padding:13px 16px;font-size:.95rem}
+ .pcm-b{padding:11px 14px}
+ .pcm-clip{width:44px;height:44px}
+}
+
+@media (max-width:600px){
+ .pcm-ov{padding:0}
+ .pcm-card{height:100%;border-radius:0;border-width:0}
+ .pcm-hd{padding:calc(12px + env(safe-area-inset-top,0px)) 14px 12px}
+ .pcm-list,.pcm-am{padding:12px 10px}
+ .pcm-comp{padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px))}
+ .pcm-in,.pcm-row textarea{font-size:16px}  /* evita zoom en iOS */
+ .pcm-send{padding:10px 14px}
+ .pcm-mc{max-width:calc(100% - 46px);padding:8px 10px}
+ .pcm-av{width:34px;height:34px}
+ .pcm-img{max-height:240px}
+ .pcm-video{max-height:260px}
+ .pcm-tabs button{flex:1;padding:12px 8px}
+
+ /* Lista de amigos: botones debajo del nombre */
+ .pcm-per{flex-wrap:wrap}
+ .pcm-per .n{flex:1 1 calc(100% - 50px)}
+ .pcm-per .bs{flex:1 1 100%;justify-content:flex-start}
+
+ .pcm-dov{padding:10px;align-items:flex-end}
+ .pcm-dlg{padding:20px 16px calc(14px + env(safe-area-inset-bottom,0px));border-radius:14px 14px 0 0}
+ .pcm-dlg textarea,.pcm-dlg .pcm-in{font-size:16px}
+ .pcm-viz{align-items:center}
+ .pcm-ts{top:calc(10px + env(safe-area-inset-top,0px))}
+}
+
+@media (max-height:480px) and (orientation:landscape){
+ .pcm-hd{padding:6px 14px}
+ .pcm-hd h2{font-size:1.15rem}
+ .pcm-tabs button{padding:6px 12px}
+}
 `;
 
 /* ------------------------------ UTILIDADES ------------------------------ */
@@ -204,6 +257,7 @@ let lista, vacio, paneChat, paneAm, listaAm, resBusq, ta, sendBtn, prevBox, adj 
 let replyTo = null, replyBar = null, replyName = null, replyTxt = null;
 let modoDM = false, dmUid = null, dmName = '';
 let ctx = null;
+let vvFn = null;
 const els = new Map(), perfiles = {};
 let firma = '';
 const esAdm = () => ADMINS.includes(uid);
@@ -336,6 +390,19 @@ function abrir() {
     document.body.append(panel);
     document.documentElement.style.overflow = 'hidden';
     document.addEventListener('keydown', onEsc);
+    const vv = window.visualViewport;
+    if (vv) {
+        vvFn = () => {
+            if (!panel) return;
+            panel.style.bottom = 'auto';
+            panel.style.height = vv.height + 'px';
+            panel.style.top = vv.offsetTop + 'px';
+            if (tab === 'chat' && lista && document.activeElement === ta) lista.scrollTop = lista.scrollHeight;
+        };
+        vv.addEventListener('resize', vvFn);
+        vv.addEventListener('scroll', vvFn);
+        vvFn();
+    }
 
     lista = panel.querySelector('.pcm-list'); vacio = lista.firstChild;
     paneChat = panel.querySelector('#pcmChat'); paneAm = panel.querySelector('#pcmAm');
@@ -353,7 +420,7 @@ function abrir() {
     panel.querySelector('.pcm-x').onclick = cerrarPanel;
     panel.querySelectorAll('.pcm-tabs button').forEach(b => b.onclick = () => setTab(b.dataset.t));
     panel.querySelector('#pcmDmBack').onclick = () => setTab('amigos');
-
+    ta.addEventListener('focus', () => setTimeout(() => { lista.scrollTop = lista.scrollHeight; }, 300));
     ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 110) + 'px'; });
 
     ta.addEventListener('keydown', e => {
@@ -408,6 +475,11 @@ function abrir() {
 }
 function cerrarPanel() {
     if (!panel) return;
+    if (window.visualViewport && vvFn) {
+        window.visualViewport.removeEventListener('resize', vvFn);
+        window.visualViewport.removeEventListener('scroll', vvFn);
+        vvFn = null;
+    }
     pararDM();
     panel.remove(); panel = null; els.clear(); adj = null;
     document.documentElement.style.overflow = ''; document.removeEventListener('keydown', onEsc);
@@ -532,7 +604,7 @@ function verImg(src) {
 function mostrarCtx(x, y, m) {
     if (ctx) ctx.remove();
     ctx = h('div', 'pcm-ctx');
-    ctx.style.cssText = `top:${Math.min(y, innerHeight - 200)}px;left:${Math.min(x, innerWidth - 160)}px;`;
+    ctx.style.cssText = `top:${Math.max(8, Math.min(y, innerHeight - 220))}px;left:${Math.max(8, Math.min(x, innerWidth - 170))}px;`;
 
     const addBtn = (txt, fn, color) => {
         const b = h('button', color || '', txt);
@@ -551,8 +623,14 @@ function mostrarCtx(x, y, m) {
     }
 
     document.body.append(ctx);
+    document.body.append(ctx);
     setTimeout(() => {
-        document.addEventListener('click', () => { if (ctx) { ctx.remove(); ctx = null; } }, { once: true });
+        const cerrarCtx = e => {
+            if (ctx && ctx.contains(e.target)) return;
+            if (ctx) { ctx.remove(); ctx = null; }
+            document.removeEventListener('pointerdown', cerrarCtx, true);
+        };
+        document.addEventListener('pointerdown', cerrarCtx, true);
     }, 10);
 }
 
