@@ -414,7 +414,7 @@ body.prem .p-gear{display:flex}
             cargarRating(a.n, promBox);
 
             // Estrellas clickeables
-            const stars = crearEstrellas(a.n);
+            const stars = crearEstrellas(a.n, a.n);
             ratingBox.appendChild(stars);
 
             d.appendChild(ratingBox);
@@ -724,53 +724,168 @@ body.prem .p-gear{display:flex}
         o.querySelector('#cfgReset').onclick = confirmarReset;
     }
     // --- SISTEMA DE RATINGS ---
-    async function cargarRating(appId, container) {
+    // --- SISTEMA DE RATINGS ---
+    async function cargarRating(appId, container, retries = 10) {
+        const fb = window.PichisoftFirebase;
+        if (!fb || !fb.getDocs) {
+            if (retries > 0) setTimeout(() => cargarRating(appId, container, retries - 1), 300);
+            return;
+        }
         try {
-            const snap = await getDocs(query(collection(db, 'app_ratings'), where('appId', '==', appId)));
+            const q = fb.query(fb.collection(fb.db, 'app_ratings'), fb.where('appId', '==', appId));
+            const snap = await fb.getDocs(q);
             let total = 0, count = 0;
-            snap.forEach(d => { total += d.data().score; count++; });
+            snap.forEach(d => { total += (d.data().score || 0); count++; });
             const prom = count ? (total / count).toFixed(1) : '0.0';
-
-            // Crear las estrellas visuales
             container.innerHTML = `<span style="color:#d4af37;">★</span> ${prom}`;
-            container.title = `${count} votos`;
-        } catch (e) { console.error(e); }
+            container.title = count + ' votos';
+        } catch (e) { console.error('cargarRating:', e); }
     }
 
-    function crearEstrellas(appId, container) {
+    function crearEstrellas(appId, appName) {
         const cont = document.createElement('div');
         cont.style.cssText = 'display:flex;justify-content:center;gap:2px;margin-top:5px;cursor:pointer;font-size:16px;';
+
+        let userRating = 0;
+        const paint = n => {
+            [...cont.children].forEach((s, i) => {
+                s.style.color = (i + 1) <= n ? '#d4af37' : '#555';
+            });
+        };
+
+        // Cargar la calificación previa del usuario (si tiene cuenta)
+        (async () => {
+            const fb = window.PichisoftFirebase;
+            if (!fb || !fb.auth || !fb.auth.currentUser) return;
+            try {
+                const snap = await fb.getDoc(fb.doc(fb.db, 'app_ratings', appId + '_' + fb.auth.currentUser.uid));
+                if (snap.exists()) {
+                    userRating = snap.data().score || 0;
+                    paint(userRating);
+                }
+            } catch { }
+        })();
 
         for (let i = 1; i <= 5; i++) {
             const star = document.createElement('span');
             star.textContent = '★';
             star.style.color = '#555';
             star.style.transition = 'color 0.2s';
-            star.onmouseenter = () => { for (let j = 0; j < i; j++) cont.children[j].style.color = '#d4af37'; };
-            star.onmouseleave = () => { for (let j = 0; j < 5; j++) cont.children[j].style.color = '#555'; };
-            star.onclick = async (e) => {
+            star.onmouseenter = () => paint(i);
+            star.onmouseleave = () => paint(userRating);
+            star.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (!Pichisoft.user) return alert('Iniciá sesión para votar.');
-
-                try {
-                    const fb = window.PichisoftFirebase;
-                    await fb.setDoc(fb.doc(fb.db, 'app_ratings', appId + '_' + fb.auth.currentUser.uid), {
-                        appId: appId,
-                        uid: fb.auth.currentUser.uid,
-                        score: i,
-                        ts: new Date()
-                    });
-                    cont.innerHTML = '<span style="color:#20a84b;font-size:12px;">¡Gracias!</span>';
-                    setTimeout(() => {
-                        cont.innerHTML = '';
-                        cont.appendChild(crearEstrellas(appId, cont));
-                    }, 2000);
-                } catch (e) { console.error(e); alert('Error al votar.'); }
+                if (!window.Pichisoft || !Pichisoft.user) {
+                    alert('Iniciá sesión para calificar.');
+                    return;
+                }
+                abrirModalCalificar(appId, appName, () => {
+                    userRating = i;
+                    paint(userRating);
+                });
             };
             cont.appendChild(star);
         }
         return cont;
+    }
+
+    // --- MODAL DE CALIFICACIÓN ---
+    async function abrirModalCalificar(appId, appName, onSaved) {
+        if (document.getElementById('ratingOv')) return;
+
+        const fb = window.PichisoftFirebase;
+        if (!fb || !fb.auth || !fb.auth.currentUser) {
+            alert('Iniciá sesión para calificar.');
+            return;
+        }
+
+        // Cargar datos previos del usuario
+        let curStars = 0;
+        let curText = '';
+        const docId = appId + '_' + fb.auth.currentUser.uid;
+        try {
+            const rs = await fb.getDoc(fb.doc(fb.db, 'app_ratings', docId));
+            if (rs.exists()) curStars = rs.data().score || 0;
+            const rv = await fb.getDoc(fb.doc(fb.db, 'app_reviews', docId));
+            if (rv.exists()) curText = rv.data().text || '';
+        } catch (e) { console.error(e); }
+
+        const o = document.createElement('div');
+        o.id = 'ratingOv';
+        o.className = 'ov sem';
+        o.innerHTML = `<div class="box" style="background:linear-gradient(180deg,#181818,#0b0b0b);border:2px solid #d4af37;border-radius:16px;padding:26px 24px 22px;max-width:480px;">
+        <h2 style="margin:0 0 6px;font:bold 1.5rem 'Times New Roman',serif;color:#fff;">Calificar ${appName}</h2>
+        <p style="margin:0 0 16px;font-size:.8rem;color:#bdbdbd;">Tu opinión nos ayuda a mejorar.</p>
+
+        <div id="rStars" style="display:flex;justify-content:center;gap:6px;font-size:32px;margin-bottom:16px;"></div>
+
+        <label style="display:block;margin-bottom:6px;font-size:.85rem;">Cuéntanos más sobre tu opinión de ${appName}:</label>
+        <textarea id="rText" maxlength="800" style="width:100%;box-sizing:border-box;min-height:110px;background:#1c1c1c;border:1px solid #444;color:#fff;border-radius:8px;padding:10px;font:inherit;font-size:.85rem;resize:vertical;outline:0;"></textarea>
+
+        <div id="rErr" style="color:#ff7b7b;font-size:.8rem;min-height:1.2em;margin-top:10px;"></div>
+
+        <button id="rSend" style="display:block;width:100%;margin-top:8px;padding:12px;border-radius:10px;border:1px solid #f1d98a;background:linear-gradient(135deg,#2b2107,#100c02);color:#fff;font:bold 1rem Georgia,serif;cursor:pointer;">Enviar</button>
+        <button id="rCancel" style="display:block;width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px solid #333;background:none;color:#aaa;font:inherit;font-size:.85rem;cursor:pointer;">Cancelar</button>
+    </div>`;
+        document.body.appendChild(o);
+
+        const starsEl = o.querySelector('#rStars');
+        const textEl = o.querySelector('#rText');
+        const errEl = o.querySelector('#rErr');
+        textEl.value = curText;
+
+        for (let i = 1; i <= 5; i++) {
+            const s = document.createElement('span');
+            s.dataset.i = i;
+            s.textContent = '★';
+            s.style.cssText = `cursor:pointer;transition:color .15s;color:${i <= curStars ? '#d4af37' : '#555'};`;
+            s.onmouseenter = () => { [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= i ? '#d4af37' : '#555'); };
+            s.onmouseleave = () => { [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= curStars ? '#d4af37' : '#555'); };
+            s.onclick = () => {
+                curStars = i;
+                [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= curStars ? '#d4af37' : '#555');
+            };
+            starsEl.appendChild(s);
+        }
+
+        const cerrar = () => o.remove();
+        o.querySelector('#rCancel').onclick = cerrar;
+        o.onclick = e => { if (e.target === o) cerrar(); };
+
+        o.querySelector('#rSend').onclick = async (e) => {
+            if (curStars < 1) { errEl.textContent = 'Elegí al menos 1 estrella.'; return; }
+            e.target.disabled = true;
+            errEl.textContent = '';
+            try {
+                const uid = fb.auth.currentUser.uid;
+                const username = (window.Pichisoft.user && Pichisoft.user.name) || 'Anónimo';
+
+                // Guardar calificación (promedio)
+                await fb.setDoc(fb.doc(fb.db, 'app_ratings', docId), {
+                    appId, uid, score: curStars, ts: new Date()
+                });
+
+                // Guardar opinión completa
+                await fb.setDoc(fb.doc(fb.db, 'app_reviews', docId), {
+                    appId,
+                    appName,
+                    uid,
+                    username,
+                    stars: curStars,
+                    text: textEl.value.trim(),
+                    ts: new Date()
+                });
+
+                cerrar();
+                if (onSaved) onSaved();
+                alert('¡Gracias por tu opinión!');
+            } catch (err) {
+                console.error(err);
+                errEl.textContent = 'Error al enviar. Intentá de nuevo.';
+                e.target.disabled = false;
+            }
+        };
     }
     /* ------------------------ ACTIVAR / DESACTIVAR ------------------------ */
     function renderPremium() {
