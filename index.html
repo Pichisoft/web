@@ -2,6 +2,26 @@
 <html lang="es">
 
 <head>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#d4af37">
+    <!-- SEO Básico -->
+    <meta name="description"
+        content="PichonApps: El ecosistema oficial de Pichisoft. Descubrí decenas de aplicaciones y juegos gratis en un solo lugar.">
+    <meta name="keywords" content="pichisoft, pichonapps, juegos, herramientas, pichonpush, pichonchess">
+    <meta name="author" content="Pichisoft">
+
+    <!-- Open Graph (Para WhatsApp, Discord, Twitter, Facebook) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://pichisoft.cc/">
+    <meta property="og:title" content="PichonApps - By Pichisoft">
+    <meta property="og:description" content="El ecosistema de apps y juegos de Pichisoft.">
+    <meta property="og:image" content="https://pichisoft.cc/preview.jpg">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PichonApps - By Pichisoft">
+    <meta name="twitter:description" content="El ecosistema de apps y juegos de Pichisoft.">
+    <meta name="twitter:image" content="https://pichisoft.cc/preview.jpg">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta http-equiv="Content-Security-Policy"
@@ -2553,6 +2573,45 @@
                 if (e.key === 'Escape' && modal.classList.contains('open')) cerrarModal();
             });
         })();
+    </script>
+    <script>
+        // ERROR BOUNDARY GLOBAL
+        function mostrarErrorGlobal(mensaje) {
+            const existing = document.getElementById('error-global-ov');
+            if (existing) return;
+
+            const ov = document.createElement('div');
+            ov.id = 'error-global-ov';
+            ov.style.cssText = 'position:fixed;inset:0;z-index:9999999;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);font-family:Verdana,sans-serif;';
+
+            ov.innerHTML = `
+                <div style="background:#141414;border:2px solid #8e3030;border-radius:16px;padding:30px 24px;max-width:400px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.8);">
+                    <h2 style="font-family:'Times New Roman',serif;color:#ff7b7b;margin:0 0 15px;font-size:1.8rem;">Ups, algo salió mal</h2>
+                    <p style="color:#ccc;font-size:0.9rem;line-height:1.5;margin-bottom:20px;">${mensaje || 'Hubo un problema inesperado en PichonApps. Por favor, recargá la página.'}</p>
+                    <button onclick="location.reload()" style="background:#8e3030;color:#fff;border:0;border-radius:8px;padding:12px 20px;font-family:Verdana,sans-serif;font-size:0.9rem;cursor:pointer;width:100%;">Recargar Página</button>
+                </div>
+            `;
+            document.body.appendChild(ov);
+        }
+
+        window.addEventListener('error', (e) => {
+            // Ignorar errores de scripts de terceros (ej. extensiones)
+            if (e.filename && !e.filename.includes(location.host)) return;
+            console.error('Error capturado:', e);
+            mostrarErrorGlobal();
+        });
+
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('Promesa rechazada no capturada:', e.reason);
+            mostrarErrorGlobal();
+        });
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
     </script>
 
 </body>
