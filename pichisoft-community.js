@@ -444,8 +444,9 @@ function abrir() {
             if (vid && f.size > MAX_VIDEO) return aviso('El video pesa demasiado (máximo 6 MB).', 'err');
             adj = f; prevBox.hidden = false; prevBox.firstChild.textContent = (vid ? 'Video: ' : 'Foto: ') + f.name;
         };
-        prevBox.querySelector('button').onclick = limpiarAdj;
     }
+    // ESTO VA AFUERA, PARA QUE FUNCIONE SIEMPRE:
+    prevBox.querySelector('button').onclick = limpiarAdj;
 
     const inp = panel.querySelector('.pcm-srch input'), bb = panel.querySelector('.pcm-srch button');
     bb.onclick = () => buscar(inp.value);
@@ -492,6 +493,11 @@ function abrirDM(otherUid, otherName) {
     paneAm.hidden = true;
     cancelarSeleccion();
 
+    limpiarAdj();
+    limpiarReply();
+    ta.value = '';
+    ta.style.height = 'auto';
+
     els.clear();
     lista.innerHTML = '';
     lista.append(vacio);
@@ -525,6 +531,10 @@ function pararDM() {
         els.clear();
         lista.innerHTML = '';
         lista.append(vacio);
+        limpiarAdj();
+        limpiarReply();
+        ta.value = '';
+        ta.style.height = 'auto';
         pintarChat();
         lista.scrollTop = lista.scrollHeight;
     }
@@ -728,9 +738,9 @@ function burbuja(m) {
     d.onpointerup = () => clearTimeout(pressTimer);
     d.onpointercancel = () => clearTimeout(pressTimer);
     d.onpointerleave = () => clearTimeout(pressTimer);
-    d.oncontextmenu = e => { 
-        e.preventDefault(); 
-        if (!modoSeleccion) mostrarCtx(e.clientX, e.clientY, m); 
+    d.oncontextmenu = e => {
+        e.preventDefault();
+        if (!modoSeleccion) mostrarCtx(e.clientX, e.clientY, m);
     };
 
     d.append(c); return d;
@@ -829,7 +839,7 @@ function editarLote(sel) {
         ok.onclick = async () => {
             const txt = d.value.trim();
             if (!txt && !sel.every(m => m.media)) { aviso('Los mensajes sin multimedia no pueden quedar vacíos.', 'err'); return; }
-            
+
             ok.disabled = true; no.disabled = true;
             try {
                 const batch = writeBatch(db);
