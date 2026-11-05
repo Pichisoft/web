@@ -1,5 +1,5 @@
 /* =====================================================================
-   PICHISOFT COMMUNITY · Mensajería (chat, 👍 en CSS, amigos, reportes) wait I need something
+   PICHISOFT COMMUNITY · Mensajería (chat, 👍 en CSS, amigos, reportes)
    ===================================================================== */
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
