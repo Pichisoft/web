@@ -756,6 +756,7 @@ body.prem .p-gear{display:flex}
                 try {
                     const fb = window.PichisoftFirebase;
                     await fb.setDoc(fb.doc(fb.db, 'app_ratings', appId + '_' + fb.auth.currentUser.uid), {
+                        appId: appId,
                         uid: fb.auth.currentUser.uid,
                         score: i,
                         ts: new Date()
