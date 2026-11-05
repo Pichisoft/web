@@ -112,7 +112,16 @@
             dirty.clear();
         }, 600);
     }
+    function attachToTopbar() {
+        if (!btn) return;
+        const topbar = document.getElementById('pichisoft-topbar');
+        if (!topbar) return;
+        if (btn.parentElement === topbar) return;
 
+        // Sacá el order:3 si no estás seguro. Mejor que lo ordene el DOM.
+        btn.style.cssText = 'position:static !important; background:transparent !important; border:none !important; font-family:"Times New Roman", Times, serif !important; font-size:0.9rem !important; font-weight:bold !important; letter-spacing:0.5px !important; cursor:pointer; padding:2px 8px !important; margin:0 !important; text-transform:uppercase; white-space:nowrap; height:auto !important; width:auto !important; box-shadow:none !important;';
+        topbar.appendChild(btn);
+    }
     const decode = t => new DOMParser().parseFromString(t, 'text/html').documentElement.textContent;
     function chunk(t, max) {
         if (t.length <= max) return [t];
@@ -568,25 +577,42 @@
 
     /* ------------------------------ INICIO ------------------------------ */
     function init() {
-        const st = document.createElement('style'); st.id = 'psi-style'; st.textContent = CSS; document.head.appendChild(st);
+        const st = document.createElement('style');
+        st.id = 'psi-style';
+        st.textContent = CSS;
+        document.head.appendChild(st);
 
-        btn = document.createElement('button'); btn.id = 'psi-btn'; btn.type = 'button';
+        btn = document.createElement('button');
+        btn.id = 'psi-btn';
+        btn.type = 'button';
         btn.setAttribute('aria-label', 'Traducir');
         btn.title = 'Traducir';
-        btn.textContent = 'Traducir'; // <--- AGREGÁ ESTO
+        btn.textContent = 'Traducir';
         btn.onclick = openPanel;
         btn.style.position = 'fixed';
         btn.style.zIndex = '2147483647';
         btn.style.boxSizing = 'border-box';
+
+        // Intenta meter el botón dentro del topbar. Si el topbar aparece después,
+        // se vuelve a llamar desde el MutationObserver y desde los timeouts.
+        function attachToTopbar() {
+            if (!btn) return;
+
+            const topbar = document.getElementById('pichisoft-topbar');
+            if (!topbar) return;
+            if (btn.parentElement === topbar) return;
+
+            btn.removeAttribute('id');
+            btn.style.cssText = 'position:static !important; background:transparent !important; border:none !important; font-family:"Times New Roman", Times, serif !important; font-size:0.9rem !important; font-weight:bold !important; letter-spacing:0.5px !important; cursor:pointer; padding:2px 8px !important; margin:0 !important; text-transform:uppercase; white-space:nowrap; height:auto !important; width:auto !important; box-shadow:none !important;';
+            topbar.appendChild(btn);
+        }
+
         const bcs = getComputedStyle(document.body);
         const bodyBreaksFixed = bcs.transform !== 'none' || bcs.filter !== 'none' || bcs.perspective !== 'none';
-        const topbar = document.getElementById('pichisoft-topbar');
-        if (topbar) {
-            // Limpiamos estilos e ID para que no pelee con el CSS del panel
-            btn.removeAttribute('id');
-           btn.style.cssText = 'position:static !important; background:transparent !important; border:none !important; font-family:"Times New Roman", Times, serif !important; font-size:0.9rem !important; font-weight:bold !important; letter-spacing:0.5px !important; cursor:pointer; padding:2px 8px !important; margin:0 !important; text-transform:uppercase; white-space:nowrap; height:auto !important; width:auto !important; box-shadow:none !important; order: 3 !important;';
-            topbar.appendChild(btn);
-        } else {
+
+        attachToTopbar();
+
+        if (!btn.parentElement || btn.parentElement.id !== 'pichisoft-topbar') {
             (bodyBreaksFixed ? document.documentElement : document.body).appendChild(btn);
         }
 
@@ -594,39 +620,54 @@
         const savedVis = ls.get(btnKey) !== null ? ls.get(btnKey) : ls.get('psi_btn');
         visible = typeof window.PSI_VISIBLE === 'boolean' ? window.PSI_VISIBLE : savedVis !== '0';
         btn.hidden = !visible;
+
         addEventListener('pichisoft:traductor', e => setVisible(e.detail && e.detail.visible));
 
         new MutationObserver(muts => {
+            attachToTopbar();
             placeSoon();
+
             if (!lang) return;
+
             for (const m of muts) {
-                if (m.type === 'childList') m.addedNodes.forEach(n => scan(n));
-                else if (m.type === 'characterData') scanText(m.target);
-                else if (m.type === 'attributes' && m.target.nodeType === 1 && !m.target.closest(SKIP) && attrItemOk(m.target, m.attributeName)) proc(m.target, m.attributeName);
+                if (m.type === 'childList') {
+                    m.addedNodes.forEach(n => scan(n));
+                } else if (m.type === 'characterData') {
+                    scanText(m.target);
+                } else if (
+                    m.type === 'attributes' &&
+                    m.target.nodeType === 1 &&
+                    !m.target.closest(SKIP) &&
+                    attrItemOk(m.target, m.attributeName)
+                ) {
+                    proc(m.target, m.attributeName);
+                }
             }
-        }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS.concat('value') });
+        }).observe(document.body, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true,
+            attributeFilter: ATTRS.concat('value')
+        });
 
         addEventListener('resize', placeSoon);
         addEventListener('scroll', placeSoon, { passive: true });
         addEventListener('load', placeSoon);
+
+        attachToTopbar();
         place();
-        setTimeout(place, 300);
-        setTimeout(place, 1000);
-        setTimeout(place, 3000);
+
+        setTimeout(() => { attachToTopbar(); place(); }, 300);
+        setTimeout(() => { attachToTopbar(); place(); }, 1000);
+        setTimeout(() => { attachToTopbar(); place(); }, 3000);
 
         defaultLang = readDefault();
+
         const sess = ss.get('psi_cur');
         const start = sess === '-' ? null : (sess || defaultLang);
         if (start) setLang(start, { noSession: true });
     }
-
-    window.PichisoftIdiomas = {
-        open: openPanel, close: closePanel,
-        setLang: c => setLang(c), getLang: () => lang || SRC,
-        setDefault, getDefault: () => defaultLang,
-        setVisible, isVisible: () => visible,
-        languages: () => langs().map(l => ({ code: l.c, name: l.n, native: l.nat }))
-    };
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
