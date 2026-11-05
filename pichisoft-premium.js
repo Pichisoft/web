@@ -403,6 +403,22 @@ body.prem .p-gear{display:flex}
             });
             d.append(t);
         }
+        // Agregar estrellas (solo si tiene URL, o sea, si no es "Próximamente")
+        if (a.u) {
+            const ratingBox = document.createElement('div');
+            ratingBox.style.cssText = 'margin-top:6px;font-size:0.7rem;color:#d4af37;text-align:center;';
+
+            // Mostrar promedio
+            const promBox = document.createElement('div');
+            ratingBox.appendChild(promBox);
+            cargarRating(a.n, promBox);
+
+            // Estrellas clickeables
+            const stars = crearEstrellas(a.n);
+            ratingBox.appendChild(stars);
+
+            d.appendChild(ratingBox);
+        }
         return d;
     }
 
@@ -707,7 +723,55 @@ body.prem .p-gear{display:flex}
         marcar();
         o.querySelector('#cfgReset').onclick = confirmarReset;
     }
+    // --- SISTEMA DE RATINGS ---
+    async function cargarRating(appId, container) {
+        try {
+            const snap = await getDocs(query(collection(db, 'app_ratings'), where('appId', '==', appId)));
+            let total = 0, count = 0;
+            snap.forEach(d => { total += d.data().score; count++; });
+            const prom = count ? (total / count).toFixed(1) : '0.0';
 
+            // Crear las estrellas visuales
+            container.innerHTML = `<span style="color:#d4af37;">★</span> ${prom}`;
+            container.title = `${count} votos`;
+        } catch (e) { console.error(e); }
+    }
+
+    function crearEstrellas(appId, container) {
+        const cont = document.createElement('div');
+        cont.style.cssText = 'display:flex;justify-content:center;gap:2px;margin-top:5px;cursor:pointer;font-size:16px;';
+
+        for (let i = 1; i <= 5; i++) {
+            const star = document.createElement('span');
+            star.textContent = '★';
+            star.style.color = '#555';
+            star.style.transition = 'color 0.2s';
+            star.onmouseenter = () => { for (let j = 0; j < i; j++) cont.children[j].style.color = '#d4af37'; };
+            star.onmouseleave = () => { for (let j = 0; j < 5; j++) cont.children[j].style.color = '#555'; };
+            star.onclick = async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!Pichisoft.user) return alert('Iniciá sesión para votar.');
+
+                try {
+                    const fb = window.PichisoftFirebase;
+                    await fb.setDoc(fb.doc(fb.db, 'app_ratings', appId + '_' + fb.auth.currentUser.uid), {
+                        appId: appId,
+                        uid: fb.auth.currentUser.uid,
+                        score: i,
+                        ts: new Date()
+                    });
+                    cont.innerHTML = '<span style="color:#20a84b;font-size:12px;">¡Gracias!</span>';
+                    setTimeout(() => {
+                        cont.innerHTML = '';
+                        cont.appendChild(crearEstrellas(appId, cont));
+                    }, 2000);
+                } catch (e) { console.error(e); alert('Error al votar.'); }
+            };
+            cont.appendChild(star);
+        }
+        return cont;
+    }
     /* ------------------------ ACTIVAR / DESACTIVAR ------------------------ */
     function renderPremium() {
         const u = Pichisoft.user;
