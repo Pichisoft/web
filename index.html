@@ -772,7 +772,6 @@
         #pichisoft-topbar {
             position: absolute;
             top: 5px;
-            /* Arriba de todo */
             left: 60%;
             transform: translateX(-50%);
             display: flex;
@@ -787,7 +786,15 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
             z-index: 999999;
             user-select: none;
-            transition: opacity 0.2s ease, transform 0.2s ease;
+
+            /* NUEVO: Arranca invisible y aparece suavemente */
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.2s ease;
+        }
+
+        /* NUEVO: Cuando tiene la clase "ready", se hace visible */
+        #pichisoft-topbar.ready {
+            opacity: 1;
         }
 
         /* Ocultar el panel cuando haya un modal abierto */
@@ -2142,11 +2149,11 @@
             getDoc
         };
     </script>
-    <script src="pichisoft-premium.js"></script>
-    <script type="module" src="pichisoft-community.js"></script>
-    <script type="module" src="pichisoft-messages.js"></script>
-    <script src="pichisoft-carteles.js?v=5"></script>
-    <script src="pichisoft-idiomas.js"></script>
+    <script src="pichisoft-premium.js?v=8"></script>
+    <script type="module" src="pichisoft-community.js?v=8"></script>
+    <script type="module" src="pichisoft-messages.js?v=8"></script>
+    <script src="pichisoft-carteles.js?v=8"></script>
+    <script src="pichisoft-idiomas.js?v=8"></script>
     <!-- ============================================================ -->
     <!-- PIE DE PÁGINA Y MODALES INFORMATIVOS (ESTILO PREMIUM)        -->
     <!-- ============================================================ -->
@@ -2574,8 +2581,8 @@
             });
         })();
     </script>
-   
-      <script>
+
+    <script>
         // ERROR BOUNDARY GLOBAL (Versión definitiva: solo atrapa fallos de internet)
         function mostrarErrorGlobal(mensaje) {
             if (document.getElementById('error-global-ov')) return;
@@ -2583,7 +2590,7 @@
             const ov = document.createElement('div');
             ov.id = 'error-global-ov';
             ov.style.cssText = 'position:fixed;inset:0;z-index:9999999;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);font-family:Verdana,sans-serif;';
-            
+
             ov.innerHTML = `
                 <div style="background:#141414;border:2px solid #8e3030;border-radius:16px;padding:30px 24px;max-width:400px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.8);">
                     <h2 style="font-family:'Times New Roman',serif;color:#ff7b7b;margin:0 0 15px;font-size:1.8rem;">Ups, algo salió mal</h2>
@@ -2616,7 +2623,15 @@
             e.preventDefault(); // Evita que salte el cartel
         });
     </script>
-
+    <script>
+        // Espera 200ms (o a que carguen los scripts) y muestra el panel de golpe
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const topbar = document.getElementById('pichisoft-topbar');
+                if (topbar) topbar.classList.add('ready');
+            }, 150);
+        });
+    </script>
 </body>
 
 </html>
