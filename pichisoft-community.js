@@ -445,7 +445,6 @@ function abrir() {
             adj = f; prevBox.hidden = false; prevBox.firstChild.textContent = (vid ? 'Video: ' : 'Foto: ') + f.name;
         };
     }
-    // ESTO VA AFUERA, PARA QUE FUNCIONE SIEMPRE:
     prevBox.querySelector('button').onclick = limpiarAdj;
 
     const inp = panel.querySelector('.pcm-srch input'), bb = panel.querySelector('.pcm-srch button');
@@ -472,7 +471,14 @@ function cerrarPanel() {
     if (ctx) { ctx.remove(); ctx = null; }
 }
 function setTab(t) {
-    if (t !== 'chat') { pararDM(); cancelarSeleccion(); }
+    if (t !== 'chat') { 
+        pararDM(); 
+        cancelarSeleccion(); 
+        ta.value = ''; 
+        ta.style.height = 'auto'; 
+        limpiarAdj(); 
+        limpiarReply(); 
+    }
     tab = t;
     panel.querySelectorAll('.pcm-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
     paneChat.hidden = t !== 'chat'; paneAm.hidden = t !== 'amigos';
@@ -501,6 +507,7 @@ function abrirDM(otherUid, otherName) {
     els.clear();
     lista.innerHTML = '';
     lista.append(vacio);
+    dmMsgs = []; // Limpiar mensajes anteriores
 
     if (dmUnsub) dmUnsub();
     const chatId = [uid, otherUid].sort().join('_');
@@ -827,7 +834,6 @@ function editarLote(sel) {
         b.append(h('p', '', 'Modificá el texto. Se aplicará a todos los mensajes seleccionados.'));
         const d = h('textarea', 'pcm-in');
         d.rows = 4; d.maxLength = 500;
-        // Si todos tienen el mismo texto, lo precargamos
         const unico = sel.every(m => m.t === sel[0].t);
         if (unico) d.value = sel[0].t || '';
         b.append(d);
