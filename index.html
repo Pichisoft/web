@@ -2574,38 +2574,7 @@
             });
         })();
     </script>
-    <script>
-        // ERROR BOUNDARY GLOBAL
-        function mostrarErrorGlobal(mensaje) {
-            const existing = document.getElementById('error-global-ov');
-            if (existing) return;
-
-            const ov = document.createElement('div');
-            ov.id = 'error-global-ov';
-            ov.style.cssText = 'position:fixed;inset:0;z-index:9999999;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);font-family:Verdana,sans-serif;';
-
-            ov.innerHTML = `
-                <div style="background:#141414;border:2px solid #8e3030;border-radius:16px;padding:30px 24px;max-width:400px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.8);">
-                    <h2 style="font-family:'Times New Roman',serif;color:#ff7b7b;margin:0 0 15px;font-size:1.8rem;">Ups, algo salió mal</h2>
-                    <p style="color:#ccc;font-size:0.9rem;line-height:1.5;margin-bottom:20px;">${mensaje || 'Hubo un problema inesperado en PichonApps. Por favor, recargá la página.'}</p>
-                    <button onclick="location.reload()" style="background:#8e3030;color:#fff;border:0;border-radius:8px;padding:12px 20px;font-family:Verdana,sans-serif;font-size:0.9rem;cursor:pointer;width:100%;">Recargar Página</button>
-                </div>
-            `;
-            document.body.appendChild(ov);
-        }
-
-        window.addEventListener('error', (e) => {
-            // Ignorar errores de scripts de terceros (ej. extensiones)
-            if (e.filename && !e.filename.includes(location.host)) return;
-            console.error('Error capturado:', e);
-            mostrarErrorGlobal();
-        });
-/*hola*/
-        window.addEventListener('unhandledrejection', (e) => {
-            console.error('Promesa rechazada no capturada:', e.reason);
-            mostrarErrorGlobal();
-        });
-    </script>
+   
     <script>
         // ERROR BOUNDARY GLOBAL Y DETECCIÓN DE INTERNET
         function mostrarErrorGlobal(mensaje) {
