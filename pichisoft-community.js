@@ -256,7 +256,10 @@ async function syncPerfil() {
         await setDoc(doc(db, 'public_profiles', uid), { username: u.name, lc: u.name.toLowerCase(), photo: photo || '' });
         firma = f;
         perfiles[uid] = Promise.resolve({ username: u.name, photo: photo || '' });
-    } catch (e) { console.error('Error sync profile', e); }
+    } catch (e) {
+        console.error('Error sync profile', e);
+        throw new Error('No se pudo sincronizar tu perfil. Recargá la página e intentá de nuevo.');
+    }
 }
 
 /* ------------------------------ ACTIVAR / DESACTIVAR ------------------------------ */
@@ -471,13 +474,13 @@ function cerrarPanel() {
     if (ctx) { ctx.remove(); ctx = null; }
 }
 function setTab(t) {
-    if (t !== 'chat') { 
-        pararDM(); 
-        cancelarSeleccion(); 
-        ta.value = ''; 
-        ta.style.height = 'auto'; 
-        limpiarAdj(); 
-        limpiarReply(); 
+    if (t !== 'chat') {
+        pararDM();
+        cancelarSeleccion();
+        ta.value = '';
+        ta.style.height = 'auto';
+        limpiarAdj();
+        limpiarReply();
     }
     tab = t;
     panel.querySelectorAll('.pcm-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
@@ -507,7 +510,7 @@ function abrirDM(otherUid, otherName) {
     els.clear();
     lista.innerHTML = '';
     lista.append(vacio);
-    dmMsgs = []; // Limpiar mensajes anteriores
+    dmMsgs = [];
 
     if (dmUnsub) dmUnsub();
     const chatId = [uid, otherUid].sort().join('_');
