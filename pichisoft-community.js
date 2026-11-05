@@ -242,10 +242,7 @@ const els = new Map(), perfiles = {};
 let firma = '';
 const esAdm = () => ADMINS.includes(uid);
 
-const perfil = id => {
-    if (!id || typeof id !== 'string') return Promise.resolve({});
-    return perfiles[id] || (perfiles[id] = getDoc(doc(db, 'public_profiles', id)).then(s => s.exists() ? s.data() : {}).catch(() => ({})));
-};
+const perfil = id => perfiles[id] || (perfiles[id] = getDoc(doc(db, 'public_profiles', id)).then(s => s.exists() ? s.data() : {}).catch(() => ({})));
 function avatar(id, nombre, cls) {
     const a = h('div', 'pcm-av' + (cls ? ' ' + cls : ''), String(nombre || '?')[0].toUpperCase());
     perfil(id).then(p => { if (okFoto(p.photo)) { const i = h('img'); i.src = p.photo; i.alt = ''; a.textContent = ''; a.append(i); } });
