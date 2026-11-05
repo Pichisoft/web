@@ -2149,11 +2149,11 @@
             getDoc
         };
     </script>
-    <script src="pichisoft-premium.js?v=8"></script>
-    <script type="module" src="pichisoft-community.js?v=8"></script>
-    <script type="module" src="pichisoft-messages.js?v=8"></script>
-    <script src="pichisoft-carteles.js?v=8"></script>
-    <script src="pichisoft-idiomas.js?v=8"></script>
+    <script src="pichisoft-premium.js?v=9"></script>
+    <script type="module" src="pichisoft-community.js?v=9"></script>
+    <script type="module" src="pichisoft-messages.js?v=9"></script>
+    <script src="pichisoft-carteles.js?v=9"></script>
+    <script src="pichisoft-idiomas.js?v=9"></script>
     <!-- ============================================================ -->
     <!-- PIE DE PÁGINA Y MODALES INFORMATIVOS (ESTILO PREMIUM)        -->
     <!-- ============================================================ -->
@@ -2631,6 +2631,20 @@
                 if (topbar) topbar.classList.add('ready');
             }, 150);
         });
+    </script>
+    <script>
+        // Limpiar Service Worker viejo y recargar para forzar actualización
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                for (let registration of registrations) {
+                    registration.unregister();
+                }
+                // Si había un SW, recargamos una vez para que todo se actualice
+                if (registrations.length > 0) {
+                    setTimeout(() => location.reload(), 100);
+                }
+            });
+        }
     </script>
 </body>
 
