@@ -300,6 +300,7 @@
             <input id="q" type="text" placeholder="Buscar por usuario, email o UID…" autocomplete="off">
             <button class="btn" id="rec">Actualizar</button>
             <button class="btn" id="rep">Reportes <span class="tag" id="repN" hidden></span></button>
+            <button class="btn" id="op">Opiniones <span class="tag" id="opN" hidden></span></button>
             <a class="btn" href="/" style="text-decoration:none">PichonApps</a>
         </div>
         <div id="cnt"></div><br>
@@ -502,6 +503,118 @@
             b.append(ac);
         }
         $('#rep').onclick = abrirReportes;
+        /* ================= OPINIONES ================= */
+        async function abrirOpiniones() {
+            if ($('#opOv')) return;
+            const o = document.createElement('div');
+            o.id = 'opOv';
+            o.className = 'ov';
+            o.innerHTML = '<div class="box wide" id="opBox"><p style="color:#999">Cargando opiniones…</p></div>';
+            document.body.appendChild(o);
+            o.onclick = e => { if (e.target === o) o.remove(); };
+
+            try {
+                const snap = await getDocs(query(collection(db, 'app_reviews'), orderBy('ts', 'desc'), limit(300)));
+                const ops = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                pintarOpiniones(ops);
+            } catch (e) {
+                $('#opBox').innerHTML = '<p style="color:#ff7b7b">Error: ' + e.message + ' (¿actualizaste las reglas de Firestore?)</p>';
+            }
+        }
+
+        function pintarOpiniones(ops) {
+            const b = $('#opBox');
+            if (!b) return;
+            b.textContent = '';
+
+            const t = document.createElement('h3');
+            t.style.cssText = 'font-family:Times New Roman,serif;margin:0 0 10px';
+            t.textContent = 'Opiniones';
+            b.append(t);
+
+            if (!ops.length) {
+                const p = document.createElement('p');
+                p.style.color = '#999';
+                p.textContent = 'No hay opiniones todavía.';
+                b.append(p);
+            }
+
+            ops.forEach(op => {
+                const c = document.createElement('div');
+                c.className = 'rep';
+                c.style.cursor = 'default';
+
+                const u = users.find(x => x.uid === op.uid);
+                const username = u ? u.username : (op.username || 'Anónimo');
+
+                const head = document.createElement('div');
+                head.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:8px;';
+
+                const av = document.createElement('div');
+                av.className = 'av';
+                av.style.cssText = 'width:36px;height:36px;font-size:1rem;flex:none;';
+                if (u && okFoto(u.photo)) {
+                    const img = document.createElement('img');
+                    img.src = u.photo;
+                    av.appendChild(img);
+                } else {
+                    av.textContent = String(username)[0].toUpperCase();
+                }
+
+                const info = document.createElement('div');
+                info.style.cssText = 'flex:1;min-width:0;';
+                const nm = document.createElement('div');
+                nm.style.fontWeight = 'bold';
+                nm.textContent = username;
+                const meta = document.createElement('div');
+                meta.style.cssText = 'font-size:.75rem;color:#999;';
+                const fecha = op.ts && op.ts.toDate ? op.ts.toDate().toLocaleString('es-AR') : '';
+                meta.textContent = (op.appName || '') + ' · ' + fecha;
+                info.append(nm, meta);
+
+                head.append(av, info);
+                c.append(head);
+
+                const stars = document.createElement('div');
+                stars.style.cssText = 'color:#d4af37;font-size:1rem;margin-bottom:6px;';
+                stars.textContent = '★'.repeat(op.stars || 0) + '☆'.repeat(5 - (op.stars || 0));
+                c.append(stars);
+
+                if (op.text) {
+                    const txt = document.createElement('div');
+                    txt.style.cssText = 'font-size:.85rem;line-height:1.5;color:#ddd;white-space:pre-wrap;margin-bottom:8px;';
+                    txt.textContent = op.text;
+                    c.append(txt);
+                }
+
+                const del = document.createElement('button');
+                del.className = 'btn red';
+                del.style.cssText = 'font-size:.75rem;padding:6px 10px;';
+                del.textContent = 'Eliminar opinión';
+                del.onclick = async () => {
+                    if (!confirm('¿Eliminar esta opinión?')) return;
+                    try {
+                        await deleteDoc(doc(db, 'app_reviews', op.id));
+                        ops = ops.filter(x => x.id !== op.id);
+                        pintarOpiniones(ops);
+                    } catch (e) {
+                        alert('Error: ' + e.message);
+                    }
+                };
+                c.append(del);
+
+                b.append(c);
+            });
+
+            const cb = document.createElement('button');
+            cb.className = 'btn';
+            cb.style.marginTop = '14px';
+            cb.textContent = 'Cerrar';
+            cb.onclick = () => $('#opOv').remove();
+            b.append(cb);
+        }
+
+        $('#op').onclick = abrirOpiniones;
         $('#q').oninput = pintar; $('#rec').onclick = cargar;
     </script>
     <!-- ============================================================
