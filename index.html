@@ -2112,9 +2112,17 @@
             getFirestore,
             doc,
             setDoc,
-            getDoc
+            getDoc,
+            collection,
+            addDoc,
+            deleteDoc,
+            updateDoc,
+            getDocs,
+            query,
+            where,
+            orderBy,
+            limit
         } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-
         const firebaseConfig = {
             apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
             authDomain: "pichisoft.firebaseapp.com",
@@ -2148,12 +2156,39 @@
             setDoc,
             getDoc
         };
+        window.PichisoftFirebase = {
+            auth,
+            db,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged,
+            updateEmail,
+            updatePassword,
+            reauthenticateWithCredential,
+            EmailAuthProvider,
+            sendEmailVerification,
+            sendPasswordResetEmail,
+            deleteUser,
+            doc,
+            setDoc,
+            getDoc,
+            collection,
+            addDoc,
+            deleteDoc,
+            updateDoc,
+            getDocs,
+            query,
+            where,
+            orderBy,
+            limit
+        };
     </script>
-    <script src="pichisoft-premium.js?v=10"></script>
-    <script type="module" src="pichisoft-community.js?v=10"></script>
-    <script type="module" src="pichisoft-messages.js?v=10"></script>
-    <script src="pichisoft-carteles.js?v=10"></script>
-    <script src="pichisoft-idiomas.js?v=10"></script>
+    <script src="pichisoft-premium.js?v=11"></script>
+    <script type="module" src="pichisoft-community.js?v=11"></script>
+    <script type="module" src="pichisoft-messages.js?v=11"></script>
+    <script src="pichisoft-carteles.js?v=11"></script>
+    <script src="pichisoft-idiomas.js?v=11"></script>
     <!-- ============================================================ -->
     <!-- PIE DE PÁGINA Y MODALES INFORMATIVOS (ESTILO PREMIUM)        -->
     <!-- ============================================================ -->
