@@ -5,7 +5,7 @@ import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.3.
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import {
     getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, deleteField,
-    onSnapshot, query, where, orderBy, limit, serverTimestamp
+    onSnapshot, query, where, orderBy, limit, serverTimestamp, writeBatch
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 const app = getApps()[0] || initializeApp({
@@ -45,19 +45,19 @@ const CSS = `
 .pcm-ov{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:14px;box-sizing:border-box;background:#0a0a0a; user-select:none;-webkit-user-select:none;animation:pcmIn .25s ease}
 .pcm-card{display:flex;flex-direction:column;width:min(720px,100%);height:min(88vh,780px);box-sizing:border-box;background:linear-gradient(180deg,#181818,#0b0b0b);border:2px solid #d4af37;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.85),0 0 44px rgba(212,175,55,.12);color:#fff;font-family:Verdana,"Open Sans",sans-serif;overflow:hidden}
 .pcm-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid rgba(212,175,55,.3);background:rgba(212,175,55,.04)}
-.pcm-hd h2{margin:0;font:bold 1.6rem "Times New Roman",Times,serif;color:#f1d98a}
-.pcm-x{position:relative;width:30px;height:30px;padding:0;border:1.5px solid #d4af37;border-radius:50%;background:none;cursor:pointer;transition:transform .3s,background .2s}
+.pcm-hd h2{margin:0;font:bold 1.6rem "Times New Roman",Times,serif;color:#f1d98a;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcm-x{position:relative;flex:none;margin-left:10px;width:30px;height:30px;padding:0;border:1.5px solid #d4af37;border-radius:50%;background:none;cursor:pointer;transition:transform .3s,background .2s}
 .pcm-x::before,.pcm-x::after{content:"";position:absolute;left:50%;top:50%;width:12px;height:2px;margin:-1px 0 0 -6px;border-radius:2px;background:#f1d98a;transition:background .2s}
 .pcm-x::before{transform:rotate(45deg)}.pcm-x::after{transform:rotate(-45deg)}
 .pcm-x:hover{transform:rotate(90deg);background:#d4af37}.pcm-x:hover::before,.pcm-x:hover::after{background:#111}
-.pcm-tabs{display:flex;gap:6px;padding:8px 14px 0;border-bottom:1px solid rgba(212,175,55,.2)}
-.pcm-tabs button{background:none;border:0;border-bottom:2px solid transparent;color:#9a9a9a;font:bold .92rem Georgia,"Times New Roman",serif;padding:10px 14px;cursor:pointer;transition:color .2s}
+.pcm-tabs{display:flex;gap:6px;padding:8px 14px 0;border-bottom:1px solid rgba(212,175,55,.2);overflow-x:auto;scrollbar-width:none}
+.pcm-tabs button{white-space:nowrap;background:none;border:0;border-bottom:2px solid transparent;color:#9a9a9a;font:bold .92rem Georgia,"Times New Roman",serif;padding:10px 14px;cursor:pointer;transition:color .2s}
 .pcm-tabs button:hover{color:#fff}.pcm-tabs button.on{color:#f1d98a;border-color:#d4af37}
-.pcm-pane{flex:1;min-height:0;display:flex;flex-direction:column}
-.pcm-list,.pcm-am{flex:1;min-height:0;overflow-y:auto;padding:14px 16px;scrollbar-width:thin;scrollbar-color:#b38b27 #0a0a0a}
+.pcm-pane{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
+.pcm-list,.pcm-am{flex:1;min-height:0;overflow-y:auto;padding:14px 16px;scrollbar-width:thin;scrollbar-color:#b38b27 #0a0a0a;overscroll-behavior:contain}
 .pcm-list{display:flex;flex-direction:column;gap:12px}
 .pcm-empty,.pcm-mut{color:#8d8d8d;font-size:.82rem;text-align:center;padding:18px 6px;line-height:1.5}
-.pcm-msg{display:flex;gap:10px;align-items:flex-start;position:relative}
+.pcm-msg{display:flex;gap:10px;align-items:flex-start;position:relative;-webkit-touch-callout:none;transition:background .2s;padding:6px;border-radius:10px}
 .pcm-av{flex:none;width:38px;height:38px;border-radius:50%;background:#444;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:1rem}
 .pcm-av img{width:100%;height:100%;object-fit:cover}
 .pcm-av.sm{width:32px;height:32px;font-size:.9rem}
@@ -70,6 +70,16 @@ const CSS = `
 .pcm-tm.ed{color:#caa016}
 .pcm-adm{background:linear-gradient(135deg,#f1d98a,#b8901f);color:#111;font:bold .62rem Verdana,sans-serif;padding:2px 6px;border-radius:5px;margin-right:6px;letter-spacing:.07em}
 .pcm-tx{font-size:.88rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;user-select:text;-webkit-user-select:text}
+
+/* MODO SELECCIÓN */
+.pcm-msg.seleccionado .pcm-mc { border-color: #d4af37 !important; background: rgba(212,175,55,.15) !important; box-shadow: 0 0 10px rgba(212,175,55,.3); }
+.pcm-sel-bar { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: #111; border: 1.5px solid #d4af37; border-radius: 12px; padding: 8px 14px; display: flex; gap: 10px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 100; animation: pcmIn .2s ease; }
+.pcm-sel-bar span { color: #f1d98a; font: bold .85rem Verdana, sans-serif; margin-right: 5px; }
+.pcm-sel-btn { background: transparent; border: 1px solid #555; color: #fff; border-radius: 6px; padding: 6px 12px; cursor: pointer; font: bold .75rem Verdana, sans-serif; transition: all 0.2s; }
+.pcm-sel-btn:hover { border-color: #d4af37; color: #f1d98a; }
+.pcm-sel-btn.danger { color: #ff7b7b; border-color: #ff7b7b; }
+.pcm-sel-btn.danger:hover { background: rgba(255,123,123,.15); }
+.pcm-sel-btn.cancel { background: #333; border-color: #555; color: #ccc; }
 
 @keyframes pcmBlink{0%,100%{background:transparent}50%{background:rgba(212,175,55,0.3)}}
 .pcm-msg.highlight .pcm-mc{animation:pcmBlink 0.5s 3; border-color:#d4af37;}
@@ -103,7 +113,7 @@ const CSS = `
 .pcm-ctx button.danger{color:#ff7b7b}
 .pcm-ctx button.danger:hover{background:rgba(255,123,123,.15)}
 
-.pcm-comp{border-top:1px solid rgba(212,175,55,.3);padding:12px 14px;background:#0f0f0f}
+.pcm-comp{border-top:1px solid rgba(212,175,55,.3);padding:12px 14px;background:#0f0f0f;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 .pcm-prev{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;font-size:.78rem;color:#f1d98a;word-break:break-all}
 .pcm-prev button{background:none;border:0;color:#9a9a9a;text-decoration:underline;cursor:pointer;font:inherit;font-size:.75rem}
 
@@ -148,62 +158,30 @@ const CSS = `
 
 .pcm-ts{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:340;display:flex;flex-direction:column;gap:8px;width:min(430px,calc(100vw - 24px));pointer-events:none}
 .pcm-t{pointer-events:auto;box-sizing:border-box;padding:12px 16px;background:rgba(20,20,20,.97);border:1px solid #d4af37;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.6);font:.82rem/1.5 Verdana,"Open Sans",sans-serif;color:#fff;cursor:pointer;animation:pcmIn .25s ease}
-.pcm-t.err{border-color:#a33;color:#ffb3b3}
+.pcm-t.err{border:2px solid #a33; background: #3b0e0e; color: #ffb3b3; box-shadow: 0 0 15px rgba(163,51,51,.5); font-weight: bold;}
 
 @media (max-width:600px){
  .pcm-ov{padding:0}.pcm-card{height:100%;border-radius:0;border-width:0}
- .pcm-fab{left:10px;bottom:10px;padding:10px 16px 10px 12px;font-size:.85rem}
- .pcm-hd h2{font-size:1.35rem}.pcm-mc{max-width:calc(100% - 46px)}
-}
-@media (prefers-reduced-motion:reduce){.pcm-ov,.pcm-dov,.pcm-t,.pcm-dot,.pcm-fab,.pcm-x{animation:none!important;transition:none!important}}
-/* ===== RESPONSIVE MENSAJERÍA ===== */
-.pcm-msg{-webkit-touch-callout:none}
-.pcm-hd h2{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pcm-x{flex:none;margin-left:10px}
-.pcm-list,.pcm-am{overscroll-behavior:contain}
-.pcm-srch .pcm-in{min-width:0}
-.pcm-comp{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
-.pcm-tabs{overflow-x:auto;scrollbar-width:none}
-.pcm-tabs button{white-space:nowrap}
-.pcm-ctx button{min-height:40px}
-
-@supports (height:100dvh){
- .pcm-card{height:min(88dvh,780px)}
-}
-
-@media (hover:none) and (pointer:coarse){
- .pcm-ac button{padding:8px 14px}
- .pcm-ctx button{padding:13px 16px;font-size:.95rem}
- .pcm-b{padding:11px 14px}
- .pcm-clip{width:44px;height:44px}
-}
-
-@media (max-width:600px){
- .pcm-ov{padding:0}
- .pcm-card{height:100%;border-radius:0;border-width:0}
  .pcm-hd{padding:calc(12px + env(safe-area-inset-top,0px)) 14px 12px}
  .pcm-list,.pcm-am{padding:12px 10px}
  .pcm-comp{padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px))}
- .pcm-in,.pcm-row textarea{font-size:16px}  /* evita zoom en iOS */
+ .pcm-in,.pcm-row textarea{font-size:16px} 
  .pcm-send{padding:10px 14px}
  .pcm-mc{max-width:calc(100% - 46px);padding:8px 10px}
  .pcm-av{width:34px;height:34px}
  .pcm-img{max-height:240px}
  .pcm-video{max-height:260px}
  .pcm-tabs button{flex:1;padding:12px 8px}
-
- /* Lista de amigos: botones debajo del nombre */
  .pcm-per{flex-wrap:wrap}
  .pcm-per .n{flex:1 1 calc(100% - 50px)}
  .pcm-per .bs{flex:1 1 100%;justify-content:flex-start}
-
  .pcm-dov{padding:10px;align-items:flex-end}
  .pcm-dlg{padding:20px 16px calc(14px + env(safe-area-inset-bottom,0px));border-radius:14px 14px 0 0}
  .pcm-dlg textarea,.pcm-dlg .pcm-in{font-size:16px}
  .pcm-viz{align-items:center}
  .pcm-ts{top:calc(10px + env(safe-area-inset-top,0px))}
+ .pcm-sel-bar{width:90%;bottom:70px;justify-content:center;flex-wrap:wrap;gap:6px;}
 }
-
 @media (max-height:480px) and (orientation:landscape){
  .pcm-hd{padding:6px 14px}
  .pcm-hd h2{font-size:1.15rem}
@@ -258,6 +236,8 @@ let replyTo = null, replyBar = null, replyName = null, replyTxt = null;
 let modoDM = false, dmUid = null, dmName = '';
 let ctx = null;
 let vvFn = null;
+let modoSeleccion = false;
+const seleccionados = new Set();
 const els = new Map(), perfiles = {};
 let firma = '';
 const esAdm = () => ADMINS.includes(uid);
@@ -339,7 +319,7 @@ function crearBoton() {
     if (btn) return;
     const st = h('style'); st.textContent = CSS; document.head.append(st);
     btn = h('button'); btn.type = 'button'; btn.setAttribute('aria-label', 'Mensajería');
-    btn.innerHTML = 'Mensajería'; // Solo texto, sin íconos
+    btn.innerHTML = 'Mensajería';
     btn.onclick = abrir;
 
     const topbar = document.getElementById('pichisoft-topbar');
@@ -367,6 +347,13 @@ function abrir() {
  </div>
  <div class="pcm-tabs" id="pcmTabs"><button type="button" data-t="chat">Chat<b class="pcm-dot pcm-sm" hidden></b></button><button type="button" data-t="amigos">Amigos<b class="pcm-dot pcm-sm" hidden></b></button></div>
  <div class="pcm-pane" id="pcmChat">
+  <div class="pcm-sel-bar" id="pcmSelBar" hidden>
+    <span id="pcmSelCount">0 seleccionados</span>
+    <button class="pcm-sel-btn" onclick="accionLote('reportar')">Reportar</button>
+    <button class="pcm-sel-btn" onclick="accionLote('editar')">Editar</button>
+    <button class="pcm-sel-btn danger" onclick="accionLote('eliminar')">Eliminar</button>
+    <button class="pcm-sel-btn cancel" onclick="cancelarSeleccion()">Cancelar</button>
+  </div>
   <div class="pcm-list"><div class="pcm-empty">Todavía no hay mensajes. ¡Escribí el primero!</div></div>
   <div class="pcm-comp">
    <div class="pcm-prev" hidden><span></span><button type="button">Quitar</button></div>
@@ -424,9 +411,7 @@ function abrir() {
     ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 110) + 'px'; });
 
     ta.addEventListener('keydown', e => {
-        if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) {
-            e.stopImmediatePropagation();
-        }
+        if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) e.stopImmediatePropagation();
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); }
     });
 
@@ -437,9 +422,7 @@ function abrir() {
             if (items[i].kind === 'file') {
                 const blob = items[i].getAsFile();
                 if (blob.type.startsWith('image/') || blob.type.startsWith('video/')) {
-                    if (blob.type.startsWith('video/') && blob.size > MAX_VIDEO) {
-                        return aviso('El video pesa demasiado (máximo 6 MB).', 'err');
-                    }
+                    if (blob.type.startsWith('video/') && blob.size > MAX_VIDEO) return aviso('El video pesa demasiado (máximo 6 MB).', 'err');
                     adj = blob;
                     prevBox.hidden = false;
                     prevBox.firstChild.textContent = (blob.type.startsWith('video/') ? 'Video: ' : 'Foto: ') + 'Pegado';
@@ -481,13 +464,14 @@ function cerrarPanel() {
         vvFn = null;
     }
     pararDM();
+    cancelarSeleccion();
     panel.remove(); panel = null; els.clear(); adj = null;
     document.documentElement.style.overflow = ''; document.removeEventListener('keydown', onEsc);
     actualizarBadge();
     if (ctx) { ctx.remove(); ctx = null; }
 }
 function setTab(t) {
-    if (t !== 'chat') pararDM();
+    if (t !== 'chat') { pararDM(); cancelarSeleccion(); }
     tab = t;
     panel.querySelectorAll('.pcm-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
     paneChat.hidden = t !== 'chat'; paneAm.hidden = t !== 'amigos';
@@ -504,10 +488,9 @@ function abrirDM(otherUid, otherName) {
     panel.querySelector('.pcm-hd h2').textContent = 'Chat con ' + otherName;
     panel.querySelector('#pcmDmBack').style.display = 'block';
     panel.querySelector('.pcm-tabs').style.display = 'none';
-
-    // ESTO FALTABA: Oculta la pestaña de amigos y muestra el chat con su input
     paneChat.hidden = false;
     paneAm.hidden = true;
+    cancelarSeleccion();
 
     els.clear();
     lista.innerHTML = '';
@@ -516,13 +499,11 @@ function abrirDM(otherUid, otherName) {
     if (dmUnsub) dmUnsub();
     const chatId = [uid, otherUid].sort().join('_');
 
-    // Quitamos el orderBy para evitar el error de índice de Firestore
     dmUnsub = onSnapshot(query(collection(db, 'private_messages'), where('chatId', '==', chatId), limit(100)), s => {
         dmMsgs = s.docs.map(d => {
             const x = d.data();
             return { id: d.id, uid: x.from, n: x.n || (x.from === uid ? miNombre() : dmName), t: x.t, ts: x.ts, likes: x.likes, media: x.media, replyTo: x.replyTo, edited: x.edited };
-        }).sort((a, b) => tms(a) - tms(b)); // Ordenamos en JS
-
+        }).sort((a, b) => tms(a) - tms(b));
         if (panel && modoDM) { pintarChat(); lista.scrollTop = lista.scrollHeight; }
     }, e => console.error('private_messages', e));
 
@@ -556,6 +537,58 @@ function citar(m) {
     replyTxt.textContent = m.t ? (m.t.length > 40 ? m.t.slice(0, 40) + '…' : m.t) : '[Multimedia]';
     ta.focus();
 }
+
+/* ------------------------------ SELECCIÓN MÚLTIPLE ------------------------------ */
+function iniciarSeleccion(m) {
+    modoSeleccion = true;
+    seleccionados.clear();
+    seleccionados.add(m.id);
+    actualizarSeleccionUI();
+}
+function toggleSeleccion(m) {
+    if (seleccionados.has(m.id)) seleccionados.delete(m.id);
+    else seleccionados.add(m.id);
+    if (seleccionados.size === 0) cancelarSeleccion();
+    else actualizarSeleccionUI();
+}
+function cancelarSeleccion() {
+    modoSeleccion = false;
+    seleccionados.clear();
+    actualizarSeleccionUI();
+}
+function actualizarSeleccionUI() {
+    const bar = $('#pcmSelBar');
+    if (bar) {
+        bar.hidden = !modoSeleccion;
+        if (modoSeleccion) $('#pcmSelCount').textContent = seleccionados.size + ' seleccionados';
+    }
+    const arr = modoDM ? dmMsgs : msgs;
+    arr.forEach(m => {
+        const el = document.getElementById('msg-' + m.id);
+        if (el) el.classList.toggle('seleccionado', seleccionados.has(m.id));
+    });
+}
+
+window.cancelarSeleccion = cancelarSeleccion;
+window.accionLote = async (tipo) => {
+    const arr = modoDM ? dmMsgs : msgs;
+    const sel = arr.filter(m => seleccionados.has(m.id));
+    if (!sel.length) return;
+
+    if (tipo === 'reportar') {
+        if (sel.some(m => m.uid === uid)) return aviso('No puedes reportar a tus propios mensajes.', 'err');
+        reportarLote(sel);
+    }
+    else if (tipo === 'editar') {
+        if (sel.some(m => m.uid !== uid) && !esAdm()) return aviso('Solo los admins pueden editar mensajes de otros usuarios.', 'err');
+        if (modoDM) return aviso('No podés editar mensajes privados.', 'err');
+        editarLote(sel);
+    }
+    else if (tipo === 'eliminar') {
+        if (sel.some(m => m.uid !== uid) && !esAdm()) return aviso('Solo los admins pueden eliminar mensajes de otros usuarios.', 'err');
+        eliminarLote(sel);
+    }
+};
 
 /* ------------------------------ CHAT ------------------------------ */
 function fecha(m) {
@@ -612,6 +645,7 @@ function mostrarCtx(x, y, m) {
         ctx.append(b);
     };
 
+    addBtn('Seleccionar', () => iniciarSeleccion(m));
     addBtn('Responder', () => citar(m));
 
     if (m.uid !== uid) {
@@ -622,7 +656,6 @@ function mostrarCtx(x, y, m) {
         addBtn('Eliminar', () => borrar(m), 'danger');
     }
 
-    document.body.append(ctx);
     document.body.append(ctx);
     setTimeout(() => {
         const cerrarCtx = e => {
@@ -678,16 +711,27 @@ function burbuja(m) {
     pintarLike(lb, m);
     c.append(ac);
 
+    // CLICK PARA SELECCIONAR O ACCIONES
+    d.onclick = (e) => {
+        if (modoSeleccion) {
+            if (e.target.closest('button')) return; // Ignorar si clickeó un botón (like)
+            toggleSeleccion(m);
+        }
+    };
+
     // MENÚ CONTEXTUAL
     let pressTimer;
     d.onpointerdown = e => {
-        if (e.button === 2) return;
+        if (modoSeleccion || e.button === 2) return;
         pressTimer = setTimeout(() => mostrarCtx(e.clientX, e.clientY, m), 600);
     };
     d.onpointerup = () => clearTimeout(pressTimer);
     d.onpointercancel = () => clearTimeout(pressTimer);
     d.onpointerleave = () => clearTimeout(pressTimer);
-    d.oncontextmenu = e => { e.preventDefault(); mostrarCtx(e.clientX, e.clientY, m); };
+    d.oncontextmenu = e => { 
+        e.preventDefault(); 
+        if (!modoSeleccion) mostrarCtx(e.clientX, e.clientY, m); 
+    };
 
     d.append(c); return d;
 }
@@ -711,6 +755,7 @@ function pintarChat() {
     });
     vacio.hidden = arr.length > 0;
     if (cerca) lista.scrollTop = lista.scrollHeight;
+    actualizarSeleccionUI();
 }
 
 async function like(m, on) {
@@ -766,55 +811,94 @@ function editar(m) {
     });
 }
 
-async function comprimir(f) {
-    const src = await leer(f);
-    const im = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error('No se pudo abrir la imagen.')); i.src = src; });
-    let mx = 1280, q = .82;
-    for (; ;) {
-        const s = Math.min(1, mx / Math.max(im.width, im.height)), c = h('canvas');
-        c.width = Math.round(im.width * s); c.height = Math.round(im.height * s);
-        const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
-        const d = c.toDataURL('image/jpeg', q);
-        if (d.length < 700000 || mx < 320) return d;
-        mx *= .8; q = Math.max(.5, q - .05);
-    }
-}
-async function subirMedia(id, f) {
-    const col = modoDM ? 'private_messages' : 'community_messages';
-    if (f.type.startsWith('image/')) return { k: 'img', d: await comprimir(f) };
-    const b64 = (await leer(f)).split(',')[1], n = Math.ceil(b64.length / CH);
-    for (let i = 0; i < n; i++)
-        await setDoc(doc(db, col, id, 'chunks', String(i).padStart(3, '0')), { d: b64.slice(i * CH, (i + 1) * CH) });
-    return { k: 'vid', mime: f.type, n };
+/* ------------------------------ ACCIONES EN LOTE ------------------------------ */
+function editarLote(sel) {
+    dialogo('Editar ' + sel.length + ' mensajes', (b, c) => {
+        b.append(h('p', '', 'Modificá el texto. Se aplicará a todos los mensajes seleccionados.'));
+        const d = h('textarea', 'pcm-in');
+        d.rows = 4; d.maxLength = 500;
+        // Si todos tienen el mismo texto, lo precargamos
+        const unico = sel.every(m => m.t === sel[0].t);
+        if (unico) d.value = sel[0].t || '';
+        b.append(d);
+
+        const ok = h('button', 'pcm-b', 'Guardar cambios');
+        const no = h('button', 'pcm-b no', 'Cancelar');
+        no.onclick = c;
+
+        ok.onclick = async () => {
+            const txt = d.value.trim();
+            if (!txt && !sel.every(m => m.media)) { aviso('Los mensajes sin multimedia no pueden quedar vacíos.', 'err'); return; }
+            
+            ok.disabled = true; no.disabled = true;
+            try {
+                const batch = writeBatch(db);
+                sel.forEach(m => {
+                    batch.update(doc(db, 'community_messages', m.id), {
+                        t: txt, edited: true, editedBy: uid, editedAt: serverTimestamp()
+                    });
+                });
+                await batch.commit();
+                c();
+                cancelarSeleccion();
+                aviso(sel.length + ' mensajes editados.');
+            } catch (e) {
+                ok.disabled = false; no.disabled = false;
+                aviso(errTxt(e), 'err');
+            }
+        };
+
+        b.append(ok, no);
+        d.focus();
+        d.setSelectionRange(d.value.length, d.value.length);
+    });
 }
 
-async function enviar() {
-    if (enviando) return;
-    const t = ta.value.trim(); if (!t && !adj) return;
-    if (Date.now() - ultimo < 2000) return aviso('Esperá un momento antes de enviar otro mensaje.');
-    enviando = true; sendBtn.disabled = true; sendBtn.textContent = adj ? 'Subiendo…' : 'Enviando…';
+async function eliminarLote(sel) {
+    if (!await confirmar('¿Eliminar ' + sel.length + ' mensajes?', 'Esta acción no se puede deshacer.', 'Eliminar mensajes')) return;
     try {
-        await syncPerfil();
         const col = modoDM ? 'private_messages' : 'community_messages';
-        const ref = doc(collection(db, col));
-
-        let data = {};
-        if (modoDM) {
-            data = { from: uid, to: dmUid, n: miNombre(), chatId: [uid, dmUid].sort().join('_'), t, ts: serverTimestamp(), likes: {} };
-        } else {
-            data = { uid, n: miNombre(), t, ts: serverTimestamp(), likes: {} };
-        }
-
-        if (replyTo) {
-            data.replyTo = { id: replyTo.id, n: replyTo.n || '?', t: replyTo.t || '[Multimedia]' };
-        }
-
-        if (adj) data.media = await subirMedia(ref.id, adj);
-        await setDoc(ref, data);
-
-        ta.value = ''; ta.style.height = 'auto'; limpiarAdj(); limpiarReply(); ultimo = Date.now();
+        const batch = writeBatch(db);
+        sel.forEach(m => {
+            batch.delete(doc(db, col, m.id));
+        });
+        await batch.commit();
+        cancelarSeleccion();
+        aviso(sel.length + ' mensajes eliminados.');
     } catch (e) { aviso(errTxt(e), 'err'); }
-    enviando = false; sendBtn.disabled = false; sendBtn.textContent = 'Enviar';
+}
+
+function reportarLote(sel) {
+    let motivo = '';
+    dialogo('Reportar ' + sel.length + ' mensajes', (b, c) => {
+        b.append(h('p', '', 'Elegí el motivo del reporte para todos los mensajes seleccionados.'));
+        const opts = MOTIVOS.map(([k, t]) => {
+            const o = h('button', 'pcm-opt'); o.type = 'button'; o.append(h('span', 'rd'), h('span', '', t));
+            o.onclick = () => { motivo = k; opts.forEach(x => x.classList.toggle('on', x === o)); ok.disabled = false; };
+            b.append(o); return o;
+        });
+        const d = h('textarea', 'pcm-in'); d.rows = 3; d.maxLength = 500; d.placeholder = 'Contanos más (opcional)'; b.append(d);
+        const ok = h('button', 'pcm-b', 'Enviar reportes'), no = h('button', 'pcm-b no', 'Cancelar');
+        ok.disabled = true; no.onclick = c;
+        ok.onclick = async () => {
+            ok.disabled = true;
+            try {
+                const batch = writeBatch(db);
+                sel.forEach(m => {
+                    batch.set(doc(db, 'reports', uid + '_' + m.id), {
+                        by: uid, tu: m.uid, tn: String(m.n || '').slice(0, 20), mid: m.id,
+                        mt: (m.t || '').slice(0, 300), mk: m.media ? m.media.k : '', r: motivo,
+                        d: d.value.trim().slice(0, 500), ts: serverTimestamp()
+                    });
+                });
+                await batch.commit();
+                c();
+                cancelarSeleccion();
+                aviso(sel.length + ' mensajes reportados.');
+            } catch (e) { ok.disabled = false; aviso(errTxt(e), 'err'); }
+        };
+        b.append(ok, no);
+    });
 }
 
 /* ------------------------------ REPORTES ------------------------------ */
