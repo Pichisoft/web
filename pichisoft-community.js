@@ -477,18 +477,28 @@ function setTab(t) {
     if (t !== 'chat') {
         pararDM();
         cancelarSeleccion();
-        ta.value = '';
-        ta.style.height = 'auto';
-        limpiarAdj();
-        limpiarReply();
     }
+    ta.value = '';
+    ta.style.height = 'auto';
+    limpiarAdj();
+    limpiarReply();
+
+    enviando = false;
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Enviar'; }
+
     tab = t;
     panel.querySelectorAll('.pcm-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
     paneChat.hidden = t !== 'chat'; paneAm.hidden = t !== 'amigos';
     if (t === 'chat') { pintarChat(); marcarVisto(); lista.scrollTop = lista.scrollHeight; } else pintarAmigos();
     actualizarBadge();
 }
-function limpiarAdj() { adj = null; if (prevBox) prevBox.hidden = true; }
+function limpiarAdj() {
+    adj = null;
+    if (prevBox) {
+        prevBox.hidden = true;
+        prevBox.firstChild.textContent = '';
+    }
+}
 function limpiarReply() { replyTo = null; if (replyBar) replyBar.hidden = true; }
 
 function abrirDM(otherUid, otherName) {
@@ -830,7 +840,70 @@ function editar(m) {
         d.setSelectionRange(d.value.length, d.value.length);
     });
 }
+async function comprimir(f) {
+    const src = await leer(f);
+    const im = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error('No se pudo abrir la imagen.')); i.src = src; });
+    let mx = 1280, q = .82;
+    for (; ;) {
+        const s = Math.min(1, mx / Math.max(im.width, im.height)), c = h('canvas');
+        c.width = Math.round(im.width * s); c.height = Math.round(im.height * s);
+        const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+        const d = c.toDataURL('image/jpeg', q);
+        if (d.length < 700000 || mx < 320) return d;
+        mx *= .8; q = Math.max(.5, q - .05);
+    }
+}
 
+async function subirMedia(id, f) {
+    const col = modoDM ? 'private_messages' : 'community_messages';
+    if (f.type.startsWith('image/')) return { k: 'img', d: await comprimir(f) };
+    const b64 = (await leer(f)).split(',')[1], n = Math.ceil(b64.length / CH);
+    for (let i = 0; i < n; i++)
+        await setDoc(doc(db, col, id, 'chunks', String(i).padStart(3, '0')), { d: b64.slice(i * CH, (i + 1) * CH) });
+    return { k: 'vid', mime: f.type, n };
+}
+
+async function enviar() {
+    if (enviando) return;
+    const t = ta.value.trim(); if (!t && !adj) return;
+    if (Date.now() - ultimo < 2000) return aviso('Esperá un momento antes de enviar otro mensaje.');
+
+    enviando = true;
+    sendBtn.disabled = true;
+    sendBtn.textContent = adj ? 'Subiendo…' : 'Enviando…';
+
+    try {
+        await syncPerfil();
+        const col = modoDM ? 'private_messages' : 'community_messages';
+        const ref = doc(collection(db, col));
+
+        let data = {};
+        if (modoDM) {
+            data = { from: uid, to: dmUid, n: miNombre(), chatId: [uid, dmUid].sort().join('_'), t, ts: serverTimestamp(), likes: {} };
+        } else {
+            data = { uid, n: miNombre(), t, ts: serverTimestamp(), likes: {} };
+        }
+
+        if (replyTo) {
+            data.replyTo = { id: replyTo.id, n: replyTo.n || '?', t: replyTo.t || '[Multimedia]' };
+        }
+
+        if (adj) data.media = await subirMedia(ref.id, adj);
+        await setDoc(ref, data);
+
+        ta.value = '';
+        ta.style.height = 'auto';
+        limpiarAdj();
+        limpiarReply();
+        ultimo = Date.now();
+    } catch (e) {
+        aviso(errTxt(e), 'err');
+    } finally {
+        enviando = false;
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Enviar';
+    }
+}
 /* ------------------------------ ACCIONES EN LOTE ------------------------------ */
 function editarLote(sel) {
     dialogo('Editar ' + sel.length + ' mensajes', (b, c) => {
