@@ -1489,6 +1489,7 @@ body.prem .p-gear {
         const ul = document.querySelector('ul'); ul.id = 'dirClasico';
         ul.insertAdjacentHTML('afterend', `
 <div id="pPremium">
+  <p class="bienvenida">¡Hola! Bienvenido a PichonApps, nuestro directorio de aplicaciones y juegos que tanto te gustan de Pichisoft.</p>
   <div class="p-search" id="pSearch">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
     <span class="p-pre">Pichon</span>
