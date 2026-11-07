@@ -346,6 +346,19 @@ const CSS = `
 .pcm-fmt button[data-fmt="underline"] { text-decoration: underline; }
 .pcm-fmt button[data-fmt="strike"] { text-decoration: line-through; color: #c7c7c7; }
 .pcm-fmt button[data-fmt="mono"] { font-family: "Courier New", monospace; font-size: .95rem; }
+/* ===== Links en mensajes ===== */
+.pcm-tx a {
+    color: #64b5f6;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    word-break: break-all;
+    transition: color .15s;
+}
+.pcm-tx a:hover {
+    color: #90caf9;
+    text-decoration-color: #90caf9;
+}
 `;
 
 /* ------------------------------ UTILIDADES ------------------------------ */
@@ -496,15 +509,17 @@ function crearBoton() {
 }
 /* ---------- Sanitización / rich text ---------- */
 
-function sanitizarHTML(html) {
+function sanitizarHTML(html, allowLinks = true) {
     const tmp = document.createElement('div');
     tmp.innerHTML = String(html || '');
     const map = { STRONG: 'B', EM: 'I', STRIKE: 'S' };
-    const allowed = new Set(['B', 'I', 'U', 'S', 'CODE', 'BR']);
+    const allowed = new Set(['B', 'I', 'U', 'S', 'CODE', 'BR', 'A']);
+
     function clean(node) {
         for (const child of [...node.childNodes]) {
             if (child.nodeType === Node.ELEMENT_NODE) {
                 let tag = child.tagName;
+
                 if (map[tag]) {
                     const newEl = document.createElement(map[tag].toLowerCase());
                     while (child.firstChild) newEl.appendChild(child.firstChild);
@@ -512,6 +527,28 @@ function sanitizarHTML(html) {
                     clean(newEl);
                     continue;
                 }
+
+                if (tag === 'A') {
+                    // Si no está permitido poner links, se deja solo el texto
+                    if (!allowLinks) {
+                        const text = document.createTextNode(child.textContent || '');
+                        child.replaceWith(text);
+                        continue;
+                    }
+                    const href = (child.getAttribute('href') || '').trim();
+                    if (!/^(https?:\/\/|mailto:)/i.test(href)) {
+                        const text = document.createTextNode(child.textContent || '');
+                        child.replaceWith(text);
+                        continue;
+                    }
+                    for (const attr of [...child.attributes]) child.removeAttribute(attr.name);
+                    child.setAttribute('href', href);
+                    child.setAttribute('target', '_blank');
+                    child.setAttribute('rel', 'noopener noreferrer');
+                    clean(child);
+                    continue;
+                }
+
                 if (!allowed.has(tag)) {
                     const text = document.createTextNode(child.textContent || '');
                     child.replaceWith(text);
@@ -520,7 +557,7 @@ function sanitizarHTML(html) {
                 for (const attr of [...child.attributes]) child.removeAttribute(attr.name);
                 clean(child);
             } else if (child.nodeType === Node.TEXT_NODE) {
-                // OK
+                if (allowLinks) autoLinkTextNode(child);
             } else {
                 child.remove();
             }
@@ -528,6 +565,48 @@ function sanitizarHTML(html) {
     }
     clean(tmp);
     return tmp.innerHTML;
+}
+
+function autoLinkTextNode(node) {
+    // No procesar si ya está dentro de un <a> (evita anidar links)
+    if (node.parentElement && node.parentElement.closest('a')) return;
+    const text = node.nodeValue;
+    if (!text) return;
+
+    // Detecta http:// y https://
+    const urlRegex = /\bhttps?:\/\/[^\s<>"'`]+/g;
+    if (!urlRegex.test(text)) return;
+    urlRegex.lastIndex = 0;
+
+    const frag = document.createDocumentFragment();
+    let lastIndex = 0;
+    let match;
+    while ((match = urlRegex.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+            frag.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+        }
+        // Sacar puntuación final pegada (ej: "https://ejemplo.com.")
+        let url = match[0];
+        let trail = '';
+        while (/[.,;:!?)\]]$/.test(url)) {
+            trail = url.slice(-1) + trail;
+            url = url.slice(0, -1);
+        }
+        if (url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.textContent = url;
+            frag.appendChild(a);
+        }
+        if (trail) frag.appendChild(document.createTextNode(trail));
+        lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+        frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+    }
+    node.replaceWith(frag);
 }
 
 function stripHTML(html) {
@@ -1089,7 +1168,7 @@ function burbuja(m) {
 
     if (m.t) {
         const tx = h('div', 'pcm-tx');
-        tx.innerHTML = sanitizarHTML(m.t);
+        tx.innerHTML = sanitizarHTML(m.t, ADMINS.includes(m.uid));
         c.append(tx);
     }
     if (m.media) c.append(mediaEl(m));
@@ -1173,13 +1252,19 @@ async function borrar(m) {
 }
 
 function editar(m) {
-    if (modoDM) return aviso('No podés editar mensajes privados.', 'err');
+    // En DM: solo el que lo envió
+    if (modoDM && m.uid !== uid) return aviso('Solo podés editar tus propios mensajes.', 'err');
+    // En chat global: dueño o admin
+    if (!modoDM && m.uid !== uid && !esAdm()) return aviso('Solo los admins pueden editar mensajes de otros usuarios.', 'err');
+
+    const col = modoDM ? 'private_messages' : 'community_messages';
+
     dialogo('Editar mensaje', (b, c) => {
         b.append(h('p', '', 'Modificá el texto del mensaje. Quedará marcado como editado para todos.'));
         const d = h('div', 'pcm-in');
         d.contentEditable = 'true';
         d.setAttribute('data-ph', 'Escribí tu mensaje…');
-        d.innerHTML = sanitizarHTML(m.t || '');
+        d.innerHTML = sanitizarHTML(m.t || '', esAdm());
         d.style.minHeight = '80px';
         d.style.maxHeight = '220px';
         d.style.overflowY = 'auto';
@@ -1198,17 +1283,19 @@ function editar(m) {
         no.onclick = c;
 
         ok.onclick = async () => {
-            const txt = sanitizarHTML(d.innerHTML).trim();
+            const txt = sanitizarHTML(d.innerHTML, esAdm()).trim();
             const plain = d.innerText.trim();
             if (!plain && !m.media) { aviso('El mensaje no puede quedar vacío.', 'err'); return; }
-            if (txt === sanitizarHTML(m.t || '').trim()) { c(); return; }
+            if (txt === sanitizarHTML(m.t || '', esAdm()).trim()) { c(); return; }
             ok.disabled = true; no.disabled = true;
             try {
-                await updateDoc(doc(db, 'community_messages', m.id), {
+                await updateDoc(doc(db, col, m.id), {
                     t: txt, edited: true, editedBy: uid, editedAt: serverTimestamp()
                 });
                 c();
-                aviso(esAdm() && m.uid !== uid ? 'Mensaje editado (como admin).' : 'Mensaje editado.');
+                aviso(modoDM
+                    ? 'Mensaje editado.'
+                    : (esAdm() && m.uid !== uid ? 'Mensaje editado (como admin).' : 'Mensaje editado.'));
             } catch (e) {
                 ok.disabled = false; no.disabled = false;
                 aviso(errTxt(e), 'err');
@@ -1217,7 +1304,6 @@ function editar(m) {
 
         b.append(ok, no);
         d.focus();
-        // poner cursor al final
         const r = document.createRange();
         r.selectNodeContents(d);
         r.collapse(false);
@@ -1254,7 +1340,7 @@ async function enviar() {
     const plain = ta.innerText.trim();
     if (!plain && !adj) return;
     if (Date.now() - ultimo < 2000) return aviso('Esperá un momento antes de enviar otro mensaje.');
-    let html = sanitizarHTML(ta.innerHTML);
+    let html = sanitizarHTML(ta.innerHTML, esAdm());
     if (!html && plain) html = plain;
     if (html.length > 500) return aviso('El mensaje es demasiado largo (máximo 500 caracteres, contando el formato).', 'err');
 
@@ -1342,7 +1428,7 @@ function editarLote(sel) {
         d.style.wordBreak = 'break-word';
         d.style.padding = '10px';
         const unico = sel.every(m => (m.t || '') === (sel[0].t || ''));
-        if (unico) d.innerHTML = sanitizarHTML(sel[0].t || '');
+        if (unico) d.innerHTML = sanitizarHTML(sel[0].t || '', esAdm());
         if (!d.innerText.trim()) d.classList.add('empty');
         d.addEventListener('input', () => {
             if (d.innerText.trim() === '') d.classList.add('empty');
@@ -1355,7 +1441,7 @@ function editarLote(sel) {
         no.onclick = c;
 
         ok.onclick = async () => {
-            const txt = sanitizarHTML(d.innerHTML).trim();
+            const txt = sanitizarHTML(d.innerHTML, esAdm()).trim();
             const plain = d.innerText.trim();
             if (!plain && !sel.every(m => m.media)) { aviso('Los mensajes sin multimedia no pueden quedar vacíos.', 'err'); return; }
             if (txt.length > 500) { aviso('El texto formateado excede 500 caracteres.', 'err'); return; }
