@@ -1377,6 +1377,96 @@ body.prem .p-gear {
         user-select: none;
     }
 }
+    /* ===================== FIX MÓVIL: GRID DE APPS ===================== */
+
+/* Las cards nunca pueden forzar el ancho de su columna */
+.lista > *,
+.lista-p > *,
+.app {
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+#pPremium {
+    max-width: 840px;   /* el valor original: da las 7 columnas en PC */
+    box-sizing: border-box;
+}
+
+.acc,
+.acc-b,
+.flat {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+
+    /* 3 columnas que SÍ se pueden achicar (minmax(0,1fr)) */
+    .lista,
+    .lista-p {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    /* Las etiquetas pueden bajar de renglón en vez de ensanchar la card */
+    .tags .etiqueta {
+        white-space: normal;
+        text-align: center;
+        line-height: 1.2;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    .nm {
+        overflow-wrap: anywhere;
+    }
+
+    /* Estrellitas de valoración: que no se salgan de la card */
+    .app * {
+        max-width: 100%;
+    }
+
+    /* Que nada fuerce el ancho de la página */
+    html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+}
+
+/* Pantallas muy chicas: 2 columnas */
+@media (max-width: 340px) {
+    .lista,
+    .lista-p {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+    /* ===== Apps por fila (opción de Configuración) ===== */
+.pm-cols { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.pm-col {
+    min-width: 44px; padding: 9px 12px;
+    background: #161616; border: 1px solid #2b2b2b; border-radius: 10px;
+    color: #fff; font: inherit; font-size: .85rem; cursor: pointer;
+    transition: border-color .15s, background .15s;
+}
+.pm-col:hover { border-color: #4a4326; }
+.pm-col.on { border-color: var(--gold); background: rgba(212, 175, 55, .08); }
+.pm-col:focus-visible { outline: 2px solid var(--gold2); outline-offset: 2px; }
+
+/* Columnas elegidas por el usuario (le gana al repeat de .lista) */
+body.cols-custom .lista,
+body.cols-custom .lista-p {
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+}
+body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
+
+/* Con muchas columnas en celular, las tarjetas se compactan para que nada se desborde */
+@media (max-width: 600px) {
+    body.cols-denso .estrellas { font-size: 11px !important; gap: 0 !important; }
+    body.cols-denso .ico { width: 40px; height: 40px; font-size: 1.1rem; border-radius: 12px; }
+    body.cols-denso .nm { font-size: .6rem; }
+    body.cols-denso .nm small { font-size: .5rem; }
+    body.cols-denso .tags .etiqueta { font-size: .42rem; padding: 2px 3px; }
+}
 `;
 
     /* ------------------------------ DATOS ------------------------------ */
@@ -1448,7 +1538,7 @@ body.prem .p-gear {
     ];
 
     /* ------------------------------ ESTADO ------------------------------ */
-    let cfg = { orden: true, blank: true, buscador: true, carteles: true, vista: 'tarjetas' };
+    let cfg = { orden: true, blank: true, buscador: true, carteles: true, ocultarBienvenida: false, columnas: 0, vista: 'tarjetas' };
     let lay = { cats: {}, flat: [] };
     const abierto = {};
     const cerrados = new Set(), pos = {};
@@ -1649,9 +1739,28 @@ body.prem .p-gear {
             else { a.removeAttribute('target'); a.removeAttribute('rel'); }
         });
     }
+    const COL_MIN = 2;
+    const colMax = () => innerWidth <= 600 ? 5 : 8;
 
+    function aplicarColumnas() {
+        const b = document.body, n = +cfg.columnas || 0;
+        const on = n > 0 && cfg.vista === 'tarjetas' && !!Pichisoft.user;
+        b.classList.toggle('cols-custom', on);
+        if (!on) {
+            b.classList.remove('cols-denso', 'cols-muydenso');
+            b.style.removeProperty('--cols');
+            return;
+        }
+        const c = Math.max(COL_MIN, Math.min(colMax(), n));
+        b.style.setProperty('--cols', c);
+        b.classList.toggle('cols-denso', c >= 5 && c < 7);
+        b.classList.toggle('cols-muydenso', c >= 7);
+    }
     function render() {
         aplicarVista(true);
+        aplicarColumnas();
+        const bv = document.querySelector('.bienvenida');
+        if (bv) bv.hidden = !!cfg.ocultarBienvenida;
         const root = $('#pBody'); root.innerHTML = '';
         $('#pSearch').hidden = !cfg.buscador;
         if (!cfg.buscador) $('#pQ').value = '';
@@ -1867,10 +1976,15 @@ body.prem .p-gear {
         d.querySelector('#pcfNo').focus();
     }
 
-    function abrirConfig() {
+        function abrirConfig() {
         if ($('#pCfg')) return;
         const o = document.createElement('div'); o.id = 'pCfg'; o.className = 'pm-ov';
         const fila = (k, t, d) => `<label class="pm-row"><span><b>${t}</b><small>${d}</small></span><input type="checkbox" class="sw" data-k="${k}"></label>`;
+
+        /* CAMBIO A: los botones de "Apps por fila" */
+        let chips = '<button type="button" class="pm-col" data-c="0">Auto</button>';
+        for (let i = COL_MIN; i <= colMax(); i++) chips += `<button type="button" class="pm-col" data-c="${i}">${i}</button>`;
+
         o.innerHTML = `<div class="pm-panel" role="dialog" aria-modal="true" aria-label="Configuración">
       <button class="pm-back" id="cfgBack"><i class="pm-arr" aria-hidden="true"></i>Volver</button>
       <h2>Configuración</h2>
@@ -1885,6 +1999,15 @@ body.prem .p-gear {
       ${fila('blank', 'Abrir las apps en una pestaña nueva', 'Si lo desactivás, se abren en esta misma pestaña.')}
       ${fila('buscador', 'Mostrar barra de búsqueda', 'Buscá una app escribiendo solo lo que va después de "Pichon".')}
       ${fila('carteles', 'Mostrar carteles de aviso', 'Muestra los avisos flotantes, que podés arrastrar y cerrar con la X. Si lo desactivás, no vuelven a aparecer.')}
+      ${fila('ocultarBienvenida', 'Ocultar texto de bienvenida', 'Oculta el mensaje de bienvenida que aparece arriba de la lista de apps.')}
+
+      <!-- CAMBIO B: el bloque "Apps por fila" -->
+      <div class="pm-view">
+        <b>Apps por fila</b>
+        <small>Solo en la vista de tarjetas. "Auto" usa el tamaño original según tu pantalla.</small>
+        <div class="pm-cols">${chips}</div>
+      </div>
+
       <button class="pm-reset" id="cfgReset">Restablecer el orden de las apps</button>
     </div>`;
         document.body.append(o);
@@ -1906,6 +2029,15 @@ body.prem .p-gear {
             b.onclick = () => { cfg.vista = b.dataset.v; setD('cfg', cfg); marcar(); render(); };
         });
         marcar();
+
+        /* CAMBIO C: los eventos de los botones de "Apps por fila" */
+        const marcarCols = () => o.querySelectorAll('.pm-col').forEach(b =>
+            b.classList.toggle('on', +b.dataset.c === (+cfg.columnas || 0)));
+        o.querySelectorAll('.pm-col').forEach(b => {
+            b.onclick = () => { cfg.columnas = +b.dataset.c; setD('cfg', cfg); marcarCols(); render(); };
+        });
+        marcarCols();
+
         o.querySelector('#cfgReset').onclick = confirmarReset;
     }
     // --- SISTEMA DE RATINGS ---
@@ -1929,6 +2061,7 @@ body.prem .p-gear {
 
     function crearEstrellas(appId, appName) {
         const cont = document.createElement('div');
+        cont.className = 'estrellas';
         cont.style.cssText = 'display:flex;justify-content:center;gap:2px;margin-top:5px;cursor:pointer;font-size:16px;';
 
         let userRating = 0;
@@ -2076,9 +2209,9 @@ body.prem .p-gear {
     function renderPremium() {
         const u = Pichisoft.user;
         document.body.classList.toggle('prem', !!u);
-        if (!u) { cerrarConfig(); aplicarVista(false); renderCarteles(); return; }
+        if (!u) { cerrarConfig(); aplicarVista(false); aplicarColumnas(); renderCarteles(); return; }
         const sv = getD('cfg', {});
-        cfg = Object.assign({ orden: true, blank: true, buscador: true, carteles: true, vista: 'tarjetas' }, sv);
+        cfg = Object.assign({ orden: true, blank: true, buscador: true, carteles: true, ocultarBienvenida: false, columnas: 0, vista: 'tarjetas' }, sv);
         if (!sv.vista && sv.clasica) cfg.vista = 'clasica'; /* migra opciones anteriores */
         if (!sv.vista && sv.lista) cfg.vista = 'lista';
         delete cfg.clasica; delete cfg.lista;
@@ -2088,6 +2221,7 @@ body.prem .p-gear {
 
     /* Mantiene los carteles sueltos dentro de la pantalla al rotar o redimensionar */
     addEventListener('resize', () => {
+        aplicarColumnas();
         document.querySelectorAll('.cartel.suelto').forEach(d => {
             const r = d.getBoundingClientRect();
             d.style.left = Math.max(0, Math.min(r.left, innerWidth - r.width)) + 'px';
