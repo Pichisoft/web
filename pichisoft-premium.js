@@ -1977,6 +1977,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
     }
 
         function abrirConfig() {
+       if (!Pichisoft.user) return; 
         if ($('#pCfg')) return;
         const o = document.createElement('div'); o.id = 'pCfg'; o.className = 'pm-ov';
         const fila = (k, t, d) => `<label class="pm-row"><span><b>${t}</b><small>${d}</small></span><input type="checkbox" class="sw" data-k="${k}"></label>`;
