@@ -330,6 +330,7 @@
             yo = u; $('#den').hidden = true; $('#app').hidden = false;
             cargar();
             escucharReportes();
+            contarOpiniones();
         });
 
         async function cargar() {
@@ -597,6 +598,7 @@
                         await deleteDoc(doc(db, 'app_reviews', op.id));
                         ops = ops.filter(x => x.id !== op.id);
                         pintarOpiniones(ops);
+                        contarOpiniones();
                     } catch (e) {
                         alert('Error: ' + e.message);
                     }
@@ -613,7 +615,14 @@
             cb.onclick = () => $('#opOv').remove();
             b.append(cb);
         }
-
+        async function contarOpiniones() {
+            try {
+                const snap = await getDocs(query(collection(db, 'app_reviews'), orderBy('ts', 'desc'), limit(300)));
+                const b = $('#opN');
+                b.hidden = !snap.size;
+                b.textContent = snap.size;
+            } catch (e) { console.error('opiniones', e); }
+        }
         $('#op').onclick = abrirOpiniones;
         $('#q').oninput = pintar; $('#rec').onclick = cargar;
     </script>
