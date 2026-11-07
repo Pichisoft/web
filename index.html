@@ -2,26 +2,6 @@
 <html lang="es">
 
 <head>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#d4af37">
-    <!-- SEO Básico -->
-    <meta name="description"
-        content="PichonApps: El ecosistema oficial de Pichisoft. Descubrí decenas de aplicaciones y juegos gratis en un solo lugar.">
-    <meta name="keywords" content="pichisoft, pichonapps, juegos, herramientas, pichonpush, pichonchess">
-    <meta name="author" content="Pichisoft">
-
-    <!-- Open Graph (Para WhatsApp, Discord, Twitter, Facebook) -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://pichisoft.cc/">
-    <meta property="og:title" content="PichonApps - By Pichisoft">
-    <meta property="og:description" content="El ecosistema de apps y juegos de Pichisoft.">
-    <meta property="og:image" content="https://pichisoft.cc/preview.jpg">
-
-    <!-- Twitter / X -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="PichonApps - By Pichisoft">
-    <meta name="twitter:description" content="El ecosistema de apps y juegos de Pichisoft.">
-    <meta name="twitter:image" content="https://pichisoft.cc/preview.jpg">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta http-equiv="Content-Security-Policy"
@@ -772,6 +752,7 @@
         #pichisoft-topbar {
             position: absolute;
             top: 5px;
+            /* Arriba de todo */
             left: 60%;
             transform: translateX(-50%);
             display: flex;
@@ -786,15 +767,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
             z-index: 999999;
             user-select: none;
-
-            /* NUEVO: Arranca invisible y aparece suavemente */
-            opacity: 0;
-            transition: opacity 0.3s ease, transform 0.2s ease;
-        }
-
-        /* NUEVO: Cuando tiene la clase "ready", se hace visible */
-        #pichisoft-topbar.ready {
-            opacity: 1;
+            transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
         /* Ocultar el panel cuando haya un modal abierto */
@@ -841,48 +814,63 @@
             display: none !important;
         }
 
-        /* ===== TOPBAR RESPONSIVE ===== */
-        @media (max-width: 900px) {
-            body {
-                padding-top: 70px;
-            }
+      /* ===== TOPBAR RESPONSIVE ===== */
 
-            #pichisoft-topbar {
-                position: relative;
-                top: auto;
-                left: auto;
-                transform: none;
-                width: fit-content;
-                max-width: calc(100% - 20px);
-                margin: 0 auto 14px;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 4px 10px;
-                padding: 6px 12px;
-            }
+/* Si no hay botones adentro, no se muestra la cajita vacía */
+#pichisoft-topbar:empty {
+    display: none;
+}
 
-            body:has(.psi-ov) #pichisoft-topbar,
-            body:has(.pcm-ov) #pichisoft-topbar,
-            body:has(.pm-ov) #pichisoft-topbar,
-            body:has(.pcm-dov) #pichisoft-topbar,
-            body:has(.ov) #pichisoft-topbar {
-                transform: translateY(-10px);
-            }
-        }
+@media (max-width: 900px) {
+    /* Espacio justo para la cuenta (arriba a la derecha) */
+    body {
+        padding-top: 56px;
+    }
 
-        @media (max-width: 480px) {
-            #pichisoft-topbar {
-                gap: 2px 6px;
-                padding: 5px 8px;
-            }
+    /* La cuenta pasa a estar arriba de todo y se va con el scroll */
+    #cuenta {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+    }
 
-            #pichisoft-topbar>* {
-                font-size: .74rem !important;
-                padding: 6px 6px !important;
-                /* zona táctil más cómoda */
-                letter-spacing: 0 !important;
-            }
-        }
+    /* El panel queda debajo de la cuenta, centrado y dentro del flujo */
+    #pichisoft-topbar {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        width: fit-content;
+        max-width: calc(100% - 20px);
+        margin: 0 auto 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2px 10px;
+        padding: 6px 12px;
+    }
+
+    /* Al abrir un modal se oculta, sin desplazarse horizontalmente */
+    body:has(.psi-ov) #pichisoft-topbar,
+    body:has(.pcm-ov) #pichisoft-topbar,
+    body:has(.pm-ov) #pichisoft-topbar,
+    body:has(.pcm-dov) #pichisoft-topbar,
+    body:has(.ov) #pichisoft-topbar {
+        transform: translateY(-10px);
+    }
+}
+
+@media (max-width: 480px) {
+    #pichisoft-topbar {
+        gap: 0 4px;
+        padding: 4px 8px;
+    }
+
+    #pichisoft-topbar>* {
+        font-size: .74rem !important;
+        padding: 6px 6px !important;
+        letter-spacing: 0 !important;
+    }
+}
 
         /* ===== ARREGLOS GENERALES PARA CELULAR ===== */
 
@@ -967,64 +955,6 @@
 
             .pf-card {
                 max-height: 88dvh;
-            }
-        }
-
-        /* ===================== FIX MÓVIL ===================== */
-
-        /* 1) Modales: el padding/borde ya no agranda la caja */
-        .box {
-    box-sizing: border-box;   /* sin tocar max-width: queda el 560px original */
-}
-
-        /* 2) Evitar que la página sea más ancha que el celular (adiós al zoom out) */
-        html {
-            -webkit-text-size-adjust: 100%;
-            text-size-adjust: 100%;
-        }
-
-        html,
-        body {
-            max-width: 100%;
-            overflow-x: hidden;
-        }
-
-        @media (max-width: 600px) {
-            .ov {
-                padding: 10px;
-            }
-
-            .ov.sem .box,
-            .ov.sem2 .box {
-                padding: 18px;
-            }
-
-            #cuenta {
-                right: 14px;
-            }
-        }
-
-        /* 3) Barra superior: TODOS los botones iguales */
-        @media (max-width: 900px) {
-
-            html body #pichisoft-topbar>*,
-            html body #pichisoft-topbar>* * {
-                font-family: "Times New Roman", Times, serif !important;
-                font-size: .8rem !important;
-                font-weight: bold !important;
-                line-height: 1.2 !important;
-                letter-spacing: 0 !important;
-                text-transform: uppercase !important;
-                transform: none !important;
-                zoom: 1 !important;
-            }
-        }
-
-        @media (max-width: 480px) {
-
-            html body #pichisoft-topbar>*,
-            html body #pichisoft-topbar>* * {
-                font-size: .74rem !important;
             }
         }
     </style>
@@ -2170,17 +2100,9 @@
             getFirestore,
             doc,
             setDoc,
-            getDoc,
-            collection,
-            addDoc,
-            deleteDoc,
-            updateDoc,
-            getDocs,
-            query,
-            where,
-            orderBy,
-            limit
+            getDoc
         } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
             authDomain: "pichisoft.firebaseapp.com",
@@ -2214,39 +2136,12 @@
             setDoc,
             getDoc
         };
-        window.PichisoftFirebase = {
-            auth,
-            db,
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword,
-            signOut,
-            onAuthStateChanged,
-            updateEmail,
-            updatePassword,
-            reauthenticateWithCredential,
-            EmailAuthProvider,
-            sendEmailVerification,
-            sendPasswordResetEmail,
-            deleteUser,
-            doc,
-            setDoc,
-            getDoc,
-            collection,
-            addDoc,
-            deleteDoc,
-            updateDoc,
-            getDocs,
-            query,
-            where,
-            orderBy,
-            limit
-        };
     </script>
-    <script src="pichisoft-premium.js?v=12"></script>
-    <script type="module" src="pichisoft-community.js?v=12"></script>
-    <script type="module" src="pichisoft-messages.js?v=12"></script>
-    <script src="pichisoft-carteles.js?v=12"></script>
-    <script src="pichisoft-idiomas.js?v=12"></script>
+    <script src="pichisoft-premium.js"></script>
+    <script type="module" src="pichisoft-community.js"></script>
+    <script type="module" src="pichisoft-messages.js"></script>
+    <script src="pichisoft-carteles.js?v=5"></script>
+    <script src="pichisoft-idiomas.js"></script>
     <!-- ============================================================ -->
     <!-- PIE DE PÁGINA Y MODALES INFORMATIVOS (ESTILO PREMIUM)        -->
     <!-- ============================================================ -->
@@ -2583,6 +2478,14 @@
                 'info': {
                     title: 'Información general',
                     html: `
+
+                        <h3>HORARIO DE ATENCIÓN:</h3>
+                        <h3>De lunes a viernes:</h3>
+                        <p>De 14:30hs a 19:00hs</p>
+    
+                        <h3>Fines de semana:</h3>
+                        <p>De 13:00hs a 22:00hs</p>
+
                         <h3>Desde:</h3>
                         <p>10 de mayo de 2026</p>
                         
@@ -2673,71 +2576,6 @@
                 if (e.key === 'Escape' && modal.classList.contains('open')) cerrarModal();
             });
         })();
-    </script>
-
-    <script>
-        // ERROR BOUNDARY GLOBAL (Versión definitiva: solo atrapa fallos de internet)
-        function mostrarErrorGlobal(mensaje) {
-            if (document.getElementById('error-global-ov')) return;
-
-            const ov = document.createElement('div');
-            ov.id = 'error-global-ov';
-            ov.style.cssText = 'position:fixed;inset:0;z-index:9999999;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);font-family:Verdana,sans-serif;';
-
-            ov.innerHTML = `
-                <div style="background:#141414;border:2px solid #8e3030;border-radius:16px;padding:30px 24px;max-width:400px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.8);">
-                    <h2 style="font-family:'Times New Roman',serif;color:#ff7b7b;margin:0 0 15px;font-size:1.8rem;">Ups, algo salió mal</h2>
-                    <p style="color:#ccc;font-size:0.9rem;line-height:1.5;margin-bottom:20px;">${mensaje}</p>
-                    <button onclick="location.reload()" style="background:#8e3030;color:#fff;border:0;border-radius:8px;padding:12px 20px;font-family:Verdana,sans-serif;font-size:0.9rem;cursor:pointer;width:100%;">Recargar Página</button>
-                </div>
-            `;
-            document.body.appendChild(ov);
-        }
-
-        // 1. Si no hay internet al cargar la página
-        if (!navigator.onLine) {
-            mostrarErrorGlobal('Parece que no tenés conexión a internet. Revisá tu red y recargá la página.');
-        }
-
-        // 2. Si se corta el internet en vivo
-        window.addEventListener('offline', () => {
-            mostrarErrorGlobal('Te quedaste sin conexión a internet.');
-        });
-
-        // 3. IGNORAR TODOS LOS ERRORES DE JAVASCRIPT Y FIREBASE
-        // (Así el chat puede fallar internamente sin romper toda la pantalla)
-        window.addEventListener('error', (e) => {
-            console.warn('Error de JS ignorado por el boundary:', e.message);
-            e.preventDefault(); // Evita que se propague
-        });
-
-        window.addEventListener('unhandledrejection', (e) => {
-            console.warn('Promesa rechazada (Firebase) ignorada:', e.reason);
-            e.preventDefault(); // Evita que salte el cartel
-        });
-    </script>
-    <script>
-        // Espera 200ms (o a que carguen los scripts) y muestra el panel de golpe
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const topbar = document.getElementById('pichisoft-topbar');
-                if (topbar) topbar.classList.add('ready');
-            }, 150);
-        });
-    </script>
-    <script>
-        // Limpiar Service Worker viejo y recargar para forzar actualización
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function (registrations) {
-                for (let registration of registrations) {
-                    registration.unregister();
-                }
-                // Si había un SW, recargamos una vez para que todo se actualice
-                if (registrations.length > 0) {
-                    setTimeout(() => location.reload(), 100);
-                }
-            });
-        }
     </script>
 
 </body>
