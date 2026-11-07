@@ -789,7 +789,13 @@
 
             /* NUEVO: Arranca invisible y aparece suavemente */
             opacity: 0;
-            transition: opacity 0.3s ease, transform 0.2s ease;
+            transition: opacity 0.3s ease,
+                transform 0.2s ease;
+        }
+
+        /* El panel superior solo existe para usuarios con cuenta */
+        body:not(.prem) #pichisoft-topbar {
+            display: none !important;
         }
 
         /* NUEVO: Cuando tiene la clase "ready", se hace visible */
@@ -970,6 +976,14 @@
             }
         }
 
+        .box input[type=text],
+        .box input[type=email],
+        .box input[type=password],
+        .box textarea {
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+
         /* ===================== FIX MÓVIL ===================== */
 
         /* 1) Modales: el padding/borde ya no agranda la caja */
@@ -1111,8 +1125,8 @@
            a un servidor (Firebase, Supabase, etc.). El resto de la interfaz no cambia.
            ===================================================================== */
         const LS = {
-            get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } },
-            set(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+            get(k, d) {try {const v = JSON.parse(localStorage.getItem(k)); return v ?? d;} catch {return d;} },
+            set(k, v) {localStorage.setItem(k, JSON.stringify(v));}
         };
 
         const enc = new TextEncoder();
@@ -1122,7 +1136,7 @@
         async function pbkdf2(pass, saltHex) {
             const salt = Uint8Array.from(saltHex.match(/../g).map(h => parseInt(h, 16)));
             const key = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveBits']);
-            return hex(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 310000, hash: 'SHA-256' }, key, 256));
+            return hex(await crypto.subtle.deriveBits({name: 'PBKDF2', salt, iterations: 310000, hash: 'SHA-256'}, key, 256));
         }
         function iguales(a, b) { // comparación en tiempo constante
             a = String(a); b = String(b);
@@ -1134,18 +1148,18 @@
 
         /* ---------- Restablecer contraseña: cifrado para el equipo Pichisoft ----------
            Esta es la clave PÚBLICA del equipo (puede verla cualquiera). La privada la tenés solo vos. */
-        const EQUIPO_PUB = { "kty": "EC", "crv": "P-256", "x": "zcIrDLZTuprDPAkRlyElRKgww1sYvR2urv0W6n_O5Us", "y": "ayPuqKOM2KShz_gFvnaq3SJAMyn0WvEk4OSG9VceWUM" };
+        const EQUIPO_PUB = {"kty": "EC", "crv": "P-256", "x": "zcIrDLZTuprDPAkRlyElRKgww1sYvR2urv0W6n_O5Us", "y": "ayPuqKOM2KShz_gFvnaq3SJAMyn0WvEk4OSG9VceWUM"};
         const B64 = {
             enc: b => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''),
             dec: s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0))
         };
         async function cifrarParaEquipo(code) {
-            const ec = { name: 'ECDH', namedCurve: 'P-256' };
-            const pub = await crypto.subtle.importKey('jwk', { ...EQUIPO_PUB, ext: true }, ec, false, []);
+            const ec = {name: 'ECDH', namedCurve: 'P-256'};
+            const pub = await crypto.subtle.importKey('jwk', {...EQUIPO_PUB, ext: true}, ec, false, []);
             const eph = await crypto.subtle.generateKey(ec, true, ['deriveKey']);
-            const aes = await crypto.subtle.deriveKey({ name: 'ECDH', public: pub }, eph.privateKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+            const aes = await crypto.subtle.deriveKey({name: 'ECDH', public: pub}, eph.privateKey, {name: 'AES-GCM', length: 256}, false, ['encrypt']);
             const iv = crypto.getRandomValues(new Uint8Array(12));
-            const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aes, enc.encode(code)));
+            const ct = new Uint8Array(await crypto.subtle.encrypt({name: 'AES-GCM', iv}, aes, enc.encode(code)));
             const ep = new Uint8Array(await crypto.subtle.exportKey('raw', eph.publicKey));
             const out = new Uint8Array(65 + 12 + ct.length); out.set(ep, 0); out.set(iv, 65); out.set(ct, 77);
             return B64.enc(out);
@@ -1193,7 +1207,7 @@
             return 'No se pudo completar la operación. Intentá de nuevo.';
         }
         const API = {
-            users() { return LS.get('ps_users', {}); },
+            users() {return LS.get('ps_users', {});},
             validar(name, pass) {
                 if (!/^[A-Za-z0-9_.-]{3,20}$/.test(name)) throw new Error('El usuario debe tener de 3 a 20 caracteres: letras, números, _ . -');
                 if (pass.length < 8) throw new Error('La contraseña debe tener al menos 8 caracteres.');
@@ -1264,9 +1278,9 @@
                     throw new Error('No se pudo crear el perfil. Intentá de nuevo.');
                 }
             },
-            bloqueo(k) { const f = LS.get('ps_fails', {})[k]; return f && f.hasta > Date.now() ? Math.ceil((f.hasta - Date.now()) / 1000) : 0; },
+            bloqueo(k) {const f = LS.get('ps_fails', {})[k]; return f && f.hasta > Date.now() ? Math.ceil((f.hasta - Date.now()) / 1000) : 0;},
             fallo(k) {
-                const all = LS.get('ps_fails', {}), f = all[k] || { n: 0, hasta: 0 };
+                const all = LS.get('ps_fails', {}), f = all[k] || {n: 0, hasta: 0};
                 f.n++; if (f.n >= 5) f.hasta = Date.now() + Math.min(900000, 60000 * 2 ** (f.n - 5));
                 all[k] = f; LS.set('ps_fails', all);
             },
@@ -1278,9 +1292,9 @@
                 if (u && u.salt) ok = iguales(await pbkdf2(pass, u.salt), u.hash);
                 else if (u) { // cuenta vieja (hash simple): se verifica y se actualiza
                     ok = iguales(await sha('pichisoft:' + pass), u.hash);
-                    if (ok) { u.salt = rand(16); u.hash = await pbkdf2(pass, u.salt); LS.set('ps_users', users); }
+                    if (ok) {u.salt = rand(16); u.hash = await pbkdf2(pass, u.salt); LS.set('ps_users', users);}
                 } else await pbkdf2(pass, rand(16)); // mismo tiempo si el usuario no existe
-                if (!ok) { this.fallo(k); throw new Error('Usuario o contraseña incorrectos.'); }
+                if (!ok) {this.fallo(k); throw new Error('Usuario o contraseña incorrectos.');}
                 const f = LS.get('ps_fails', {}); delete f[k]; LS.set('ps_fails', f);
                 return k;
             },
@@ -1301,8 +1315,8 @@
                     const fb = window.PichisoftFirebase;
                     fb.setDoc(
                         fb.doc(fb.db, 'users', uidFb),
-                        { photo: u[k].photo },
-                        { merge: true }
+                        {photo: u[k].photo},
+                        {merge: true}
                     ).catch(error => console.error('Error sincronizando la foto:', error));
                 }
             },
@@ -1370,10 +1384,10 @@
                             photo: u.photo || '',
                             data: u.data || {}
                         },
-                        { merge: true }
+                        {merge: true}
                     );
 
-                    const perfilActualizado = { ...u, name: nuevoNombre, email: nuevoEmail };
+                    const perfilActualizado = {...u, name: nuevoNombre, email: nuevoEmail};
                     delete users[k];
                     users[nuevaK] = perfilActualizado;
                     LS.set('ps_users', users);
@@ -1398,6 +1412,14 @@
                     if (error.code === 'auth/weak-password') throw new Error('La contraseña nueva es demasiado débil.');
                     throw error;
                 }
+            },
+            crearSesion(k) {
+                const u = this.users();
+                if (!u[k]) throw new Error('No se encontró la cuenta.');
+                const t = rand(32);
+                u[k].tok = t;
+                LS.set('ps_users', u);
+                LS.set('ps_session', {k, t, exp: Date.now() + 30 * 24 * 60 * 60 * 1000}); // 30 días
             },
             async cerrarSesion() {
 
@@ -1465,10 +1487,10 @@
            Pichisoft.setData('PichonDocs','nota1', {...}) / Pichisoft.getData('PichonDocs','nota1')
            Con sesión iniciada se guarda en la cuenta; sin cuenta, en localStorage normal. */
         window.Pichisoft = {
-            get user() { const k = sesionK(); return k ? API.users()[k] : null; },
+            get user() {const k = sesionK(); return k ? API.users()[k] : null;},
             getData(app, key, def) {
                 const k = sesionK();
-                if (k) { const v = API.users()[k].data[app + ':' + key]; return v === undefined ? def : v; }
+                if (k) {const v = API.users()[k].data[app + ':' + key]; return v === undefined ? def : v;}
                 return LS.get(app + ':' + key, def);
             },
             setData(app, key, val) {
@@ -1488,8 +1510,8 @@
 
                         fb.setDoc(
                             fb.doc(fb.db, 'users', usuario.firebaseUid),
-                            { data: usuario.data },
-                            { merge: true }
+                            {data: usuario.data},
+                            {merge: true}
                         ).catch(error => {
                             console.error('Error sincronizando datos con Firestore:', error);
                         });
@@ -1537,15 +1559,15 @@
                 c.drawImage(img, H - cx * s, H - cy * s, img.width * s, img.height * s); c.restore();
             }
 
-            img.onload = () => { cx = img.width / 2; cy = img.height / 2; draw(); };
-            img.onerror = () => { m.close(); alert('No se pudo cargar esa imagen.'); };
+            img.onload = () => {cx = img.width / 2; cy = img.height / 2; draw();};
+            img.onerror = () => {m.close(); alert('No se pudo cargar esa imagen.');};
             img.src = src;
 
-            q(m, '#zm').oninput = e => { z = +e.target.value; draw(); };
+            q(m, '#zm').oninput = e => {z = +e.target.value; draw();};
 
             let d = null;
             const w = q(m, '#cw');
-            w.onpointerdown = e => { d = [e.clientX, e.clientY]; w.setPointerCapture(e.pointerId); };
+            w.onpointerdown = e => {d = [e.clientX, e.clientY]; w.setPointerCapture(e.pointerId);};
             w.onpointermove = e => {
                 if (!d) return;
                 const s = base() * z;
@@ -1558,8 +1580,8 @@
             q(m, '#ok').onclick = () => {
                 const out = document.createElement('canvas'); out.width = out.height = 256;
                 draw(out.getContext('2d'), 256 / S);
-                try { cb(out.toDataURL('image/jpeg', .85)); m.close(); }
-                catch { alert('Esa imagen no se puede usar (protegida). Probá con otra.'); }
+                try {cb(out.toDataURL('image/jpeg', .85)); m.close();}
+                catch {alert('Esa imagen no se puede usar (protegida). Probá con otra.');}
             };
         }
         /* ---------- Elegir foto (galería / editar la actual / quitar) ---------- */
@@ -1576,7 +1598,7 @@
             q(m, '#gal').onclick = () => q(m, '#fi').click();
 
             if (hayActual) {
-                q(m, '#act').onclick = () => cropper(actual, x => { cb(x); m.close(); });
+                q(m, '#act').onclick = () => cropper(actual, x => {cb(x); m.close();});
                 q(m, '#del').onclick = () => {
                     if (!confirm('¿Querés quitar tu foto de perfil?')) return;
                     cb('');
@@ -1587,7 +1609,7 @@
             q(m, '#fi').onchange = e => {
                 const f = e.target.files[0]; if (!f) return;
                 const r = new FileReader();
-                r.onload = () => cropper(r.result, x => { cb(x); m.close(); });
+                r.onload = () => cropper(r.result, x => {cb(x); m.close();});
                 r.readAsDataURL(f);
             };
         }
@@ -1596,7 +1618,7 @@
            El mail sale de pichisoft.cc@gmail.com usando EmailJS (gratis).
            Completá estos 3 datos desde tu panel de EmailJS. Mientras estén vacíos,
            funciona en MODO PRUEBA (el código se muestra en pantalla). */
-        const EMAILJS = { serviceId: 'service_3ntarp6', templateId: 'template_39iipv1', publicKey: 'V7ABPJ0lcUYZiIAMV' };
+        const EMAILJS = {serviceId: 'service_3ntarp6', templateId: 'template_39iipv1', publicKey: 'V7ABPJ0lcUYZiIAMV'};
 
         function explicarErrorEmail(st, t) {
             const x = String(t).toLowerCase();
@@ -1615,7 +1637,7 @@
             let r;
             try {
                 r = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         service_id: EMAILJS.serviceId, template_id: EMAILJS.templateId, user_id: EMAILJS.publicKey,
                         template_params: {
@@ -1624,9 +1646,9 @@
                         }
                     })
                 });
-            } catch { throw new Error('No se pudo conectar con EmailJS. Revisá tu internet o desactivá el bloqueador de anuncios en esta página.'); }
+            } catch {throw new Error('No se pudo conectar con EmailJS. Revisá tu internet o desactivá el bloqueador de anuncios en esta página.');}
             const t = await r.text();
-            if (!r.ok) { console.error('EmailJS', r.status, t); throw new Error(explicarErrorEmail(r.status, t)); }
+            if (!r.ok) {console.error('EmailJS', r.status, t); throw new Error(explicarErrorEmail(r.status, t));}
             return true;
         }
 
@@ -1658,7 +1680,7 @@
                 if (!m.isConnected) return;
 
                 m.close();
-                pasoCodigo(code, email, true, onOk);
+                pasoCodigo(code, email, true, onOk, onCancel);
 
             } catch (error) {
                 if (!m.isConnected) return;
@@ -1680,7 +1702,7 @@
             }
         }
 
-        function pasoCodigo(code, email, enviado, onOk) {
+        function pasoCodigo(code, email, enviado, onOk, onCancel) {
             const m = modal(`<h2 class="t">Código de verificación</h2>
     <div class="peq" id="inf"></div>
     <label>Escribí el código de 6 dígitos:</label><input type="text" id="cd" inputmode="numeric" maxlength="6">
@@ -1689,12 +1711,12 @@
             q(m, '#inf').textContent =
                 'Te enviamos un código de verificación a ' +
                 ocultarEmail(email);
-            q(m, '#no').onclick = () => m.close();
+            q(m, '#no').onclick = () => {m.close(); if (onCancel) onCancel();};
             let intentos = 0;
             q(m, '#ok').onclick = async () => {
                 const v = q(m, '#cd').value.trim();
-                if (iguales(v, code) && await API.useCode(code)) { m.close(); onOk(); return; }
-                if (++intentos >= 5) { await API.useCode(code); m.close(); alert('Demasiados intentos fallidos. Pedí un código nuevo.'); return; }
+                if (iguales(v, code) && await API.useCode(code)) {m.close(); onOk(); return;}
+                if (++intentos >= 5) {await API.useCode(code); m.close(); alert('Demasiados intentos fallidos. Pedí un código nuevo.'); return;}
                 q(m, '#er').textContent = 'Código incorrecto. Te quedan ' + (5 - intentos) + ' intentos.';
             };
         }
@@ -1754,9 +1776,9 @@
     <button class="opt" id="reg">Crearse una cuenta de Pichisoft</button>
     <button class="opt" id="log">Iniciar sesión en mi cuenta de Pichisoft</button>
     <button class="opt" id="sin">Usar Pichisoft sin ninguna cuenta</button></div>`);
-            q(m, '#reg').onclick = () => { m.close(); pantallaRegistro(); };
-            q(m, '#log').onclick = () => { m.close(); pantallaLogin(); };
-            q(m, '#sin').onclick = () => { LS.set('ps_seen', 1); m.close(); renderCuenta(); };
+            q(m, '#reg').onclick = () => {m.close(); pantallaRegistro();};
+            q(m, '#log').onclick = () => {m.close(); pantallaLogin();};
+            q(m, '#sin').onclick = () => {LS.set('ps_seen', 1); m.close(); renderCuenta();};
         }
 
         function pantallaRegistro() {
@@ -1774,7 +1796,7 @@
             q(m, '#ph').onclick = () => elegirFoto(f => {
                 foto = f; const i = document.createElement('img'); i.src = f; q(m, '#ph').textContent = ''; q(m, '#ph').appendChild(i);
             });
-            q(m, '#vol').onclick = () => { m.close(); pantallaBienvenida(); };
+            q(m, '#vol').onclick = () => {m.close(); pantallaBienvenida();};
             q(m, '#ok').onclick = async () => {
                 const u = q(m, '#u').value.trim();
                 const email = q(m, '#email').value.trim();
@@ -1783,9 +1805,14 @@
                     q(m, '#er').textContent = 'Completá nombre de usuario, email y contraseña.';
                     return;
                 }
-                if (p !== q(m, '#p2').value) { q(m, '#er').textContent = 'Las contraseñas no coinciden.'; return; }
+                if (p !== q(m, '#p2').value) {q(m, '#er').textContent = 'Las contraseñas no coinciden.'; return;}
                 try {
-                    iniciarSesionUI(await API.register(u, email, p, foto));
+                    await API.register(u, email, p, foto);
+                    const fb = firebaseAuth();
+                    await fb.signOut(fb.auth);
+                    m.close();
+                    alert('Cuenta creada. Te enviamos un link a tu email: abrilo para verificarlo y después iniciá sesión.');
+                    pantallaLogin();
                 } catch (e) {
                     q(m, '#er').textContent = traducirError(e);
                 }
@@ -1799,8 +1826,8 @@
     <div class="err" id="er"></div>
     <button class="btn" id="ok">Continuar</button><button class="btn" id="vol">Volver</button><br>
     <span class="lnk" id="olv">Olvidé mi contraseña</span>`);
-            q(m, '#vol').onclick = () => { m.close(); pantallaBienvenida(); };
-            q(m, '#olv').onclick = () => { m.close(); pantallaReset(); };
+            q(m, '#vol').onclick = () => {m.close(); pantallaBienvenida();};
+            q(m, '#olv').onclick = () => {m.close(); pantallaReset();};
             q(m, '#ok').onclick = async e => {
                 e.target.disabled = true; q(m, '#er').textContent = '';
                 try {
@@ -1810,6 +1837,15 @@
                     const firebase = firebaseAuth();
 
                     await firebase.signInWithEmailAndPassword(firebase.auth, email, p);
+
+                    const u = firebase.auth.currentUser;
+                    await u.reload();
+                    await u.getIdToken(true);
+                    if (!u.emailVerified) {
+                        try {await firebase.sendEmailVerification(u);} catch (e) { }
+                        await firebase.signOut(firebase.auth);
+                        throw new Error('Tenés que verificar tu email. Te enviamos un link: abrilo y después iniciá sesión.');
+                    }
 
                     const usuario = firebase.auth.currentUser;
                     const perfilSnap = await firebase.getDoc(
@@ -1830,7 +1866,7 @@
                         name: perfil.username,
                         email: usuario.email,
                         photo: perfil.photo || '',
-                        data: { ...(users[k]?.data || {}), ...(perfil.data || {}) },
+                        data: {...(users[k]?.data || {}), ...(perfil.data || {})},
                         firebaseUid: usuario.uid
                     };
 
@@ -1838,7 +1874,7 @@
 
                     verificar(usuario.email, () => iniciarSesionUI(k), async () => {
                         const fb = firebaseAuth();
-                        try { await fb.signOut(fb.auth); } catch (e) { }
+                        try {await fb.signOut(fb.auth);} catch (e) { }
                         q(m, '#er').textContent = 'Verificación cancelada. Volvé a intentarlo.';
                         e.target.disabled = false;
                     });
@@ -1860,10 +1896,10 @@
         <label>Email:</label><input type="email" id="email" autocomplete="email">
         <div class="err" id="er"></div>
         <button class="btn" id="ok">Enviar email</button><button class="btn" id="vol">Volver</button>`);
-            q(m, '#vol').onclick = () => { m.close(); pantallaLogin(); };
+            q(m, '#vol').onclick = () => {m.close(); pantallaLogin();};
             q(m, '#ok').onclick = async e => {
                 const email = q(m, '#email').value.trim();
-                if (!email) { q(m, '#er').textContent = 'Ingresá tu email.'; return; }
+                if (!email) {q(m, '#er').textContent = 'Ingresá tu email.'; return;}
                 e.target.disabled = true;
                 try {
                     const firebase = firebaseAuth();
@@ -1991,91 +2027,38 @@
                     return;
                 }
 
-                if (passNueva || passRepetida || passActual) {
+                const cambioEmail = nuevoEmail.toLowerCase() !== usuario.email.toLowerCase();
 
-                    if (!passActual) {
-                        error.textContent =
-                            'Ingresá tu contraseña actual para cambiar la contraseña.';
-                        return;
-                    }
-
-                    if (!passNueva) {
-                        error.textContent =
-                            'Ingresá una contraseña nueva.';
-                        return;
-                    }
-
-                    if (passNueva !== passRepetida) {
-                        error.textContent =
-                            'Las contraseñas no coinciden.';
-                        return;
-                    }
-
-                    if (passNueva.length < 8) {
-                        error.textContent =
-                            'La contraseña debe tener al menos 8 caracteres.';
-                        return;
-                    }
+                if (passNueva || passRepetida) {
+                    if (!passNueva) {error.textContent = 'Ingresá una contraseña nueva.'; return;}
+                    if (passNueva !== passRepetida) {error.textContent = 'Las contraseñas no coinciden.'; return;}
+                    if (passNueva.length < 8) {error.textContent = 'La contraseña debe tener al menos 8 caracteres.'; return;}
                 }
 
-                const cambioEmail =
-                    nuevoEmail.toLowerCase() !== usuario.email.toLowerCase();
+                if ((cambioEmail || passNueva) && !passActual) {
+                    error.textContent = 'Ingresá tu contraseña actual (en la sección "Contraseña") para cambiar el email o la contraseña.';
+                    if (!passwordAbierta) q(m, '#ep-toggle-pass').click();
+                    return;
+                }
 
                 boton.disabled = true;
 
-
+                const guardar = async () => {
+                    try {
+                        await API.guardarPerfil(k, nuevoNombre, nuevoEmail, passNueva, passActual);
+                        m.close();
+                        renderCuenta();
+                        alert('Perfil actualizado correctamente.');
+                    } catch (x) {
+                        error.textContent = traducirError(x);
+                        boton.disabled = false;
+                    }
+                };
 
                 if (cambioEmail) {
-
-                    verificar(nuevoEmail, async () => {
-
-                        try {
-
-                            const nuevaK = await API.guardarPerfil(
-                                k,
-                                nuevoNombre,
-                                nuevoEmail,
-                                passNueva,
-                                passActual
-                            );
-
-                            m.close();
-                            renderCuenta();
-
-                            alert('Perfil actualizado correctamente.');
-
-                        } catch (x) {
-
-                            error.textContent = traducirError(x);
-                            boton.disabled = false;
-                        }
-
-                    });
-
-                    return;
-
-                }
-
-                try {
-
-                    const nuevaK = await API.guardarPerfil(
-                        k,
-                        nuevoNombre,
-                        nuevoEmail,
-                        passNueva,
-                        passActual
-                    );
-
-                    m.close();
-
-                    renderCuenta();
-
-                    alert('Perfil actualizado correctamente.');
-
-                } catch (x) {
-
-                    error.textContent = x.message;
-                    boton.disabled = false;
+                    verificar(nuevoEmail, guardar, () => {boton.disabled = false;});
+                } else {
+                    guardar();
                 }
             };
         }
@@ -2140,10 +2123,10 @@
             t.append(n, acciones);
             const w = document.createElement('div'); w.className = 'avwrap';
             const a = document.createElement('div'); a.className = 'av';
-            if (okFoto(u.photo)) { const i = document.createElement('img'); i.src = u.photo; a.appendChild(i); }
+            if (okFoto(u.photo)) {const i = document.createElement('img'); i.src = u.photo; a.appendChild(i);}
             else a.textContent = u.name[0].toUpperCase();
             const l = document.createElement('button'); l.className = 'lapiz'; l.textContent = '✎'; l.title = 'Cambiar foto';
-            l.onclick = () => elegirFoto(f => { API.setPhoto(sesionK(), f); renderCuenta(); }, 'Cambiar foto de perfil', u.photo);
+            l.onclick = () => elegirFoto(f => {API.setPhoto(sesionK(), f); renderCuenta();}, 'Cambiar foto de perfil', u.photo);
             w.append(a, l);
             box.append(t, w);
         }
@@ -2152,7 +2135,7 @@
         if (!Pichisoft.user && !LS.get('ps_seen', 0)) pantallaBienvenida();
     </script>
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+        import {initializeApp} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
         import {
             getAuth,
             createUserWithEmailAndPassword,
@@ -2197,24 +2180,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        window.PichisoftFirebase = {
-            auth,
-            db,
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword,
-            signOut,
-            onAuthStateChanged,
-            updateEmail,
-            updatePassword,
-            reauthenticateWithCredential,
-            EmailAuthProvider,
-            sendEmailVerification,
-            sendPasswordResetEmail,
-            deleteUser,
-            doc,
-            setDoc,
-            getDoc
-        };
         window.PichisoftFirebase = {
             auth,
             db,
