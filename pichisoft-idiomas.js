@@ -1,673 +1,2237 @@
 /* =====================================================================
-   PICHISOFT IDIOMAS  ·  by Pichisoft
-   Se carga con UNA línea al final del <body> de cada página:
-       <script src="pichisoft-idiomas.js"></script>
-   Opcional:
-       data-anchor="#selector"  -> el botón se ubica debajo de ese elemento (por defecto #cuenta)
-       data-skip=".a,.b"        -> selectores extra que NO se deben traducir
-       data-pos="tl|tr|bl|br"   -> fuerza una esquina (top-left, top-right, bottom-left, bottom-right)
-   Para que algo no se traduzca nunca, ponele translate="no" o class="notranslate".
+   PICHONAPPS PREMIUM  ·  by Pichisoft
+   Se carga con UNA línea al final del <body> de PichonApps:
+       <script src="pichisoft-premium.js"></script>
+   Con cuenta: versión premium completa. Sin cuenta: la página queda
+   como estaba, más los carteles de aviso (registro y contacto).
+   Todos los íconos están dibujados con CSS (no hay emojis).
    ===================================================================== */
 (function () {
     'use strict';
-    if (window.PichisoftIdiomas) return;
-
-    const SCRIPT = document.currentScript;
-    const CFG = {
-        provider: 'mymemory',      // 'mymemory' (ya permitido en tu CSP) | 'google' (sin clave, requiere permitir translate.googleapis.com en connect-src)
-        email: '',                 // opcional, solo MyMemory: un email real sube el límite diario gratuito
-        concurrency: 4,
-        anchor: (SCRIPT && SCRIPT.dataset.anchor) || '#cuenta',
-        skip: (SCRIPT && SCRIPT.dataset.skip) || ''
-    };
-
-    /* -------------------- EXCEPCIONES POR APP --------------------
-       Si una app necesita una esquina fija, agregala acá.
-       match:   regex contra document.title + location.pathname (case-insensitive)
-       pos:     'tl' | 'tr' | 'bl' | 'br'
-       offsetX: píxeles EXTRA desde el borde horizontal (mueve el botón hacia adentro)
-       offsetY: píxeles EXTRA desde el borde vertical  (mueve el botón hacia arriba/abajo)
-    ------------------------------------------------------------- */
-    const APP_POSITIONS = [
-        { match: /pichonsnake/i, pos: 'tl' },                                // arriba a la izquierda
-        { match: /pichonpaint/i, pos: 'br', offsetX: 60 },                   // abajo-derecha, ~1.5x más a la izquierda
-        { match: /pichoncode/i, pos: 'bl', offsetY: 60 },                   // abajo-izquierda, un botón más arriba
-        { match: /pichonpush/i, pos: 'br' },                                // abajo-derecha
-    ];
-
-    function getAppPosition() {
-        if (SCRIPT && SCRIPT.dataset.pos) {
-            return { pos: SCRIPT.dataset.pos, offsetX: 0, offsetY: 0 };
-        }
-        const hay = (document.title + ' ' + location.pathname).toLowerCase();
-        for (const o of APP_POSITIONS) {
-            if (o.match.test(hay)) {
-                return { pos: o.pos, offsetX: o.offsetX || 0, offsetY: o.offsetY || 0 };
-            }
-        }
-        return null;
-    }
-
-    const CODES = [...new Set(('ab ace af ak sq am ar an hy as av ay az ba bm eu be bn bho bi bs br bg my ca ceb ch ce ny zh-CN zh-TW cv kw co hr cs da dv nl dz en eo et ee fo fj tl fi fr ff gl lg ka de el gn gu ht ha haw he hi hmn hu is ig id ia ga it ja jv kl kn kr ks kk km rw kv kg ko ku ky lo la lv li ln lt lb mk mai mg ms ml mt mi mr mh mn na nv nd ne no nb nn nr oc or om os pap ps fa pl pt pa qu ro rm rn ru sm sg sa sc gd sr st sn sd si sk sl so es su sw ss sv tg ta tt te th bo ti ts tn to tr tk tw ug uk ur uz ve vi vo wa cy fy wo xh yi yo yue zu se iu ty ik ki lu oj pi sh ho hz ie io ng kj za ae').split(' '))];
-
-    const SRC_ATTR = document.documentElement.getAttribute('lang') || 'es';
-    const SRC = SRC_ATTR.toLowerCase().split('-')[0];
-    const CK = 'psi1_' + SRC + '_';
-    const ATTRS = ['placeholder', 'title', 'alt', 'aria-label'];
-    const SKIP = ['script', 'style', 'noscript', 'textarea', 'pre', 'code', 'svg style',
-        '[contenteditable]:not([contenteditable="false"])', '[translate="no"]', '.notranslate',
-        '.nm', '#cuenta .nom', '#psi-st'].concat(CFG.skip ? [CFG.skip] : []).join(',');
-    const BRAND = /^pich\w*$/i;
-
-    const ls = {
-        get(k) { try { return localStorage.getItem(k); } catch { return null; } },
-        set(k, v) { try { localStorage.setItem(k, v); } catch { } },
-        del(k) { try { localStorage.removeItem(k); } catch { } }
-    };
-    const ss = {
-        get(k) { try { return sessionStorage.getItem(k); } catch { return null; } },
-        set(k, v) { try { sessionStorage.setItem(k, v); } catch { } }
-    };
     const $ = s => document.querySelector(s);
-    const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
-    let lang = null, gen = 0, active = 0, okCount = 0, failCount = 0, jobTotal = 0, jobDone = 0;
-    let items = new WeakMap();
-    const all = new Set(), waiting = new Map(), queued = new Set(), failed = new Set(), queue = [];
-    let cssItems = [], quotaShown = false;
-    let defaultLang = null, visible = true, btn = null;
-    let btnKey = null;
-
-    function readDefault() {
-        let d = ls.get('psi_default');
-        if (!d) {
-            try { if (window.Pichisoft && Pichisoft.user) d = Pichisoft.getData('Pichisoft', 'lang', null); } catch { }
-            if (d) ls.set('psi_default', d);
-        }
-        return d || null;
-    }
-    function setDefault(code) {
-        defaultLang = code || null;
-        if (code) ls.set('psi_default', code); else ls.del('psi_default');
-        try { if (window.Pichisoft) Pichisoft.setData('Pichisoft', 'lang', code || null); } catch { }
-        refreshUI();
-    }
-
-    const caches = {}, dirty = new Set(); let saveT = 0;
-    function cacheFor(to) {
-        if (!caches[to]) { try { caches[to] = JSON.parse(ls.get(CK + to) || '{}') || {}; } catch { caches[to] = {}; } }
-        return caches[to];
-    }
-    function cacheSet(to, k, v) {
-        cacheFor(to)[k] = v; dirty.add(to);
-        clearTimeout(saveT);
-        saveT = setTimeout(() => {
-            dirty.forEach(t => {
-                try { localStorage.setItem(CK + t, JSON.stringify(caches[t])); }
-                catch {
-                    Object.keys(localStorage).filter(x => x.startsWith('psi1_') && x !== CK + t).forEach(x => ls.del(x));
-                    try { localStorage.setItem(CK + t, JSON.stringify(caches[t])); } catch { }
-                }
-            });
-            dirty.clear();
-        }, 600);
-    }
-    function attachToTopbar() {
-        if (!btn) return;
-        const topbar = document.getElementById('pichisoft-topbar');
-        if (!topbar) return;
-        if (btn.parentElement === topbar) return;
-
-        // Sacá el order:3 si no estás seguro. Mejor que lo ordene el DOM.
-        btn.style.cssText = 'position:static !important; background:transparent !important; border:none !important; font-family:"Times New Roman", Times, serif !important; font-size:0.9rem !important; font-weight:bold !important; letter-spacing:0.5px !important; cursor:pointer; padding:2px 8px !important; margin:0 !important; text-transform:uppercase; white-space:nowrap; height:auto !important; width:auto !important; box-shadow:none !important;';
-        topbar.appendChild(btn);
-    }
-    const decode = t => new DOMParser().parseFromString(t, 'text/html').documentElement.textContent;
-    function chunk(t, max) {
-        if (t.length <= max) return [t];
-        const parts = t.match(/[^.!?…\n]+[.!?…]*\s*/g) || [t], out = []; let c = '';
-        for (let x of parts) {
-            while (x.length > max) { if (c) { out.push(c); c = ''; } out.push(x.slice(0, max)); x = x.slice(max); }
-            if ((c + x).length > max) { out.push(c); c = x; } else c += x;
-        }
-        if (c) out.push(c);
-        return out;
-    }
-    async function fetchTr(text, to) {
-        const out = [];
-        for (const p of chunk(text, CFG.provider === 'google' ? 1500 : 450)) {
-            if (!p.trim()) { out.push(p); continue; }
-            if (CFG.provider === 'google') {
-                const r = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=' + SRC + '&tl=' + encodeURIComponent(to) + '&dt=t&q=' + encodeURIComponent(p));
-                if (!r.ok) { const e = new Error('http'); e.quota = r.status === 429; throw e; }
-                const j = await r.json();
-                out.push(j[0].map(x => x[0]).join(''));
-            } else {
-                const u = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(p) + '&langpair=' + encodeURIComponent(SRC + '|' + to) + (CFG.email ? '&de=' + encodeURIComponent(CFG.email) : '');
-                const r = await fetch(u), j = await r.json();
-                const st = +j.responseStatus, t = (j.responseData && j.responseData.translatedText) || '';
-                if (st === 429 || /MYMEMORY WARNING|USED ALL AVAILABLE/i.test(t)) { const e = new Error('quota'); e.quota = true; throw e; }
-                if (st !== 200 || !t) throw new Error('bad');
-                out.push(decode(t).trim());
-            }
-        }
-        return out.join(' ').trim();
-    }
-
-    function attrItemOk(el, a) {
-        if (a === 'value') return el.tagName === 'INPUT' && /^(button|submit|reset)$/i.test(el.type);
-        return true;
-    }
-    function proc(node, attr) {
-        const cur = attr ? node.getAttribute(attr) : node.data;
-        if (cur == null) return;
-        let rec = items.get(node); const k = attr || '#', prev = rec && rec[k];
-        if (prev && prev.dead) return;
-        if (prev && prev.tr !== null && cur === prev.tr) return;
-        const key = cur.trim(), ch = prev ? prev.ch + 1 : 0;
-        if (ch > 4) { rec[k] = { dead: true }; return; }
-        if (!key || key.length > 3000 || !/\p{L}/u.test(key) || BRAND.test(key)) { if (prev) { all.delete(prev); delete rec[k]; } return; }
-        if (!rec) { rec = {}; items.set(node, rec); }
-        const i = cur.indexOf(key);
-        const it = { node, attr, key, orig: cur, lead: cur.slice(0, i), trail: cur.slice(i + key.length), tr: null, ch };
-        if (prev) all.delete(prev);
-        rec[k] = it; all.add(it); want(it);
-    }
-    function want(it) {
-        const hit = cacheFor(lang)[it.key];
-        if (hit != null) apply(it, hit); else enqueue(it);
-    }
-    function apply(it, tr) {
-        if (it.css) { it.tr = tr; cssWriteSoon(); return; }
-        const v = it.lead + tr + it.trail; it.tr = v;
-        if (it.attr) it.node.setAttribute(it.attr, v); else it.node.data = v;
-    }
-    function scanText(n) {
-        const p = n.parentElement;
-        if (!p || p.closest(SKIP)) return;
-        proc(n, null);
-    }
-    function attrs(el) {
-        for (const a of ATTRS) if (el.hasAttribute(a)) proc(el, a);
-        if (attrItemOk(el, 'value') && el.hasAttribute('value')) proc(el, 'value');
-    }
-    function scan(root) {
-        if (!lang || !root) return;
-        if (root.nodeType === 3) { scanText(root); return; }
-        if (root.nodeType !== 1 || root.closest(SKIP)) return;
-        attrs(root);
-        const w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
-            acceptNode: n => (n.nodeType === 1 && n.matches(SKIP)) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
-        });
-        let n;
-        while ((n = w.nextNode())) { if (n.nodeType === 3) proc(n, null); else attrs(n); }
-    }
-    function scanTitle() { const t = $('title'); if (t && t.firstChild) proc(t.firstChild, null); }
-
-    function restore() {
-        for (const it of all) {
-            if (it.css || it.tr === null || !it.node.isConnected) continue;
-            const cur = it.attr ? it.node.getAttribute(it.attr) : it.node.data;
-            if (cur === it.tr) { if (it.attr) it.node.setAttribute(it.attr, it.orig); else it.node.data = it.orig; }
-        }
-        all.clear(); items = new WeakMap(); cssItems = [];
-        const s = $('#psi-css'); if (s) s.textContent = '';
-    }
-
-    function cssCollect() {
-        cssItems = [];
-        const seen = new Set();
-        const walk = rules => {
-            for (const r of rules) {
-                if (r.type === 1) {
-                    if (/::?(after|before)/.test(r.selectorText || '')) {
-                        const m = /^"([^"\\]{2,})"$/.exec(r.style.getPropertyValue('content').trim());
-                        if (m && /\p{L}{2}/u.test(m[1]) && !seen.has(r.selectorText + m[1])) {
-                            seen.add(r.selectorText + m[1]);
-                            const it = { css: true, sel: r.selectorText, key: m[1], tr: null };
-                            cssItems.push(it); want(it);
-                        }
-                    }
-                } else if (r.cssRules) walk(r.cssRules);
-            }
-        };
-        for (const sh of document.styleSheets) {
-            if (sh.ownerNode && (sh.ownerNode.id === 'psi-style' || sh.ownerNode.id === 'psi-css')) continue;
-            try { walk(sh.cssRules); } catch { }
-        }
-        cssWrite();
-    }
-    let cssT = 0;
-    function cssWriteSoon() { clearTimeout(cssT); cssT = setTimeout(cssWrite, 80); }
-    function cssWrite() {
-        let s = $('#psi-css');
-        if (!s) { s = document.createElement('style'); s.id = 'psi-css'; document.head.appendChild(s); }
-        s.textContent = lang ? cssItems.filter(i => i.tr != null).map(i => i.sel + '{content:"' + i.tr.replace(/["\\\n]/g, ' ') + '"!important}').join('\n') : '';
-    }
-
-    function enqueue(it) {
-        if (failed.has(it.key)) return;
-        let s = waiting.get(it.key); if (!s) { s = new Set(); waiting.set(it.key, s); }
-        s.add(it);
-        if (!queued.has(it.key)) { queued.add(it.key); queue.push(it.key); jobTotal++; progress(); pump(); }
-    }
-    function pump() {
-        if (!lang) return;
-        while (active < CFG.concurrency && queue.length) run(queue.shift());
-    }
-    function flush(key, tr) {
-        for (const it of waiting.get(key) || []) {
-            if (it.tr === null && it.key === key && (it.css || it.node.isConnected)) apply(it, tr);
-        }
-        waiting.delete(key);
-    }
-    async function run(key) {
-        const g = gen, to = lang; active++;
-        try {
-            const tr = await fetchTr(key, to);
-            cacheSet(to, key, tr);
-            if (g === gen) { okCount++; flush(key, tr); }
-        } catch (e) {
-            if (g === gen) {
-                failCount++; failed.add(key); waiting.delete(key);
-                if (e && e.quota) {
-                    queue.length = 0; queued.clear(); jobTotal = jobDone = 0;
-                    if (!quotaShown) { quotaShown = true; toast('Se alcanzó el límite diario del servicio de traducción. Parte de la página quedó sin traducir; probá de nuevo más tarde.'); }
-                } else if (!okCount && failCount >= 4) {
-                    toast('No se pudo traducir a ese idioma (el servicio no lo admite o no está disponible). Se mantiene el original.');
-                    setLang(null, { noSession: true });
-                }
-            }
-        } finally {
-            active--;
-            if (g === gen) {
-                queued.delete(key); jobDone++; progress();
-                if (!active && !queue.length) { jobTotal = jobDone = 0; progress(); cssWrite(); }
-            }
-            pump();
-        }
-    }
-
-    function setLang(code, o) {
-        o = o || {};
-        gen++; queue.length = 0; queued.clear(); waiting.clear(); failed.clear();
-        jobTotal = jobDone = okCount = failCount = 0; quotaShown = false;
-        restore();
-        lang = (code && code.toLowerCase().split('-')[0] !== SRC) ? code : null;
-        if (!o.noSession) ss.set('psi_cur', lang || '-');
-        document.documentElement.setAttribute('lang', lang || SRC_ATTR);
-        if (lang) { scan(document.body); scanTitle(); cssCollect(); }
-        progress(); refreshUI();
-    }
-
-    /* ------------------------------ UI ------------------------------ */
+    /* ------------------------------ ESTILOS ------------------------------ */
     const CSS = `
-#psi-btn{position:fixed!important;z-index:2147483647;display:inline-flex!important;align-items:center;justify-content:center;gap:0;padding:10px;width:auto!important;max-width:max-content!important;min-width:0;box-sizing:border-box;visibility:visible!important;opacity:1!important;pointer-events:auto!important;white-space:nowrap;border-radius:6px;border:1px solid #d4af37;background:linear-gradient(135deg,#f1d98a,#c9a227 55%,#a67c10);color:#1a1405;font:bold 14px/1.1 Verdana,"Open Sans","Helvetica Neue",sans-serif;letter-spacing:.02em;cursor:pointer;user-select:none;-webkit-user-select:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 12px rgba(0,0,0,.45);transition:padding .18s,filter .15s,transform .15s}
-#psi-btn .psi-label{display:none;margin-left:7px}
-#psi-btn:hover,#psi-btn:focus-visible{padding:10px 14px;gap:8px}
-#psi-btn:hover .psi-label,#psi-btn:focus-visible .psi-label{display:inline}
-#psi-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
-#psi-btn:active{transform:none}
-#psi-btn:focus-visible{outline:2px solid #f1d98a;outline-offset:2px}
-#psi-btn[hidden]{display:none!important}
-#psi-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;flex:none}
-#psi-btn.busy svg{animation:psiSpin 1s linear infinite}
-@keyframes psiSpin{to{transform:rotate(360deg)}}
-.psi-ov{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);user-select:none;-webkit-user-select:none}
-.psi-card{position:relative;display:flex;flex-direction:column;width:min(440px,100%);max-height:90vh;box-sizing:border-box;background:#141414;border:1px solid #3a3a3a;border-top:3px solid #d4af37;border-radius:14px;padding:24px 20px 18px;box-shadow:0 26px 70px rgba(0,0,0,.8);font-family:Verdana,"Open Sans",sans-serif;color:#fff;text-align:left}
-.psi-card h3{margin:0 34px 6px 0;font:bold 1.5rem "Times New Roman",Times,serif}
-.psi-sub{margin:0 0 14px;font-size:.8rem;line-height:1.5;color:#bdbdbd}
-.psi-x{position:absolute;top:14px;right:14px;width:26px;height:26px;padding:0;border:1.5px solid #d4af37;border-radius:50%;background:none;cursor:pointer;transition:transform .3s,background .2s}
-.psi-x::before,.psi-x::after{content:"";position:absolute;left:50%;top:50%;width:11px;height:2px;margin:-1px 0 0 -5.5px;border-radius:2px;background:#f1d98a}
-.psi-x::before{transform:rotate(45deg)}.psi-x::after{transform:rotate(-45deg)}
-.psi-x:hover{transform:rotate(90deg);background:#d4af37}
-.psi-x:hover::before,.psi-x:hover::after{background:#111}
-#psi-q{width:100%;box-sizing:border-box;background:#1c1c1c;border:1px solid rgba(212,175,55,.3);border-radius:10px;color:#fff;font:inherit;font-size:.9rem;padding:11px 12px;outline:0;user-select:text;-webkit-user-select:text}
-#psi-q:focus{border-color:#d4af37;box-shadow:0 0 0 3px rgba(212,175,55,.16)}
-#psi-list{flex:1;min-height:150px;max-height:42vh;overflow:auto;margin:10px 0;padding-right:2px}
-.psi-it{display:flex;align-items:baseline;gap:8px;width:100%;box-sizing:border-box;text-align:left;background:#191919;border:1px solid #262626;border-radius:9px;padding:9px 12px;margin-bottom:5px;color:#fff;font:inherit;font-size:.88rem;cursor:pointer;transition:border-color .15s,background .15s}
-.psi-it small{color:#8f8f8f;font-size:.74rem}
-.psi-it:hover{border-color:#6b5a1e}
-.psi-it.on{border-color:#d4af37;background:rgba(212,175,55,.1)}
-.psi-star{margin-left:auto;color:#d4af37;font-size:.85rem}
-.psi-none{color:#9a9a9a;font-size:.82rem;padding:14px 4px}
-.psi-def{display:flex;align-items:center;gap:12px;padding:12px 0 4px;border-top:1px solid #272727;cursor:pointer;font-size:.85rem;line-height:1.4}
-.psi-def small{display:block;color:#9a9a9a;font-size:.7rem;margin-top:3px}
-.psi-sw{-webkit-appearance:none;appearance:none;flex:none;margin:0 0 0 auto;width:46px;height:26px;border-radius:13px;background:#3b3b3b;position:relative;cursor:pointer;border:0;transition:background .2s}
-.psi-sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#d8d8d8;transition:left .2s}
-.psi-sw:checked{background:linear-gradient(135deg,#f1d98a,#b8901f)}
-.psi-sw:checked::after{left:23px;background:#fff}
-.psi-sw:disabled{opacity:.4;cursor:not-allowed}
-.psi-sw:focus-visible{outline:2px solid #f1d98a;outline-offset:2px}
-#psi-st{min-height:1.2em;margin-top:8px;font-size:.8rem;color:#f1d98a}
-.psi-orig{margin-top:10px;width:100%;background:none;border:1px solid rgba(212,175,55,.26);color:#f1d98a;border-radius:10px;padding:11px;font:inherit;font-size:.85rem;cursor:pointer}
-.psi-orig:hover{background:rgba(212,175,55,.1)}
-.psi-toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:2147483647;max-width:min(420px,calc(100vw - 24px));box-sizing:border-box;padding:12px 16px;background:rgba(20,20,20,.97);border:1px solid #d4af37;border-radius:12px;color:#fff;font:.8rem/1.5 Verdana,"Open Sans",sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.6);text-align:center}
-@media (max-width:600px){#psi-btn{padding:9px}}
-@media (prefers-reduced-motion:reduce){#psi-btn,#psi-btn svg,.psi-x{animation:none!important;transition:none!important}}
+:root {
+    --gold: #d4af37;
+    --gold2: #f1d98a;
+    --line: rgba(212, 175, 55, .26);
+    user-select: none;
+}
+
+[hidden] {
+    display: none !important;
+    user-select: none;
+}
+
+.badge-prem {
+    display: none;
+    vertical-align: middle;
+    margin-left: 10px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font: bold 13px Verdana, "Open Sans", sans-serif;
+    letter-spacing: .06em;
+    color: #ffe08a;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, .55);
+    background: linear-gradient(135deg, #b9bec3, #7c8288 55%, #aeb3b8);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+
+}
+
+body.prem .badge-prem {
+    display: inline-block;
+    user-select: none;
+}
+
+body.prem:not(.vista-orig) #dirClasico {
+    display: none;
+    user-select: none;
+}
+
+#pPremium {
+    display: none;
+    max-width: 840px;
+    padding-bottom: 50px;
+    user-select: none;
+}
+
+body.prem #pPremium {
+    display: block;
+    user-select: none;
+}
+
+body.prem.vista-orig #pPremium {
+    display: none;
+    user-select: none;
+}
+
+.bienvenida {
+    font-family: Verdana, "Open Sans", sans-serif;
+    color: #fff;
+    font-size: 1em;
+    line-height: 1.65;
+    margin: .4em 0 1.4em;
+    max-width: 760px;
+    user-select: none;
+}
+
+.p-search {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(#1c1c1c, #141414);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 0 16px;
+    margin: 0 0 18px;
+    transition: border-color .2s, box-shadow .2s;
+    user-select: none;
+}
+
+.p-search:focus-within {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, .16);
+    user-select: none;
+}
+
+.p-search svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--gold);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    flex: none;
+    margin-right: 10px;
+    user-select: none;
+}
+
+.p-pre {
+    color: var(--gold2);
+    font-weight: bold;
+    font-size: 16px;
+    user-select: none;
+}
+
+.p-search input {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: 0;
+    outline: 0;
+    color: #fff;
+    font: inherit;
+    font-size: 16px;
+    padding: 15px 0 15px 1px;
+    user-select: none;
+}
+
+.p-search input::placeholder {
+    color: #6d6d6d;
+    user-select: none;
+}
+
+.p-clear {
+    display: none;
+    background: none;
+    border: 0;
+    color: #6d6d6d;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px 8px;
+    line-height: 1;
+    transition: color .15s;
+    user-select: none;
+}
+
+.p-clear:hover {
+    color: var(--gold);
+    user-select: none;
+}
+
+.p-clear.on {
+    display: inline-block;
+    user-select: none;
+}
+
+.acc {
+    background: linear-gradient(180deg, #1b1b1b, #131313);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .4);
+    user-select: none;
+}
+
+.acc-h {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: none;
+    border: 0;
+    color: #fff;
+    font: bold 1.05rem Verdana, "Open Sans", sans-serif;
+    padding: 17px 18px;
+    cursor: pointer;
+    text-align: left;
+    user-select: none;
+}
+
+.acc-h:hover {
+    background: rgba(212, 175, 55, .07);
+    user-select: none;
+}
+
+.acc-h:focus-visible,
+.pm-back:focus-visible,
+.p-gear:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: -2px;
+    user-select: none;
+}
+
+.chev {
+    margin-left: auto;
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border: solid var(--gold);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-top: -4px;
+    transition: transform .25s, margin .25s;
+    user-select: none;
+}
+
+.acc.open>.acc-h .chev {
+    transform: rotate(225deg);
+    margin-top: 4px;
+    user-select: none;
+}
+
+.acc-b {
+    display: none;
+    padding: 2px 16px 18px;
+    user-select: none;
+}
+
+.acc.open>.acc-b,
+.buscando .acc>.acc-b {
+    display: block;
+    animation: pIn .25s ease;
+    user-select: none;
+}
+
+@keyframes pIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+        user-select: none;
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+        user-select: none;
+    }
+}
+
+.acc.sub {
+    background: #0f0f0f;
+    border-radius: 12px;
+    margin: 18px 0 0;
+    box-shadow: none;
+    user-select: none;
+}
+
+.acc.sub .acc-h {
+    font-size: .95rem;
+    padding: 14px 16px;
+    user-select: none;
+}
+
+.buscando .acc.sub {
+    display: none;
+    user-select: none;
+
+}
+
+/* Íconos de los títulos de los paneles (dibujados con CSS) */
+.acc>.acc-h>span:first-child {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    position: relative;
+    user-select: none;
+}
+
+.acc:not(.sub)>.acc-h>span:first-child {
+    background: linear-gradient(var(--gold), var(--gold)) 0 3px/100% 3px no-repeat, linear-gradient(var(--gold), var(--gold)) 0 9px/70% 3px no-repeat, linear-gradient(var(--gold), var(--gold)) 0 15px/40% 3px no-repeat;
+    user-select: none;
+}
+
+.acc.sub>.acc-h>span:first-child::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 2px solid var(--gold);
+    border-radius: 3px;
+    transform: rotate(45deg) scale(.8);
+    user-select: none;
+}
+
+.cat {
+    margin-top: 16px;
+    user-select: none;
+}
+
+.cat-h {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    font-size: .95rem;
+    color: var(--gold2);
+    margin: 0 0 9px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--line);
+    user-select: none;
+}
+
+.flat {
+    background: linear-gradient(180deg, #1b1b1b, #131313);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 6px 16px 18px;
+    margin: 0;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .4);
+    user-select: none;
+}
+
+.flat>.cat-h::before {
+    content: "";
+    flex: none;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(var(--gold), var(--gold)) 0 3px/100% 3px no-repeat, linear-gradient(var(--gold), var(--gold)) 0 9px/70% 3px no-repeat, linear-gradient(var(--gold), var(--gold)) 0 15px/40% 3px no-repeat;
+    user-select: none;
+}
+
+/* Íconos de las categorías */
+.ci {
+    display: inline-block;
+    position: relative;
+    flex: none;
+    width: 22px;
+    height: 22px;
+    user-select: none;
+}
+
+.ci::before,
+.ci::after {
+    content: "";
+    position: absolute;
+    user-select: none;
+}
+
+.ci-utiles::before {
+    inset: 1px;
+    border: 2px solid var(--gold);
+    border-radius: 6px;
+    user-select: none;
+}
+
+.ci-utiles::after {
+    left: 8px;
+    top: 4px;
+    width: 5px;
+    height: 10px;
+    border: solid var(--gold);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    user-select: none;
+}
+
+.ci-juegos::before {
+    left: 0;
+    top: 5px;
+    width: 18px;
+    height: 11px;
+    border: 2px solid var(--gold);
+    border-radius: 8px;
+    user-select: none;
+}
+
+.ci-juegos::after {
+    left: 2px;
+    top: 7px;
+    width: 18px;
+    height: 9px;
+    background: linear-gradient(var(--gold), var(--gold)) 1px 3px/6px 2px no-repeat, linear-gradient(var(--gold), var(--gold)) 3px 1px/2px 6px no-repeat, radial-gradient(circle, var(--gold) 2px, transparent 2.6px) 11px 1px/6px 6px no-repeat;
+    user-select: none;
+}
+
+.ci-azar::before {
+    inset: 1px;
+    border: 2px solid var(--gold);
+    border-radius: 5px;
+    user-select: none;
+}
+
+.ci-azar::after {
+    inset: 5px;
+    background: radial-gradient(circle, var(--gold) 1.7px, transparent 2.2px) 0 0/6px 6px no-repeat, radial-gradient(circle, var(--gold) 1.7px, transparent 2.2px) 50% 50%/6px 6px no-repeat, radial-gradient(circle, var(--gold) 1.7px, transparent 2.2px) 100% 100%/6px 6px no-repeat;
+    user-select: none;
+}
+
+.ci-divertidas::before {
+    inset: 1px;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--gold) 1.5px, transparent 2px) 3px 4px/5px 5px no-repeat, radial-gradient(circle, var(--gold) 1.5px, transparent 2px) 9px 4px/5px 5px no-repeat;
+    user-select: none;
+}
+
+.ci-divertidas::after {
+    left: 6px;
+    top: 11px;
+    width: 6px;
+    height: 3px;
+    border: 2px solid var(--gold);
+    border-top: 0;
+    border-radius: 0 0 8px 8px;
+    user-select: none;
+}
+
+.lista,
+.lista-p {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 10px;
+    user-select: none;
+}
+
+.lista:empty {
+    display: flex;
+    min-height: 80px;
+    border: 1px dashed #4a4326;
+    border-radius: 14px;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+.lista:empty::after {
+    content: "Soltá una app acá";
+    color: #7a7355;
+    font-size: .78rem;
+    user-select: none;
+}
+
+.app {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 7px;
+    background: linear-gradient(180deg, #232323, #191919);
+    border: 1px solid #2d2d2d;
+    border-radius: 16px;
+    padding: 16px 8px 10px;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: border-color .15s, transform .15s, box-shadow .15s
+}
+
+.app:hover {
+    border-color: var(--gold);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, .45);
+    user-select: none;
+}
+
+.app.moviendo {
+    opacity: .3;
+    user-select: none;
+}
+
+.app.ghost {
+    position: fixed;
+    z-index: 200;
+    pointer-events: none;
+    border-color: var(--gold);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, .65);
+    margin: 0;
+    transform: none;
+    user-select: none;
+}
+
+body.arrastrando {
+    cursor: grabbing;
+    user-select: none;
+    -webkit-user-select: none
+}
+
+.grip {
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    width: 12px;
+    height: 12px;
+    cursor: grab;
+    touch-action: none;
+    color: #8a7a3c;
+    opacity: .75;
+    z-index: 2;
+    background: radial-gradient(circle, currentColor 1.3px, transparent 1.8px) 0 0/6px 6px;
+    user-select: none;
+}
+
+.grip::before {
+    content: "";
+    position: absolute;
+    inset: -9px;
+    user-select: none;
+}
+
+.grip:hover {
+    color: var(--gold2);
+    opacity: 1;
+    user-select: none;
+}
+
+.app .app-l,
+.app .app-l:visited {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    color: #f5f5f5;
+    text-align: center;
+    text-decoration: none;
+    user-select: none;
+}
+
+.app a.app-l:hover {
+    background: none;
+    color: var(--gold2);
+    user-select: none;
+}
+
+.app .app-l.off {
+    color: #8d8d8d;
+    user-select: none;
+}
+
+.app .app-l.off .ico {
+    filter: grayscale(1);
+    opacity: .55;
+    user-select: none;
+}
+
+.ico {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    overflow: hidden;
+    font: bold 1.7rem Georgia, "Times New Roman", serif;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, .35);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 6px 14px rgba(0, 0, 0, .4);
+    user-select: none;
+}
+
+.ico img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+.nm {
+    display: block;
+    font-size: .78rem;
+    line-height: 1.2;
+    font-weight: bold;
+    word-break: break-word;
+    user-select: none;
+}
+
+.nm small {
+    display: block;
+    font-size: .62rem;
+    font-weight: normal;
+    color: #9a9a9a;
+    user-select: none;
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
+    user-select: none;
+}
+
+.tags .etiqueta {
+    margin: 0;
+    font-size: .52rem;
+    padding: 2px 5px;
+    white-space: nowrap;
+    border-radius: 5px;
+    user-select: none;
+}
+
+/* Vista en lista (la de antes de las tarjetas): mismas categorías y paneles, sin grillas */
+body.vista-lista .lista,
+body.vista-lista .lista-p {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    user-select: none;
+}
+
+body.vista-lista .lista:empty {
+    min-height: 46px;
+    border-radius: 10px;
+    user-select: none;
+}
+
+body.vista-lista .app {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px 10px;
+    background: #202020;
+    border-radius: 10px;
+    padding: 11px 12px;
+    font-size: .95rem;
+    user-select: none;
+}
+
+body.vista-lista .app:hover {
+    transform: none;
+    box-shadow: none;
+    background: #242220;
+    user-select: none;
+}
+
+body.vista-lista .grip {
+    position: relative;
+    top: auto;
+    left: auto;
+    flex: none;
+    width: 14px;
+    height: 21px;
+    margin-right: 4px;
+    opacity: 1;
+    background: radial-gradient(circle, currentColor 1.6px, transparent 2.1px) 0 0/7px 7px;
+    user-select: none;
+}
+
+body.vista-lista .acc-b {
+    padding: 2px 16px 18px;
+    user-select: none;
+}
+
+body.vista-lista .flat {
+    padding: 6px 16px 18px;
+    user-select: none;
+}
+
+body.vista-lista .grip::before {
+    inset: -8px -6px;
+    user-select: none;
+}
+
+body.vista-lista .app .app-l,
+body.vista-lista .app .app-l:visited {
+    flex: 1 1 auto;
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    text-align: left;
+    user-select: none;
+
+}
+
+body.vista-lista .ico {
+    display: none;
+    user-select: none;
+}
+
+body.vista-lista .nm {
+    font-size: .95rem;
+    font-weight: normal;
+    user-select: none;
+}
+
+body.vista-lista .nm small {
+    display: inline;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    user-select: none;
+}
+
+body.vista-lista .tags {
+    justify-content: flex-start;
+    gap: 4px;
+    user-select: none;
+}
+
+body.vista-lista .tags .etiqueta {
+    font-size: .62rem;
+    padding: 3px 7px;
+    user-select: none;
+}
+
+.et-proximo {
+    background: rgb(28, 65, 167);
+    user-select: none;
+}
+
+.grp {
+    margin-top: 16px;
+    user-select: none;
+}
+
+.grp-h {
+    margin: 0 0 8px;
+    user-select: none;
+}
+
+.grp-h .etiqueta {
+    margin: 0 6px 0 0;
+    font-size: .74rem;
+    user-select: none;
+}
+
+.grp-h.txt {
+    font-size: .85rem;
+    color: #aaa;
+    user-select: none;
+}
+
+.p-no {
+    color: #bbb;
+    font-family: Verdana, sans-serif;
+    font-size: .9rem;
+    padding: 20px 4px;
+    user-select: none;
+}
+
+.linkdemail {
+    color: rgb(0, 247, 255) !important;
+    text-decoration: underline !important;
+    user-select: none;
+}
+
+.linkdemail:hover {
+    color: rgb(0, 183, 255) !important;
+    background-color: #000000 !important;
+    user-select: none;
+}
+
+.p-gear {
+    display: none;
+    position: fixed;
+    top: 82px;
+    right: 16px;
+    z-index: 50;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border-radius: 50%;
+    background: #1c1c1c;
+    border: 1px solid var(--line);
+    color: var(--gold2);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: transform .3s, border-color .2s;
+    user-select: none;
+}
+
+body.prem .p-gear {
+    display: flex;
+    user-select: none;
+}
+
+.p-gear:hover {
+    border-color: var(--gold);
+    transform: rotate(60deg);
+    user-select: none;
+}
+
+.p-gear svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    user-select: none;
+}
+
+.pm-ov {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(0, 0, 0, .62);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: flex-end;
+    opacity: 0;
+    transition: opacity .2s;
+    user-select: none;
+}
+
+.pm-ov.on {
+    opacity: 1;
+    user-select: none;
+}
+
+.pm-panel {
+    width: min(410px, 100%);
+    height: 100%;
+    box-sizing: border-box;
+    overflow: auto;
+    background: linear-gradient(180deg, #1a1a1a, #0e0e0e);
+    border-left: 1px solid var(--line);
+    padding: 16px 22px 30px;
+    font-family: Verdana, "Open Sans", sans-serif;
+    color: #fff;
+    transform: translateX(40px);
+    transition: transform .25s;
+    user-select: none;
+}
+
+.pm-ov.on .pm-panel {
+    transform: none;
+    user-select: none;
+}
+
+.pm-back {
+    background: none;
+    border: 0;
+    color: var(--gold2);
+    font: inherit;
+    font-size: .9rem;
+    cursor: pointer;
+    padding: 8px 0;
+    user-select: none;
+}
+
+.pm-back:hover {
+    color: #fff;
+    user-select: none;
+}
+
+.pm-arr {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border: solid currentColor;
+    border-width: 0 0 2px 2px;
+    transform: rotate(45deg);
+    margin-right: 10px;
+    vertical-align: 1px;
+    user-select: none;
+}
+
+.pm-panel h2 {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 1.7rem;
+    margin: 10px 0 6px;
+    color: #fff;
+    user-select: none;
+}
+
+.pm-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 17px 0;
+    border-bottom: 1px solid #272727;
+    cursor: pointer;
+    user-select: none;
+}
+
+.pm-row b {
+    font-size: .92rem
+}
+
+.pm-row small {
+    display: block;
+    color: #9a9a9a;
+    font-size: .72rem;
+    line-height: 1.45;
+    margin-top: 4px;
+    font-weight: normal;
+    user-select: none;
+}
+
+.sw {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: none;
+    margin: 0 0 0 auto;
+    width: 46px;
+    height: 26px;
+    border-radius: 13px;
+    background: #3b3b3b;
+    position: relative;
+    cursor: pointer;
+    border: 0;
+    transition: background .2s;
+    user-select: none;
+}
+
+.sw::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #d8d8d8;
+    transition: left .2s;
+    user-select: none;
+}
+
+.sw:checked {
+    background: linear-gradient(135deg, #f1d98a, #b8901f);
+    user-select: none;
+}
+
+.sw:checked::after {
+    left: 23px;
+    background: #fff;
+    user-select: none;
+}
+
+.sw:focus-visible {
+    outline: 2px solid var(--gold2);
+    outline-offset: 2px;
+    user-select: none;
+}
+
+.pm-view {
+    padding: 17px 0;
+    border-bottom: 1px solid #272727;
+    user-select: none;
+}
+
+.pm-view>b {
+    font-size: .92rem;
+    user-select: none;
+}
+
+.pm-view>small {
+    display: block;
+    color: #9a9a9a;
+    font-size: .72rem;
+    line-height: 1.45;
+    margin: 4px 0 6px;
+    font-weight: normal;
+    user-select: none;
+}
+
+.pm-opt {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+    background: #161616;
+    border: 1px solid #2b2b2b;
+    border-radius: 10px;
+    padding: 11px 12px;
+    margin-top: 8px;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    user-select: none;
+}
+
+.pm-opt:hover {
+    border-color: #4a4326;
+    user-select: none;
+}
+
+.pm-opt b {
+    font-size: .84rem;
+    user-select: none;
+}
+
+.pm-opt small {
+    display: block;
+    color: #9a9a9a;
+    font-size: .68rem;
+    line-height: 1.4;
+    margin-top: 2px;
+    font-weight: normal;
+    user-select: none;
+}
+
+.pm-opt .rd {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 2px solid #5a5a5a;
+    user-select: none;
+}
+
+.pm-opt.on {
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, .08);
+    user-select: none;
+}
+
+.pm-opt.on .rd {
+    border-color: var(--gold);
+    background: radial-gradient(circle, var(--gold) 3.5px, transparent 4px);
+    user-select: none;
+}
+
+.pm-opt:focus-visible {
+    outline: 2px solid var(--gold2);
+    outline-offset: 2px;
+    user-select: none;
+}
+
+.pm-reset {
+    margin-top: 22px;
+    width: 100%;
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--gold2);
+    border-radius: 10px;
+    padding: 12px;
+    font: inherit;
+    font-size: .85rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.pm-reset:hover {
+    background: rgba(212, 175, 55, .1);
+    user-select: none;
+}
+
+/* ===== Carteles de aviso (arrastrables, con X hecha en CSS) ===== */
+#pCart {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 0 12px 12px;
+    pointer-events: none;
+    user-select: none;
+}
+
+.cartel {
+    position: relative;
+    pointer-events: auto;
+    box-sizing: border-box;
+    max-width: min(330px, calc(100vw - 24px));
+    padding: 11px 40px 11px 14px;
+    font: .78rem/1.5 Verdana, "Open Sans", sans-serif;
+    color: #fff;
+    background: rgba(20, 20, 20, .95);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    animation: pIn .25s ease
+}
+
+.cartel.suelto {
+    position: fixed;
+    margin: 0;
+    z-index: 55;
+    user-select: none;
+}
+
+.cartel.arr {
+    cursor: grabbing;
+    border-color: var(--gold);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, .65);
+    user-select: none;
+}
+
+.cartel a,
+.cartel a:visited {
+    color: #4da3ff;
+    text-decoration: underline;
+    font-weight: bold;
+    padding: 0;
+    user-select: none;
+}
+
+.cartel a:hover {
+    background: none;
+    color: #8cc4ff;
+    user-select: none;
+}
+
+.c-x {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1.5px solid var(--gold);
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+    transition: transform .3s, background .2s;
+    user-select: none;
+}
+
+.c-x::before,
+.c-x::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 10px;
+    height: 2px;
+    margin: -1px 0 0 -5px;
+    border-radius: 2px;
+    background: var(--gold2);
+    transition: background .2s;
+    user-select: none;
+}
+
+.c-x::before {
+    transform: rotate(45deg);
+    user-select: none;
+}
+
+.c-x::after {
+    transform: rotate(-45deg);
+    user-select: none;
+}
+
+.c-x:hover {
+    transform: rotate(90deg);
+    background: var(--gold);
+    user-select: none;
+}
+
+.c-x:hover::before,
+.c-x:hover::after {
+    background: #111;
+    user-select: none;
+}
+
+.c-x:focus-visible {
+    outline: 2px solid var(--gold2);
+    outline-offset: 2px;
+    user-select: none;
+}
+
+/* Panel de contacto */
+.pml-ov {
+    position: fixed;
+    inset: 0;
+    z-index: 130;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, .7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    user-select: none;
+}
+
+.pml-card {
+    width: min(400px, 100%);
+    box-sizing: border-box;
+    background: #141414;
+    border: 1px solid #3a3a3a;
+    border-top: 3px solid var(--gold);
+    border-radius: 14px;
+    padding: 26px 22px 20px;
+    box-shadow: 0 26px 70px rgba(0, 0, 0, .8);
+    font-family: Verdana, "Open Sans", sans-serif;
+    color: #fff;
+    animation: pIn .25s ease;
+    user-select: none;
+}
+
+.pml-card h3 {
+    margin: 0 0 10px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    user-select: none;
+}
+
+.pml-card p {
+    margin: 0 0 18px;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: #bdbdbd;
+    word-break: break-word;
+    user-select: none;
+}
+
+.pml-btn {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px 12px;
+    margin-top: 9px;
+    border-radius: 8px;
+    background: #000;
+    color: #fff;
+    border: 1px solid #4a4a4a;
+    font: 1rem Georgia, "Times New Roman", serif;
+    cursor: pointer;
+    transition: background-color .15s, color .15s;
+    user-select: none;
+}
+
+.pml-btn:hover {
+    background: #fff;
+    color: #000;
+    user-select: none;
+}
+
+.pml-no {
+    background: #8c8c8c;
+    color: #000;
+    border-color: #8c8c8c;
+    user-select: none;
+}
+
+.pml-no:hover {
+    background: #d2d2d2;
+    user-select: none;
+}
+
+.pml-btn:focus-visible {
+    outline: 2px solid var(--gold2);
+    outline-offset: 2px;
+    user-select: none;
+}
+
+@media (max-width:600px) {
+    .p-gear {
+        position: fixed;
+        top: 70px;
+        right: 10px;
+        width: 38px;
+        height: 38px;
+        user-select: none;
+    }
+
+    body.prem .titulo,
+    body.prem .bienvenida {
+        padding-right: 46px;
+        user-select: none;
+    }
+
+    .badge-prem {
+        font-size: 11px;
+        margin: 6px 0 0;
+        user-select: none;
+    }
+
+    .bienvenida {
+        font-size: .95rem;
+        user-select: none;
+    }
+
+    .pm-panel {
+        padding: 14px 18px 26px;
+        user-select: none;
+    }
+
+    .c-x {
+        width: 28px;
+        height: 28px;
+        user-select: none;
+    }
+
+    .cartel {
+        font-size: .76rem;
+        user-select: none;
+    }
+
+    .acc-b {
+        padding: 2px 10px 14px;
+        user-select: none;
+    }
+
+    .flat {
+        padding: 6px 10px 14px;
+        user-select: none;
+    }
+
+    .lista,
+    .lista-p {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        user-select: none;
+    }
+
+    .app {
+        padding: 14px 3px 8px;
+        border-radius: 14px;
+        gap: 6px;
+        user-select: none;
+    }
+
+    .grip {
+        top: 5px;
+        left: 5px;
+        user-select: none;
+    }
+
+    .ico {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        font-size: 1.4rem;
+        user-select: none;
+    }
+
+    .nm {
+        font-size: .66rem;
+        user-select: none;
+    }
+
+    .nm small {
+        font-size: .54rem;
+        user-select: none;
+    }
+
+    .tags .etiqueta {
+        font-size: .46rem;
+        padding: 2px 4px;
+        user-select: none;
+    }
+}
+
+@media (max-width:340px) {
+
+    .lista,
+    .lista-p {
+        grid-template-columns: repeat(3, 1fr);
+        user-select: none;
+    }
+}
+
+@media (prefers-reduced-motion:reduce) {
+
+    .acc-b,
+    .pm-ov,
+    .pm-panel,
+    .p-gear,
+    .cartel,
+    .c-x {
+        animation: none !important;
+        transition: none !important;
+        user-select: none;
+    }
+}
+    /* ===================== FIX MÓVIL: GRID DE APPS ===================== */
+
+/* Las cards nunca pueden forzar el ancho de su columna */
+.lista > *,
+.lista-p > *,
+.app {
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+#pPremium {
+    max-width: 840px;   /* el valor original: da las 7 columnas en PC */
+    box-sizing: border-box;
+}
+
+.acc,
+.acc-b,
+.flat {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+
+    /* 3 columnas que SÍ se pueden achicar (minmax(0,1fr)) */
+    .lista,
+    .lista-p {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    /* Las etiquetas pueden bajar de renglón en vez de ensanchar la card */
+    .tags .etiqueta {
+        white-space: normal;
+        text-align: center;
+        line-height: 1.2;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    .nm {
+        overflow-wrap: anywhere;
+    }
+
+    /* Estrellitas de valoración: que no se salgan de la card */
+    .app * {
+        max-width: 100%;
+    }
+
+    /* Que nada fuerce el ancho de la página */
+    html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+}
+
+/* Pantallas muy chicas: 2 columnas */
+@media (max-width: 340px) {
+    .lista,
+    .lista-p {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+    /* ===== Apps por fila (opción de Configuración) ===== */
+.pm-cols { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.pm-col {
+    min-width: 44px; padding: 9px 12px;
+    background: #161616; border: 1px solid #2b2b2b; border-radius: 10px;
+    color: #fff; font: inherit; font-size: .85rem; cursor: pointer;
+    transition: border-color .15s, background .15s;
+}
+.pm-col:hover { border-color: #4a4326; }
+.pm-col.on { border-color: var(--gold); background: rgba(212, 175, 55, .08); }
+.pm-col:focus-visible { outline: 2px solid var(--gold2); outline-offset: 2px; }
+
+/* Columnas elegidas por el usuario (le gana al repeat de .lista) */
+body.cols-custom .lista,
+body.cols-custom .lista-p {
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+}
+body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
+
+/* Con muchas columnas en celular, las tarjetas se compactan para que nada se desborde */
+@media (max-width: 600px) {
+    body.cols-denso .estrellas { font-size: 11px !important; gap: 0 !important; }
+    body.cols-denso .ico { width: 40px; height: 40px; font-size: 1.1rem; border-radius: 12px; }
+    body.cols-denso .nm { font-size: .6rem; }
+    body.cols-denso .nm small { font-size: .5rem; }
+    body.cols-denso .tags .etiqueta { font-size: .42rem; padding: 2px 3px; }
+}
 `;
 
-    function toast(msg) {
-        const t = document.createElement('div'); t.className = 'psi-toast'; t.setAttribute('role', 'status'); t.textContent = msg;
-        document.body.appendChild(t); setTimeout(() => t.remove(), 7000);
+    /* ------------------------------ DATOS ------------------------------ */
+    const B = 'https://pichisoft.cc';
+    const MAIL = 'contacto@pichisoft.cc';
+    /* Logo de todas las apps: se toma del ícono de la pestaña (<link rel="icon">) de la página.
+       Si alguna app necesita otro, poné i:'ruta/imagen.png' en esa app dentro de APPS. */
+    const LOGO = (document.querySelector('link[rel~="icon"]') || {}).href || '';
+    const TAGS = {
+        nuevo: ['NUEVO', 'et-nuevo'], actualizado: ['ACTUALIZADO', 'et-actualizado'], beta: ['BETA', 'et-beta'],
+        cancelado: ['ELIMINADA' /*en realidad es 'CANCELADO', lo cambié temporalmente para apps eliminadas*/, 'et-cancelado'], ultimos: ['DISPONIBLE HASTA EL 10 DE NOVIEMBRE DE 2026', 'et-ultimos'],
+        actcancelada: ['ACTUALIZACIÓN CANCELADA', 'et-act-cancelada'], mantenimiento: ['EN MANTENIMIENTO', 'et-mantenimiento'],
+        premium: ['VERSIÓN PREMIUM', 'et-premium'], proximo: ['PRÓXIMAMENTE', 'et-proximo']
+    };
+    /* Para ponerle un prefijo a una app, agregá su clave en "t": ej. t:['beta'] */
+    const APPS = [
+        { n: 'PichonInfo', u: 'pichoninfo', t: ['cancelado', 'ultimos'] },
+        { n: 'PichonRules', u: 'pichonrules', t: ['cancelado', 'ultimos'] },
+        { n: 'PichonAlarm', u: 'pichonalarm' },
+        { n: 'PichonBirthday', u: 'pichonbirthday' },
+        { n: 'PichonCalc', u: 'pichoncalc' },
+        { n: 'PichonCalendar', u: 'pichoncalendar' },
+        { n: 'PichonChess', u: 'pichonchess' },
+        { n: 'PichonCode', u: 'pichoncode' },
+        { n: 'PichonDestiny', u: 'pichondestiny' },
+        { n: 'PichonDocs', u: 'pichondocs' },
+        { n: 'PichonFood', u: 'pichonfood' },
+        { n: 'PichonList', u: 'pichonlist' },
+        { n: 'PichonMan', u: 'pichman', t: ['nuevo'] },
+        { n: 'PichonMorse', u: 'pichonmorse' },
+        { n: 'PichonOlympus', t: ['proximo'] },
+        { n: 'PichonOpinion', t: ['proximo'] },
+        { n: 'PichonPaint', u: 'pichonpaint', t: ['actualizado'] },
+        { n: 'PichonPass', u: 'pichonpass' },
+        { n: 'PichonPush', u: 'pichonpush', t: ['nuevo'] },
+        { n: 'PichonRandom', u: 'pichonrandom' },
+        { n: 'PichonSnake', u: 'pichonsnake' },
+        { n: 'PichonTraffic', u: 'pichontraffic', t: ['nuevo'] },
+        { n: 'PichonWatch', u: 'pichonwatch' },
+        { n: 'PichonWeather', u: 'pichonweather', t: ['nuevo'] }
+    ];
+    APPS.forEach(a => a.t = a.t || []);
+    const MAP = Object.fromEntries(APPS.map(a => [a.n, a]));
+    const CATS = [
+        { id: 'utiles', nombre: 'Herramientas', apps: ['PichonInfo', 'PichonRules', 'PichonCode', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonWeather', 'PichonCalc', 'PichonCalendar', 'PichonPaint', 'PichonAlarm'] },
+        { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake', 'PichonChess', 'PichonTraffic', 'PichonPush', 'PichonMan'] },
+        { id: 'azar', nombre: 'Azar', apps: ['PichonDestiny', 'PichonRandom'] },
+        { id: 'divertidas', nombre: 'Diversión', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonWatch'] }
+    ];
+    const has = (a, k) => a.t.includes(k);
+    const GR = [
+        [['nuevo', 'actualizado'], a => has(a, 'nuevo') && has(a, 'actualizado')],
+        [['nuevo'], a => has(a, 'nuevo') && !has(a, 'actualizado')],
+        [['actualizado'], a => has(a, 'actualizado') && !has(a, 'nuevo')],
+        [['beta'], a => has(a, 'beta')],
+        [['premium'], a => has(a, 'premium')],
+        [['ultimos'], a => has(a, 'ultimos')],
+        [['mantenimiento'], a => has(a, 'mantenimiento')],
+        [['proximo'], a => has(a, 'proximo')],
+        [['cancelado'], a => has(a, 'cancelado')],
+        [['actcancelada'], a => has(a, 'actcancelada')],
+        [[], a => !a.t.length]
+    ];
+
+    /* Carteles de aviso: "solo" limita quién lo ve (invitado = sin cuenta, premium = con cuenta) */
+    const CARTELES = [
+        { id: 'reg', solo: 'invitado', html: 'Ya está disponible nuestra versión premium para PichonApps. ¿Quiere obtenerla? Hágase una cuenta, en esta misma app, apretando el botón "Ingresar".' },
+        { id: 'con', html: '<a data-mail href="#" role="button">¿Tiene una duda?→ Comuníquese con nosotros.</a>' }
+    ];
+
+    /* ------------------------------ ESTADO ------------------------------ */
+    let cfg = { orden: true, blank: true, buscador: true, carteles: true, ocultarBienvenida: false, columnas: 0, vista: 'tarjetas' };
+    let lay = { cats: {}, flat: [] };
+    const abierto = {};
+    const cerrados = new Set(), pos = {};
+
+    // NUEVO: Clave para guardar los carteles cerrados por invitados
+    const LS_CERRADOS_KEY = 'pichonapps-carteles-cerrados';
+    function getCerradosLS() {
+        try { return JSON.parse(localStorage.getItem(LS_CERRADOS_KEY)) || []; } catch { return []; }
+    }
+    function saveCerradoLS(id) {
+        try {
+            const arr = getCerradosLS();
+            if (!arr.includes(id)) {
+                arr.push(id);
+                localStorage.setItem(LS_CERRADOS_KEY, JSON.stringify(arr));
+            }
+        } catch { }
     }
 
-    function progress() {
-        const st = $('#psi-st');
-        if (st) st.textContent = jobTotal ? '⏳ ' + Math.round(jobDone / jobTotal * 100) + '%' : (lang ? '✓' : '');
-        if (btn) btn.classList.toggle('busy', jobTotal > 0);
-    }
+    const getD = (k, d) => { try { const v = Pichisoft.getData('PichonApps', k, d); return v == null ? d : v; } catch { return d; } };
+    const setD = (k, v) => { try { Pichisoft.setData('PichonApps', k, v); } catch (e) { console.error(e); } };
 
-    let LIST = null;
-    function langs() {
-        if (LIST) return LIST;
-        let dn = null; try { dn = new Intl.DisplayNames(['es'], { type: 'language' }); } catch { }
-        const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-        LIST = CODES.map(c => {
-            let n = c, nat = '';
-            try { if (dn) n = dn.of(c) || c; } catch { }
-            try { nat = new Intl.DisplayNames([c], { type: 'language' }).of(c) || ''; } catch { }
-            n = cap(n); nat = cap(nat);
-            if (nat.toLowerCase() === n.toLowerCase()) nat = '';
-            return { c, n, nat, s: norm(n + ' ' + nat + ' ' + c) };
-        }).sort((a, b) => a.n.localeCompare(b.n, 'es', { sensitivity: 'base' }));
-        return LIST;
-    }
-
-    function renderList() {
-        const box = $('#psi-list'); if (!box) return;
-        const q = norm($('#psi-q').value.trim());
-        const cur = lang || SRC;
-        const rows = langs().filter(l => !q || l.s.includes(q));
-        box.innerHTML = '';
-        if (!rows.length) { box.innerHTML = '<div class="psi-none">Sin resultados.</div>'; return; }
-        rows.forEach(l => {
-            const b = document.createElement('button'); b.type = 'button'; b.className = 'psi-it'; b.dataset.c = l.c; b.setAttribute('role', 'option');
-            const on = l.c.toLowerCase() === cur.toLowerCase() || (!lang && l.c === SRC);
-            if (on) { b.classList.add('on'); b.setAttribute('aria-selected', 'true'); }
-            b.innerHTML = '<span></span><small></small>';
-            b.firstChild.textContent = l.n; b.lastChild.textContent = l.nat;
-            if (defaultLang && defaultLang.toLowerCase() === l.c.toLowerCase()) { const s = document.createElement('span'); s.className = 'psi-star'; s.textContent = '★'; s.title = 'Idioma predeterminado'; b.append(s); }
-            b.onclick = () => {
-                const wantDef = $('#psi-def').checked;
-                setLang(l.c);
-                if (wantDef && lang) setDefault(l.c);
-            };
-            box.append(b);
+    function cargarLay() {
+        const sv = getD('layout', {}), usadas = new Set(), cats = {};
+        CATS.forEach(c => {
+            cats[c.id] = ((sv.cats && sv.cats[c.id]) || []).filter(n => MAP[n] && !usadas.has(n) && usadas.add(n));
         });
-    }
-    function refreshUI() {
-        const chk = $('#psi-def');
-        if (chk) { chk.disabled = !lang; chk.checked = !!lang && !!defaultLang && defaultLang.toLowerCase() === lang.toLowerCase(); }
-        const keep = $('#psi-list') ? $('#psi-list').scrollTop : 0;
-        renderList();
-        if ($('#psi-list')) $('#psi-list').scrollTop = keep;
+        CATS.forEach(c => c.apps.forEach(n => { if (MAP[n] && !usadas.has(n)) { usadas.add(n); cats[c.id].push(n); } }));
+        const fu = new Set(), flat = (sv.flat || []).filter(n => MAP[n] && !fu.has(n) && fu.add(n));
+        APPS.forEach(a => { if (!fu.has(a.n)) flat.push(a.n); });
+        lay = { cats, flat };
     }
 
-    function openPanel() {
-        if ($('#psi-ov')) return;
-        const o = document.createElement('div'); o.id = 'psi-ov'; o.className = 'psi-ov';
-        o.innerHTML = `<div class="psi-card" role="dialog" aria-modal="true" aria-labelledby="psi-t">
-  <button type="button" class="psi-x" id="psi-close" aria-label="Cerrar"></button>
-  <h3 id="psi-t">Traducir</h3>
-  <p class="psi-sub">Elegí el idioma al que querés traducir todo el texto de esta página.</p>
-  <input id="psi-q" type="text" placeholder="Buscar idioma…" autocomplete="off" spellcheck="false">
-  <div id="psi-list" role="listbox" translate="no" class="notranslate"></div>
-  <label class="psi-def"><span>Usar como idioma predeterminado<small>Se aplica solo cada vez que entrás a Pichisoft.</small></span><input type="checkbox" class="psi-sw" id="psi-def"></label>
-  <div id="psi-st" translate="no"></div>
-  <button type="button" class="psi-orig" id="psi-orig">Volver al idioma original</button>
-</div>`;
-        document.body.append(o);
-        const esc = e => { if (e.key === 'Escape') close(); };
-        const close = () => { document.removeEventListener('keydown', esc, true); o.remove(); };
-        document.addEventListener('keydown', esc, true);
-        o.onclick = e => { if (e.target === o) close(); };
-        $('#psi-close').onclick = close;
-        $('#psi-q').oninput = renderList;
-        $('#psi-orig').onclick = () => setLang(null);
-        $('#psi-def').onchange = e => {
-            if (!lang) { e.target.checked = false; return; }
-            setDefault(e.target.checked ? lang : null);
+    /* ------------------------------ DOM ------------------------------ */
+    function inyectar() {
+        const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
+        document.querySelector('h1.titulo').insertAdjacentHTML('beforeend', ' <span class="badge-prem">VERSIÓN PREMIUM</span>');
+        const ul = document.querySelector('ul'); ul.id = 'dirClasico';
+        ul.insertAdjacentHTML('afterend', `
+<div id="pPremium">
+  <p class="bienvenida">¡Hola! Bienvenido a PichonApps, nuestro directorio de aplicaciones y juegos que tanto te gustan de Pichisoft.</p>
+  <div class="p-search" id="pSearch">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <span class="p-pre">Pichon</span>
+    <input id="pQ" type="text" inputmode="search" autocomplete="off" spellcheck="false" placeholder="Destiny, Calc, Snake…" aria-label="Buscar apps de Pichon">
+    <button class="p-clear" id="pClear" aria-label="Limpiar búsqueda" title="Limpiar">✕</button>
+  </div>
+  <div id="pBody"></div>
+  <p class="p-no" id="pNo" hidden>No encontramos ninguna app con ese nombre. ¿Quiere sugerir una? <a class="linkdemail" href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Cuéntenos</a>.</p>
+</div>`);
+        document.body.insertAdjacentHTML('beforeend', `<div id="pCart"></div>`);
+
+        const pGear = document.createElement('button');
+        pGear.id = 'pGear';
+        pGear.setAttribute('aria-label', 'Configuración');
+        pGear.textContent = 'Configuración'; // Solo texto
+        pGear.onclick = abrirConfig;
+
+        const topbar = document.getElementById('pichisoft-topbar');
+        if (topbar) {
+            topbar.appendChild(pGear);
+        } else {
+            pGear.className = 'p-gear';
+            pGear.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+            document.body.appendChild(pGear);
+        }
+        $('#pQ').oninput = e => {
+            if (/^pichon/i.test(e.target.value)) e.target.value = e.target.value.replace(/^pichon\s*/i, '');
+            filtrar();
         };
-        refreshUI(); progress();
-        const on = o.querySelector('.psi-it.on'); if (on) on.scrollIntoView({ block: 'center' });
-        $('#psi-q').focus({ preventScroll: true });
-    }
-    function closePanel() { const o = $('#psi-ov'); if (o) o.remove(); }
-
-    /* -------------------- POSICIONAMIENTO -------------------- */
-    let placeRaf = 0;
-    function placeSoon() { if (!placeRaf) placeRaf = requestAnimationFrame(() => { placeRaf = 0; place(); }); }
-
-    /* Aplica una esquina con offsets opcionales */
-    function applyCorner(cfg) {
-        const pos = typeof cfg === 'string' ? cfg : cfg.pos;
-        const ox = (typeof cfg === 'object' && cfg.offsetX) || 0;
-        const oy = (typeof cfg === 'object' && cfg.offsetY) || 0;
-        const GAP = 16;
-        btn.style.top = 'auto';
-        btn.style.right = 'auto';
-        btn.style.bottom = 'auto';
-        btn.style.left = 'auto';
-        if (pos === 'tl') { btn.style.top = (GAP + oy) + 'px'; btn.style.left = (GAP + ox) + 'px'; }
-        else if (pos === 'tr') { btn.style.top = (GAP + oy) + 'px'; btn.style.right = (GAP + ox) + 'px'; }
-        else if (pos === 'bl') { btn.style.bottom = (GAP + oy) + 'px'; btn.style.left = (GAP + ox) + 'px'; }
-        else if (pos === 'br') { btn.style.bottom = (GAP + oy) + 'px'; btn.style.right = (GAP + ox) + 'px'; }
-    }
-
-    /* ¿Algo tapa al botón? */
-    function isCovered() {
-        const r = btn.getBoundingClientRect();
-        if (r.width < 5 || r.height < 5) return false;
-        const pts = [
-            [r.left + r.width / 2, r.top + r.height / 2],
-            [r.left + 4, r.top + 4],
-            [r.right - 4, r.bottom - 4]
-        ];
-        for (const [x, y] of pts) {
-            if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) continue;
-            const top = document.elementFromPoint(x, y);
-            if (top && top !== btn && !btn.contains(top)) return true;
+        const clearBtn = document.getElementById('pClear');
+        if (clearBtn) {
+            clearBtn.onclick = () => {
+                $('#pQ').value = '';
+                clearBtn.classList.remove('on');
+                filtrar();
+                $('#pQ').focus();
+            };
         }
-        return false;
-    }
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') cerrarConfig();
 
-    /* ¿Es un elemento que no queremos tapar? (interactivo o texto importante) */
-    function isImportant(el) {
-        if (!el || !el.tagName) return false;
-        const tag = el.tagName;
-        const role = el.getAttribute('role');
-        if (tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'SELECT' ||
-            tag === 'TEXTAREA' || tag === 'LABEL' ||
-            role === 'button' || role === 'link' || role === 'menuitem' ||
-            role === 'tab' || role === 'checkbox' || role === 'switch' ||
-            el.hasAttribute('onclick')) return true;
-        if (/^H[1-6]$/.test(tag)) return true;
-        if (role === 'heading') return true;
-        const cls = (typeof el.className === 'string') ? el.className : '';
-        const id = el.id || '';
-        const hay = (cls + ' ' + id).toLowerCase();
-        if (/\b(logo|brand|marca|title|titulo|header|banner|hero|heading|footer|status)\b/.test(hay)) return true;
-        return false;
-    }
+            // Si la barra de búsqueda está activa y visible en la configuración
+            if (cfg.buscador) {
+                const esCtrlK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k';
+                const esBarra = e.key === '/' && document.activeElement !== $('#pQ');
 
-    /* ¿El botón tapa algo importante? */
-    function coversImportant() {
-        const r = btn.getBoundingClientRect();
-        if (r.width < 5 || r.height < 5) return false;
-        const pts = [
-            [r.left + r.width / 2, r.top + r.height / 2],
-            [r.left + 4, r.top + 4],
-            [r.right - 4, r.bottom - 4]
-        ];
-        for (const [x, y] of pts) {
-            if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) continue;
-            const els = document.elementsFromPoint(x, y);
-            if (!els.length) continue;
-            if (els[0] !== btn && !btn.contains(els[0])) continue;
-            for (let i = 1; i < els.length; i++) {
-                const el = els[i];
-                if (el === btn || btn.contains(el) || el.contains(btn)) continue;
-                if (!el.tagName) continue;
-                const cs = getComputedStyle(el);
-                if (cs.pointerEvents === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) < 0.05) continue;
-                const er = el.getBoundingClientRect();
-                if (er.width >= innerWidth - 4 && er.height >= innerHeight - 4) continue;
-                if (er.width * er.height > innerWidth * innerHeight * 0.5) continue;
-                if (isImportant(el)) return true;
-            }
-        }
-        return false;
-    }
-
-    function place() {
-        if (!btn || btn.hidden) return;
-        if (btn.parentElement && btn.parentElement.id === 'pichisoft-topbar') return;
-        // 1. ¿La app pidió una esquina específica?
-        const forced = getAppPosition();
-        if (forced) { applyCorner(forced); return; }
-
-        // 2. Posición preferida: debajo del anchor / engranaje
-        let prefTop = 14, prefRight = 16;
-        const a = $(CFG.anchor);
-        if (a) {
-            const r = a.getBoundingClientRect();
-            if (r.height > 0 && r.right > 0 && r.bottom > 0 && r.top < innerHeight) {
-                prefTop = r.bottom + 8;
-                prefRight = innerWidth - r.right;
-            }
-        }
-        const g = $('#pGear');
-        if (g && getComputedStyle(g).display !== 'none') {
-            const gr = g.getBoundingClientRect();
-            if (gr.height > 0 && gr.top < innerHeight) prefTop = Math.max(prefTop, gr.bottom + 8);
-        }
-        const bw = btn.offsetWidth || 40;
-        const bh = btn.offsetHeight || 40;
-        prefTop = Math.max(8, Math.min(prefTop, innerHeight - bh - 8));
-        prefRight = Math.max(8, Math.min(prefRight, innerWidth - bw - 8));
-
-        // 3. Probar en orden hasta encontrar una esquina limpia
-        const positions = [
-            { top: prefTop + 'px', right: prefRight + 'px', bottom: 'auto', left: 'auto' },
-            { top: '14px', right: '16px', bottom: 'auto', left: 'auto' },
-            { top: 'auto', right: '16px', bottom: '14px', left: 'auto' },
-            { top: '14px', right: 'auto', bottom: 'auto', left: '16px' },
-            { top: 'auto', right: 'auto', bottom: '14px', left: '16px' }
-        ];
-
-        for (const p of positions) {
-            btn.style.top = p.top;
-            btn.style.right = p.right;
-            btn.style.bottom = p.bottom;
-            btn.style.left = p.left;
-            if (!isCovered() && !coversImportant()) return;
-        }
-        btn.style.top = positions[0].top;
-        btn.style.right = positions[0].right;
-        btn.style.bottom = positions[0].bottom;
-        btn.style.left = positions[0].left;
-    }
-
-    function setVisible(v) {
-        visible = !!v; ls.set(btnKey || 'psi_btn', visible ? '1' : '0');
-        if (btn) { btn.hidden = !visible; placeSoon(); }
-        if (!visible) closePanel();
-    }
-
-    /* ------------------------------ INICIO ------------------------------ */
-    function init() {
-        const st = document.createElement('style');
-        st.id = 'psi-style';
-        st.textContent = CSS;
-        document.head.appendChild(st);
-
-        btn = document.createElement('button');
-        btn.id = 'psi-btn';
-        btn.type = 'button';
-        btn.setAttribute('aria-label', 'Traducir');
-        btn.title = 'Traducir';
-        btn.textContent = 'Traducir';
-        btn.onclick = openPanel;
-        btn.style.position = 'fixed';
-        btn.style.zIndex = '2147483647';
-        btn.style.boxSizing = 'border-box';
-
-        // Intenta meter el botón dentro del topbar. Si el topbar aparece después,
-        // se vuelve a llamar desde el MutationObserver y desde los timeouts.
-        function attachToTopbar() {
-            if (!btn) return;
-
-            const topbar = document.getElementById('pichisoft-topbar');
-            if (!topbar) return;
-            if (btn.parentElement === topbar) return;
-
-            btn.removeAttribute('id');
-            btn.style.cssText = 'position:static !important; background:transparent !important; border:none !important; font-family:"Times New Roman", Times, serif !important; font-size:0.9rem !important; font-weight:bold !important; letter-spacing:0.5px !important; cursor:pointer; padding:2px 8px !important; margin:0 !important; text-transform:uppercase; white-space:nowrap; height:auto !important; width:auto !important; box-shadow:none !important;';
-            topbar.appendChild(btn);
-        }
-
-        const bcs = getComputedStyle(document.body);
-        const bodyBreaksFixed = bcs.transform !== 'none' || bcs.filter !== 'none' || bcs.perspective !== 'none';
-
-        attachToTopbar();
-
-        if (!btn.parentElement || btn.parentElement.id !== 'pichisoft-topbar') {
-            (bodyBreaksFixed ? document.documentElement : document.body).appendChild(btn);
-        }
-
-        btnKey = 'psi_btn_' + (location.pathname || '/');
-        const savedVis = ls.get(btnKey) !== null ? ls.get(btnKey) : ls.get('psi_btn');
-        visible = typeof window.PSI_VISIBLE === 'boolean' ? window.PSI_VISIBLE : savedVis !== '0';
-        btn.hidden = !visible;
-
-        addEventListener('pichisoft:traductor', e => setVisible(e.detail && e.detail.visible));
-
-        new MutationObserver(muts => {
-            attachToTopbar();
-            placeSoon();
-
-            if (!lang) return;
-
-            for (const m of muts) {
-                if (m.type === 'childList') {
-                    m.addedNodes.forEach(n => scan(n));
-                } else if (m.type === 'characterData') {
-                    scanText(m.target);
-                } else if (
-                    m.type === 'attributes' &&
-                    m.target.nodeType === 1 &&
-                    !m.target.closest(SKIP) &&
-                    attrItemOk(m.target, m.attributeName)
-                ) {
-                    proc(m.target, m.attributeName);
+                if (esCtrlK || esBarra) {
+                    e.preventDefault();
+                    $('#pQ').focus();
+                    $('#pQ').select(); // Opcional: selecciona el texto actual para sobrescribir rápido
                 }
             }
-        }).observe(document.body, {
-            childList: true,
-            subtree: true,
-            characterData: true,
-            attributes: true,
-            attributeFilter: ATTRS.concat('value')
         });
 
-        addEventListener('resize', placeSoon);
-        addEventListener('scroll', placeSoon, { passive: true });
-        addEventListener('load', placeSoon);
-
-        attachToTopbar();
-        place();
-
-        setTimeout(() => { attachToTopbar(); place(); }, 300);
-        setTimeout(() => { attachToTopbar(); place(); }, 1000);
-        setTimeout(() => { attachToTopbar(); place(); }, 3000);
-
-        defaultLang = readDefault();
-
-        const sess = ss.get('psi_cur');
-        const start = sess === '-' ? null : (sess || defaultLang);
-        if (start) setLang(start, { noSession: true });
     }
 
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+    /* Etiquetas más cortas para que entren en la tarjeta (el texto completo queda en el tooltip) */
+    const CORTO = { premium: 'PREMIUM', ultimos: 'ÚLTIMOS DÍAS', actcancelada: 'ACT. CANCELADA', mantenimiento: 'MANTENIMIENTO' };
+    const hue = n => [...n].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+
+    function item(a, drag) {
+        const d = document.createElement('div'); d.className = 'app'; d.dataset.n = a.n;
+        if (drag) {
+            const g = document.createElement('span'); g.className = 'grip'; g.title = 'Arrastrar para ordenar';
+            g.onpointerdown = e => arrastrar(e, d, g); d.append(g);
+        }
+        let l;
+        if (a.u) {
+            l = document.createElement('a');// Por esto:
+            l.href = B + '/' + a.u + '.html';
+            if (cfg.blank) { l.target = '_blank'; l.rel = 'noopener noreferrer'; }
+        } else { l = document.createElement('span'); l.title = 'Próximamente'; }
+        l.className = 'app-l' + (a.u ? '' : ' off');
+
+        /* Ícono: el logo de Pichisoft (o a.i) y, si no se puede cargar, una inicial sobre un color propio de cada app */
+        const ic = document.createElement('span'); ic.className = 'ico'; ic.setAttribute('aria-hidden', 'true');
+        const h = hue(a.n);
+        ic.style.background = 'linear-gradient(145deg,hsl(' + h + ',68%,58%),hsl(' + ((h + 35) % 360) + ',62%,36%))';
+        ic.textContent = a.n.charAt(6).toUpperCase();
+        const src = a.i || LOGO;
+        if (src) {
+            const im = document.createElement('img'); im.alt = ''; im.loading = 'lazy'; im.draggable = false;
+            im.onload = () => { ic.style.background = '#1a1a1a'; ic.style.color = 'transparent'; ic.style.textShadow = 'none'; };
+            im.onerror = () => im.remove();
+            im.src = src; ic.append(im);
+        }
+        const nm = document.createElement('span'); nm.className = 'nm';
+        nm.innerHTML = '<small>Pichon</small>'; nm.append(a.n.slice(6));
+        l.append(ic, nm); d.append(l);
+
+        if (a.t.length) {
+            const t = document.createElement('span'); t.className = 'tags';
+            a.t.forEach(k => {
+                const s = document.createElement('span'); s.className = 'etiqueta ' + TAGS[k][1];
+                s.textContent = cfg.vista === 'lista' ? TAGS[k][0] : (CORTO[k] || TAGS[k][0]); s.title = TAGS[k][0]; t.append(s);
+            });
+            d.append(t);
+        }
+        // Agregar estrellas (solo si tiene URL, o sea, si no es "Próximamente")
+        if (a.u) {
+            const ratingBox = document.createElement('div');
+            ratingBox.style.cssText = 'margin-top:6px;font-size:0.7rem;color:#d4af37;text-align:center;';
+
+            // Mostrar promedio
+            const promBox = document.createElement('div');
+            ratingBox.appendChild(promBox);
+            cargarRating(a.n, promBox);
+
+            // Estrellas clickeables
+            const stars = crearEstrellas(a.n, a.n);
+            ratingBox.appendChild(stars);
+
+            d.appendChild(ratingBox);
+        }
+        return d;
+    }
+
+    function acc(titulo, hijos, key, extra) {
+        const a = document.createElement('div'); a.className = 'acc' + (extra ? ' ' + extra : '') + (abierto[key] ? ' open' : '');
+        const h = document.createElement('button'); h.className = 'acc-h'; h.setAttribute('aria-expanded', !!abierto[key]);
+        h.innerHTML = '<span aria-hidden="true"></span><span>' + titulo + '</span><span class="chev" aria-hidden="true"></span>';
+        h.onclick = () => { abierto[key] = !abierto[key]; a.classList.toggle('open', abierto[key]); h.setAttribute('aria-expanded', abierto[key]); };
+        const b = document.createElement('div'); b.className = 'acc-b'; b.append(...hijos);
+        a.append(h, b); return a;
+    }
+
+    function catEl(c) {
+        const s = document.createElement('section'); s.className = 'cat';
+        const h = document.createElement('div'); h.className = 'cat-h';
+        h.innerHTML = '<i class="ci ci-' + c.id + '" aria-hidden="true"></i><span>' + c.nombre + '</span>';
+        const l = document.createElement('div'); l.className = 'lista'; l.dataset.cat = c.id;
+        lay.cats[c.id].forEach(n => MAP[n] && l.append(item(MAP[n], true)));
+        s.append(h, l); return s;
+    }
+
+    function prefijos() {
+        const w = document.createElement('div');
+        GR.forEach(([tags, fn]) => {
+            const lst = APPS.filter(fn); if (!lst.length) return;
+            const s = document.createElement('div'); s.className = 'grp';
+            const h = document.createElement('div'); h.className = 'grp-h';
+            if (tags.length) tags.forEach(k => { const c = document.createElement('span'); c.className = 'etiqueta ' + TAGS[k][1]; c.textContent = TAGS[k][0]; h.append(c); });
+            else { h.classList.add('txt'); h.textContent = 'Sin prefijo'; }
+            const l = document.createElement('div'); l.className = 'lista-p'; lst.forEach(a => l.append(item(a, false)));
+            s.append(h, l); w.append(s);
+        });
+        return w;
+    }
+
+    /* Vistas: 'tarjetas' (grilla), 'lista' (categorías en filas, sin grilla) y 'clasica' (la lista simple de
+       index.html). Sin cuenta solo existe la clásica; con cuenta se elige en Configuración. */
+    function aplicarVista(prem) {
+        document.body.classList.toggle('vista-orig', !!prem && cfg.vista === 'clasica');
+        document.body.classList.toggle('vista-lista', !!prem && cfg.vista === 'lista');
+        document.querySelectorAll('#dirClasico a').forEach(a => {
+            if (!prem || cfg.blank) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+            else { a.removeAttribute('target'); a.removeAttribute('rel'); }
+        });
+    }
+    const COL_MIN = 2;
+    const colMax = () => innerWidth <= 600 ? 5 : 8;
+
+    function aplicarColumnas() {
+        const b = document.body, n = +cfg.columnas || 0;
+        const on = n > 0 && cfg.vista === 'tarjetas' && !!Pichisoft.user;
+        b.classList.toggle('cols-custom', on);
+        if (!on) {
+            b.classList.remove('cols-denso', 'cols-muydenso');
+            b.style.removeProperty('--cols');
+            return;
+        }
+        const c = Math.max(COL_MIN, Math.min(colMax(), n));
+        b.style.setProperty('--cols', c);
+        b.classList.toggle('cols-denso', c >= 5 && c < 7);
+        b.classList.toggle('cols-muydenso', c >= 7);
+    }
+    function render() {
+        aplicarVista(true);
+        aplicarColumnas();
+        const bv = document.querySelector('.bienvenida');
+        if (bv) bv.hidden = !!cfg.ocultarBienvenida;
+        const root = $('#pBody'); root.innerHTML = '';
+        $('#pSearch').hidden = !cfg.buscador;
+        if (!cfg.buscador) $('#pQ').value = '';
+        renderCarteles();
+        if (cfg.orden) {
+            const sub = acc('Apps ordenadas según su prefijo', [prefijos()], 'pre', 'sub');
+            root.append(acc('Apps ordenadas', [...CATS.map(catEl), sub], 'ord'));
+        } else {
+            const f = document.createElement('section'); f.className = 'cat flat';
+            const h = document.createElement('div'); h.className = 'cat-h'; h.textContent = 'Todas las apps';
+            const l = document.createElement('div'); l.className = 'lista'; l.dataset.flat = '1';
+            lay.flat.forEach(n => l.append(item(MAP[n], true)));
+            f.append(h, l); root.append(f);
+        }
+        filtrar();
+    }
+
+    function filtrar() {
+        const raw = cfg.buscador ? $('#pQ').value.trim().toLowerCase().replace(/^pichon\s*/, '') : '';
+        const clearBtn = document.getElementById('pClear');
+        if (clearBtn) clearBtn.classList.toggle('on', !!raw);
+        const root = $('#pPremium'); root.classList.toggle('buscando', !!raw);
+        let hits = 0;
+        root.querySelectorAll('.lista .app, .lista-p .app').forEach(a => {
+            const ok = !raw || a.dataset.n.toLowerCase().slice(6).includes(raw);
+            a.hidden = !ok; if (ok) hits++;
+        });
+        root.querySelectorAll('.cat').forEach(c => { c.hidden = !!raw && !c.querySelector('.app:not([hidden])'); });
+        const noEl = $('#pNo');
+        if (noEl) noEl.hidden = !(raw && !hits);
+    }
+
+    /* ---------------------- ARRASTRAR (mouse y táctil) ---------------------- */
+    function guardarLay() {
+        if (cfg.orden) CATS.forEach(c => { lay.cats[c.id] = [...document.querySelectorAll('#pBody .lista[data-cat="' + c.id + '"] .app')].map(x => x.dataset.n); });
+        else lay.flat = [...document.querySelectorAll('#pBody .lista[data-flat] .app')].map(x => x.dataset.n);
+        setD('layout', lay);
+    }
+
+    function arrastrar(e, el, grip) {
+        if (e.button > 0) return;
+        e.preventDefault();
+        try { grip.releasePointerCapture(e.pointerId); } catch { }
+        const r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+        const gh = el.cloneNode(true); gh.classList.add('ghost');
+        gh.style.cssText = 'width:' + r.width + 'px;left:' + r.left + 'px;top:' + r.top + 'px';
+        document.body.append(gh); el.classList.add('moviendo'); document.body.classList.add('arrastrando');
+        let ly = 300;
+        const iv = setInterval(() => { if (ly < 80) scrollBy(0, -10); else if (ly > innerHeight - 80) scrollBy(0, 10); }, 16);
+        const mv = ev => {
+            ly = ev.clientY;
+            gh.style.left = (ev.clientX - dx) + 'px'; gh.style.top = (ev.clientY - dy) + 'px';
+            const t = document.elementFromPoint(ev.clientX, ev.clientY); if (!t) return;
+            const o = t.closest('.app');
+            if (o && o !== el && o.parentNode.classList.contains('lista')) {
+                const b = o.getBoundingClientRect();
+                o.parentNode.insertBefore(el, (cfg.vista === 'lista' ? ev.clientY < b.top + b.height / 2 : ev.clientX < b.left + b.width / 2) ? o : o.nextSibling); return;
+            }
+            const c = t.closest('.cat'); if (!c) return;
+            const l = c.querySelector('.lista'), otros = [...l.querySelectorAll('.app')].filter(x => x !== el);
+            if (!otros.length || ev.clientY > otros[otros.length - 1].getBoundingClientRect().bottom) l.appendChild(el);
+        };
+        const fin = () => {
+            clearInterval(iv);
+            removeEventListener('pointermove', mv); removeEventListener('pointerup', fin); removeEventListener('pointercancel', fin);
+            gh.remove(); el.classList.remove('moviendo'); document.body.classList.remove('arrastrando');
+            guardarLay(); filtrar();
+        };
+        addEventListener('pointermove', mv); addEventListener('pointerup', fin); addEventListener('pointercancel', fin);
+    }
+
+    /* ------------------------------ CARTELES ------------------------------ */
+    /* Deja espacio abajo para que los carteles apilados no tapen las apps */
+    function reservar() {
+        const b = $('#pCart');
+        const sueltos = document.querySelectorAll('.cartel.suelto').length;
+        const enContenedor = b ? b.children.length : 0;
+        if (enContenedor === 0 && sueltos === 0) {
+            document.body.style.paddingBottom = '';
+        } else {
+            document.body.style.paddingBottom = (b.offsetHeight + 16) + 'px';
+        }
+    }
+
+    function renderCarteles() {
+        document.querySelectorAll('.cartel').forEach(c => c.remove());
+        const prem = !!Pichisoft.user, box = $('#pCart');
+        if (!box) return;
+        if (prem && !cfg.carteles) { reservar(); return; }
+
+        // NUEVO: Si es invitado (sin cuenta), cargar los carteles cerrados desde LocalStorage
+        if (!prem) {
+            const lsCerrados = getCerradosLS();
+            lsCerrados.forEach(id => cerrados.add(id));
+        }
+
+        CARTELES.forEach(c => {
+            if ((c.solo === 'invitado' && prem) || (c.solo === 'premium' && !prem) || cerrados.has(c.id)) return;
+            const d = document.createElement('div'); d.className = 'cartel'; d.dataset.id = c.id; d.innerHTML = c.html;
+            /* Sin cuenta siempre pestaña nueva; con cuenta, según la opción */
+            d.querySelectorAll('a[data-b]').forEach(a => { if (!prem || cfg.blank) { a.target = '_blank'; a.rel = 'noopener noreferrer'; } });
+            d.querySelectorAll('a[data-mail]').forEach(a => { a.onclick = e => { e.preventDefault(); elegirMail(); }; });
+            const x = document.createElement('button'); x.className = 'c-x'; x.setAttribute('aria-label', 'Cerrar aviso'); x.title = 'Cerrar';
+            x.onpointerdown = e => e.stopPropagation();
+            x.onclick = () => {
+                cerrados.add(c.id);
+                if (!prem) saveCerradoLS(c.id); // NUEVO: Guardar en LocalStorage si es invitado
+                delete pos[c.id];
+                d.remove();
+                reservar();
+            };
+            d.append(x);
+            d.onpointerdown = e => moverCartel(e, d);
+            if (pos[c.id]) { d.classList.add('suelto'); d.style.left = pos[c.id].l + 'px'; d.style.top = pos[c.id].t + 'px'; document.body.append(d); }
+            else box.append(d);
+        });
+        reservar();
+    }
+
+    /* Panel para elegir cómo escribir al equipo (funciona en cualquier dispositivo) */
+    function elegirMail() {
+        if ($('#pMail')) return;
+        const gmail = 'https://mail.google.com/mail/?extsrc=mailto&url=' + encodeURIComponent('mailto:' + MAIL);
+        const o = document.createElement('div'); o.id = 'pMail'; o.className = 'pml-ov';
+        o.innerHTML = `<div class="pml-card" role="dialog" aria-modal="true" aria-labelledby="pmlT">
+      <h3 id="pmlT">Comuníquese con nosotros</h3>
+      <p>Escribinos a <b>${MAIL}</b>. Elegí cómo querés enviar el mensaje:</p>
+      <button class="pml-btn" id="pmlG">Abrir Gmail</button>
+      <button class="pml-btn" id="pmlM">Abrir mi app de mails</button>
+      <button class="pml-btn" id="pmlC">Copiar dirección</button>
+      <button class="pml-btn pml-no" id="pmlX">Cerrar</button>
+    </div>`;
+        document.body.append(o);
+        const esc = e => { if (e.key === 'Escape') cerrar(); };
+        const cerrar = () => { document.removeEventListener('keydown', esc); o.remove(); };
+        document.addEventListener('keydown', esc);
+        o.onclick = e => { if (e.target === o) cerrar(); };
+        o.querySelector('#pmlX').onclick = cerrar;
+        o.querySelector('#pmlG').onclick = () => { window.open(gmail, '_blank', 'noopener'); cerrar(); };
+        o.querySelector('#pmlM').onclick = () => { location.href = 'mailto:' + MAIL; cerrar(); };
+        o.querySelector('#pmlC').onclick = async e => {
+            try { await navigator.clipboard.writeText(MAIL); e.target.textContent = '¡Copiada!'; }
+            catch { e.target.textContent = MAIL; }
+        };
+    }
+
+    function moverCartel(e, d) {
+        if (e.button > 0 || e.target.closest('a,button')) return;
+        const r = d.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top, w = r.width, h = r.height;
+        if (!d.classList.contains('suelto')) { d.classList.add('suelto'); d.style.width = w + 'px'; document.body.append(d); reservar(); }
+        d.classList.add('arr');
+        try { d.setPointerCapture(e.pointerId); } catch { }
+        const mv = ev => {
+            const l = Math.min(Math.max(ev.clientX - dx, 0), innerWidth - w), t = Math.min(Math.max(ev.clientY - dy, 0), innerHeight - h);
+            d.style.left = l + 'px'; d.style.top = t + 'px'; pos[d.dataset.id] = { l, t };
+        };
+        const fin = () => {
+            d.classList.remove('arr');
+            d.removeEventListener('pointermove', mv); d.removeEventListener('pointerup', fin); d.removeEventListener('pointercancel', fin);
+        };
+        mv(e);
+        d.addEventListener('pointermove', mv); d.addEventListener('pointerup', fin); d.addEventListener('pointercancel', fin);
+    }
+
+    /* ---------------------------- CONFIGURACIÓN ---------------------------- */
+    function cerrarConfig() {
+        const o = $('#pCfg'); if (!o) return;
+        o.classList.remove('on'); setTimeout(() => o.remove(), 200);
+    }
+
+    function confirmarReset() {
+        if ($('#pcfOv')) return;
+
+        if (!$('#pcfCss')) {
+            const st = document.createElement('style'); st.id = 'pcfCss';
+            st.textContent = `
+.pcf-ov{position:fixed;inset:0;z-index:130;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;transition:opacity .18s}
+.pcf-ov.on{opacity:1}
+.pcf-card{width:min(400px,100%);box-sizing:border-box;background:#141414;border:1px solid #3a3a3a;border-top:3px solid #d4af37;border-radius:14px;padding:28px 24px 22px;box-shadow:0 26px 70px rgba(0,0,0,.8);transform:translateY(14px) scale(.97);transition:transform .2s}
+.pcf-ov.on .pcf-card{transform:none}
+.pcf-card h3{margin:0 0 12px;font-family:"Times New Roman",Times,serif;font-weight:bold;font-size:1.55rem;line-height:1.2;color:#fff;text-align:left}
+.pcf-card p{margin:0 0 24px;font-family:Verdana,"Open Sans",sans-serif;font-size:.85rem;line-height:1.6;color:#bdbdbd;text-align:left}
+.pcf-btn{display:block;width:100%;box-sizing:border-box;padding:14px 12px;border-radius:8px;font-family:Verdana,"Open Sans",sans-serif;font-size:.9rem;cursor:pointer;transition:background-color .15s,color .15s}
+.pcf-btn+.pcf-btn{margin-top:10px}
+.pcf-no{background-color:#8c8c8c;color:#000;border:1px solid #8c8c8c}
+.pcf-no:hover{background-color:#d2d2d2;color:#000}
+.pcf-si{background-color:#000;color:#fff;border:1px solid #4a4a4a}
+.pcf-si:hover{background-color:#fff;color:#000}
+.pcf-btn:focus-visible{outline:2px solid #f1d98a;outline-offset:2px}
+.pcf-card .pcf-btn{font-family:Georgia,"Times New Roman",serif!important;font-size:1rem!important;font-weight:normal}`;
+            document.head.appendChild(st);
+        }
+
+        const d = document.createElement('div'); d.id = 'pcfOv'; d.className = 'pcf-ov';
+        d.innerHTML = `<div class="pcf-card" role="alertdialog" aria-modal="true" aria-labelledby="pcfT">
+    <h3 id="pcfT">¿Restablecer el orden de las apps?</h3>
+    <p>El orden que le aplicaste a tus apps, volverán al orden predeterminado.</p>
+    <button class="pcf-btn pcf-no" id="pcfNo">No quiero restablecer el orden</button>
+    <button class="pcf-btn pcf-si" id="pcfSi">Restablecer orden</button>
+  </div>`;
+        document.body.append(d);
+        requestAnimationFrame(() => d.classList.add('on'));
+
+        const esc = e => { if (e.key === 'Escape') { e.stopImmediatePropagation(); cerrar(); } };
+        const cerrar = () => {
+            document.removeEventListener('keydown', esc, true);
+            d.classList.remove('on'); setTimeout(() => d.remove(), 180);
+        };
+        document.addEventListener('keydown', esc, true);
+        d.onclick = e => { if (e.target === d) cerrar(); };
+        d.querySelector('#pcfNo').onclick = cerrar;
+        d.querySelector('#pcfSi').onclick = () => { cerrar(); setD('layout', null); cargarLay(); render(); };
+        d.querySelector('#pcfNo').focus();
+    }
+
+        function abrirConfig() {
+        if ($('#pCfg')) return;
+        const o = document.createElement('div'); o.id = 'pCfg'; o.className = 'pm-ov';
+        const fila = (k, t, d) => `<label class="pm-row"><span><b>${t}</b><small>${d}</small></span><input type="checkbox" class="sw" data-k="${k}"></label>`;
+
+        /* CAMBIO A: los botones de "Apps por fila" */
+        let chips = '<button type="button" class="pm-col" data-c="0">Auto</button>';
+        for (let i = COL_MIN; i <= colMax(); i++) chips += `<button type="button" class="pm-col" data-c="${i}">${i}</button>`;
+
+        o.innerHTML = `<div class="pm-panel" role="dialog" aria-modal="true" aria-label="Configuración">
+      <button class="pm-back" id="cfgBack"><i class="pm-arr" aria-hidden="true"></i>Volver</button>
+      <h2>Configuración</h2>
+      <div class="pm-view" role="radiogroup" aria-label="Vista">
+        <b>Vista</b>
+        <small>Elegí cómo querés ver PichonApps.</small>
+        <button type="button" class="pm-opt" role="radio" data-v="clasica"><span class="rd"></span><span><b>Vista original</b><small>La de siempre: la lista simple que ven los usuarios sin cuenta.</small></span></button>
+        <button type="button" class="pm-opt" role="radio" data-v="lista"><span class="rd"></span><span><b>Vista de versión premium</b><small>Apps ordenadas por categorías, en filas y sin grilla.</small></span></button>
+        <button type="button" class="pm-opt" role="radio" data-v="tarjetas"><span class="rd"></span><span><b>Vista nueva para versión premium</b><small>Grilla de tarjetas con íconos, como el launcher de un celular.</small></span></button>
+      </div>
+      ${fila('orden', 'Ordenar apps', 'Agrupa las apps por categoría. Si lo desactivás, se muestran todas juntas.')}
+      ${fila('blank', 'Abrir las apps en una pestaña nueva', 'Si lo desactivás, se abren en esta misma pestaña.')}
+      ${fila('buscador', 'Mostrar barra de búsqueda', 'Buscá una app escribiendo solo lo que va después de "Pichon".')}
+      ${fila('carteles', 'Mostrar carteles de aviso', 'Muestra los avisos flotantes, que podés arrastrar y cerrar con la X. Si lo desactivás, no vuelven a aparecer.')}
+      ${fila('ocultarBienvenida', 'Ocultar texto de bienvenida', 'Oculta el mensaje de bienvenida que aparece arriba de la lista de apps.')}
+
+      <!-- CAMBIO B: el bloque "Apps por fila" -->
+      <div class="pm-view">
+        <b>Apps por fila</b>
+        <small>Solo en la vista de tarjetas. "Auto" usa el tamaño original según tu pantalla.</small>
+        <div class="pm-cols">${chips}</div>
+      </div>
+
+      <button class="pm-reset" id="cfgReset">Restablecer el orden de las apps</button>
+    </div>`;
+        document.body.append(o);
+        requestAnimationFrame(() => o.classList.add('on'));
+        o.onclick = e => { if (e.target === o) cerrarConfig(); };
+        o.querySelector('#cfgBack').onclick = cerrarConfig;
+        o.querySelectorAll('.sw').forEach(s => {
+            s.checked = !!cfg[s.dataset.k];
+            s.onchange = () => {
+                cfg[s.dataset.k] = s.checked; setD('cfg', cfg);
+                if (s.dataset.k === 'carteles' && s.checked) cerrados.clear(); /* al reactivar, vuelven todos */
+                render();
+            };
+        });
+        const marcar = () => o.querySelectorAll('.pm-opt').forEach(b => {
+            const on = b.dataset.v === cfg.vista; b.classList.toggle('on', on); b.setAttribute('aria-checked', on);
+        });
+        o.querySelectorAll('.pm-opt').forEach(b => {
+            b.onclick = () => { cfg.vista = b.dataset.v; setD('cfg', cfg); marcar(); render(); };
+        });
+        marcar();
+
+        /* CAMBIO C: los eventos de los botones de "Apps por fila" */
+        const marcarCols = () => o.querySelectorAll('.pm-col').forEach(b =>
+            b.classList.toggle('on', +b.dataset.c === (+cfg.columnas || 0)));
+        o.querySelectorAll('.pm-col').forEach(b => {
+            b.onclick = () => { cfg.columnas = +b.dataset.c; setD('cfg', cfg); marcarCols(); render(); };
+        });
+        marcarCols();
+
+        o.querySelector('#cfgReset').onclick = confirmarReset;
+    }
+    // --- SISTEMA DE RATINGS ---
+    // --- SISTEMA DE RATINGS ---
+    async function cargarRating(appId, container, retries = 10) {
+        const fb = window.PichisoftFirebase;
+        if (!fb || !fb.getDocs) {
+            if (retries > 0) setTimeout(() => cargarRating(appId, container, retries - 1), 300);
+            return;
+        }
+        try {
+            const q = fb.query(fb.collection(fb.db, 'app_ratings'), fb.where('appId', '==', appId));
+            const snap = await fb.getDocs(q);
+            let total = 0, count = 0;
+            snap.forEach(d => { total += (d.data().score || 0); count++; });
+            const prom = count ? (total / count).toFixed(1) : '0.0';
+            container.innerHTML = `<span style="color:#d4af37;">★</span> ${prom}`;
+            container.title = count + ' votos';
+        } catch (e) { console.error('cargarRating:', e); }
+    }
+
+    function crearEstrellas(appId, appName) {
+        const cont = document.createElement('div');
+        cont.className = 'estrellas';
+        cont.style.cssText = 'display:flex;justify-content:center;gap:2px;margin-top:5px;cursor:pointer;font-size:16px;';
+
+        let userRating = 0;
+        const paint = n => {
+            [...cont.children].forEach((s, i) => {
+                s.style.color = (i + 1) <= n ? '#d4af37' : '#555';
+            });
+        };
+
+        // Cargar la calificación previa del usuario (si tiene cuenta)
+        (async () => {
+            const fb = window.PichisoftFirebase;
+            if (!fb || !fb.auth || !fb.auth.currentUser) return;
+            try {
+                const snap = await fb.getDoc(fb.doc(fb.db, 'app_ratings', appId + '_' + fb.auth.currentUser.uid));
+                if (snap.exists()) {
+                    userRating = snap.data().score || 0;
+                    paint(userRating);
+                }
+            } catch { }
+        })();
+
+        for (let i = 1; i <= 5; i++) {
+            const star = document.createElement('span');
+            star.textContent = '★';
+            star.style.color = '#555';
+            star.style.transition = 'color 0.2s';
+            star.onmouseenter = () => paint(i);
+            star.onmouseleave = () => paint(userRating);
+            star.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!window.Pichisoft || !Pichisoft.user) {
+                    alert('Iniciá sesión para calificar.');
+                    return;
+                }
+                abrirModalCalificar(appId, appName, () => {
+                    userRating = i;
+                    paint(userRating);
+                });
+            };
+            cont.appendChild(star);
+        }
+        return cont;
+    }
+
+    // --- MODAL DE CALIFICACIÓN ---
+    async function abrirModalCalificar(appId, appName, onSaved) {
+        if (document.getElementById('ratingOv')) return;
+
+        const fb = window.PichisoftFirebase;
+        if (!fb || !fb.auth || !fb.auth.currentUser) {
+            alert('Iniciá sesión para calificar.');
+            return;
+        }
+
+        // Cargar datos previos del usuario
+        let curStars = 0;
+        let curText = '';
+        const docId = appId + '_' + fb.auth.currentUser.uid;
+        try {
+            const rs = await fb.getDoc(fb.doc(fb.db, 'app_ratings', docId));
+            if (rs.exists()) curStars = rs.data().score || 0;
+            const rv = await fb.getDoc(fb.doc(fb.db, 'app_reviews', docId));
+            if (rv.exists()) curText = rv.data().text || '';
+        } catch (e) { console.error(e); }
+
+        const o = document.createElement('div');
+        o.id = 'ratingOv';
+        o.className = 'ov sem';
+        o.innerHTML = `<div class="box" style="background:linear-gradient(180deg,#181818,#0b0b0b);border:2px solid #d4af37;border-radius:16px;padding:26px 24px 22px;max-width:480px;">
+        <h2 style="margin:0 0 6px;font:bold 1.5rem 'Times New Roman',serif;color:#fff;">Calificar ${appName}</h2>
+        <p style="margin:0 0 16px;font-size:.8rem;color:#bdbdbd;">Tu opinión nos ayuda a mejorar.</p>
+
+        <div id="rStars" style="display:flex;justify-content:center;gap:6px;font-size:32px;margin-bottom:16px;"></div>
+
+        <label style="display:block;margin-bottom:6px;font-size:.85rem;">Cuéntanos más sobre tu opinión de ${appName}:</label>
+        <textarea id="rText" maxlength="800" style="width:100%;box-sizing:border-box;min-height:110px;background:#1c1c1c;border:1px solid #444;color:#fff;border-radius:8px;padding:10px;font:inherit;font-size:.85rem;resize:vertical;outline:0;"></textarea>
+
+        <div id="rErr" style="color:#ff7b7b;font-size:.8rem;min-height:1.2em;margin-top:10px;"></div>
+
+        <button id="rSend" style="display:block;width:100%;margin-top:8px;padding:12px;border-radius:10px;border:1px solid #f1d98a;background:linear-gradient(135deg,#2b2107,#100c02);color:#fff;font:bold 1rem Georgia,serif;cursor:pointer;">Enviar</button>
+        <button id="rCancel" style="display:block;width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px solid #333;background:none;color:#aaa;font:inherit;font-size:.85rem;cursor:pointer;">Cancelar</button>
+    </div>`;
+        document.body.appendChild(o);
+
+        const starsEl = o.querySelector('#rStars');
+        const textEl = o.querySelector('#rText');
+        const errEl = o.querySelector('#rErr');
+        textEl.value = curText;
+
+        for (let i = 1; i <= 5; i++) {
+            const s = document.createElement('span');
+            s.dataset.i = i;
+            s.textContent = '★';
+            s.style.cssText = `cursor:pointer;transition:color .15s;color:${i <= curStars ? '#d4af37' : '#555'};`;
+            s.onmouseenter = () => { [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= i ? '#d4af37' : '#555'); };
+            s.onmouseleave = () => { [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= curStars ? '#d4af37' : '#555'); };
+            s.onclick = () => {
+                curStars = i;
+                [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= curStars ? '#d4af37' : '#555');
+            };
+            starsEl.appendChild(s);
+        }
+
+        const cerrar = () => o.remove();
+        o.querySelector('#rCancel').onclick = cerrar;
+        o.onclick = e => { if (e.target === o) cerrar(); };
+
+        o.querySelector('#rSend').onclick = async (e) => {
+            if (curStars < 1) { errEl.textContent = 'Elegí al menos 1 estrella.'; return; }
+            e.target.disabled = true;
+            errEl.textContent = '';
+            try {
+                const uid = fb.auth.currentUser.uid;
+                const username = (window.Pichisoft.user && Pichisoft.user.name) || 'Anónimo';
+
+                // Guardar calificación (promedio)
+                await fb.setDoc(fb.doc(fb.db, 'app_ratings', docId), {
+                    appId, uid, score: curStars, ts: new Date()
+                });
+
+                // Guardar opinión completa
+                await fb.setDoc(fb.doc(fb.db, 'app_reviews', docId), {
+                    appId,
+                    appName,
+                    uid,
+                    username,
+                    stars: curStars,
+                    text: textEl.value.trim(),
+                    ts: new Date()
+                });
+
+                cerrar();
+                if (onSaved) onSaved();
+                alert('¡Gracias por tu opinión!');
+            } catch (err) {
+                console.error(err);
+                errEl.textContent = 'Error al enviar. Intentá de nuevo.';
+                e.target.disabled = false;
+            }
+        };
+    }
+    /* ------------------------ ACTIVAR / DESACTIVAR ------------------------ */
+    function renderPremium() {
+        const u = Pichisoft.user;
+        document.body.classList.toggle('prem', !!u);
+        if (!u) { cerrarConfig(); aplicarVista(false); aplicarColumnas(); renderCarteles(); return; }
+        const sv = getD('cfg', {});
+        cfg = Object.assign({ orden: true, blank: true, buscador: true, carteles: true, ocultarBienvenida: false, columnas: 0, vista: 'tarjetas' }, sv);
+        if (!sv.vista && sv.clasica) cfg.vista = 'clasica'; /* migra opciones anteriores */
+        if (!sv.vista && sv.lista) cfg.vista = 'lista';
+        delete cfg.clasica; delete cfg.lista;
+        if (!['tarjetas', 'lista', 'clasica'].includes(cfg.vista)) cfg.vista = 'tarjetas';
+        cargarLay(); render();
+    }
+
+    /* Mantiene los carteles sueltos dentro de la pantalla al rotar o redimensionar */
+    addEventListener('resize', () => {
+        aplicarColumnas();
+        document.querySelectorAll('.cartel.suelto').forEach(d => {
+            const r = d.getBoundingClientRect();
+            d.style.left = Math.max(0, Math.min(r.left, innerWidth - r.width)) + 'px';
+            d.style.top = Math.max(0, Math.min(r.top, innerHeight - r.height)) + 'px';
+        });
+        reservar();
+    });
+
+    inyectar();
+    const rcOriginal = window.renderCuenta || function () { };
+    window.renderCuenta = function () { rcOriginal.apply(this, arguments); renderPremium(); };
+    renderPremium();
 })();
