@@ -358,6 +358,7 @@ const CSS = `
 .pcm-tx a:hover {
     color: #90caf9;
     text-decoration-color: #90caf9;
+    background-color: #000000;
 }
 `;
 
