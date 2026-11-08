@@ -425,16 +425,31 @@ async function syncPerfil() {
     const u = window.Pichisoft && window.Pichisoft.user; if (!u || !uid) return;
     const photo = (okFoto(u.photo) && u.photo.length <= 300000) ? u.photo : '';
     const f = u.name + '|' + photo.length + '|' + uid; if (f === firma) return;
+
+    const escribir = () => setDoc(doc(db, 'public_profiles', uid), {
+        username: u.name, lc: u.name.toLowerCase(), photo: photo || ''
+    });
+
     try {
-        await setDoc(doc(db, 'public_profiles', uid), { username: u.name, lc: u.name.toLowerCase(), photo: photo || '' });
+        try {
+            await escribir();
+        } catch (e) {
+            if (e && e.code === 'permission-denied' && auth.currentUser) {
+                // Token desactualizado: se renueva solo y se reintenta
+                await auth.currentUser.reload();
+                await auth.currentUser.getIdToken(true);
+                await escribir();
+            } else {
+                throw e;
+            }
+        }
         firma = f;
         perfiles[uid] = Promise.resolve({ username: u.name, photo: photo || '' });
     } catch (e) {
         console.error('Error sync profile', e);
-        throw new Error('No se pudo sincronizar tu perfil. Recargá la página e intentá de nuevo.');
+        throw new Error('No se pudo sincronizar tu perfil (' + (e.code || e.message) + ').');
     }
 }
-
 /* ------------------------------ ACTIVAR / DESACTIVAR ------------------------------ */
 const activo = () => !!(window.Pichisoft && window.Pichisoft.user && auth.currentUser);
 
