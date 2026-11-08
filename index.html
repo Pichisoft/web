@@ -11,7 +11,8 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <meta name="theme-color" content="#d4af37">
 
-    <meta name="description" content="PichonApps: El ecosistema oficial de Pichisoft. Descubrí decenas de aplicaciones y juegos gratis en un solo lugar.">
+    <meta name="description"
+        content="PichonApps: El ecosistema oficial de Pichisoft. Descubrí decenas de aplicaciones y juegos gratis en un solo lugar.">
     <meta name="keywords" content="pichisoft, pichonapps, juegos, herramientas, pichonpush, pichonchess">
     <meta name="author" content="Pichisoft">
 
@@ -2577,7 +2578,209 @@
             }
         }
     </style>
+    <style>
+        /* ===== Botón Compartir ===== */
+        #pf-share-btn {
+            position: absolute;
+            top: 100px;
+            right: 16px;
+            z-index: 60;
+            background-color: #2ecc71;
+            color: #000;
+            border: 1px solid #1f9d55;
+            border-radius: 8px;
+            padding: 7px 16px;
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            font-size: .95rem;
+            cursor: pointer;
+            transition: background-color .2s, transform .15s;
+        }
 
+        #pf-share-btn:hover {
+            background-color: #27ae60 !important;
+            color: #000 !important;
+            transform: scale(1.05);
+        }
+
+        /* ===== Cartel Compartir ===== */
+        #pf-share-ov {
+            position: fixed;
+            inset: 0;
+            z-index: 100001;
+            background: rgba(0, 0, 0, .85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            box-sizing: border-box;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+
+        #pf-share-ov.open {
+            display: flex;
+        }
+
+        #pf-share-box {
+            width: 100%;
+            max-width: 440px;
+            background: linear-gradient(180deg, #141414, #0a0a0a);
+            border: 2px solid #d4af37;
+            border-radius: 16px;
+            padding: 22px;
+            box-sizing: border-box;
+            color: whitesmoke;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .9);
+        }
+
+        #pf-share-box h2 {
+            margin: 0 0 12px;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1.7rem;
+            color: #f1d98a;
+            text-align: center;
+        }
+
+        .pf-share-row {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        #pf-share-link {
+            flex: 1;
+            min-width: 0;
+            background: #222;
+            border: 1px solid #555;
+            border-radius: 6px;
+            padding: 9px;
+            font-size: .85rem;
+            color: #7fdcff;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            user-select: all;
+            -webkit-user-select: all;
+        }
+
+        #pf-share-copy {
+            background: #2ecc71;
+            color: #000;
+            border: 0;
+            border-radius: 6px;
+            padding: 0 14px;
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #pf-share-copy:hover {
+            background: #27ae60;
+        }
+
+        .pf-share-sub {
+            margin: 18px 0 8px;
+            font-size: .85rem;
+            color: #bbb;
+            text-align: center;
+        }
+
+        #pf-share-apps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        #pf-share-apps a,
+        #pf-share-native {
+            display: block;
+            padding: 10px 6px !important;
+            background: #222;
+            color: whitesmoke !important;
+            border: 1px solid #555;
+            border-radius: 8px;
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            font-size: .95rem;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        #pf-share-apps a:hover,
+        #pf-share-native:hover {
+            background: #2ecc71 !important;
+            color: #000 !important;
+            border-color: #2ecc71;
+        }
+
+        #pf-share-native {
+            width: 100%;
+            margin-top: 8px;
+            display: none;
+        }
+
+        #pf-share-close {
+            display: block;
+            margin: 18px auto 0;
+            background: #333;
+            color: whitesmoke;
+            border: 1px solid #666;
+            border-radius: 6px;
+            padding: 9px 18px;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        #pf-share-close:hover {
+            background: whitesmoke;
+            color: #222;
+        }
+
+        /* Ocultar el botón si hay otro modal abierto */
+        body:has(.ov) #pf-share-btn {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            #pf-share-btn {
+                top: 64px;
+                right: 10px;
+                font-size: .85rem;
+                padding: 6px 12px;
+            }
+
+            #pf-share-apps {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+    <button id="pf-share-btn">Compartir</button>
+    <div id="pf-share-ov">
+        <div id="pf-share-box">
+            <h2>Compartir</h2>
+
+            <div class="pf-share-row">
+                <div id="pf-share-link">https://pichisoft.cc</div>
+                <button id="pf-share-copy">Copiar</button>
+            </div>
+
+            <div class="pf-share-sub">O compartilo en:</div>
+            <div id="pf-share-apps">
+                <a id="sh-wsp" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+                <a id="sh-tg" target="_blank" rel="noopener noreferrer">Telegram</a>
+                <a id="sh-x" target="_blank" rel="noopener noreferrer">X</a>
+                <a id="sh-fb" target="_blank" rel="noopener noreferrer">Facebook</a>
+                <a id="sh-rd" target="_blank" rel="noopener noreferrer">Reddit</a>
+                <a id="sh-mail" rel="noopener noreferrer">Email</a>
+            </div>
+            <button id="pf-share-native">Más opciones…</button>
+
+            <button id="pf-share-close">Cerrar</button>
+        </div>
+    </div>
     <div class="pf-footer">
         <button class="pf-btn" data-pf="sobre">Sobre nosotros</button>
         <button class="pf-btn" data-pf="faq">Preguntas frecuentes</button>
@@ -2594,7 +2797,53 @@
             <div class="pf-body" id="pf-body"></div>
         </div>
     </div>
+    <script>
+        (function () {
+            const URL_PA = 'https://pichisoft.cc';
+            const TEXTO = 'Mirá PichonApps, el ecosistema de apps y juegos de Pichisoft:';
+            const u = encodeURIComponent(URL_PA);
+            const t = encodeURIComponent(TEXTO);
 
+            const $ = id => document.getElementById(id);
+            const btn = $('pf-share-btn'), ov = $('pf-share-ov'), link = $('pf-share-link');
+            const copy = $('pf-share-copy'), close = $('pf-share-close'), native = $('pf-share-native');
+
+            $('sh-wsp').href = 'https://wa.me/?text=' + encodeURIComponent(TEXTO + ' ' + URL_PA);
+            $('sh-tg').href = 'https://t.me/share/url?url=' + u + '&text=' + t;
+            $('sh-x').href = 'https://twitter.com/intent/tweet?text=' + t + '&url=' + u;
+            $('sh-fb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + u;
+            $('sh-rd').href = 'https://www.reddit.com/submit?url=' + u + '&title=' + encodeURIComponent('PichonApps - By Pichisoft');
+            $('sh-mail').href = 'mailto:?subject=' + encodeURIComponent('PichonApps - By Pichisoft') +
+                '&body=' + encodeURIComponent(TEXTO + '\n' + URL_PA);
+
+            // Menú nativo del sistema (celular y algunos navegadores de PC)
+            if (navigator.share) {
+                native.style.display = 'block';
+                native.addEventListener('click', () => {
+                    navigator.share({ title: 'PichonApps', text: TEXTO, url: URL_PA }).catch(() => { });
+                });
+            }
+
+            const cerrar = () => ov.classList.remove('open');
+            btn.addEventListener('click', () => { copy.textContent = 'Copiar'; ov.classList.add('open'); });
+            close.addEventListener('click', cerrar);
+            ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrar(); });
+
+            copy.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(URL_PA);
+                } catch {
+                    const r = document.createRange();
+                    r.selectNodeContents(link);
+                    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+                    document.execCommand('copy');
+                }
+                copy.textContent = '¡Copiado!';
+                setTimeout(() => copy.textContent = 'Copiar', 1800);
+            });
+        })();
+    </script>
     <script>
         (function () {
             // Contenido limpiado y estructurado
