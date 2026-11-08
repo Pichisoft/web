@@ -2,22 +2,32 @@
 <html lang="es">
 
 <head>
-    <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>PichonApps - By Pichisoft</title>
+
+    <link rel="canonical" href="https://pichisoft.cc/">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <meta name="theme-color" content="#d4af37">
-    <!-- SEO Básico -->
-    <meta name="description"
-        content="PichonApps: El ecosistema oficial de Pichisoft. Descubrí decenas de aplicaciones y juegos gratis en un solo lugar.">
+
+    <meta name="description" content="PichonApps: El ecosistema oficial de Pichisoft. Descubrí decenas de aplicaciones y juegos gratis en un solo lugar.">
     <meta name="keywords" content="pichisoft, pichonapps, juegos, herramientas, pichonpush, pichonchess">
     <meta name="author" content="Pichisoft">
 
-    <!-- Open Graph (Para WhatsApp, Discord, Twitter, Facebook) -->
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Pichisoft">
+    <meta property="og:locale" content="es_AR">
     <meta property="og:url" content="https://pichisoft.cc/">
     <meta property="og:title" content="PichonApps - By Pichisoft">
     <meta property="og:description" content="El ecosistema de apps y juegos de Pichisoft.">
     <meta property="og:image" content="https://pichisoft.cc/preview.jpg">
+    <meta property="og:image:secure_url" content="https://pichisoft.cc/preview.jpg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="PichonApps - By Pichisoft">
 
-    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="PichonApps - By Pichisoft">
     <meta name="twitter:description" content="El ecosistema de apps y juegos de Pichisoft.">
@@ -2801,16 +2811,9 @@
         });
     </script>
     <script>
-        // Limpiar Service Worker viejo y recargar para forzar actualización
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function (registrations) {
-                for (let registration of registrations) {
-                    registration.unregister();
-                }
-                // Si había un SW, recargamos una vez para que todo se actualice
-                if (registrations.length > 0) {
-                    setTimeout(() => location.reload(), 100);
-                }
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW no registrado:', err));
             });
         }
     </script>
