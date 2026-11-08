@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sin conexión - Pichisoft</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            background: #222;
+            font-family: Verdana, sans-serif
+        }
+
+        .ov {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px
+        }
+
+        .card {
+            background: #141414;
+            border: 2px solid #8e3030;
+            border-radius: 16px;
+            padding: 30px 24px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .8)
+        }
+
+        h2 {
+            font-family: 'Times New Roman', serif;
+            color: #ff7b7b;
+            margin: 0 0 15px;
+            font-size: 1.8rem
+        }
+
+        p {
+            color: #ccc;
+            font-size: .9rem;
+            line-height: 1.5;
+            margin-bottom: 20px
+        }
+
+        button {
+            background: #8e3030;
+            color: #fff;
+            border: 0;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-family: Verdana, sans-serif;
+            font-size: .9rem;
+            cursor: pointer;
+            width: 100%
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ov">
+        <div class="card">
+            <h2>Ups, algo salió mal</h2>
+            <p>Te quedaste sin conexión a internet.</p>
+            <button onclick="location.reload()">Recargar Página</button>
+        </div>
+    </div>
+    <script>window.addEventListener('online', () => location.reload());</script>
+</body>
+
+</html>
