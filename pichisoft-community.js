@@ -650,7 +650,7 @@ function crearFmtBar() {
         ['italic', 'I', 'Cursiva'],
         ['underline', 'U', 'Subrayado'],
         ['mono', 'M', 'Monoespaciado'],
-        ['strike', 'S', 'Tachado']
+        ['strike', 'S', 'Tachado'],
         ['clear', 'Tx', 'Borrar formato']
     ];
     btns.forEach(([fmt, txt, title]) => {
@@ -726,19 +726,7 @@ function aplicarFormato(fmt) {
     ocultarToolbar();
     setTimeout(() => { suprimirToolbar = false; }, 250);
 }
-function limpiarFormato(target) {
-    document.execCommand('removeFormat', false, null);
-    document.execCommand('unlink', false, null);
-    const sel = window.getSelection();
-    if (!sel || !sel.rangeCount) return;
-    const range = sel.getRangeAt(0);
-    target.querySelectorAll('code').forEach(c => {
-        if (!range.intersectsNode(c)) return;
-        const p = c.parentNode;
-        while (c.firstChild) p.insertBefore(c.firstChild, c);
-        c.remove();
-    });
-}
+
 function aplicarMono(target) {
     const sel = window.getSelection();
     if (!sel || !sel.rangeCount) return;
@@ -765,6 +753,19 @@ function aplicarMono(target) {
     const nr = document.createRange();
     nr.selectNodeContents(code);
     sel.addRange(nr);
+}
+function limpiarFormato(target) {
+    document.execCommand('removeFormat', false, null);
+    document.execCommand('unlink', false, null);
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    target.querySelectorAll('code').forEach(c => {
+        if (!range.intersectsNode(c)) return;
+        const p = c.parentNode;
+        while (c.firstChild) p.insertBefore(c.firstChild, c);
+        c.remove();
+    });
 }
 /* ------------------------------ PANEL ------------------------------ */
 const onEsc = e => { if (e.key === 'Escape' && panel && !$('.pcm-dov') && !ctx) cerrarPanel(); };
