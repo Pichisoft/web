@@ -204,6 +204,7 @@ const CSS = `
 
 /* ===== Contenteditable ===== */
 .pcm-in[contenteditable] {
+position: relative;
     flex: 1;
     min-width: 0;
     min-height: 38px;
@@ -220,7 +221,9 @@ const CSS = `
     content: attr(data-ph);
     color: #6b6b6b;
     pointer-events: none;
-    display: block;
+    position: absolute;
+    left: 10px; right: 10px; top: 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .pcm-in[contenteditable] b,
 .pcm-in[contenteditable] i,
@@ -230,77 +233,7 @@ const CSS = `
     color: inherit;
 }
 
-/* ===== Botón copiar ===== */
 .pcm-mc { position: relative; }
-.pcm-copy {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 26px;
-    height: 26px;
-    border: 1px solid rgba(212,175,55,.35);
-    background: rgba(20,20,20,.9);
-    border-radius: 6px;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity .18s, background .15s, border-color .15s, transform .15s;
-    padding: 0;
-    color: #b38b27;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-}
-.pcm-msg:hover .pcm-copy { opacity: 1; }
-.pcm-copy:hover {
-    background: #d4af37;
-    color: #111;
-    border-color: #f1d98a;
-    transform: scale(1.08);
-}
-.pcm-copy::before {
-    content: "";
-    position: absolute;
-    width: 9px;
-    height: 11px;
-    border: 1.5px solid currentColor;
-    border-radius: 2px;
-    box-sizing: border-box;
-    top: 6px;
-    left: 6px;
-    background: inherit;
-    z-index: 1;
-}
-.pcm-copy::after {
-    content: "";
-    position: absolute;
-    width: 9px;
-    height: 11px;
-    border: 1.5px solid currentColor;
-    border-radius: 2px;
-    box-sizing: border-box;
-    top: 9px;
-    left: 9px;
-    opacity: .55;
-}
-.pcm-copy .pcm-copy-tip {
-    position: absolute;
-    top: -24px;
-    right: 0;
-    background: linear-gradient(180deg, #1b1b1b, #0f0f0f);
-    color: #f1d98a;
-    font: bold .6rem Verdana, sans-serif;
-    padding: 3px 7px;
-    border-radius: 5px;
-    white-space: nowrap;
-    border: 1px solid #d4af37;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .15s;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-}
-.pcm-copy:hover .pcm-copy-tip { opacity: 1; }
 
 /* ===== Toolbar flotante ===== */
 .pcm-fmt {
@@ -360,6 +293,44 @@ const CSS = `
     text-decoration-color: #90caf9;
     background-color: #000000;
 }
+    /* ===== Mis mensajes vs. los de otros ===== */
+.pcm-msg.mine .pcm-mc{background:linear-gradient(180deg,#112431,#0c1822);border-color:#2f6a8f}
+.pcm-msg.adm.mine .pcm-mc{border-color:rgba(212,175,55,.6)}
+.pcm-tm.am{color:#6fb7ff}
+.pcm-tm.am,.pcm-tm.ed{margin-left:5px}
+
+/* ===== Botón responder (flecha en CSS) ===== */
+.pcm-rp{position:relative;display:inline-block;width:20px;height:20px;flex:none}
+.pcm-rp::before{content:"";position:absolute;box-sizing:border-box;left:3px;top:3px;width:8px;height:8px;border-left:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg)}
+.pcm-rp::after{content:"";position:absolute;box-sizing:border-box;left:7px;top:6px;width:11px;height:9px;border-top:2px solid currentColor;border-right:2px solid currentColor;border-top-right-radius:8px}
+
+/* ===== Estrella (mensaje destacado) ===== */
+.pcm-st{display:block;width:14px;height:14px;background:#f1d98a;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.pcm-star{position:absolute;top:8px;right:10px;line-height:0;cursor:default}
+.pcm-star::after{content:attr(data-tip);position:absolute;top:calc(100% + 6px);right:0;white-space:nowrap;background:#111;color:#f1d98a;border:1px solid #d4af37;border-radius:5px;padding:3px 7px;font:bold .62rem/1.3 Verdana,sans-serif;opacity:0;pointer-events:none;transition:opacity .15s;z-index:5}
+.pcm-star:hover::after{opacity:1}
+.pcm-mc.has-star .pcm-top{padding-right:20px}
+.pcm-msg.star .pcm-mc{box-shadow:0 0 0 1px rgba(241,217,138,.25)}
+.pcm-hs{position:relative;flex:none;margin-left:10px;width:30px;height:30px;padding:0;border:1.5px solid #d4af37;border-radius:50%;background:none;cursor:pointer;transition:background .2s}
+.pcm-hs .pcm-st{position:absolute;left:50%;top:50%;margin:-7px 0 0 -7px;transition:background .2s}
+.pcm-hs:hover{background:#d4af37}.pcm-hs:hover .pcm-st{background:#111}
+.pcm-stl{max-height:55vh;overflow-y:auto;margin-bottom:6px}
+.pcm-sti{padding:10px;border:1px solid #2b2b2b;border-radius:10px;margin-top:8px;background:#161616;cursor:pointer}
+.pcm-sti:hover{border-color:#d4af37}
+.pcm-sttop{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.pcm-dlg .pcm-sti .pcm-b{display:inline-block;width:auto;margin-top:8px;padding:6px 10px;font-size:.75rem}
+
+/* ===== Botón bajar + cargar anteriores ===== */
+.pcm-down{position:absolute;left:0;right:0;margin:0 auto;width:max-content;bottom:calc(var(--comp-h,76px) + 12px);z-index:50;display:flex;align-items:center;justify-content:center;min-width:40px;height:40px;padding:0 12px;border-radius:999px;border:1.5px solid #d4af37;background:linear-gradient(135deg,#2b2107,#100c02);color:#f1d98a;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.6)}
+.pcm-down:hover{background:#d4af37;color:#111}
+.pcm-dn-ar{width:10px;height:10px;margin-top:-5px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg)}
+.pcm-sel-bar:not([hidden]) + .pcm-down{display:none!important}
+.pcm-more{flex:none;margin:8px auto 0;background:none;border:1px solid #4a4326;color:#f1d98a;border-radius:999px;padding:5px 14px;font:.75rem Verdana,sans-serif;cursor:pointer}
+.pcm-more:hover{border-color:#d4af37}
+
+/* ===== Menú y barra de formato ===== */
+.pcm-ctx{min-width:170px;max-width:260px}
+.pcm-fmt button[data-fmt="clear"]{width:38px;font-size:.8rem}
 `;
 
 /* ------------------------------ UTILIDADES ------------------------------ */
@@ -409,9 +380,13 @@ let replyTo = null, replyBar = null, replyName = null, replyTxt = null;
 let modoDM = false, dmUid = null, dmName = '';
 let ctx = null;
 let vvFn = null;
+let downBtn = null, downNum = null, masBtn = null, starBtn = null;
+let pegado = true, pendientes = 0, ultTs = 0, anclar = null;
+let limiteChat = 60, unChat = null, destGlobal = [], renderDest = null;
 let modoSeleccion = false;
 const seleccionados = new Set();
 const els = new Map(), perfiles = {};
+function resetVista() { els.clear(); pendientes = 0; ultTs = 0; }
 let firma = '';
 const esAdm = () => ADMINS.includes(uid);
 
@@ -473,14 +448,20 @@ function parar() {
     Object.keys(perfiles).forEach(k => delete perfiles[k]);
     if (dotFab) dotFab.hidden = true;
 }
-function iniciar() {
-    const v = localStorage.getItem(KS + uid); seen = v === null ? null : +v;
-    unsubs.push(onSnapshot(query(collection(db, 'community_messages'), orderBy('ts', 'desc'), limit(60)), s => {
+function suscribirChat() {
+    if (unChat) { try { unChat(); } catch { } }
+    unChat = onSnapshot(query(collection(db, 'community_messages'), orderBy('ts', 'desc'), limit(limiteChat)), s => {
         msgs = s.docs.map(d => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) })).reverse();
         if (seen === null) { seen = msgs.reduce((a, m) => Math.max(a, tms(m)), 0); localStorage.setItem(KS + uid, String(seen)); }
-        if (panel && tab === 'chat' && !modoDM) { pintarChat(); marcarVisto(); }
+        if (panel && tab === 'chat' && !modoDM) { pintarChat(); if (distFondo() < 90) marcarVisto(); }
         actualizarBadge();
-    }, e => console.error('community_messages', e)));
+    }, e => console.error('community_messages', e));
+}
+function iniciar() {
+    const v = localStorage.getItem(KS + uid); seen = v === null ? null : +v;
+    limiteChat = 60;
+    suscribirChat();
+    unsubs.push(() => { if (unChat) { try { unChat(); } catch { } unChat = null; } });
     unsubs.push(onSnapshot(query(collection(db, 'friend_requests'), where('to', '==', uid)), s => {
         reqIn = s.docs.map(d => ({ id: d.id, ...d.data() })); cambioAmigos();
     }, e => console.error('friend_requests in', e)));
@@ -670,6 +651,7 @@ function crearFmtBar() {
         ['underline', 'U', 'Subrayado'],
         ['mono', 'M', 'Monoespaciado'],
         ['strike', 'S', 'Tachado']
+        ['clear', 'Tx', 'Borrar formato']
     ];
     btns.forEach(([fmt, txt, title]) => {
         const b = h('button', '', txt);
@@ -688,12 +670,13 @@ function mostrarToolbar(rect) {
     const bar = crearFmtBar();
     if (!bar.parentNode) document.body.append(bar);
     bar.hidden = false;
-    const bw = bar.offsetWidth || 190;
+    const tactil = window.matchMedia('(pointer: coarse)').matches;
+    const bw = bar.offsetWidth || 220;
     const bh = bar.offsetHeight || 40;
     let x = rect.left + rect.width / 2 - bw / 2;
-    let y = rect.top - bh - 8;
+    let y = rect.top - bh - (tactil ? 72 : 8);
     x = Math.max(8, Math.min(x, innerWidth - bw - 8));
-    if (y < 8) y = rect.bottom + 8;
+    if (y < 8) y = rect.bottom + (tactil ? 56 : 8);
     bar.style.left = x + 'px';
     bar.style.top = y + 'px';
 }
@@ -732,6 +715,8 @@ function aplicarFormato(fmt) {
     try {
         if (fmt === 'mono') {
             aplicarMono(target);
+        } else if (fmt === 'clear') {
+            limpiarFormato(target);
         } else {
             const cmds = { bold: 'bold', italic: 'italic', underline: 'underline', strike: 'strikeThrough' };
             document.execCommand(cmds[fmt], false, null);
@@ -741,7 +726,19 @@ function aplicarFormato(fmt) {
     ocultarToolbar();
     setTimeout(() => { suprimirToolbar = false; }, 250);
 }
-
+function limpiarFormato(target) {
+    document.execCommand('removeFormat', false, null);
+    document.execCommand('unlink', false, null);
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    target.querySelectorAll('code').forEach(c => {
+        if (!range.intersectsNode(c)) return;
+        const p = c.parentNode;
+        while (c.firstChild) p.insertBefore(c.firstChild, c);
+        c.remove();
+    });
+}
 function aplicarMono(target) {
     const sel = window.getSelection();
     if (!sel || !sel.rangeCount) return;
@@ -779,6 +776,7 @@ function abrir() {
  <div class="pcm-hd">
    <button class="pcm-b" id="pcmDmBack" style="display:none; border:0; padding:0 10px 0 0; background:none; color:#f1d98a; font-size:1.5rem; cursor:pointer;" title="Volver">←</button>
    <h2 id="pcmHdTitle">Mensajería</h2>
+      <button class="pcm-hs" id="pcmStarBtn" type="button" title="Mensajes destacados" aria-label="Mensajes destacados"><i class="pcm-st"></i></button>
    <button class="pcm-x" type="button" aria-label="Cerrar" title="Cerrar"></button>
  </div>
  <div class="pcm-tabs" id="pcmTabs"><button type="button" data-t="chat">Chat<b class="pcm-dot pcm-sm" hidden></b></button><button type="button" data-t="amigos">Amigos<b class="pcm-dot pcm-sm" hidden></b></button></div>
@@ -790,6 +788,8 @@ function abrir() {
     <button class="pcm-sel-btn danger" onclick="accionLote('eliminar')">Eliminar</button>
     <button class="pcm-sel-btn cancel" onclick="cancelarSeleccion()">Cancelar</button>
   </div>
+    <button class="pcm-down" type="button" hidden aria-label="Ir al final"><span class="pcm-dn-ar"></span><b class="pcm-dot pcm-sm pcm-dn-n" hidden></b></button>
+  <button class="pcm-more" type="button" hidden>Cargar mensajes anteriores</button>
   <div class="pcm-list"><div class="pcm-empty">Todavía no hay mensajes. ¡Escribí el primero!</div></div>
   <div class="pcm-comp">
    <div class="pcm-prev" hidden><span></span><button type="button">Quitar</button></div>
@@ -822,7 +822,7 @@ function abrir() {
             panel.style.bottom = 'auto';
             panel.style.height = vv.height + 'px';
             panel.style.top = vv.offsetTop + 'px';
-            if (tab === 'chat' && lista && document.activeElement === ta) lista.scrollTop = lista.scrollHeight;
+            if (tab === 'chat' && lista && pegado && document.activeElement === ta) lista.scrollTop = lista.scrollHeight;
         };
         vv.addEventListener('resize', vvFn);
         vv.addEventListener('scroll', vvFn);
@@ -833,11 +833,29 @@ function abrir() {
     paneChat = panel.querySelector('#pcmChat'); paneAm = panel.querySelector('#pcmAm');
     listaAm = panel.querySelector('#pcmListaAm'); resBusq = panel.querySelector('#pcmRes');
     ta = panel.querySelector('#pcmTa'); sendBtn = panel.querySelector('.pcm-send'); prevBox = panel.querySelector('.pcm-prev');
+    downBtn = panel.querySelector('.pcm-down'); downNum = panel.querySelector('.pcm-dn-n');
+    masBtn = panel.querySelector('.pcm-more'); starBtn = panel.querySelector('#pcmStarBtn');
+    const comp = panel.querySelector('.pcm-comp');
+    if (window.ResizeObserver) new ResizeObserver(() => paneChat.style.setProperty('--comp-h', comp.offsetHeight + 'px')).observe(comp);
+    lista.addEventListener('scroll', () => {
+        pegado = distFondo() < 90;
+        if (pegado) { pendientes = 0; if (tab === 'chat' && !modoDM) marcarVisto(); }
+        actualizarDown();
+    }, { passive: true });
+    downBtn.onclick = () => lista.scrollTo({ top: lista.scrollHeight, behavior: 'smooth' });
+    masBtn.onclick = () => { anclar = { h: lista.scrollHeight, t: lista.scrollTop }; limiteChat += 60; suscribirChat(); };
+    starBtn.onclick = abrirDestacados;
     ta.addEventListener('input', () => {
-        if (ta.innerText.trim() === '') ta.classList.add('empty');
-        else ta.classList.remove('empty');
-        ta.style.height = 'auto';
-        ta.style.height = Math.min(ta.scrollHeight, 110) + 'px';
+        // Si no queda texto real, se vacía del todo: el navegador deja un <br> suelto que rompía el placeholder
+        if (ta.innerText.trim() === '') {
+            if (ta.innerHTML !== '') ta.innerHTML = '';
+            ta.classList.add('empty');
+            ta.style.height = 'auto';
+        } else {
+            ta.classList.remove('empty');
+            ta.style.height = 'auto';
+            ta.style.height = Math.min(ta.scrollHeight, 110) + 'px';
+        }
     });
     replyBar = panel.querySelector('.pcm-rep-bar');
     replyName = panel.querySelector('.pcm-rep-nm');
@@ -850,7 +868,7 @@ function abrir() {
     panel.querySelector('.pcm-x').onclick = cerrarPanel;
     panel.querySelectorAll('.pcm-tabs button').forEach(b => b.onclick = () => setTab(b.dataset.t));
     panel.querySelector('#pcmDmBack').onclick = () => setTab('amigos');
-    ta.addEventListener('focus', () => setTimeout(() => { lista.scrollTop = lista.scrollHeight; }, 300));
+    ta.addEventListener('focus', () => setTimeout(() => { if (pegado) lista.scrollTop = lista.scrollHeight; }, 300));
 
     ta.addEventListener('keydown', e => {
         if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) e.stopImmediatePropagation();
@@ -916,7 +934,7 @@ function cerrarPanel() {
     }
     pararDM();
     cancelarSeleccion();
-    panel.remove(); panel = null; els.clear(); adj = null;
+    panel.remove(); panel = null; resetVista(); adj = null;
     document.documentElement.style.overflow = ''; document.removeEventListener('keydown', onEsc);
     actualizarBadge();
     if (ctx) { ctx.remove(); ctx = null; }
@@ -936,6 +954,7 @@ function setTab(t) {
     if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Enviar'; }
 
     tab = t;
+    starBtn.style.display = t === 'chat' ? '' : 'none';
     panel.querySelectorAll('.pcm-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
     paneChat.hidden = t !== 'chat'; paneAm.hidden = t !== 'amigos';
     if (t === 'chat') { pintarChat(); marcarVisto(); lista.scrollTop = lista.scrollHeight; } else pintarAmigos();
@@ -954,6 +973,7 @@ function abrirDM(otherUid, otherName) {
     modoDM = true;
     dmUid = otherUid;
     dmName = otherName;
+    starBtn.style.display = '';
     panel.querySelector('.pcm-hd h2').textContent = 'Chat con ' + otherName;
     panel.querySelector('#pcmDmBack').style.display = 'block';
     panel.querySelector('.pcm-tabs').style.display = 'none';
@@ -967,21 +987,32 @@ function abrirDM(otherUid, otherName) {
     ocultarToolbar();
     ta.style.height = 'auto';
 
-    els.clear();
+    resetVista();
     lista.innerHTML = '';
     lista.append(vacio);
     dmMsgs = [];
 
     if (dmUnsub) dmUnsub();
-    const chatId = [uid, otherUid].sort().join('_');
-
-    dmUnsub = onSnapshot(query(collection(db, 'private_messages'), where('chatId', '==', chatId), limit(100)), s => {
-        dmMsgs = s.docs.map(d => {
-            const x = d.data();
-            return { id: d.id, uid: x.from, n: x.n || (x.from === uid ? miNombre() : dmName), t: x.t, ts: x.ts, likes: x.likes, media: x.media, replyTo: x.replyTo, edited: x.edited };
-        }).sort((a, b) => tms(a) - tms(b));
-        if (panel && modoDM) { pintarChat(); lista.scrollTop = lista.scrollHeight; }
-    }, e => console.error('private_messages', e));
+    const mapear = d => {
+        const x = d.data({ serverTimestamps: 'estimate' });
+        return {
+            id: d.id, uid: x.from, n: x.n || (x.from === uid ? miNombre() : dmName), t: x.t, ts: x.ts,
+            likes: x.likes, media: x.media, replyTo: x.replyTo, edited: x.edited, editedBy: x.editedBy,
+            starred: x.starred, starredBy: x.starredBy
+        };
+    };
+    let enviados = [], recibidos = [];
+    const unir = () => {
+        const mapa = new Map();
+        [...enviados, ...recibidos].forEach(m => mapa.set(m.id, m));
+        dmMsgs = [...mapa.values()].sort((a, b) => tms(a) - tms(b)).slice(-200);
+        if (panel && modoDM) pintarChat();
+    };
+    const u1 = onSnapshot(query(collection(db, 'private_messages'), where('from', '==', uid), where('to', '==', otherUid)),
+        s => { enviados = s.docs.map(mapear); unir(); }, e => console.error('private_messages enviados', e));
+    const u2 = onSnapshot(query(collection(db, 'private_messages'), where('from', '==', otherUid), where('to', '==', uid)),
+        s => { recibidos = s.docs.map(mapear); unir(); }, e => console.error('private_messages recibidos', e));
+    dmUnsub = () => { u1(); u2(); };
 
     pintarChat();
 }
@@ -998,7 +1029,7 @@ function pararDM() {
         panel.querySelector('.pcm-tabs').style.display = 'flex';
         paneChat.hidden = false;
         paneAm.hidden = true;
-        els.clear();
+        resetVista();
         lista.innerHTML = '';
         lista.append(vacio);
         limpiarAdj();
@@ -1116,10 +1147,68 @@ function verImg(src) {
     dialogo('', (b, c) => { b.style.cssText = 'background:none;border:0;padding:0;box-shadow:none;width:auto;max-width:100%'; const i = h('img'); i.src = src; i.alt = ''; i.onclick = c; b.append(i); }, null, 'pcm-viz');
 }
 
+function distFondo() { return lista ? lista.scrollHeight - lista.scrollTop - lista.clientHeight : 0; }
+
+function actualizarDown() {
+    if (!downBtn || !lista) return;
+    downBtn.hidden = distFondo() < 90;
+    downNum.hidden = !pendientes;
+    downNum.textContent = pendientes > 9 ? '9+' : String(pendientes);
+}
+
+// En chat privado cualquiera de los dos puede desmarcar; en el global, el admin o quien lo destacó
+const puedeDesmarcar = m => modoDM || esAdm() || m.starredBy === uid;
+
+async function destacar(m, on) {
+    try {
+        await updateDoc(doc(db, modoDM ? 'private_messages' : 'community_messages', m.id),
+            on ? { starred: true, starredBy: uid } : { starred: deleteField(), starredBy: deleteField() });
+    } catch (e) { aviso(errTxt(e), 'err'); }
+}
+
+function abrirDestacados() {
+    let unsub = null;
+    dialogo('Mensajes destacados', (b, c) => {
+        const box = h('div', 'pcm-stl');
+        const cerrar = h('button', 'pcm-b no', 'Cerrar'); cerrar.onclick = c;
+        b.append(box, cerrar);
+        const dibujar = () => {
+            const arr = (modoDM ? dmMsgs.filter(m => m.starred) : destGlobal).slice().sort((x, y) => tms(y) - tms(x));
+            box.textContent = '';
+            if (!arr.length) { box.append(h('div', 'pcm-mut', 'Todavía no hay mensajes destacados.')); return; }
+            arr.forEach(m => {
+                const it = h('div', 'pcm-sti'), tp = h('div', 'pcm-sttop');
+                tp.append(h('b', 'pcm-nm', m.n || '?'), h('span', 'pcm-tm', fecha(m)));
+                const tx = h('div', 'pcm-tx');
+                tx.innerHTML = sanitizarHTML(m.t || '', ADMINS.includes(m.uid)) || 'Multimedia';
+                it.append(tp, tx);
+                if (puedeDesmarcar(m)) it.append(bt('Quitar de destacados', () => destacar(m, false), 'no'));
+                it.onclick = e => {
+                    if (e.target.closest('button')) return;
+                    const el = document.getElementById('msg-' + m.id);
+                    if (!el) return aviso('Ese mensaje es más antiguo. Usá "Cargar mensajes anteriores" para llegar hasta él.');
+                    c();
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.classList.add('highlight'); setTimeout(() => el.classList.remove('highlight'), 1600);
+                };
+                box.append(it);
+            });
+        };
+        renderDest = dibujar;
+        if (!modoDM) {
+            unsub = onSnapshot(query(collection(db, 'community_messages'), where('starred', '==', true), limit(100)), s => {
+                destGlobal = s.docs.map(d => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) }));
+                dibujar();
+            }, e => aviso(errTxt(e), 'err'));
+        }
+        dibujar();
+    }, () => { if (unsub) unsub(); renderDest = null; });
+}
+
 function mostrarCtx(x, y, m) {
     if (ctx) ctx.remove();
     ctx = h('div', 'pcm-ctx');
-    ctx.style.cssText = `top:${Math.max(8, Math.min(y, innerHeight - 220))}px;left:${Math.max(8, Math.min(x, innerWidth - 170))}px;`;
+    ctx.style.cssText = `top:${Math.max(8, Math.min(y, innerHeight - 340))}px;left:${Math.max(8, Math.min(x, innerWidth - 270))}px;`;
 
     const addBtn = (txt, fn, color) => {
         const b = h('button', color || '', txt);
@@ -1129,10 +1218,10 @@ function mostrarCtx(x, y, m) {
 
     addBtn('Seleccionar', () => iniciarSeleccion(m));
     addBtn('Responder', () => citar(m));
-
-    if (m.uid !== uid) {
-        addBtn('Reportar', () => reportar(m), 'danger');
-    }
+    if (stripHTML(m.t || '')) addBtn('Copiar mensaje', () => copiar(m));
+    if (!m.starred) addBtn('Destacar mensaje', () => destacar(m, true));
+    else if (puedeDesmarcar(m)) addBtn('Desmarcar como mensaje destacado', () => destacar(m, false));
+    if (m.uid !== uid) addBtn('Reportar', () => reportar(m), 'danger');
     if (m.uid === uid || esAdm()) {
         addBtn('Editar', () => editar(m));
         addBtn('Eliminar', () => borrar(m), 'danger');
@@ -1151,19 +1240,22 @@ function mostrarCtx(x, y, m) {
 
 function burbuja(m) {
     const mine = m.uid === uid, adm = ADMINS.includes(m.uid);
-    const d = h('div', 'pcm-msg' + (mine ? ' mine' : '') + (adm ? ' adm' : ''));
+    const d = h('div', 'pcm-msg' + (mine ? ' mine' : '') + (adm ? ' adm' : '') + (m.starred ? ' star' : ''));
     d.id = 'msg-' + m.id;
     d.append(avatar(m.uid, m.n));
 
-    const c = h('div', 'pcm-mc'), top = h('div', 'pcm-top');
+    const c = h('div', 'pcm-mc' + (m.starred ? ' has-star' : '')), top = h('div', 'pcm-top');
     if (adm) top.append(h('span', 'pcm-adm', 'ADMIN'));
-    const tm = h('time', 'pcm-tm', fecha(m));
-    top.append(h('b', 'pcm-nm', m.n || '?'), tm);
-    if (m.edited) {
-        const marca = h('span', 'pcm-tm ed', m.editedBy && m.editedBy !== m.uid ? ' · editado por admin' : ' · editado');
-        top.append(marca);
-    }
+    top.append(h('b', 'pcm-nm', m.n || '?'), h('time', 'pcm-tm', fecha(m)));
+    if (!mine && !modoDM && rel(m.uid) === 'amigo') top.append(h('span', 'pcm-tm am', '· amigo'));
+    if (m.edited) top.append(h('span', 'pcm-tm ed', m.editedBy && m.editedBy !== m.uid ? '· editado por admin' : '· editado'));
     c.append(top);
+
+    if (m.starred) {
+        const st = h('span', 'pcm-star'); st.dataset.tip = 'Mensaje destacado';
+        st.append(h('i', 'pcm-st'));
+        c.append(st);
+    }
 
     if (m.replyTo) {
         const rb = h('div', 'pcm-rep-box');
@@ -1189,32 +1281,32 @@ function burbuja(m) {
     }
     if (m.media) c.append(mediaEl(m));
 
-    // Botón copiar (arriba a la derecha, aparece al hover)
-    const cp = h('button', 'pcm-copy');
-    cp.type = 'button';
-    cp.title = 'Copiar mensaje';
-    cp.setAttribute('aria-label', 'Copiar mensaje');
-    cp.append(h('span', 'pcm-copy-tip', 'Copiar'));
-    cp.onclick = e => { e.stopPropagation(); copiar(m); };
-    c.append(cp);
-
-    // BOTÓN DE LIKE CSS
+    // Me gusta + Responder
     const ac = h('div', 'pcm-ac');
     const lb = h('button', 'pcm-like'); lb.type = 'button'; lb.title = 'Me gusta';
     lb.innerHTML = '<span class="pcm-th"><i></i></span>'; lb.append(h('span', '', ''));
-    ac.append(lb);
+    const rp = h('button', 'pcm-reply'); rp.type = 'button'; rp.title = 'Responder';
+    rp.setAttribute('aria-label', 'Responder'); rp.append(h('span', 'pcm-rp'));
+    rp.onclick = e => { e.stopPropagation(); citar(m); };
+    ac.append(lb, rp);
     pintarLike(lb, m);
     c.append(ac);
 
-    // CLICK PARA SELECCIONAR O ACCIONES
     d.onclick = (e) => {
         if (modoSeleccion) {
-            if (e.target.closest('button')) return; // Ignorar si clickeó un botón (like)
+            if (e.target.closest('button')) return;
             toggleSeleccion(m);
         }
     };
 
-    // MENÚ CONTEXTUAL
+    // Doble click = destacar
+    d.ondblclick = e => {
+        if (modoSeleccion || e.target.closest('button, a, img, video, .pcm-rep-box')) return;
+        window.getSelection().removeAllRanges();
+        if (m.starred) return aviso('Ya es un mensaje destacado.');
+        destacar(m, true);
+    };
+
     let pressTimer;
     d.onpointerdown = e => {
         if (modoSeleccion || e.button === 2) return;
@@ -1234,23 +1326,48 @@ function burbuja(m) {
 function pintarChat() {
     if (!lista) return;
     const arr = modoDM ? dmMsgs : msgs;
-    const cerca = lista.scrollHeight - lista.scrollTop - lista.clientHeight < 90;
+    const cerca = distFondo() < 90;
+    const primera = els.size === 0;
     const ids = new Set(arr.map(m => m.id));
     for (const [id, x] of els) if (!ids.has(id)) { x.el.remove(); els.delete(id); }
+    let nuevos = 0;
     arr.forEach(m => {
         const sig = (m.t || '') + '|' + (m.edited ? 'E' + (m.editedBy || '') : '') + '|'
             + (m.replyTo ? 'R' + m.replyTo.id : '') + '|'
-            + (m.media ? m.media.k + (m.media.n || '') : '') + '|' + rel(m.uid) + '|' + JSON.stringify(m.likes || {});
+            + (m.media ? m.media.k + (m.media.n || '') : '') + '|' + rel(m.uid) + '|' + JSON.stringify(m.likes || {})
+            + '|' + (m.starred ? 'S' + (m.starredBy || '') : '');
         let x = els.get(m.id);
         if (!x || x.sig !== sig) {
             const el = burbuja(m);
-            if (x) x.el.replaceWith(el); else lista.append(el);
+            if (x) x.el.replaceWith(el);
+            else {
+                lista.append(el);
+                if (!primera && m.uid !== uid && tms(m) > ultTs) nuevos++;
+            }
             x = { el, sig }; els.set(m.id, x);
         }
     });
+    // Mantener el orden (los mensajes viejos que se cargan van arriba)
+    arr.forEach((m, i) => {
+        const el = els.get(m.id).el, cur = lista.children[i + 1];
+        if (cur !== el) lista.insertBefore(el, cur || null);
+    });
+    ultTs = arr.reduce((a, m) => Math.max(a, tms(m)), ultTs);
     vacio.hidden = arr.length > 0;
-    if (cerca) lista.scrollTop = lista.scrollHeight;
+    if (masBtn) masBtn.hidden = modoDM || msgs.length < limiteChat;
+
+    if (anclar) {                       // cargando mensajes anteriores: mantener la posición
+        lista.scrollTop = anclar.t + (lista.scrollHeight - anclar.h);
+        anclar = null;
+    } else if (cerca) {
+        lista.scrollTop = lista.scrollHeight;
+    } else {
+        pendientes += nuevos;           // estás leyendo más arriba: no te movemos, solo contamos
+    }
+    pegado = distFondo() < 90;
     actualizarSeleccionUI();
+    actualizarDown();
+    if (renderDest) renderDest();
 }
 
 async function like(m, on) {
@@ -1352,7 +1469,7 @@ async function subirMedia(id, f) {
 }
 
 async function enviar() {
-    if (enviando) return;
+    if (enviando) return aviso('Esperá a que termine de subirse el archivo.');
     const plain = ta.innerText.trim();
     if (!plain && !adj) return;
     if (Date.now() - ultimo < 2000) return aviso('Esperá un momento antes de enviar otro mensaje.');
@@ -1360,74 +1477,55 @@ async function enviar() {
     if (!html && plain) html = plain;
     if (html.length > 500) return aviso('El mensaje es demasiado largo (máximo 500 caracteres, contando el formato).', 'err');
 
-    // Capturar estado para restaurar si falla
-    const textoOrig = ta.innerHTML;
-    const adjOrig = adj;
-    const replyOrig = replyTo;
+    const textoOrig = ta.innerHTML, adjOrig = adj, replyOrig = replyTo;
+    const enDM = modoDM, para = dmUid, col = modoDM ? 'private_messages' : 'community_messages';
 
-    // ── LIMPIAR INMEDIATAMENTE (optimista) ──
-    ta.innerHTML = '';
-    ta.classList.add('empty');
-    ta.style.height = 'auto';
-    limpiarAdj();
-    limpiarReply();
+    ta.innerHTML = ''; ta.classList.add('empty'); ta.style.height = 'auto';
+    limpiarAdj(); limpiarReply();
     ultimo = Date.now();
     ta.focus();
     ocultarToolbar();
 
-    enviando = true;
-    sendBtn.disabled = true;
-    sendBtn.textContent = adjOrig ? 'Subiendo…' : 'Enviando…';
+    if (adjOrig) { enviando = true; sendBtn.disabled = true; sendBtn.textContent = 'Subiendo…'; }
+
+    const escribir = async () => {
+        const ref = doc(collection(db, col));
+        const data = enDM
+            ? { from: uid, to: para, n: miNombre(), chatId: [uid, para].sort().join('_'), t: html, ts: serverTimestamp(), likes: {} }
+            : { uid, n: miNombre(), t: html, ts: serverTimestamp(), likes: {} };
+        if (replyOrig) {
+            const rtPlain = stripHTML(replyOrig.t) || '[Multimedia]';
+            data.replyTo = { id: replyOrig.id, n: replyOrig.n || '?', t: rtPlain.length > 40 ? rtPlain.slice(0, 40) + '…' : rtPlain };
+        }
+        if (adjOrig) data.media = await subirMedia(ref.id, adjOrig);
+        await setDoc(ref, data);
+    };
 
     try {
         await syncPerfil();
-        const col = modoDM ? 'private_messages' : 'community_messages';
-        const ref = doc(collection(db, col));
-
-        let data = {};
-        if (modoDM) {
-            data = { from: uid, to: dmUid, n: miNombre(), chatId: [uid, dmUid].sort().join('_'), t: html, ts: serverTimestamp(), likes: {} };
-        } else {
-            data = { uid, n: miNombre(), t: html, ts: serverTimestamp(), likes: {} };
+        try { await escribir(); }
+        catch (e) {
+            if (!(e && e.code === 'permission-denied' && auth.currentUser)) throw e;
+            await auth.currentUser.reload();
+            await auth.currentUser.getIdToken(true);
+            firma = '';
+            await syncPerfil();
+            await escribir();
         }
-
-        if (replyOrig) {
-            const rtPlain = stripHTML(replyOrig.t) || '[Multimedia]';
-            data.replyTo = {
-                id: replyOrig.id,
-                n: replyOrig.n || '?',
-                t: rtPlain.length > 40 ? rtPlain.slice(0, 40) + '…' : rtPlain
-            };
-        }
-
-        if (adjOrig) data.media = await subirMedia(ref.id, adjOrig);
-        await setDoc(ref, data);
     } catch (e) {
-        // Restaurar solo si el usuario no escribió algo nuevo mientras tanto
-        if (textoOrig && !ta.innerHTML) {
-            ta.innerHTML = textoOrig;
-            ta.classList.remove('empty');
-        } else if (textoOrig) {
-            console.warn('Mensaje que no se pudo enviar:', textoOrig);
-            aviso('Un mensaje falló al enviarse. Revisá la consola si lo necesitás.', 'err');
+        ultimo = 0;
+        if (panel && textoOrig) {
+            ta.innerHTML = ta.innerText.trim() ? textoOrig + '<br>' + ta.innerHTML : textoOrig;
+            ta.dispatchEvent(new Event('input'));
         }
-        if (adjOrig && !adj) {
-            adj = adjOrig;
-            prevBox.hidden = false;
+        if (panel && adjOrig && !adj) {
+            adj = adjOrig; prevBox.hidden = false;
             prevBox.firstChild.textContent = (adjOrig.type?.startsWith('video/') ? 'Video: ' : 'Foto: ') + (adjOrig.name || '');
         }
-        if (replyOrig && !replyTo) {
-            replyTo = replyOrig;
-            replyBar.hidden = false;
-            replyName.textContent = replyOrig.n || '?';
-            const rtPlain = stripHTML(replyOrig.t) || '[Multimedia]';
-            replyTxt.textContent = rtPlain.length > 40 ? rtPlain.slice(0, 40) + '…' : rtPlain;
-        }
-        aviso(errTxt(e), 'err');
+        if (panel && replyOrig && !replyTo) citar(replyOrig);
+        aviso('No se pudo enviar: ' + errTxt(e), 'err');
     } finally {
-        enviando = false;
-        sendBtn.disabled = false;
-        sendBtn.textContent = 'Enviar';
+        if (adjOrig) { enviando = false; sendBtn.disabled = false; sendBtn.textContent = 'Enviar'; }
     }
 }
 /* ------------------------------ ACCIONES EN LOTE ------------------------------ */
