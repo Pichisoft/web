@@ -1483,8 +1483,6 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
     };
     /* Para ponerle un prefijo a una app, agregá su clave en "t": ej. t:['beta'] */
     const APPS = [
-        { n: 'PichonInfo', u: 'pichoninfo', t: ['cancelado', 'ultimos'] },
-        { n: 'PichonRules', u: 'pichonrules', t: ['cancelado', 'ultimos'] },
         { n: 'PichonAlarm', u: 'pichonalarm' },
         { n: 'PichonBirthday', u: 'pichonbirthday' },
         { n: 'PichonCalc', u: 'pichoncalc' },
@@ -1495,23 +1493,23 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         { n: 'PichonDocs', u: 'pichondocs' },
         { n: 'PichonFood', u: 'pichonfood' },
         { n: 'PichonList', u: 'pichonlist' },
-        { n: 'PichonMan', u: 'pichman', t: ['nuevo'] },
+        { n: 'PichonMan', u: 'pichman'},
         { n: 'PichonMorse', u: 'pichonmorse' },
         { n: 'PichonOlympus', t: ['proximo'] },
         { n: 'PichonOpinion', t: ['proximo'] },
-        { n: 'PichonPaint', u: 'pichonpaint', t: ['actualizado'] },
-        { n: 'PichonPass', u: 'pichonpass' },
-        { n: 'PichonPush', u: 'pichonpush', t: ['nuevo'] },
+        { n: 'PichonPaint', u: 'pichonpaint'},
+        { n: 'PichonPass', u: 'pichonpass'},
+        { n: 'PichonPush', u: 'pichonpush'},
         { n: 'PichonRandom', u: 'pichonrandom' },
         { n: 'PichonSnake', u: 'pichonsnake' },
-        { n: 'PichonTraffic', u: 'pichontraffic', t: ['nuevo'] },
-        { n: 'PichonWatch', u: 'pichonwatch' },
-        { n: 'PichonWeather', u: 'pichonweather', t: ['nuevo'] }
+        { n: 'PichonTraffic', u: 'pichontraffic'},
+        { n: 'PichonWatch', u: 'pichonwatch'},
+        { n: 'PichonWeather', u: 'pichonweather'}
     ];
     APPS.forEach(a => a.t = a.t || []);
     const MAP = Object.fromEntries(APPS.map(a => [a.n, a]));
     const CATS = [
-        { id: 'utiles', nombre: 'Herramientas', apps: ['PichonInfo', 'PichonRules', 'PichonCode', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonWeather', 'PichonCalc', 'PichonCalendar', 'PichonPaint', 'PichonAlarm'] },
+        { id: 'utiles', nombre: 'Herramientas', apps: ['PichonCode', 'PichonDocs', 'PichonList', 'PichonPass', 'PichonWeather', 'PichonCalc', 'PichonCalendar', 'PichonPaint', 'PichonAlarm'] },
         { id: 'juegos', nombre: 'Juegos', apps: ['PichonSnake', 'PichonChess', 'PichonTraffic', 'PichonPush', 'PichonMan'] },
         { id: 'azar', nombre: 'Azar', apps: ['PichonDestiny', 'PichonRandom'] },
         { id: 'divertidas', nombre: 'Diversión', apps: ['PichonBirthday', 'PichonFood', 'PichonMorse', 'PichonWatch'] }
