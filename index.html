@@ -36,8 +36,13 @@
         content="PichonApps: disfruta de nuestro amplio catálogo de múltiples aplicaciones y juegos gratis de Pichisoft.cc: una página independiente creada el 10 de mayo de 2026.">
     <meta name="twitter:image" content="https://pichisoft.cc/preview.jpg">
 
-   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; media-src 'self' blob:; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.emailjs.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.googleapis.com https://firebaseinstallations.googleapis.com https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://api.mymemory.translated.net; base-uri 'self'; form-action 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; media-src 'self' blob:; 
+    script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.google.com/recaptcha/; 
+    style-src 'self' 'unsafe-inline'; 
+    img-src 'self' data: https:; 
+    connect-src 'self' https://api.emailjs.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.googleapis.com https://firebaseinstallations.googleapis.com https://content-firebaseappcheck.googleapis.com https://www.google.com/recaptcha/ https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://api.mymemory.translated.net; 
+    frame-src 'self' https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/; 
+    base-uri 'self'; form-action 'self'">
     <style>
         html {
             background-color: #222;
