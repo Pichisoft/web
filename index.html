@@ -1057,6 +1057,67 @@
                 font-size: .74rem !important;
             }
         }
+
+        /* =========================================
+           REGLAS GLOBALES DE SELECCIÓN DE TEXTO 
+           (Anula el user-select: none del CSS viejo)
+           ========================================= */
+
+        /* 1. TEXTOS QUE SÍ SE PUEDEN SELECCIONAR (Contenido) */
+        /* Forzamos que todo lo que sea texto pueda copiarse */
+        p,
+        h1,
+        h2,
+        h3,
+        h4,
+        span,
+        li,
+        a,
+        .box,
+        .pf-body,
+        .peq,
+        .err,
+        .verificacion-info,
+        .confirmacion-texto,
+        .pf-share-row,
+        #pf-share-link,
+        .ps-cb-text,
+        .codigo {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
+
+        /* 2. INPUTS Y TEXTAREAS (Siempre seleccionables) */
+        input,
+        textarea {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
+
+        /* 3. LA INTERFAZ NO ES SELECCIONABLE (Botones, menús, carteles) */
+        /* Esto evita que el usuario seleccione cosas sin querer al hacer clic */
+        button,
+        .btn,
+        .opt,
+        .pf-btn,
+        .pf-close,
+        .cuenta-accion,
+        .lapiz,
+        .etiqueta,
+        .titulo,
+        .by,
+        #pichisoft-topbar,
+        #cuenta,
+        .ps-cb-btn,
+        .pf-footer,
+        .pf-header,
+        .nuevo::after,
+        .actualizado::after,
+        .eliminadas::after,
+        .proximo::after {
+            user-select: none !important;
+            -webkit-user-select: none !important;
+        }
     </style>
 </head>
 
