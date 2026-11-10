@@ -1848,18 +1848,20 @@
 
                     document.querySelectorAll('.ov').forEach(o => o.remove());
                     renderCuenta();
-
+                    if (window.PichisoftCookies) window.PichisoftCookies.mostrarSiCorresponde();
 
                 }).catch(error => {
                     console.error('Error cargando perfil desde Firestore:', error);
 
                     document.querySelectorAll('.ov').forEach(o => o.remove());
                     renderCuenta();
+                    if (window.PichisoftCookies) window.PichisoftCookies.mostrarSiCorresponde();
                 });
 
             } else {
                 document.querySelectorAll('.ov').forEach(o => o.remove());
                 renderCuenta();
+                if (window.PichisoftCookies) window.PichisoftCookies.mostrarSiCorresponde();
             }
         }
 
@@ -1876,7 +1878,12 @@
     <button class="opt" id="sin">Usar Pichisoft sin ninguna cuenta</button></div>`);
             q(m, '#reg').onclick = () => { m.close(); pantallaRegistro(); };
             q(m, '#log').onclick = () => { m.close(); pantallaLogin(); };
-            q(m, '#sin').onclick = () => { LS.set('ps_seen', 1); m.close(); renderCuenta(); };
+            q(m, '#sin').onclick = () => {
+                LS.set('ps_seen', 1);
+                m.close();
+                renderCuenta();
+                if (window.PichisoftCookies) window.PichisoftCookies.mostrarSiCorresponde();
+            };
         }
 
         function pantallaRegistro() {
@@ -2232,7 +2239,12 @@
         }
         /* ---------- Inicio ---------- */
         renderCuenta();
-        if (!Pichisoft.user && !LS.get('ps_seen', 0)) pantallaBienvenida();
+        if (!Pichisoft.user && !LS.get('ps_seen', 0)) {
+            pantallaBienvenida();
+        } else {
+            // Si ya vio la bienvenida o ya está logueado, mostramos las cookies
+            if (window.PichisoftCookies) window.PichisoftCookies.mostrarSiCorresponde();
+        }
     </script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
@@ -3159,7 +3171,7 @@
                         <h3>7. Seguridad</h3>
                         <p>Contraseñas cifradas con Firebase Authentication, comunicaciones por HTTPS, y códigos de verificación con expiración de 5 minutos.</p>
                         <h3>8. Menores de edad</h3>
-                        <p>PichonApps no está dirigido a menores de 13 años. Si detectamos una cuenta de un menor sin consentimiento parental, la eliminaremos.</p>
+                        <p>PichonApps no está dirigido a menores de 10 años. Si detectamos una cuenta de un menor de esa edad sin consentimiento parental, la eliminaremos.</p>
                         <h3>9. Cambios</h3>
                         <p>La fecha de "Última actualización" al inicio refleja siempre la versión vigente. Si hay cambios importantes te avisamos por email o en la app.</p>
                         <h3>10. Contacto</h3>
@@ -3329,14 +3341,13 @@
                 if (btn) btn.click();
             });
 
-            if (!getConsent()) {
-                setTimeout(() => banner.classList.add('open'), 1000); // Pequeño delay para no chocar con el modal de bienvenida
-            }
-
             window.PichisoftCookies = {
                 reabrir: () => banner.classList.add('open'),
                 get: getConsent,
                 set: setConsent,
+                mostrarSiCorresponde: () => {
+                    if (!getConsent()) banner.classList.add('open');
+                },
                 borrar: () => {
                     localStorage.removeItem(KEY);
                     banner.classList.add('open');
