@@ -37,7 +37,7 @@
     <meta name="twitter:image" content="https://pichisoft.cc/preview.jpg">
 
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; media-src 'self' blob:; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.emailjs.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.googleapis.com https://api.mymemory.translated.net ws://127.0.0.1:5500; base-uri 'self'; form-action 'self'">
+        content="default-src 'self'; media-src 'self' blob:; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.emailjs.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.googleapis.com https://api.mymemory.translated.net; base-uri 'self'; form-action 'self'">
     <style>
         html {
             background-color: #222;
@@ -2300,8 +2300,23 @@
             query,
             where,
             orderBy,
-            limit
+            limit,
+            app
         };
+    </script>
+    <script type="module">
+        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app-check.js";
+
+        const checkFirebase = setInterval(() => {
+            if (window.PichisoftFirebase && window.PichisoftFirebase.app) {
+                clearInterval(checkFirebase);
+
+                initializeAppCheck(window.PichisoftFirebase.app, {
+                    provider: new ReCaptchaEnterpriseProvider('LfrFRouAAAAAMRBX9ZCD88NSFIGb-wdHKMI0CaS'), // Tu clave de sitio
+                    isTokenAutoRefreshEnabled: true
+                });
+            }
+        }, 100);
     </script>
     <script src="pichisoft-premium.js?v=10112026"></script>
     <script type="module" src="pichisoft-community.js?v=10112026"></script>
@@ -2743,6 +2758,133 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+
+        /* ===== Banner de Cookies ===== */
+        #ps-cookie-banner {
+            position: fixed;
+            left: 16px;
+            right: 16px;
+            bottom: 16px;
+            z-index: 500;
+            max-width: 900px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #141414, #0a0a0a);
+            border: 1px solid rgba(212, 175, 55, .5);
+            border-radius: 14px;
+            padding: 14px 18px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .6), 0 0 20px rgba(212, 175, 55, .08);
+            display: none;
+            color: #d4d4d4;
+            font-family: Verdana, sans-serif;
+            animation: ps-cb-in .3s ease;
+        }
+
+        #ps-cookie-banner.open {
+            display: block;
+        }
+
+        @keyframes ps-cb-in {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .ps-cb-inner {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .ps-cb-text {
+            margin: 0;
+            font-size: .85rem;
+            line-height: 1.55;
+            flex: 1 1 320px;
+            color: #c9c9c9;
+        }
+
+        .ps-cb-text a {
+            color: #f1d98a !important;
+            text-decoration: underline;
+        }
+
+        .ps-cb-text a:hover {
+            background: transparent !important;
+            color: #fff !important;
+            text-shadow: 0 0 8px rgba(241, 217, 138, .7);
+        }
+
+        .ps-cb-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .ps-cb-btn {
+            border: 1.5px solid #d4af37;
+            border-radius: 8px;
+            padding: 9px 16px;
+            font-family: "Times New Roman", Times, serif;
+            font-size: .95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all .2s;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            white-space: nowrap;
+        }
+
+        .ps-cb-btn-sec {
+            background: transparent;
+            color: #d4af37;
+        }
+
+        .ps-cb-btn-sec:hover {
+            background: #d4af37 !important;
+            color: #111 !important;
+        }
+
+        .ps-cb-btn-pri {
+            background: #d4af37;
+            color: #111;
+        }
+
+        .ps-cb-btn-pri:hover {
+            background: #f1d98a !important;
+            color: #000 !important;
+            box-shadow: 0 0 12px rgba(241, 217, 138, .6);
+        }
+
+        @media (max-width: 600px) {
+            #ps-cookie-banner {
+                left: 8px;
+                right: 8px;
+                bottom: 8px;
+                padding: 12px 14px;
+            }
+
+            .ps-cb-text {
+                font-size: .78rem;
+            }
+
+            .ps-cb-actions {
+                width: 100%;
+            }
+
+            .ps-cb-btn {
+                flex: 1;
+                font-size: .82rem;
+                padding: 8px 12px;
+            }
+        }
     </style>
     <button id="pf-share-btn">Compartir</button>
     <div id="pf-share-ov">
@@ -2773,8 +2915,26 @@
         <button class="pf-btn" data-pf="faq">Preguntas frecuentes</button>
         <button class="pf-btn" data-pf="info">Información general</button>
         <button class="pf-btn" data-pf="reglas">Nuestras reglas</button>
+        <button class="pf-btn" data-pf="privacidad">Privacidad</button>
+        <button class="pf-btn" data-pf="cookies">Cookies</button>
     </div>
-
+    <div id="ps-cookie-banner" role="dialog" aria-modal="false" aria-label="Aviso de cookies">
+        <div class="ps-cb-inner">
+            <p class="ps-cb-text">
+                Usamos almacenamiento local y cookies para mantener tu sesión, recordar tus preferencias y que las apps
+                funcionen.
+                Podés leer el detalle en nuestra <a href="#" id="ps-cb-link">política de cookies</a>.
+            </p>
+            <div class="ps-cb-actions">
+                <button class="ps-cb-btn ps-cb-btn-sec" id="ps-cb-essential" type="button">Solo esenciales</button>
+                <button class="ps-cb-btn ps-cb-btn-pri" id="ps-cb-all" type="button">Aceptar todo</button>
+            </div>
+        </div>
+    </div>
+    <p style="text-align:center; font-size:.75rem; color:#888; margin:24px 0; user-select:text;">
+        © <span id="ps-year"></span> Pichisoft. Todos los derechos reservados.
+    </p>
+    <script>document.getElementById('ps-year').textContent = new Date().getFullYear();</script>
     <div class="pf-modal" id="pf-modal">
         <div class="pf-card">
             <div class="pf-header">
@@ -2959,6 +3119,74 @@
                         <p><strong>Privacidad de la información:</strong> Por tu propia seguridad, evita compartir información personal sensible (como direcciones, teléfonos o datos bancarios) en nuestras apps públicas. Protege tu privacidad.</p>
                     `
                 }
+                ,
+                'privacidad': {
+                    title: 'Política de Privacidad',
+                    html: `
+                        <p><strong>Última actualización:</strong> 10 de noviembre de 2026</p>
+                        <h3>1. Responsable del tratamiento</h3>
+                        <p>Pichisoft ("nosotros", "nuestro") opera el sitio <a href="https://pichisoft.cc" target="_blank" rel="noopener">pichisoft.cc</a> y sus aplicaciones (PichonApps). Para cualquier consulta de privacidad podés escribirnos a <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">contacto@pichisoft.cc</a>.</p>
+                        <h3>2. Qué datos recolectamos</h3>
+                        <p><strong>Si te creás una cuenta de Pichisoft:</strong></p>
+                        <p>· <strong>Email</strong>: para identificarte y verificar tu cuenta.<br>
+                        · <strong>Nombre de usuario</strong>: público, visible para otros usuarios.<br>
+                        · <strong>Contraseña</strong>: cifrada en Firebase Authentication; nosotros <em>nunca</em> la vemos.<br>
+                        · <strong>Foto de perfil (opcional)</strong>: pública, junto con tu nombre de usuario.<br>
+                        · <strong>UID de Firebase</strong>: identificador aleatorio generado automáticamente.<br>
+                        · <strong>Datos de tus apps</strong> (notas, contraseñas, partidas): solo si tenés sesión iniciada.</p>
+                        <p><strong>Si NO te creás una cuenta:</strong> no recolectamos nada en nuestros servidores. Tus datos quedan únicamente en tu navegador (localStorage).</p>
+                        <h3>3. Para qué usamos tus datos</h3>
+                        <p>· Autenticar tu cuenta y mantener tu sesión.<br>
+                        · Sincronizar los datos de tus apps entre dispositivos (solo con sesión).<br>
+                        · Enviarte códigos de verificación y avisos de cuenta.<br>
+                        · Moderar infracciones de nuestras reglas.</p>
+                        <p>No usamos tus datos para publicidad, no los vendemos y no hacemos perfilado comercial.</p>
+                        <h3>4. Con quién los compartimos</h3>
+                        <p>· <strong>Firebase (Google)</strong>: autenticación, base de datos (Firestore) y almacenamiento. <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Política de Firebase</a>.<br>
+                        · <strong>EmailJS</strong>: envío de emails transaccionales (códigos de verificación). <a href="https://www.emailjs.com/legal/privacy-policy/" target="_blank" rel="noopener">Política de EmailJS</a>.</p>
+                        <p>No compartimos datos con terceros para publicidad.</p>
+                        <h3>5. Cuánto tiempo los conservamos</h3>
+                        <p>· Datos de cuenta: mientras tu cuenta exista.<br>
+                        · Si pedís eliminar tu cuenta: se borran definitivamente.<br>
+                        · Datos locales (sin cuenta): hasta que los borres desde tu navegador.</p>
+                        <h3>6. Tus derechos</h3>
+                        <p>Podés solicitar en cualquier momento <strong>acceso</strong>, <strong>rectificación</strong>, <strong>eliminación</strong>, <strong>portabilidad</strong> y <strong>oposición</strong>. Escribinos a <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">contacto@pichisoft.cc</a> y respondemos dentro de 30 días.</p>
+                        <h3>7. Seguridad</h3>
+                        <p>Contraseñas cifradas con Firebase Authentication, comunicaciones por HTTPS, y códigos de verificación con expiración de 5 minutos.</p>
+                        <h3>8. Menores de edad</h3>
+                        <p>PichonApps no está dirigido a menores de 13 años. Si detectamos una cuenta de un menor sin consentimiento parental, la eliminaremos.</p>
+                        <h3>9. Cambios</h3>
+                        <p>La fecha de "Última actualización" al inicio refleja siempre la versión vigente. Si hay cambios importantes te avisamos por email o en la app.</p>
+                        <h3>10. Contacto</h3>
+                        <p><a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">contacto@pichisoft.cc</a></p>
+                    `
+                },
+                'cookies': {
+                    title: 'Política de Cookies',
+                    html: `
+                        <p>Usamos lo mínimo indispensable. <strong>No usamos cookies publicitarias ni de seguimiento de terceros.</strong></p>
+                        <h3>Qué guardamos en tu navegador</h3>
+                        <p><strong>Esenciales (siempre activas):</strong></p>
+                        <p>· <code>ps_cookie_consent</code> — tu elección de cookies (para no volver a mostrarte el aviso).<br>
+                        · <code>ps_seen</code> — ya viste la pantalla de bienvenida.<br>
+                        · <code>ps_session</code> — sesión local (cache de tu cuenta).<br>
+                        · <code>ps_users</code> — cache de datos de tu cuenta.<br>
+                        · <code>ps_fails</code> — control de intentos fallidos de login.<br>
+                        · <code>firebase:*</code> + <code>firebaseLocalStorageDb</code> (IndexedDB) — token de sesión y cache de Firestore.<br>
+                        · <code>Pichon*</code> — datos de tus apps si no tenés cuenta.</p>
+                        <p><strong>Funcionales:</strong> preferencias de idioma/tema (si las hubiera).</p>
+                        <p><strong>De terceros:</strong> no usamos cookies de publicidad. Firebase (Google) puede establecer cookies técnicas de autenticación.</p>
+                        <h3>Base legal</h3>
+                        <p>· Esenciales: interés legítimo (necesarias para el servicio).<br>
+                        · No esenciales: tu consentimiento (el que das en el banner).</p>
+                        <h3>Cambiar tu elección</h3>
+                        <p><button class="btn" type="button" onclick="window.PichisoftCookies && window.PichisoftCookies.reabrir()" style="background: #333; color: #fff; border: 1px solid #666; padding: 9px 14px; border-radius: 6px; cursor: pointer;">Volver a mostrar el aviso de cookies</button></p>
+                        <h3>Cómo borrar tus datos</h3>
+                        <p>Desde tu navegador: Configuración → Privacidad → Borrar datos de navegación → Cookies y almacenamiento local. O con DevTools (F12 → Application → Storage).</p>
+                        <p>Ojo: si borrás el almacenamiento local, perdés las notas guardadas sin cuenta, tu sesión iniciada y tus preferencias.</p>
+                        <p>Más información en nuestra <a href="#" data-pf-link="privacidad">Política de Privacidad</a>.</p>
+                    `
+                }
             };
 
             const modal = document.getElementById('pf-modal');
@@ -3056,7 +3284,61 @@
             });
         }
     </script>
+    <script>
+        (function () {
+            const KEY = 'ps_cookie_consent';
+            const VERSION = 1;
+            const banner = document.getElementById('ps-cookie-banner');
+            if (!banner) return;
 
+            const getConsent = () => {
+                try {
+                    const raw = localStorage.getItem(KEY);
+                    if (!raw) return null;
+                    const d = JSON.parse(raw);
+                    return (d && d.version === VERSION) ? d : null;
+                } catch { return null; }
+            };
+            const setConsent = (tipo) => {
+                const data = { tipo, version: VERSION, fecha: new Date().toISOString() };
+                localStorage.setItem(KEY, JSON.stringify(data));
+                banner.classList.remove('open');
+                window.dispatchEvent(new CustomEvent('ps:cookie-consent', { detail: data }));
+            };
+
+            document.getElementById('ps-cb-all').addEventListener('click', () => setConsent('todas'));
+            document.getElementById('ps-cb-essential').addEventListener('click', () => setConsent('esenciales'));
+
+            document.getElementById('ps-cb-link').addEventListener('click', (e) => {
+                e.preventDefault();
+                const btn = document.querySelector('.pf-btn[data-pf="cookies"]');
+                if (btn) btn.click();
+            });
+
+            // Delegado para links entre modales (ej: ir a privacidad desde cookies)
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('[data-pf-link]');
+                if (!link) return;
+                e.preventDefault();
+                const btn = document.querySelector('.pf-btn[data-pf="' + link.dataset.pfLink + '"]');
+                if (btn) btn.click();
+            });
+
+            if (!getConsent()) {
+                setTimeout(() => banner.classList.add('open'), 1000); // Pequeño delay para no chocar con el modal de bienvenida
+            }
+
+            window.PichisoftCookies = {
+                reabrir: () => banner.classList.add('open'),
+                get: getConsent,
+                set: setConsent,
+                borrar: () => {
+                    localStorage.removeItem(KEY);
+                    banner.classList.add('open');
+                }
+            };
+        })();
+    </script>
 </body>
 
 </html>
