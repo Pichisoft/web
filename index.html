@@ -1122,6 +1122,15 @@
 </head>
 
 <body>
+    <noscript>
+        <div
+            style="position:fixed;inset:0;background:#111;color:white;z-index:9999999;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;font-family:Verdana,sans-serif;">
+            <div>
+                <h2 style="color:#d4af37;font-family:'Times New Roman',serif;">JavaScript está desactivado</h2>
+                <p>Para usar PichonApps, necesitas activar JavaScript en tu navegador.</p>
+            </div>
+        </div>
+    </noscript>
     <div id="pichisoft-topbar"></div>
     <div id="cuenta"></div>
 
@@ -1608,9 +1617,18 @@
         function modal(html, cls = '') {
             const o = document.createElement('div');
             o.className = 'ov ' + cls;
+            o.setAttribute('role', 'dialog'); // Le dice al lector que es un diálogo
+            o.setAttribute('aria-modal', 'true'); // Le dice que el fondo está bloqueado
             o.innerHTML = '<div class="box">' + html + '</div>';
             document.body.appendChild(o);
             o.close = () => o.remove();
+
+            // A11Y: Enfocar el primer input o botón cuando se abre el modal
+            setTimeout(() => {
+                const focusable = o.querySelector('input, button, select, textarea');
+                if (focusable) focusable.focus();
+            }, 100);
+
             return o;
         }
         const q = (o, s) => o.querySelector(s);
@@ -1744,7 +1762,7 @@
         <div class="verificacion-info" id="inf">
             Enviando código de verificación...
         </div>
-        <div class="err" id="er"></div>
+      <div class="err" id="er" aria-live="polite"></div>
         <button class="btn" id="no">Cancelar</button>
     `, 'sem sem2');
 
@@ -1789,8 +1807,8 @@
     <input type="text" id="cd" maxlength="20"
            autocomplete="one-time-code" autocapitalize="characters"
            spellcheck="false">
-    <div class="peq" id="timer" style="margin-top:8px;text-align:center;"></div>
-    <div class="err" id="er"></div>
+  <div class="peq" id="timer" aria-live="polite" style="margin-top:8px;text-align:center;"></div>
+   <div class="err" id="er" aria-live="polite"></div>
     <button class="btn" id="ok">Verificar</button><button class="btn" id="no">Cancelar</button>`, 'sem sem2');
 
             q(m, '#inf').textContent =
@@ -1957,7 +1975,7 @@
     <div class="peq" style="margin-top:8px">Si la olvidás, podés restablecerla pidiendo un código por email al equipo Pichisoft.</div>
     <label>Foto de perfil (opcional):</label>
     <div class="c"><button class="circ" id="ph">+</button></div>
-    <div class="err" id="er"></div>
+   <div class="err" id="er" aria-live="polite"></div>
     <button class="btn" id="ok">Crear cuenta</button><button class="btn" id="vol">Volver</button>`);
             q(m, '#ph').onclick = () => elegirFoto(f => {
                 foto = f; const i = document.createElement('img'); i.src = f; q(m, '#ph').textContent = ''; q(m, '#ph').appendChild(i);
@@ -1989,7 +2007,7 @@
             const m = modal(`<h2 class="t">Iniciar sesión en mi cuenta de Pichisoft</h2>
     <label>Email (obligatorio):</label><input type="email" id="email" autocomplete="email">
     <label>Contraseña:</label><input type="password" id="p" autocomplete="current-password">
-    <div class="err" id="er"></div>
+ <div class="err" id="er" aria-live="polite"></div>
     <button class="btn" id="ok">Continuar</button><button class="btn" id="vol">Volver</button><br>
     <span class="lnk" id="olv">Olvidé mi contraseña</span>`);
             q(m, '#vol').onclick = () => { m.close(); pantallaBienvenida(); };
@@ -2060,7 +2078,7 @@
             const m = modal(`<h2 class="t">Restablecer contraseña</h2>
         <div class="peq">Ingresá tu email y te enviaremos un link de Firebase para restablecer tu contraseña.</div>
         <label>Email:</label><input type="email" id="email" autocomplete="email">
-        <div class="err" id="er"></div>
+     <div class="err" id="er" aria-live="polite"></div>
         <button class="btn" id="ok">Enviar email</button><button class="btn" id="vol">Volver</button>`);
             q(m, '#vol').onclick = () => { m.close(); pantallaLogin(); };
             q(m, '#ok').onclick = async e => {
@@ -2146,7 +2164,7 @@
 
         </div>
 
-        <div class="err" id="ep-error"></div>
+       <div class="err" id="ep-error" aria-live="polite"></div>
 
         <button class="btn" id="ep-guardar">Guardar</button>
         <button class="btn" id="ep-cancelar">Cancelar</button>
@@ -3017,7 +3035,7 @@
         <div class="pf-card">
             <div class="pf-header">
                 <h2 id="pf-title"></h2>
-                <button class="pf-close" id="pf-close">✕</button>
+                <button class="pf-close" id="pf-close" aria-label="Cerrar ventana">✕</button>
             </div>
             <div class="pf-body" id="pf-body"></div>
         </div>
@@ -3268,6 +3286,8 @@
             };
 
             const modal = document.getElementById('pf-modal');
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
             const titleEl = document.getElementById('pf-title');
             const bodyEl = document.getElementById('pf-body');
             const closeBtn = document.getElementById('pf-close');
@@ -3415,6 +3435,22 @@
                 }
             };
         })();
+    </script>
+    <script>
+        // Hacer que la tecla "Enter" haga clic en el botón de enviar
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                const modal = e.target.closest('.ov');
+                if (!modal) return;
+
+                // Busca el botón de "OK", "Continuar" o "Verificar" dentro de ese modal
+                const submitBtn = modal.querySelector('#ok') || modal.querySelector('#confirmar') || modal.querySelector('#ep-guardar');
+                if (submitBtn && !submitBtn.disabled) {
+                    e.preventDefault(); // Evita que la página se recargue
+                    submitBtn.click();
+                }
+            }
+        });
     </script>
 </body>
 
