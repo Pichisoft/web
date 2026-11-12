@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>PichonApps</title>
 
-      <link rel="canonical" href="https://pichisoft.cc/">
+    <link rel="canonical" href="https://pichisoft.cc/">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <meta name="theme-color" content="#d4af37">
@@ -36,13 +36,13 @@
         content="PichonApps: disfruta de nuestro amplio catálogo de múltiples aplicaciones y juegos gratis de Pichisoft.cc.">
     <meta name="twitter:image" content="https://pichisoft.cc/preview.jpg?v=10112026">
 
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; media-src 'self' blob:; 
-    script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.google.com/recaptcha/; 
-    style-src 'self' 'unsafe-inline'; 
-    img-src 'self' data: https:; 
-    connect-src 'self' https://api.emailjs.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.googleapis.com https://firebaseinstallations.googleapis.com https://content-firebaseappcheck.googleapis.com https://www.google.com/recaptcha/ https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://api.mymemory.translated.net; 
-    frame-src 'self' https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/; 
-    base-uri 'self'; form-action 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; media-src 'self' blob:;
+script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.google.com https://www.recaptcha.net https://apis.google.com;
+style-src 'self' 'unsafe-inline';
+img-src 'self' data: https:;
+connect-src 'self' https://api.emailjs.com https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://pichisoft.firebaseapp.com https://www.google.com https://www.recaptcha.net https://www.gstatic.com https://api.mymemory.translated.net;
+frame-src 'self' https://www.google.com https://www.recaptcha.net https://recaptcha.google.com https://pichisoft.firebaseapp.com https://*.firebaseapp.com;
+base-uri 'self'; form-action 'self'">
     <style>
         html {
             background-color: #222;
@@ -2316,14 +2316,15 @@
             w.append(a, l);
             box.append(t, w);
         }
-        /* ---------- Inicio ---------- */
+
+        /* ============== Inicio ============*/
         renderCuenta();
         if (!Pichisoft.user && !LS.get('ps_seen', 0)) {
             pantallaBienvenida();
-        } else {
-            // Si ya vio la bienvenida o ya está logueado, mostramos las cookies
-            if (window.PichisoftCookies) window.PichisoftCookies.mostrarSiCorresponde();
         }
+        window.addEventListener('load', () => {
+            if (window.PichisoftCookies) window.PichisoftCookies.mostrarSiCorresponde();
+        });
     </script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
