@@ -1245,7 +1245,29 @@
             let S = fresh(), M = {}, sel = null, editing = null, rng = null, hist = [], hi = -1, scale = 1;
             const st = $('#st'), wrap = $('#wrap'), panel = $('#panel'), md = $('#md'), pv = $('#pv'), pvs = $('#pvs');
             const gi = id => S.items.find(i => i.id == id), elOf = id => st.querySelector('[data-id="' + id + '"]');
-
+            /* ---------- Historial (deshacer/rehacer) y estado de botones ---------- */
+            function snap() { return JSON.stringify({ title: S.title, bg: S.bg, items: S.items, ts: S.ts, fr: S.fr }) }
+            function push() {
+                const s = snap();
+                if (hist[hi] === s) { btns(); return }
+                hist = hist.slice(0, hi + 1); hist.push(s);
+                if (hist.length > 60) hist.shift();
+                hi = hist.length - 1; btns()
+            }
+            function go(d) {
+                endEdit(true);
+                const n = hi + d; if (n < 0 || n >= hist.length) return;
+                hi = n; const o = JSON.parse(hist[hi]);
+                S.title = o.title; S.bg = o.bg; S.items = o.items; S.ts = o.ts; S.fr = o.fr;
+                $('#ti').value = S.title; sel = null; syncT(); draw(); btns()
+            }
+            function btns() {
+                const it = sel && gi(sel);
+                $('#un').disabled = hi <= 0;
+                $('#re').disabled = hi >= hist.length - 1;
+                ['fr', 'bk', 'pl', 'del'].forEach(i => $('#' + i).disabled = !it);
+                $('#et').disabled = !(it && it.k == 'text');
+            }
             /* ---------- Guardado local (IndexedDB) ---------- */
             const DB = new Promise((res, rej) => {
                 const q = indexedDB.open('pichonbirthday', 1);
@@ -1277,8 +1299,8 @@
             function bgSet(el, b) { el.style.background = b.t == 'c' ? b.a : b.t == 'g' ? 'linear-gradient(' + b.d + 'deg,' + b.a + ',' + b.b + ')' : 'url(' + M[b.m] + ') center/cover' }
             function applyBd(e, it) { const b = it.bd || { w: 0, r: F.includes(it.k) ? 6 : 0 }; e.style.border = b.w ? b.w + 'px ' + b.s + ' ' + b.c : '0'; e.style.borderRadius = b.r + 'px' }
             function node(it, v) {
-                const e = mk('div', 'it'), k = it.k, f = it.fx || ''; e.dataset.id = it.id; e.dataset.k = k; if (f.startsWith('t_')) e.dataset.t = 1; e.style.cssText = 'left:' + it.x + 'px;top:' + it.y + 'px;z-index:' + it.z + (it.w ? ';width:' + it.w + 'px' : '') + (it.h && F.includes(k) ? ';height:' + it.h + 'px' : ''); applyBd(e, it);
-                if (k == 'text') e.append(mk('div', 'tx', it.html));
+                const e = mk('div', 'it'), k = it.k, f = it.fx || ''; e.dataset.id = it.id; e.dataset.k = k; if (f.startsWith('t_') || (k == 'chip' && it.ic == 'i-efectos' && !['caja', 'torta', 'velas', 'texto', 'emojis'].includes(f))) e.dataset.t = 1; e.style.cssText = 'left:' + it.x + 'px;top:' + it.y + 'px;z-index:' + it.z + (it.w ? ';width:' + it.w + 'px' : '') + (it.h && F.includes(k) ? ';height:' + it.h + 'px' : ''); applyBd(e, it);
+                if (k == 'text') e.append(mk('div', 'tx', clean(it.html)))
                 else if (k == 'img') { const i = mk('img'); i.src = M[it.m]; i.draggable = false; e.append(i) }
                 else if (k == 'col') { e.classList.add('cl'); it.ms.forEach(m => { const i = mk('img'); i.src = M[m]; i.draggable = false; e.append(i) }) }
                 else if (k == 'vid') { const x = mk('video'); x.src = M[it.m]; x.controls = !!v; x.playsInline = true; e.append(x) }
@@ -1288,6 +1310,14 @@
                 else if (k == 'chip') { const c = mk('span', 'chip', '<i class="ic ' + it.ic + '"></i><span></span>'); c.lastChild.textContent = it.label; e.append(c) }
                 else if (k == 'cd') { const c = mk('span', 'chip', '<i class="ic i-cuenta"></i><span></span><b class="cd"></b>'); c.children[1].textContent = it.label; c.lastChild.dataset.t = it.t; e.append(c) }
                 return e
+            }
+            function clean(h) {
+                const doc = new DOMParser().parseFromString(h || '', 'text/html'); // no ejecuta scripts ni carga imágenes
+                doc.body.querySelectorAll('*').forEach(n => {
+                    if (!/^(B|I|U|S|STRIKE|STRONG|EM|SPAN|FONT|DIV|P|BR|SUB|SUP)$/.test(n.tagName)) { n.remove(); return }
+                    [...n.attributes].forEach(a => { if (!/^(style|color|face|size|align)$/i.test(a.name)) n.removeAttribute(a.name) })
+                });
+                return doc.body.innerHTML
             }
             function deco(el) {
                 el.querySelectorAll('.gt,.fr').forEach(x => x.remove()); const t = S.ts, f = S.fr;
@@ -1414,8 +1444,22 @@
             function ask(t, ph, cb) { const i = mk('textarea'); i.rows = 3; i.placeholder = ph; modal(t, i, () => { if (i.value.trim()) cb(i.value.trim()) }, 'Insertar'); setTimeout(() => i.focus(), 50) }
             function effects() {
                 const w = mk('div'), G = [['Generales', [['Globos flotando', 'globos'], ['Lluvia de papelitos', 'papelitos'], ['Estrellas fugaces', 'fugaces'], ['Destellos', 'destellos'], ['Polvo mágico', 'polvo'], ['Estrella que atraviesa la pantalla', 'estrella'], ['Confeti', 'confeti'], ['Fuegos artificiales', 'fuegos'], ['Brillos', 'brillos']]], ['Cumpleaños', [['Velas encendiéndose', 'velas'], ['Torta apareciendo', 'torta'], ['Regalo que se abre', 'caja'], ['Explosión de globos', 'globosx'], ['Confeti explosivo', 'confex'], ['Celebración', 'celebra']]], ['Tranquilos', [['Pétalos cayendo', 'petalos'], ['Copos de nieve', 'nieve'], ['Hojas flotando', 'hojas'], ['Corazones flotando', 'corazones'], ['Nubes desplazándose', 'nubes'], ['Lluvia suave', 'lluvia'], ['Estrellas flotantes', 'estrellasf'], ['Cielo nocturno animado', 'noche']]], ['Al tocar o mover', [['Explosión de confeti donde tocás', 't_confeti'], ['Corazones que salen del dedo', 't_cor'], ['Ondas de colores', 't_ondas'], ['Estrellitas alrededor del elemento', 't_est'], ['Burbuja que explota', 't_burb'], ['Fuegos artificiales donde tocaste', 't_fuegos'], ['Texto que aparece con partículas', 'texto'], ['Lluvia de emojis al tocar un botón', 'emojis'], ['Pincel mágico', 't_pincel']]]];
-                const m = mk('input'), au = mk('input'), lb = mk('label'); m.placeholder = 'Mensaje opcional (para "Regalo que se abre" y "Texto que aparece")'; au.type = 'checkbox'; au.checked = true; lb.append(au, ' Reproducir al abrir el regalo'); lb.style.cssText = 'display:block;margin:6px 0;color:#bbb;font-size:14px'; w.append(m, lb);
-                G.forEach(([t, a]) => { w.append(mk('h4', '', t)); a.forEach(([n, k]) => { const b = mk('button', 'opt', '<i class="ic i-efectos"></i><span></span>'); b.lastChild.textContent = n; b.onclick = () => { md.classList.remove('on'); const it = add({ k: 'chip', ic: 'i-efectos', label: (k.startsWith('t_') ? 'Al tocar: ' : 'Efecto: ') + n, fx: k, msg: m.value.trim() || undefined, auto: au.checked }); if (k != 'caja') act(it, elOf(it.id)) }; w.append(b) }) }); modal('Efectos', w)
+                const m = mk('input'), au = mk('input'), lb = mk('label'); m.placeholder = 'Mensaje opcional (para "Regalo que se abre" y "Texto que aparece")'; au.type = 'checkbox'; au.checked = true; lb.append(au, ' Reproducir al abrir el regalo'); lb.style.cssText = 'display:block;margin:6px 0;color:#bbb;font-size:14px'; w.append(m);
+                G.forEach(([t, a]) => {
+                    w.append(mk('h4', '', t)); a.forEach(([n, k]) => {
+                        const b = mk('button', 'opt', '<i class="ic i-efectos"></i><span></span>'); b.lastChild.textContent = n; b.onclick = () => {
+                            md.classList.remove('on');
+                            const inter = (k == 'texto' || k == 'emojis'); // estos sí necesitan un botón visible
+                            const it = add({
+                                k: 'chip', ic: 'i-efectos',
+                                label: inter ? 'Tocá acá' : (k.startsWith('t_') ? 'Al tocar: ' : 'Efecto: ') + n,
+                                fx: k, msg: m.value.trim() || undefined, auto: !inter
+                            });
+                            if (k != 'caja') act(it, elOf(it.id))
+                        };
+                        w.append(b)
+                    })
+                }); modal('Efectos', w)
             }
             function countdown() { const w = mk('div'), d = mk('input'), l = mk('input'); d.type = 'datetime-local'; l.placeholder = 'Título (ej: Faltan para tu cumple)'; w.append(l, d); modal('Cuenta regresiva', w, () => { if (d.value) add({ k: 'cd', label: l.value || 'Faltan:', t: d.value }) }, 'Insertar') }
             function emojis() {
@@ -1778,39 +1822,39 @@
      Pegar al final del <body> de cada app.
      Cambiar SOLO el objeto CONFIG (titulo, descripcion, top, right).
      ============================================================ -->
-<script>
-(function () {
-    'use strict';
+    <script>
+        (function () {
+            'use strict';
 
-    /* ============================================================
-       CONFIGURACIÓN — CAMBIAR POR APP
-       ============================================================
-       titulo       → título del panel (Times New Roman, dorado)
-       descripcion  → contenido. Respeta saltos de línea. Admite:
-                      <strong>negrita</strong>, <i>cursiva</i>,
-                      <a href="...">link</a>
-       top          → distancia desde arriba (ajustar según header)
-       right        → distancia desde la derecha (ajustar para quedar
-                      a la izquierda de los carteles de sesión y del
-                      link Pichisoft)
-       ============================================================ */
-    const CONFIG = {
-        titulo: 'Ayuda para PichonBirthday',
-        descripcion: `PichonBirthday es una app para crear regalos y compartirlos. Puedes configurar <i>todo</i> lo que te imagines: el borde, el fondo, añadir música, fotos, videos, textos, efectos... todo apretando el botón "Enviar regalo" y luego "+Agregar".
+            /* ============================================================
+               CONFIGURACIÓN — CAMBIAR POR APP
+               ============================================================
+               titulo       → título del panel (Times New Roman, dorado)
+               descripcion  → contenido. Respeta saltos de línea. Admite:
+                              <strong>negrita</strong>, <i>cursiva</i>,
+                              <a href="...">link</a>
+               top          → distancia desde arriba (ajustar según header)
+               right        → distancia desde la derecha (ajustar para quedar
+                              a la izquierda de los carteles de sesión y del
+                              link Pichisoft)
+               ============================================================ */
+            const CONFIG = {
+                titulo: 'Ayuda para PichonBirthday',
+                descripcion: `PichonBirthday es una app para crear regalos y compartirlos. Puedes configurar <i>todo</i> lo que te imagines: el borde, el fondo, añadir música, fotos, videos, textos, efectos... todo apretando el botón "Enviar regalo" y luego "+Agregar".
         Está totalmente <strong>prohibido</strong> enviar regalos con contenido ofensivo a usuarios que no te den su consentimiento. Será baneado si lo vemos hacer eso.
         Puede sugerir mejoras para esta app <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank"
                 rel="noopener">aquí</a>.`,
-        top: '86px',
-        right: '40px'
-    };
-    /* ============================================================ */
+                top: '86px',
+                right: '40px'
+            };
+            /* ============================================================ */
 
-    // Evitar duplicados si se carga dos veces
-    if (document.getElementById('psHelpBtn')) return;
+            // Evitar duplicados si se carga dos veces
+            if (document.getElementById('psHelpBtn')) return;
 
-    // ─── CSS ───
-    const css = document.createElement('style');
-    css.textContent = `
+            // ─── CSS ───
+            const css = document.createElement('style');
+            css.textContent = `
 /* Botón flotante */
 #psHelpBtn {
     position: fixed;
@@ -1991,30 +2035,30 @@
     #psHelpBtn, #psHelpOv, #psHelpCard, #psHelpX, #psHelpClose { transition: none !important; animation: none !important; }
 }
 `;
-    document.head.appendChild(css);
+            document.head.appendChild(css);
 
-    // ─── Botón flotante ───
-    const btn = document.createElement('button');
-    btn.id = 'psHelpBtn';
-    btn.type = 'button';
-    btn.setAttribute('aria-label', 'Ayuda');
-    btn.title = 'Ayuda';
-    btn.textContent = '?';
-    document.body.appendChild(btn);
+            // ─── Botón flotante ───
+            const btn = document.createElement('button');
+            btn.id = 'psHelpBtn';
+            btn.type = 'button';
+            btn.setAttribute('aria-label', 'Ayuda');
+            btn.title = 'Ayuda';
+            btn.textContent = '?';
+            document.body.appendChild(btn);
 
-    // ─── Lógica ───
-    let ov = null;
-    let onEsc = null;
+            // ─── Lógica ───
+            let ov = null;
+            let onEsc = null;
 
-    function abrir() {
-        if (ov) return;
+            function abrir() {
+                if (ov) return;
 
-        ov = document.createElement('div');
-        ov.id = 'psHelpOv';
-        ov.setAttribute('role', 'dialog');
-        ov.setAttribute('aria-modal', 'true');
-        ov.setAttribute('aria-labelledby', 'psHelpTitle');
-        ov.innerHTML = `
+                ov = document.createElement('div');
+                ov.id = 'psHelpOv';
+                ov.setAttribute('role', 'dialog');
+                ov.setAttribute('aria-modal', 'true');
+                ov.setAttribute('aria-labelledby', 'psHelpTitle');
+                ov.innerHTML = `
             <div id="psHelpCard">
                 <button id="psHelpX" type="button" aria-label="Cerrar ayuda" title="Cerrar"></button>
                 <h2 id="psHelpTitle"></h2>
@@ -2022,47 +2066,47 @@
                 <button id="psHelpClose" type="button">Entendido</button>
             </div>
         `;
-        // Título (texto plano, seguro) y cuerpo (HTML configurado por el dueño de la app)
-        ov.querySelector('#psHelpTitle').textContent = CONFIG.titulo;
-        ov.querySelector('#psHelpBody').innerHTML = CONFIG.descripcion;
-        document.body.appendChild(ov);
+                // Título (texto plano, seguro) y cuerpo (HTML configurado por el dueño de la app)
+                ov.querySelector('#psHelpTitle').textContent = CONFIG.titulo;
+                ov.querySelector('#psHelpBody').innerHTML = CONFIG.descripcion;
+                document.body.appendChild(ov);
 
-        // Forzar reflow para que la animación funcione
-        void ov.offsetHeight;
-        requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
+                // Forzar reflow para que la animación funcione
+                void ov.offsetHeight;
+                requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
 
-        // Bloquear scroll de fondo
-        document.documentElement.style.overflow = 'hidden';
+                // Bloquear scroll de fondo
+                document.documentElement.style.overflow = 'hidden';
 
-        // Eventos
-        ov.querySelector('#psHelpX').onclick = cerrar;
-        ov.querySelector('#psHelpClose').onclick = cerrar;
-        ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
+                // Eventos
+                ov.querySelector('#psHelpX').onclick = cerrar;
+                ov.querySelector('#psHelpClose').onclick = cerrar;
+                ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
 
-        onEsc = e => { if (e.key === 'Escape') cerrar(); };
-        document.addEventListener('keydown', onEsc);
+                onEsc = e => { if (e.key === 'Escape') cerrar(); };
+                document.addEventListener('keydown', onEsc);
 
-        // Foco al botón de cerrar
-        setTimeout(() => { try { ov.querySelector('#psHelpX').focus(); } catch { } }, 300);
-    }
+                // Foco al botón de cerrar
+                setTimeout(() => { try { ov.querySelector('#psHelpX').focus(); } catch { } }, 300);
+            }
 
-    function cerrar() {
-        if (!ov) return;
-        const el = ov;
-        ov = null;
-        el.classList.remove('on');
-        if (onEsc) { document.removeEventListener('keydown', onEsc); onEsc = null; }
-        document.documentElement.style.overflow = '';
-        setTimeout(() => el.remove(), 400);
-    }
+            function cerrar() {
+                if (!ov) return;
+                const el = ov;
+                ov = null;
+                el.classList.remove('on');
+                if (onEsc) { document.removeEventListener('keydown', onEsc); onEsc = null; }
+                document.documentElement.style.overflow = '';
+                setTimeout(() => el.remove(), 400);
+            }
 
-    btn.onclick = abrir;
+            btn.onclick = abrir;
 
-    // API pública por si querés abrirlo desde código
-    window.PichisoftAyuda = { abrir, cerrar };
-})();
-</script>
-<script src="/pichisoft-idiomas.js"></script>
+            // API pública por si querés abrirlo desde código
+            window.PichisoftAyuda = { abrir, cerrar };
+        })();
+    </script>
+    <script src="/pichisoft-idiomas.js"></script>
 </body>
 
 </html>
