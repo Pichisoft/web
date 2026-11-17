@@ -1493,18 +1493,18 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         { n: 'PichonDocs', u: 'pichondocs' },
         { n: 'PichonFood', u: 'pichonfood' },
         { n: 'PichonList', u: 'pichonlist' },
-        { n: 'PichonMan', u: 'pichman'},
+        { n: 'PichonMan', u: 'pichman' },
         { n: 'PichonMorse', u: 'pichonmorse' },
         { n: 'PichonOlympus', t: ['proximo'] },
         { n: 'PichonOpinion', t: ['proximo'] },
-        { n: 'PichonPaint', u: 'pichonpaint'},
-        { n: 'PichonPass', u: 'pichonpass'},
-        { n: 'PichonPush', u: 'pichonpush'},
+        { n: 'PichonPaint', u: 'pichonpaint' },
+        { n: 'PichonPass', u: 'pichonpass' },
+        { n: 'PichonPush', u: 'pichonpush' },
         { n: 'PichonRandom', u: 'pichonrandom' },
         { n: 'PichonSnake', u: 'pichonsnake' },
-        { n: 'PichonTraffic', u: 'pichontraffic'},
-        { n: 'PichonWatch', u: 'pichonwatch'},
-        { n: 'PichonWeather', u: 'pichonweather'}
+        { n: 'PichonTraffic', u: 'pichontraffic' },
+        { n: 'PichonWatch', u: 'pichonwatch' },
+        { n: 'PichonWeather', u: 'pichonweather' }
     ];
     APPS.forEach(a => a.t = a.t || []);
     const MAP = Object.fromEntries(APPS.map(a => [a.n, a]));
@@ -1585,7 +1585,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
     <button class="p-clear" id="pClear" aria-label="Limpiar búsqueda" title="Limpiar">✕</button>
   </div>
   <div id="pBody"></div>
-  <p class="p-no" id="pNo" hidden>No encontramos ninguna app con ese nombre. ¿Quiere sugerir una? <a class="linkdemail" href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Cuéntenos</a>.</p>
+ <p class="p-no" id="pNo" hidden>No encontramos ninguna app con ese nombre. ¿Quiere sugerir una? <a class="linkdemail" id="pSug" href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@pichisoft.cc" target="_blank" rel="noopener">Cuéntenos</a>.</p>
 </div>`);
         document.body.insertAdjacentHTML('beforeend', `<div id="pCart"></div>`);
 
@@ -1775,7 +1775,38 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         }
         filtrar();
     }
+    /* Arma el link de Gmail con asunto y mensaje ya escritos, según lo que se buscó */
+    function actualizarSugerencia() {
+        const a = document.getElementById('pSug');
+        if (!a) return;
 
+        // Lo que escribió el usuario en la barra (sin "Pichon"), con cada palabra en mayúscula inicial y sin espacios
+        const escrito = ($('#pQ').value || '').trim().replace(/^pichon\s*/i, '');
+        const sufijo = escrito
+            .split(/\s+/)
+            .filter(Boolean)
+            .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+            .join('');
+        const nombreApp = 'Pichon' + sufijo;
+
+        // Nombre de usuario de quien apretó el botón
+        const usuario = (window.Pichisoft && Pichisoft.user && Pichisoft.user.name) || 'Usuario';
+
+        const asunto = 'Creación de Aplicación';
+        const cuerpo =
+            'Hola, Equipo Pichisoft. Quiero comunicarles que, sugiero crear una aplicación que se llame ' + nombreApp + '. ' +
+            'La app trataría sobre ' +
+            '\n\n' +
+            'Creador(es) de la aplicación: ' + usuario + '.\n\n' +
+            'Muchas gracias, Equipo Pichisoft.\n' +
+            'Saludos cordiales,\n' +
+            usuario;
+
+        a.href = 'https://mail.google.com/mail/?view=cm&fs=1' +
+            '&to=' + encodeURIComponent(MAIL) +
+            '&su=' + encodeURIComponent(asunto) +
+            '&body=' + encodeURIComponent(cuerpo);
+    }
     function filtrar() {
         const raw = cfg.buscador ? $('#pQ').value.trim().toLowerCase().replace(/^pichon\s*/, '') : '';
         const clearBtn = document.getElementById('pClear');
@@ -1789,6 +1820,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         root.querySelectorAll('.cat').forEach(c => { c.hidden = !!raw && !c.querySelector('.app:not([hidden])'); });
         const noEl = $('#pNo');
         if (noEl) noEl.hidden = !(raw && !hits);
+        actualizarSugerencia();
     }
 
     /* ---------------------- ARRASTRAR (mouse y táctil) ---------------------- */
@@ -1974,8 +2006,8 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         d.querySelector('#pcfNo').focus();
     }
 
-        function abrirConfig() {
-       if (!Pichisoft.user) return; 
+    function abrirConfig() {
+        if (!Pichisoft.user) return;
         if ($('#pCfg')) return;
         const o = document.createElement('div'); o.id = 'pCfg'; o.className = 'pm-ov';
         const fila = (k, t, d) => `<label class="pm-row"><span><b>${t}</b><small>${d}</small></span><input type="checkbox" class="sw" data-k="${k}"></label>`;
