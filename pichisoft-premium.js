@@ -1797,7 +1797,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
             'Hola, Equipo Pichisoft. Quiero comunicarles que, sugiero crear una aplicación que se llame ' + nombreApp + '. ' +
             'La app trataría sobre ' +
             '\n\n' +
-            'Creador(es) de la aplicación: ' + usuario + '.\n\n' +
+            'Aplicación sugerida por: ' + usuario + '.\n\n' +
             'Muchas gracias, Equipo Pichisoft.\n' +
             'Saludos cordiales,\n' +
             usuario;
