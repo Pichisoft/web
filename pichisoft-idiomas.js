@@ -379,9 +379,11 @@
             b.firstChild.textContent = l.n; b.lastChild.textContent = l.nat;
             if (defaultLang && defaultLang.toLowerCase() === l.c.toLowerCase()) { const s = document.createElement('span'); s.className = 'psi-star'; s.textContent = '★'; s.title = 'Idioma predeterminado'; b.append(s); }
             b.onclick = () => {
+
                 const wantDef = $('#psi-def').checked;
                 setLang(l.c);
                 if (wantDef && lang) setDefault(l.c);
+                if (lang) window.PichiCoins && window.PichiCoins.evento('traducir');
             };
             box.append(b);
         });

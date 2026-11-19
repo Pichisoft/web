@@ -427,4 +427,35 @@ service cloud.firestore {
     }
 
   }
+      // ==========================================
+    // PICHICOINS
+    // ==========================================
+    match /pichicoins/{uid} {
+      allow read: if (signedIn() && request.auth.uid == uid) || isAdmin();
+
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['earned', 'bought', 'rec'])
+        && request.resource.data.earned is map && request.resource.data.earned.size() <= 150
+        && request.resource.data.bought is map && request.resource.data.bought.size() <= 50
+        && request.resource.data.rec is number
+        && request.resource.data.earned.get('cuenta_creada', 5000) == 5000;
+
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['earned', 'bought', 'rec'])
+        // los logros solo se pueden agregar: no borrar ni cambiar
+        && request.resource.data.earned.diff(resource.data.earned).removed().size() == 0
+        && request.resource.data.earned.diff(resource.data.earned).changed().size() == 0
+        && request.resource.data.earned.diff(resource.data.earned).added().size() <= 60
+        && request.resource.data.earned.size() <= 1500
+        // las compras tampoco se pueden borrar ni cambiar (no hay reembolso)
+        && request.resource.data.bought.diff(resource.data.bought).removed().size() == 0
+        && request.resource.data.bought.diff(resource.data.bought).changed().size() == 0
+        && request.resource.data.bought.diff(resource.data.bought).added().size() <= 5
+        && request.resource.data.bought.size() <= 50
+        // el récord diario solo sube
+        && request.resource.data.rec >= resource.data.get('rec', 0)
+        && request.resource.data.earned.get('cuenta_creada', 5000) == 5000;
+
+      allow delete: if false;
+    }
 }

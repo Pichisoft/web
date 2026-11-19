@@ -2049,6 +2049,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
             s.checked = !!cfg[s.dataset.k];
             s.onchange = () => {
                 cfg[s.dataset.k] = s.checked; setD('cfg', cfg);
+                window.PichiCoins && window.PichiCoins.evento('config');
                 if (s.dataset.k === 'carteles' && s.checked) cerrados.clear(); /* al reactivar, vuelven todos */
                 render();
             };
@@ -2057,7 +2058,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
             const on = b.dataset.v === cfg.vista; b.classList.toggle('on', on); b.setAttribute('aria-checked', on);
         });
         o.querySelectorAll('.pm-opt').forEach(b => {
-            b.onclick = () => { cfg.vista = b.dataset.v; setD('cfg', cfg); marcar(); render(); };
+            b.onclick = () => { cfg.vista = b.dataset.v; setD('cfg', cfg); window.PichiCoins && window.PichiCoins.evento('config'); marcar(); render(); };
         });
         marcar();
 
@@ -2065,7 +2066,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         const marcarCols = () => o.querySelectorAll('.pm-col').forEach(b =>
             b.classList.toggle('on', +b.dataset.c === (+cfg.columnas || 0)));
         o.querySelectorAll('.pm-col').forEach(b => {
-            b.onclick = () => { cfg.columnas = +b.dataset.c; setD('cfg', cfg); marcarCols(); render(); };
+            b.onclick = () => { cfg.columnas = +b.dataset.c; setD('cfg', cfg); window.PichiCoins && window.PichiCoins.evento('config'); marcarCols(); render(); };
         });
         marcarCols();
 
@@ -2225,7 +2226,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
                     text: textEl.value.trim(),
                     ts: new Date()
                 });
-
+                window.PichiCoins && window.PichiCoins.evento('calificar');
                 cerrar();
                 if (onSaved) onSaved();
                 alert('¡Gracias por tu opinión!');

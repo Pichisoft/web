@@ -1513,6 +1513,7 @@ async function enviar() {
             await syncPerfil();
             await escribir();
         }
+        window.PichiCoins && window.PichiCoins.evento('mensaje');
     } catch (e) {
         ultimo = 0;
         if (panel && textoOrig) {
