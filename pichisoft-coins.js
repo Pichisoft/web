@@ -497,17 +497,27 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
     function programarFlush(ms) { clearTimeout(tf); tf = setTimeout(flush, ms || 700); }
     async function flush() {
         if (modo !== 'cuenta' || !uid || flushing) return;
-        const e = { ...pend.earned }, b = { ...pend.bought }, eq = { ...pend.equipped }, r = pend.rec;
-        if (!Object.keys(e).length && !Object.keys(b).length && !Object.keys(eq).length && !r) return;
+        // Solo enviar si hay algo pendiente
+        if (!Object.keys(pend.earned).length && !Object.keys(pend.bought).length && !Object.keys(pend.equipped).length && !pend.rec) return;
+
         flushing = true;
         const id = uid;
         try {
-            await setDoc(doc(db, 'pichicoins', id), { earned: e, bought: b, equipped: eq, rec: S.rec, tituloTexto: S.tituloTexto || '' }, { merge: true });
+            // FIX: Mandar SIEMPRE el estado completo (S.earned, S.bought, etc)
+            // en vez de solo los pendientes, para que Firestore no borre lo que ya estaba.
+            await setDoc(doc(db, 'pichicoins', id), {
+                earned: S.earned,
+                bought: S.bought,
+                equipped: S.equipped,
+                rec: S.rec,
+                tituloTexto: S.tituloTexto || ''
+            }, { merge: true });
+
             if (uid === id) {
-                Object.keys(e).forEach(k => delete pend.earned[k]);
-                Object.keys(b).forEach(k => delete pend.bought[k]);
-                Object.keys(eq).forEach(k => delete pend.equipped[k]);
-                if (r) pend.rec = false;
+                pend.earned = {};
+                pend.bought = {};
+                pend.equipped = {};
+                pend.rec = false;
                 persistPend();
             }
         } catch (err) {
