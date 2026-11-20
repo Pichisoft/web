@@ -57,15 +57,19 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
         { id: 'tema_magenta', nombre: 'Tema magenta', desc: 'Cambia el dorado de PichonApps por rosa magenta.', precio: 900, slot: 'tema' },
         { id: 'tema_coral', nombre: 'Tema coral', desc: 'Cambia el dorado de PichonApps por coral suave.', precio: 900, slot: 'tema' },
         { id: 'tema_fenix', nombre: 'Tema fénix', desc: 'Cambia el dorado de PichonApps por fuego naranja y rojo.', precio: 900, slot: 'tema' },
+        { id: 'tema_rosa_awawita', nombre: 'Tema Rosa Awawita', desc: 'Cambia el dorado de PichonApps por un rosa chicle muy dulce.', precio: 900, slot: 'tema' },
+        { id: 'tema_girasol', nombre: 'Tema girasol', desc: 'Cambia el dorado de PichonApps por amarillo girasol brillante.', precio: 900, slot: 'tema' },
         { id: 'tema_yuli', nombre: 'Tema Yuli', desc: 'Cambia el dorado de PichonApps por un elegante blanco y negro.', precio: 900, slot: 'tema' },
 
         /* --- Carteles de «¡Ganaste!» --- */
         { id: 'cartel_esmeralda', nombre: 'Cartel esmeralda', desc: 'El cartel de «¡Ganaste!» con estilo esmeralda.', precio: 700, slot: 'cartel' },
         { id: 'cartel_zafiro', nombre: 'Cartel zafiro', desc: 'El cartel de «¡Ganaste!» con estilo zafiro.', precio: 700, slot: 'cartel' },
         { id: 'cartel_rubi', nombre: 'Cartel rubí', desc: 'El cartel de «¡Ganaste!» con estilo rubí.', precio: 700, slot: 'cartel' },
+        { id: 'cartel_rosa_awawita', nombre: 'Cartel Rosa Awawita', desc: 'El cartel de «¡Ganaste!» con estilo rosa chicle.', precio: 700, slot: 'cartel' },
+        { id: 'cartel_girasol', nombre: 'Cartel girasol', desc: 'El cartel de «¡Ganaste!» con estilo amarillo girasol.', precio: 700, slot: 'cartel' },
 
         /* --- Extras --- */
-        { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre (visible solo para ti).', precio: 1200, soloCuenta: true, slot: 'titulo' },
+        { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre. ¡Podés elegir el texto que quieras!', precio: 1200, soloCuenta: true, slot: 'titulo' },
         { id: 'sonido_moneda', nombre: 'Sonido de moneda', desc: 'Suena una moneda cada vez que ganás PichiCoins.', precio: 500, slot: 'sonido' },
 
         /* --- Bundle --- */
@@ -274,11 +278,27 @@ body.psc-own-cartel_zafiro .psc-t{border-color:#3498db;background:linear-gradien
 body.psc-own-cartel_zafiro .psc-t1{color:#a8daf5}
 body.psc-own-cartel_rubi .psc-t{border-color:#e74c3c;background:linear-gradient(160deg,#2a0c0c,#120202 70%);box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 34px rgba(231,76,60,.4)}
 body.psc-own-cartel_rubi .psc-t1{color:#f5a8a0}
+body.psc-own-cartel_rosa_awawita .psc-t{border-color:#ff69b4;background:linear-gradient(160deg,#2a0f1e,#12020b 70%);box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 34px rgba(255,105,180,.4)}
+body.psc-own-cartel_rosa_awawita .psc-t1{color:#ffd1e8}
+body.psc-own-cartel_girasol .psc-t{border-color:#ffd60a;background:linear-gradient(160deg,#2a2405,#0a0800 70%);box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 34px rgba(255,214,10,.4)}
+body.psc-own-cartel_girasol .psc-t1{color:#fff59d}
 
-body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;font:italic .68rem Arial,sans-serif;color:var(--gold);margin-top:1px;letter-spacing:.5px}
+/* NUEVO: si hay un tema equipado y NO hay cartel específico, el cartel hereda los colores del tema */
+body[class*="psc-own-tema_"]:not([class*="psc-own-cartel_"]) .psc-t {
+    border-color: var(--gold);
+    background: linear-gradient(160deg, var(--dark-glow), transparent 80%), linear-gradient(160deg, #0d0a04, #050302);
+    box-shadow: 0 18px 50px rgba(0,0,0,.7), 0 0 34px var(--dark-glow);
+}
+body[class*="psc-own-tema_"]:not([class*="psc-own-cartel_"]) .psc-t1 { color: var(--gold2); }
+body[class*="psc-own-tema_"]:not([class*="psc-own-cartel_"]) .psc-coin { background: radial-gradient(circle at 32% 28%, #fff, var(--gold2) 30%, var(--gold) 62%, #3a2a00); }
+body[class*="psc-own-tema_"]:not([class*="psc-own-cartel_"]) .psc-bar { background: linear-gradient(90deg, var(--gold2), var(--gold)); }
+
+body.psc-own-titulo #cuenta .nom[data-titulo]::after{content:"· " attr(data-titulo);display:block;font:italic .68rem Arial,sans-serif;color:var(--gold);margin-top:1px;letter-spacing:.5px}
 
 /* --- TEMAS --- */
 /* --- TEMAS: variables --- */
+body.psc-own-tema_rosa_awawita { --gold:#ff69b4; --gold2:#ffd1e8; --line:rgba(255,105,180,.3); --line-s:rgba(255,105,180,.5); --glow:rgba(255,209,232,.9); --dark-glow:rgba(255,105,180,.35); }
+body.psc-own-tema_girasol      { --gold:#ffd60a; --gold2:#fff59d; --line:rgba(255,214,10,.3); --line-s:rgba(255,214,10,.5); --glow:rgba(255,245,157,.9); --dark-glow:rgba(255,214,10,.35); }
 body.psc-own-tema_esmeralda { --gold:#22e07a; --gold2:#8dffb8; --line:rgba(34,224,122,.3); --line-s:rgba(34,224,122,.5); --glow:rgba(141,255,184,.9); --dark-glow:rgba(34,224,122,.35); }
 body.psc-own-tema_zafiro    { --gold:#3498db; --gold2:#a8daf5; --line:rgba(52,152,219,.26); --line-s:rgba(52,152,219,.4); --glow:rgba(168,218,245,.8); --dark-glow:rgba(52,152,219,.25); }
 body.psc-own-tema_rubi      { --gold:#e74c3c; --gold2:#f5a8a0; --line:rgba(231,76,60,.26); --line-s:rgba(231,76,60,.4); --glow:rgba(245,168,160,.8); --dark-glow:rgba(231,76,60,.25); }
@@ -451,7 +471,8 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
             earned: g.earned && typeof g.earned === 'object' ? g.earned : {},
             bought: g.bought && typeof g.bought === 'object' ? g.bought : {},
             equipped: g.equipped && typeof g.equipped === 'object' ? g.equipped : {},
-            rec: +g.rec || 0
+            rec: +g.rec || 0,
+            tituloTexto: typeof g.tituloTexto === 'string' ? g.tituloTexto.slice(0, 30) : ''
         };
     }
     let S = leerGuest();
@@ -481,7 +502,7 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
         flushing = true;
         const id = uid;
         try {
-            await setDoc(doc(db, 'pichicoins', id), { earned: e, bought: b, equipped: eq, rec: S.rec }, { merge: true });
+            await setDoc(doc(db, 'pichicoins', id), { earned: e, bought: b, equipped: eq, rec: S.rec, tituloTexto: S.tituloTexto || '' }, { merge: true });
             if (uid === id) {
                 Object.keys(e).forEach(k => delete pend.earned[k]);
                 Object.keys(b).forEach(k => delete pend.bought[k]);
@@ -513,7 +534,8 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
             earned: { ...(remoto && remoto.earned) },
             bought: { ...(remoto && remoto.bought) },
             equipped: { ...(remoto && remoto.equipped) },
-            rec: +(remoto && remoto.rec) || 0
+            rec: +(remoto && remoto.rec) || 0,
+            tituloTexto: (remoto && typeof remoto.tituloTexto === 'string') ? remoto.tituloTexto.slice(0, 30) : ''
         };
         const nuevo = { earned: {}, bought: {}, equipped: {} };
         const unir = src => {
@@ -829,6 +851,17 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
                         b.onclick = () => equipar(slot, it.id);
                     }
                     row.append(info, b);
+
+                    // Si es el título y está equipado, mostrar botón de "Cambiar texto"
+                    if (slot === 'titulo' && equipped) {
+                        const edit = h('button', 'psc-eq-btn');
+                        edit.type = 'button';
+                        edit.textContent = 'Cambiar texto';
+                        edit.style.marginLeft = '8px';
+                        edit.onclick = () => pedirTituloTexto();
+                        row.append(edit);
+                    }
+
                     w.append(row);
                 });
             });
@@ -855,6 +888,7 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
         S.bought[it.id] = it.precio; pendAdd('bought', it.id, it.precio);
 
         if (it.slot) { S.equipped[it.slot] = it.id; pendEq(it.slot, it.id); }
+        if (it.id === 'titulo') { setTimeout(() => pedirTituloTexto(), 300); }
 
         // Colección: agregar TODOS los ítems que no tenga (usa 1 como valor para que !!S.bought[id] sea true)
         if (it.id === 'coleccion') {
@@ -866,6 +900,34 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
         }
         guardar(); cambio();
         cartel({ titulo: '¡Compra realizada!', texto: '«' + it.nombre + '» · −' + fmt(it.precio) + ' PichiCoins' });
+    }
+    function pedirTituloTexto() {
+        if (document.getElementById('psc-title-ov')) return;
+        const ov = h('div', 'psc-pv-ov'); ov.id = 'psc-title-ov';
+        ov.innerHTML = `
+            <div class="psc-pv-card" role="dialog" aria-modal="true">
+                <div class="psc-pv-hd"><h2>Tu título personalizado</h2><button class="psc-pv-x" type="button" aria-label="Cerrar"></button></div>
+                <p class="psc-pv-desc">Este título aparece debajo de tu nombre de usuario (visible solo para ti). Máximo 30 caracteres.</p>
+                <input type="text" id="psc-title-input" maxlength="30" placeholder="Ej: Explorador, Leyenda, Amo de Pichisoft…"
+                    style="width:100%;box-sizing:border-box;background:#222;border:1px solid var(--gold);color:#fff;padding:10px;font:inherit;border-radius:8px;outline:0;font-size:1rem"
+                    value="${(S.tituloTexto || '').replace(/"/g, '&quot;')}">
+                <p class="psc-pv-hint">Podés cambiarlo cuando quieras desde "Mi colección".</p>
+                <button class="psc-pv-close" id="psc-title-save" type="button">Guardar título</button>
+            </div>`;
+        document.body.append(ov);
+        const inp = ov.querySelector('#psc-title-input');
+        const cerrar = () => ov.remove();
+        const guardar = () => {
+            S.tituloTexto = (inp.value || '').trim().slice(0, 30);
+            persistPend(); programarFlush(100);
+            cambio();
+            cerrar();
+        };
+        ov.querySelector('.psc-pv-x').onclick = cerrar;
+        ov.querySelector('#psc-title-save').onclick = guardar;
+        ov.onclick = e => { if (e.target === ov) cerrar(); };
+        inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); guardar(); } };
+        setTimeout(() => inp.focus(), 120);
     }
     /* Vista previa de un ítem: aplica el efecto temporalmente para que el usuario vea cómo queda */
     function mostrarPreview(it) {
@@ -901,7 +963,7 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
                     ${it.slot === 'marco' ? '<div class="psc-pv-demo-marco"><div class="psc-pv-demo-av">P</div></div>' : ''}
                     ${it.slot === 'tema' ? '<div class="psc-pv-demo-tema"><span class="psc-pv-demo-btn">PichiCoins</span><span class="psc-pv-demo-btn">Mensajería</span><span class="psc-pv-demo-btn">Traducir</span></div>' : ''}
                     ${it.slot === 'cartel' ? '<div class="psc-pv-demo-cartel"><div class="psc-pv-coin">P</div><div><div class="psc-pv-t1">¡Ganaste <b>500</b> PichiCoins!</div><div class="psc-pv-t2">por hacer algo genial</div></div></div>' : ''}
-                    ${it.slot === 'titulo' ? '<div class="psc-pv-demo-titulo"><b>PichisoftUser</b><span>· Explorador</span></div>' : ''}
+                                      ${it.slot === 'titulo' ? '<div class="psc-pv-demo-titulo"><b>PichisoftUser</b><span>· ' + ((S.tituloTexto || 'Explorador').replace(/</g, '&lt;')) + '</span></div>' : ''}
                     ${it.slot === 'sonido' ? '<div class="psc-pv-demo-sonido">🔊 Hacé clic para escuchar</div>' : ''}
                 </div>
                 <button class="psc-pv-close" type="button">Cerrar vista previa</button>
@@ -1011,44 +1073,36 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
 
     async function resetCoins() {
         if (modo !== 'cuenta' || !uid) {
-            // Invitado
-            S = { earned: {}, bought: {}, equipped: {}, rec: 0 };
+            S = { earned: {}, bought: {}, equipped: {}, rec: 0, tituloTexto: '' };
             pend = { earned: {}, bought: {}, equipped: {}, rec: false };
             lsSet('psc_guest', S);
+            lsSet('psc_day', { d: hoy(), s: 0 });   // FIX: resetear timer del día
             cambio();
             cartel({ titulo: '¡PichiCoins restablecidos!', texto: 'Tu progreso fue borrado. Vuelve a hacer las cosas para ganar de nuevo.' });
             return;
         }
 
-        const old = { earned: { ...S.earned }, bought: { ...S.bought }, equipped: { ...S.equipped }, rec: S.rec };
+        const old = { earned: { ...S.earned }, bought: { ...S.bought }, equipped: { ...S.equipped }, rec: S.rec, tituloTexto: S.tituloTexto };
         try {
-            // Overwrite completo (sin merge) para borrar todo
-            await setDoc(doc(db, 'pichicoins', uid), { earned: {}, bought: {}, equipped: {}, rec: 0 });
-            S = { earned: {}, bought: {}, equipped: {}, rec: 0 };
+            await setDoc(doc(db, 'pichicoins', uid), { earned: {}, bought: {}, equipped: {}, rec: 0, tituloTexto: '' });
+            S = { earned: {}, bought: {}, equipped: {}, rec: 0, tituloTexto: '' };
             pend = { earned: {}, bought: {}, equipped: {}, rec: false };
             persistPend();
+
+            // FIX: resetear timer del día para que no se disparen t_600/t_1800/t_3600 automáticamente
+            lsSet('psc_day', { d: hoy(), s: 0 });
+
             cambio();
             cartel({ titulo: '¡PichiCoins restablecidos!', texto: 'Tu progreso fue borrado. Vuelve a hacer las cosas para ganar de nuevo.' });
 
-            // FIX: después del reset, marcar "todas las apps visitadas" con valor 0 para que
-            // revisarHitos NO dispare los carteles de +100, +200, etc. Y marcar el día actual
-            // como "ya ganado" para que los tramos de tiempo (t_600/t_1800/t_3600) no se disparen
-            // automáticamente después de un reset. El usuario tiene que volver a entrar a las apps
-            // y pasar tiempo de nuevo para ganarlos.
-            setTimeout(async () => {
-                if (!auth.currentUser || auth.currentUser.uid !== uid) return;
-                try {
-                    const marcas = {};
-                    Object.keys(APPS).forEach(slug => { marcas['v_' + slug] = 0; });
-                    marcas['cuenta_creada'] = MONTO_CUENTA;
-                    await setDoc(doc(db, 'pichicoins', uid), { earned: marcas, rec: 0 }, { merge: true });
-                } catch (e) { console.error('Post-reset:', e); }
-
-                detenerSnap();
-                cargarCuenta(uid);
+            setTimeout(() => {
+                if (auth.currentUser && auth.currentUser.uid === uid) {
+                    detenerSnap();
+                    cargarCuenta(uid);
+                }
             }, 4200);
         } catch (err) {
-            S.earned = old.earned; S.bought = old.bought; S.equipped = old.equipped; S.rec = old.rec;
+            S.earned = old.earned; S.bought = old.bought; S.equipped = old.equipped; S.rec = old.rec; S.tituloTexto = old.tituloTexto;
             cambio();
             console.error('Reset error:', err);
             alert('No se pudo restablecer. Intentá de nuevo más tarde.');
@@ -1089,6 +1143,15 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
         Object.values(S.equipped || {}).forEach(id => {
             if (id && S.bought[id] !== undefined) b.classList.add('psc-own-' + id);
         });
+        // Título personalizado
+        const nomEl = document.querySelector('#cuenta .nom');
+        if (nomEl) {
+            if (S.equipped && S.equipped.titulo && S.bought && S.bought.titulo !== undefined) {
+                nomEl.setAttribute('data-titulo', S.tituloTexto || 'Explorador');
+            } else {
+                nomEl.removeAttribute('data-titulo');
+            }
+        }
     }
     function cambio() {
         actualizarBoton(); aplicarEfectos(); render();
@@ -1153,6 +1216,7 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
         window.renderCuenta = function () {
             if (rc) rc.apply(this, arguments);
             evaluar();
+            setTimeout(() => aplicarEfectos(), 0);
             const u = window.Pichisoft && window.Pichisoft.user;
             if (u) {
                 if (ultimoPerfil && (ultimoPerfil.name !== u.name || ultimoPerfil.photo !== u.photo || ultimoPerfil.email !== u.email)) {
