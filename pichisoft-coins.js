@@ -917,7 +917,7 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
             <div class="psc-pv-card" role="dialog" aria-modal="true">
                 <div class="psc-pv-hd"><h2>Tu título personalizado</h2><button class="psc-pv-x" type="button" aria-label="Cerrar"></button></div>
                 <p class="psc-pv-desc">Este título aparece debajo de tu nombre de usuario (visible solo para ti). Máximo 30 caracteres.</p>
-                <input type="text" id="psc-title-input" maxlength="30" placeholder="Ej: Explorador, Leyenda, Amo de Pichisoft…"
+                <input type="text" id="psc-title-input" maxlength="30" placeholder="Ej: Explorador, Leyenda, Pichisofter..."
                     style="width:100%;box-sizing:border-box;background:#222;border:1px solid var(--gold);color:#fff;padding:10px;font:inherit;border-radius:8px;outline:0;font-size:1rem"
                     value="${(S.tituloTexto || '').replace(/"/g, '&quot;')}">
                 <p class="psc-pv-hint">Podés cambiarlo cuando quieras desde "Mi colección".</p>
