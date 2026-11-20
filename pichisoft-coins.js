@@ -42,17 +42,33 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
 
     /* Tienda. "slot" agrupa decoraciones que compiten entre sí: solo una equipada por slot. */
     const TIENDA = [
+        /* --- Marcos de perfil --- */
         { id: 'marco_dorado', nombre: 'Marco dorado', desc: 'Un borde dorado brillante alrededor de tu foto de perfil.', precio: 2000, soloCuenta: true, slot: 'marco' },
-        { id: 'marco_animado', nombre: 'Marco animado', desc: 'Un anillo dorado que gira alrededor de tu foto de perfil.', precio: 6000, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_animado', nombre: 'Marco animado', desc: 'Un anillo que gira alrededor de tu foto de perfil.', precio: 4000, soloCuenta: true, slot: 'marco' },
         { id: 'marco_arcoiris', nombre: 'Marco arcoíris', desc: 'Un borde arcoíris animado alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
+
+        /* --- Temas de color --- */
         { id: 'tema_esmeralda', nombre: 'Tema esmeralda', desc: 'Cambia el dorado de PichonApps por verde esmeralda.', precio: 900, slot: 'tema' },
         { id: 'tema_zafiro', nombre: 'Tema zafiro', desc: 'Cambia el dorado de PichonApps por azul zafiro.', precio: 900, slot: 'tema' },
         { id: 'tema_rubi', nombre: 'Tema rubí', desc: 'Cambia el dorado de PichonApps por rojo rubí.', precio: 900, slot: 'tema' },
+        { id: 'tema_amatista', nombre: 'Tema amatista', desc: 'Cambia el dorado de PichonApps por púrpura amatista.', precio: 900, slot: 'tema' },
+        { id: 'tema_ambar', nombre: 'Tema ámbar', desc: 'Cambia el dorado de PichonApps por naranja ámbar.', precio: 900, slot: 'tema' },
+        { id: 'tema_turquesa', nombre: 'Tema turquesa', desc: 'Cambia el dorado de PichonApps por verde turquesa.', precio: 900, slot: 'tema' },
+        { id: 'tema_magenta', nombre: 'Tema magenta', desc: 'Cambia el dorado de PichonApps por rosa magenta.', precio: 900, slot: 'tema' },
+        { id: 'tema_coral', nombre: 'Tema coral', desc: 'Cambia el dorado de PichonApps por coral suave.', precio: 900, slot: 'tema' },
+        { id: 'tema_hielo', nombre: 'Tema hielo', desc: 'Cambia el dorado de PichonApps por celeste hielo.', precio: 900, slot: 'tema' },
+
+        /* --- Carteles de «¡Ganaste!» --- */
         { id: 'cartel_esmeralda', nombre: 'Cartel esmeralda', desc: 'El cartel de «¡Ganaste!» con estilo esmeralda.', precio: 700, slot: 'cartel' },
         { id: 'cartel_zafiro', nombre: 'Cartel zafiro', desc: 'El cartel de «¡Ganaste!» con estilo zafiro.', precio: 700, slot: 'cartel' },
+        { id: 'cartel_rubi', nombre: 'Cartel rubí', desc: 'El cartel de «¡Ganaste!» con estilo rubí.', precio: 700, slot: 'cartel' },
+
+        /* --- Extras --- */
         { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre (visible solo para ti).', precio: 1200, soloCuenta: true, slot: 'titulo' },
         { id: 'sonido_moneda', nombre: 'Sonido de moneda', desc: 'Suena una moneda cada vez que ganás PichiCoins.', precio: 500, slot: 'sonido' },
-        { id: 'coleccion', nombre: 'Colección completa', desc: 'Todos los ítems de la tienda en un solo paquete. ¡Ahorrás un montón!', precio: 12000, soloCuenta: true }
+
+        /* --- Bundle (todo junto, con descuento) --- */
+        { id: 'coleccion', nombre: 'Colección completa', desc: 'Todos los ítems de la tienda en un solo paquete. ¡Ahorrás un montón!', precio: 7000, soloCuenta: true }
     ];
 
     const SLOT_NOMBRES = {
@@ -225,27 +241,82 @@ body.psc-own-cartel_esmeralda .psc-t{border-color:#2ecc71;background:linear-grad
 body.psc-own-cartel_esmeralda .psc-t1{color:#a9f5c6}
 body.psc-own-cartel_zafiro .psc-t{border-color:#3498db;background:linear-gradient(160deg,#0a1e2e,#020a12 70%);box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 34px rgba(52,152,219,.4)}
 body.psc-own-cartel_zafiro .psc-t1{color:#a8daf5}
+body.psc-own-cartel_rubi .psc-t{border-color:#e74c3c;background:linear-gradient(160deg,#2a0c0c,#120202 70%);box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 34px rgba(231,76,60,.4)}
+body.psc-own-cartel_rubi .psc-t1{color:#f5a8a0}
 
 body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;font:italic .68rem Arial,sans-serif;color:var(--gold);margin-top:1px;letter-spacing:.5px}
 
 /* --- TEMAS --- */
-body.psc-own-tema_esmeralda { --gold:#2ecc71; --gold2:#a9f5c6; }
-body.psc-own-tema_esmeralda #pichisoft-topbar{border-color:rgba(46,204,113,.4)}
-body.psc-own-tema_esmeralda #pichisoft-topbar>*{color:#2ecc71!important}
-body.psc-own-tema_esmeralda #pichisoft-topbar>*:hover{color:#fff!important;text-shadow:0 0 8px rgba(169,245,198,.8)!important}
-body.psc-own-tema_esmeralda #psc-btn.cuenta{border-color:#2ecc71;color:#a9f5c6}
+/* --- TEMAS: variables --- */
+body.psc-own-tema_esmeralda { --gold:#2ecc71; --gold2:#a9f5c6; --line:rgba(46,204,113,.26); --line-s:rgba(46,204,113,.4); --glow:rgba(169,245,198,.8); --dark-glow:rgba(46,204,113,.25); }
+body.psc-own-tema_zafiro    { --gold:#3498db; --gold2:#a8daf5; --line:rgba(52,152,219,.26); --line-s:rgba(52,152,219,.4); --glow:rgba(168,218,245,.8); --dark-glow:rgba(52,152,219,.25); }
+body.psc-own-tema_rubi      { --gold:#e74c3c; --gold2:#f5a8a0; --line:rgba(231,76,60,.26); --line-s:rgba(231,76,60,.4); --glow:rgba(245,168,160,.8); --dark-glow:rgba(231,76,60,.25); }
+body.psc-own-tema_amatista  { --gold:#9b59b6; --gold2:#d7bde2; --line:rgba(155,89,182,.26); --line-s:rgba(155,89,182,.4); --glow:rgba(215,189,226,.8); --dark-glow:rgba(155,89,182,.25); }
+body.psc-own-tema_ambar     { --gold:#f39c12; --gold2:#fad7a0; --line:rgba(243,156,18,.26); --line-s:rgba(243,156,18,.4); --glow:rgba(250,215,160,.8); --dark-glow:rgba(243,156,18,.25); }
+body.psc-own-tema_turquesa  { --gold:#1abc9c; --gold2:#a3e4d7; --line:rgba(26,188,156,.26); --line-s:rgba(26,188,156,.4); --glow:rgba(163,228,215,.8); --dark-glow:rgba(26,188,156,.25); }
+body.psc-own-tema_magenta   { --gold:#e84393; --gold2:#f8b8d8; --line:rgba(232,67,147,.26); --line-s:rgba(232,67,147,.4); --glow:rgba(248,184,216,.8); --dark-glow:rgba(232,67,147,.25); }
+body.psc-own-tema_coral     { --gold:#ff6b6b; --gold2:#ffc9c9; --line:rgba(255,107,107,.26); --line-s:rgba(255,107,107,.4); --glow:rgba(255,201,201,.8); --dark-glow:rgba(255,107,107,.25); }
+body.psc-own-tema_hielo     { --gold:#74b9ff; --gold2:#cfe4ff; --line:rgba(116,185,255,.26); --line-s:rgba(116,185,255,.4); --glow:rgba(207,228,255,.8); --dark-glow:rgba(116,185,255,.25); }
 
-body.psc-own-tema_zafiro { --gold:#3498db; --gold2:#a8daf5; }
-body.psc-own-tema_zafiro #pichisoft-topbar{border-color:rgba(52,152,219,.4)}
-body.psc-own-tema_zafiro #pichisoft-topbar>*{color:#3498db!important}
-body.psc-own-tema_zafiro #pichisoft-topbar>*:hover{color:#fff!important;text-shadow:0 0 8px rgba(168,218,245,.8)!important}
-body.psc-own-tema_zafiro #psc-btn.cuenta{border-color:#3498db;color:#a8daf5}
+/* --- Overrides genéricos para cualquier tema activo --- */
 
-body.psc-own-tema_rubi { --gold:#e74c3c; --gold2:#f5a8a0; }
-body.psc-own-tema_rubi #pichisoft-topbar{border-color:rgba(231,76,60,.4)}
-body.psc-own-tema_rubi #pichisoft-topbar>*{color:#e74c3c!important}
-body.psc-own-tema_rubi #pichisoft-topbar>*:hover{color:#fff!important;text-shadow:0 0 8px rgba(245,168,160,.8)!important}
-body.psc-own-tema_rubi #psc-btn.cuenta{border-color:#e74c3c;color:#f5a8a0}
+/* Topbar */
+body[class*="psc-own-tema_"] #pichisoft-topbar { border-color: var(--line-s); }
+body[class*="psc-own-tema_"] #pichisoft-topbar > * { color: var(--gold) !important; }
+body[class*="psc-own-tema_"] #pichisoft-topbar > *:hover { color: #fff !important; text-shadow: 0 0 8px var(--glow) !important; }
+
+/* Botón PichiCoins */
+body[class*="psc-own-tema_"] #psc-btn.cuenta { border-color: var(--gold); color: var(--gold2); }
+body[class*="psc-own-tema_"] #psc-btn.cuenta:hover { background: linear-gradient(135deg, var(--gold2), var(--gold) 55%, var(--gold)); box-shadow: 0 0 16px var(--dark-glow); }
+
+/* Buscador (glow del focus) */
+body[class*="psc-own-tema_"] .p-search:focus-within { box-shadow: 0 0 0 3px var(--dark-glow); }
+
+/* Grip dots de arrastre */
+body[class*="psc-own-tema_"] .grip { color: var(--line-s); }
+
+/* Switches ON/OFF de Configuración */
+body[class*="psc-own-tema_"] .sw:checked { background: linear-gradient(135deg, var(--gold2), var(--gold)); }
+
+/* Opciones de Configuración */
+body[class*="psc-own-tema_"] .pm-opt.on { background: var(--dark-glow); }
+body[class*="psc-own-tema_"] .pm-col.on { background: var(--dark-glow); }
+body[class*="psc-own-tema_"] .pm-opt:hover { border-color: var(--line-s); }
+body[class*="psc-own-tema_"] .pm-col:hover { border-color: var(--line-s); }
+body[class*="psc-own-tema_"] .pm-reset { border-color: var(--line); color: var(--gold2); }
+body[class*="psc-own-tema_"] .pm-reset:hover { background: var(--dark-glow); }
+
+/* Pie de página: botones de paneles */
+body[class*="psc-own-tema_"] .pf-footer { border-color: var(--line-s); }
+body[class*="psc-own-tema_"] .pf-btn { color: var(--gold); }
+body[class*="psc-own-tema_"] .pf-btn::after { background-color: var(--gold2); box-shadow: 0 0 8px var(--gold2); }
+body[class*="psc-own-tema_"] .pf-btn:hover { text-shadow: 0 0 12px var(--glow); }
+
+/* Modal de paneles informativos */
+body[class*="psc-own-tema_"] .pf-card { border-color: var(--gold); }
+body[class*="psc-own-tema_"] .pf-header h2 { color: var(--gold2); text-shadow: 0 0 10px var(--dark-glow); }
+body[class*="psc-own-tema_"] .pf-close { border-color: var(--gold); color: var(--gold); }
+body[class*="psc-own-tema_"] .pf-close:hover { background: var(--gold) !important; box-shadow: 0 0 15px var(--dark-glow); }
+body[class*="psc-own-tema_"] .pf-body h3 { color: var(--gold2); border-bottom-color: var(--line); }
+body[class*="psc-own-tema_"] .pf-body p strong { color: var(--gold2); }
+body[class*="psc-own-tema_"] .pf-body a { color: var(--gold); }
+body[class*="psc-own-tema_"] .pf-body a:hover { text-shadow: 0 0 8px var(--glow); }
+
+/* Modal confirmación "restablecer orden" */
+body[class*="psc-own-tema_"] .pcf-card { border-top-color: var(--gold); }
+
+/* Banner de cookies */
+body[class*="psc-own-tema_"] #ps-cookie-banner { border-color: var(--line-s); }
+body[class*="psc-own-tema_"] .ps-cb-text a { color: var(--gold2) !important; }
+body[class*="psc-own-tema_"] .ps-cb-text a:hover { text-shadow: 0 0 8px var(--glow); }
+body[class*="psc-own-tema_"] .ps-cb-btn { border-color: var(--gold); }
+body[class*="psc-own-tema_"] .ps-cb-btn-sec { color: var(--gold); }
+body[class*="psc-own-tema_"] .ps-cb-btn-sec:hover { background: var(--gold) !important; }
+body[class*="psc-own-tema_"] .ps-cb-btn-pri { background: var(--gold); }
+body[class*="psc-own-tema_"] .ps-cb-btn-pri:hover { background: var(--gold2) !important; box-shadow: 0 0 12px var(--glow); }
+
+/* Modal de contacto (.pml-*) */
+body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
 
 @media (max-width:600px){.psc-ov{padding:10px}.psc-card{max-height:92vh}.psc-hd h2{font-size:1.5rem}.psc-bd{padding:14px 12px 18px}}
 `;
