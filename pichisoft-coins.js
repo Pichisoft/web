@@ -1,7 +1,5 @@
 /* =====================================================================
-   PICHISOFT COINS  ·  by Pichisoft  ·  v3 (2026-11-20)
-   Se carga como MÓDULO, igual en PichonApps y en cada app:
-       <script type="module" src="/pichisoft-coins.js"></script>
+   PICHISOFT COINS  ·  by Pichisoft  ·  v4 (2026-11-20)
    ===================================================================== */
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
@@ -42,22 +40,29 @@ Se gastan en la Tienda para conseguir mejoras y detalles exclusivos.
 
 Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta, no pierdes nada de lo que ya juntaste.`;
 
-    /* Tienda (mantiene marcos previos + nuevos ítems que pediste). */
+    /* Tienda. "slot" agrupa decoraciones que compiten entre sí: solo una equipada por slot. */
     const TIENDA = [
-        { id: 'marco_dorado', nombre: 'Marco dorado', desc: 'Un borde dorado brillante alrededor de tu foto de perfil.', precio: 2000, soloCuenta: true },
-        { id: 'marco_animado', nombre: 'Marco animado', desc: 'Un anillo dorado que gira alrededor de tu foto de perfil.', precio: 6000, soloCuenta: true },
-        { id: 'tema_esmeralda', nombre: 'Tema esmeralda', desc: 'Cambia el dorado de PichonApps por verde esmeralda.', precio: 900 },
-        { id: 'tema_zafiro', nombre: 'Tema zafiro', desc: 'Cambia el dorado de PichonApps por azul zafiro.', precio: 900 },
-        { id: 'tema_rubi', nombre: 'Tema rubí', desc: 'Cambia el dorado de PichonApps por rojo rubí.', precio: 900 },
-        { id: 'marco_arcoiris', nombre: 'Marco arcoíris', desc: 'Un borde arcoíris animado alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true },
-        { id: 'cartel_esmeralda', nombre: 'Cartel esmeralda', desc: 'El cartel de «¡Ganaste!» con estilo esmeralda.', precio: 700 },
-        { id: 'cartel_zafiro', nombre: 'Cartel zafiro', desc: 'El cartel de «¡Ganaste!» con estilo zafiro.', precio: 700 },
-        { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre (visible solo para ti).', precio: 1200, soloCuenta: true },
-        { id: 'sonido_moneda', nombre: 'Sonido de moneda', desc: 'Suena una moneda cada vez que ganás PichiCoins.', precio: 500 },
+        { id: 'marco_dorado', nombre: 'Marco dorado', desc: 'Un borde dorado brillante alrededor de tu foto de perfil.', precio: 2000, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_animado', nombre: 'Marco animado', desc: 'Un anillo dorado que gira alrededor de tu foto de perfil.', precio: 6000, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_arcoiris', nombre: 'Marco arcoíris', desc: 'Un borde arcoíris animado alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
+        { id: 'tema_esmeralda', nombre: 'Tema esmeralda', desc: 'Cambia el dorado de PichonApps por verde esmeralda.', precio: 900, slot: 'tema' },
+        { id: 'tema_zafiro', nombre: 'Tema zafiro', desc: 'Cambia el dorado de PichonApps por azul zafiro.', precio: 900, slot: 'tema' },
+        { id: 'tema_rubi', nombre: 'Tema rubí', desc: 'Cambia el dorado de PichonApps por rojo rubí.', precio: 900, slot: 'tema' },
+        { id: 'cartel_esmeralda', nombre: 'Cartel esmeralda', desc: 'El cartel de «¡Ganaste!» con estilo esmeralda.', precio: 700, slot: 'cartel' },
+        { id: 'cartel_zafiro', nombre: 'Cartel zafiro', desc: 'El cartel de «¡Ganaste!» con estilo zafiro.', precio: 700, slot: 'cartel' },
+        { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre (visible solo para ti).', precio: 1200, soloCuenta: true, slot: 'titulo' },
+        { id: 'sonido_moneda', nombre: 'Sonido de moneda', desc: 'Suena una moneda cada vez que ganás PichiCoins.', precio: 500, slot: 'sonido' },
         { id: 'coleccion', nombre: 'Colección completa', desc: 'Todos los ítems de la tienda en un solo paquete. ¡Ahorrás un montón!', precio: 12000, soloCuenta: true }
     ];
 
-    /* Logros: [N apps (0 = todas), monto, texto "Cómo ganar", texto "por..."] */
+    const SLOT_NOMBRES = {
+        marco: 'Marco de perfil',
+        tema: 'Tema de PichonApps',
+        cartel: 'Cartel de «¡Ganaste!»',
+        titulo: 'Título bajo tu nombre',
+        sonido: 'Sonido de moneda'
+    };
+
     const HITOS = [
         [1, 100, 'Entrar a una app por primera vez', 'entrar a una de nuestras apps por primera vez'],
         [3, 200, 'Entrar a 3 apps distintas', 'entrar a 3 apps distintas'],
@@ -89,6 +94,8 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
 
     /* ================================ ESTILOS ================================ */
     const CSS = `
+:root { --gold: #d4af37; --gold2: #f1d98a; }
+
 #psc-dock{position:absolute;top:100px;right:16px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 #psc-dock #pf-share-btn{position:static!important;top:auto!important;right:auto!important}
 body:has(.ov) #psc-dock{display:none}
@@ -96,67 +103,99 @@ body:has(.ov) #psc-dock{display:none}
 
 #psc-btn{display:inline-flex;align-items:center;gap:8px;background:#333;color:whitesmoke;border:1px solid #666;border-radius:6px;padding:9px 14px;font:inherit;font-size:.85rem;cursor:pointer;user-select:none;-webkit-user-select:none;transition:background .2s,color .2s,transform .15s,box-shadow .2s}
 #psc-btn:hover{background:whitesmoke;color:#222}
-#psc-btn .psc-mini{display:none;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff6c9,#f1d98a 35%,#d4af37 70%,#8a6a10);box-shadow:0 0 8px rgba(241,217,138,.6)}
-#psc-btn.cuenta{border:1.5px solid #d4af37;background:linear-gradient(135deg,#2b2107,#100c02);color:#f1d98a;font-family:Georgia,"Times New Roman",serif;font-weight:bold;font-size:.92rem;padding:8px 16px 8px 12px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
+#psc-btn .psc-mini{display:none;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff6c9,var(--gold2) 35%,var(--gold) 70%,#8a6a10);box-shadow:0 0 8px rgba(241,217,138,.6)}
+#psc-btn.cuenta{border:1.5px solid var(--gold);background:linear-gradient(135deg,#2b2107,#100c02);color:var(--gold2);font-family:Georgia,"Times New Roman",serif;font-weight:bold;font-size:.92rem;padding:8px 16px 8px 12px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
 #psc-btn.cuenta .psc-mini{display:inline-block}
-#psc-btn.cuenta:hover{background:linear-gradient(135deg,#f1d98a,#c9a227 55%,#a67c10);color:#1a1405;transform:translateY(-1px);box-shadow:0 0 16px rgba(241,217,138,.45)}
-#psc-btn:focus-visible{outline:2px solid #f1d98a;outline-offset:2px}
+#psc-btn.cuenta:hover{background:linear-gradient(135deg,var(--gold2),var(--gold) 55%,#a67c10);color:#1a1405;transform:translateY(-1px);box-shadow:0 0 16px rgba(241,217,138,.45)}
+#psc-btn:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
 
 .psc-ov{position:fixed;inset:0;z-index:100002;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;animation:pscFade .25s ease}
 @keyframes pscFade{from{opacity:0}to{opacity:1}}
-.psc-card{background:linear-gradient(180deg,#141414,#0a0a0a);border:2px solid #d4af37;border-radius:16px;width:100%;max-width:720px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.9),0 0 30px rgba(212,175,55,.15);color:#d4d4d4;font-family:Verdana,"Open Sans",sans-serif}
+.psc-card{background:linear-gradient(180deg,#141414,#0a0a0a);border:2px solid var(--gold);border-radius:16px;width:100%;max-width:720px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.9),0 0 30px rgba(212,175,55,.15);color:#d4d4d4;font-family:Verdana,"Open Sans",sans-serif}
 .psc-hd{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid rgba(212,175,55,.3);background:rgba(212,175,55,.03);border-radius:14px 14px 0 0}
-.psc-hd h2{margin:0;font:bold 1.8rem "Times New Roman",Times,serif;color:#f1d98a;text-shadow:0 0 10px rgba(241,217,138,.3)}
-.psc-x{position:relative;width:34px;height:34px;padding:0;border:1.5px solid #d4af37;border-radius:50%;background:transparent;cursor:pointer;transition:transform .3s,background .2s}
-.psc-x::before,.psc-x::after{content:"";position:absolute;left:50%;top:50%;width:13px;height:2px;margin:-1px 0 0 -6.5px;border-radius:2px;background:#f1d98a}
+.psc-hd h2{margin:0;font:bold 1.8rem "Times New Roman",Times,serif;color:var(--gold2);text-shadow:0 0 10px rgba(241,217,138,.3)}
+.psc-x{position:relative;width:34px;height:34px;padding:0;border:1.5px solid var(--gold);border-radius:50%;background:transparent;cursor:pointer;transition:transform .3s,background .2s}
+.psc-x::before,.psc-x::after{content:"";position:absolute;left:50%;top:50%;width:13px;height:2px;margin:-1px 0 0 -6.5px;border-radius:2px;background:var(--gold2)}
 .psc-x::before{transform:rotate(45deg)}.psc-x::after{transform:rotate(-45deg)}
-.psc-x:hover{transform:rotate(90deg);background:#d4af37}.psc-x:hover::before,.psc-x:hover::after{background:#111}
+.psc-x:hover{transform:rotate(90deg);background:var(--gold)}.psc-x:hover::before,.psc-x:hover::after{background:#111}
 .psc-bd{padding:18px 20px 22px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#b38b27 #0a0a0a}
 .psc-acc{background:linear-gradient(180deg,#1b1b1b,#131313);border:1px solid rgba(212,175,55,.26);border-radius:14px;overflow:hidden;margin-bottom:12px}
 .psc-acc-h{width:100%;display:flex;align-items:center;gap:12px;background:none;border:0;color:#fff;font:bold 1.02rem Verdana,"Open Sans",sans-serif;padding:16px 18px;cursor:pointer;text-align:left}
 .psc-acc-h:hover{background:rgba(212,175,55,.07)}
-.psc-acc-h:focus-visible{outline:2px solid #d4af37;outline-offset:-2px}
+.psc-acc-h:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 .psc-acc-t{flex:1;min-width:0}
-.psc-acc .chev{flex:none;width:9px;height:9px;border:solid #d4af37;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-4px;transition:transform .25s,margin .25s}
+.psc-acc .chev{flex:none;width:9px;height:9px;border:solid var(--gold);border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-4px;transition:transform .25s,margin .25s}
 .psc-acc.open .chev{transform:rotate(225deg);margin-top:4px}
 .psc-acc-b{display:none;padding:2px 18px 18px}
 .psc-acc.open>.psc-acc-b{display:block;animation:pscFade .25s ease}
 .psc-tx{font-family:Arial,sans-serif;font-weight:bold;font-size:1rem;color:#c9c9c9;line-height:1.6;white-space:pre-wrap;word-break:break-word;user-select:text;-webkit-user-select:text}
 p.psc-tx{margin:0 0 14px}
-.psc-big{font:bold 1.5rem "Times New Roman",Times,serif;color:#f1d98a;margin:6px 0 16px;user-select:text}
+.psc-big{font:bold 1.5rem "Times New Roman",Times,serif;color:var(--gold2);margin:6px 0 16px;user-select:text}
 .psc-big b{color:#fff}
-.psc-tt{font:bold 1.05rem "Times New Roman",Times,serif;color:#f1d98a;margin:6px 0 6px}
-.psc-h4{margin:18px 0 8px;padding-bottom:5px;border-bottom:1px dashed rgba(212,175,55,.25);font:bold 1.05rem "Times New Roman",Times,serif;color:#f1d98a}
+.psc-tt{font:bold 1.05rem "Times New Roman",Times,serif;color:var(--gold2);margin:6px 0 6px}
+.psc-h4{margin:18px 0 8px;padding-bottom:5px;border-bottom:1px dashed rgba(212,175,55,.25);font:bold 1.05rem "Times New Roman",Times,serif;color:var(--gold2)}
 .psc-h4:first-child{margin-top:4px}
 .psc-row{display:flex;align-items:center;gap:12px;padding:9px 4px;font-family:Arial,sans-serif;font-weight:bold;font-size:.92rem;color:#d4d4d4;line-height:1.4}
 .psc-row small{display:block;color:#8d8d8d;font-weight:normal;font-size:.72rem;margin-top:2px}
 .psc-rt{flex:1;min-width:0}
-.psc-amt{flex:none;color:#f1d98a;font-weight:bold;white-space:nowrap}
+.psc-amt{flex:none;color:var(--gold2);font-weight:bold;white-space:nowrap}
 .psc-ck{flex:none;position:relative;width:18px;height:18px;border:2px solid #4a4326;border-radius:5px;box-sizing:border-box}
 .psc-row.done{opacity:.55}
-.psc-row.done .psc-ck{border-color:#d4af37;background:rgba(212,175,55,.15)}
-.psc-row.done .psc-ck::after{content:"";position:absolute;left:4px;top:0;width:5px;height:9px;border:solid #f1d98a;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.psc-row.done .psc-ck{border-color:var(--gold);background:rgba(212,175,55,.15)}
+.psc-row.done .psc-ck::after{content:"";position:absolute;left:4px;top:0;width:5px;height:9px;border:solid var(--gold2);border-width:0 2px 2px 0;transform:rotate(45deg)}
 .psc-row.lock{opacity:.45}
 .psc-item{border:1px solid #2b2b2b;background:#161616;border-radius:12px;padding:14px;margin-top:10px}
-.psc-item.own{border-color:#d4af37;background:rgba(212,175,55,.07)}
+.psc-item.own{border-color:var(--gold);background:rgba(212,175,55,.07)}
 .psc-item-t{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font:bold 1rem Arial,sans-serif;color:#fff}
-.psc-item-t span:last-child{color:#f1d98a;white-space:nowrap}
+.psc-item-t span:last-child{color:var(--gold2);white-space:nowrap}
 .psc-item p{margin:6px 0 10px;font:.82rem/1.5 Arial,sans-serif;color:#aaa}
 .psc-buy{background:#000;color:#fff;border:1px solid #4a4a4a;border-radius:8px;padding:9px 14px;font:.9rem Georgia,"Times New Roman",serif;cursor:pointer;transition:background-color .15s,color .15s}
 .psc-buy:hover:not(:disabled){background:#fff;color:#000}
 .psc-buy:disabled{opacity:.5;cursor:default}
-.psc-buy.ok{background:linear-gradient(135deg,#f1d98a,#c9a227);color:#1a1405;border-color:#f1d98a}
-@media (max-width:600px){.psc-ov{padding:10px}.psc-card{max-height:92vh}.psc-hd h2{font-size:1.5rem}.psc-bd{padding:14px 12px 18px}}
+.psc-buy.ok{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#1a1405;border-color:var(--gold2)}
 
-.psc-t{position:fixed;top:14px;left:50%;z-index:2147483600;display:flex;align-items:center;gap:14px;width:max-content;max-width:min(480px,calc(100vw - 20px));box-sizing:border-box;padding:14px 22px 17px 14px;border-radius:16px;border:1.5px solid #d4af37;background:linear-gradient(160deg,#241b06,#0c0a03 70%);color:#fff;font-family:Verdana,"Open Sans",sans-serif;box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 34px rgba(212,175,55,.35);overflow:hidden;cursor:pointer;transform:translateX(-50%);animation:pscIn .8s cubic-bezier(.2,1.35,.35,1) both,pscGlow 2.2s ease-in-out .8s infinite;user-select:none;-webkit-user-select:none}
+/* --- Mi colección (equipar) --- */
+.psc-eq-item{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid #272727}
+.psc-eq-item:last-child{border-bottom:0}
+.psc-eq-info{flex:1;min-width:0}
+.psc-eq-name{font-family:Arial,sans-serif;font-weight:bold;font-size:.95rem;color:#fff}
+.psc-eq-desc{font-size:.75rem;color:#999;margin-top:3px;line-height:1.4}
+.psc-eq-btn{flex:none;padding:8px 14px;background:#333;color:#fff;border:1px solid #666;border-radius:8px;font-family:Georgia,"Times New Roman",serif;font-size:.85rem;cursor:pointer;transition:all .2s}
+.psc-eq-btn:hover{background:#fff;color:#000}
+.psc-eq-item.equipped .psc-eq-name{color:var(--gold2)}
+.psc-eq-item.equipped .psc-eq-btn{background:var(--gold);color:#111;border-color:var(--gold)}
+.psc-eq-item.equipped .psc-eq-btn:hover{background:var(--gold2);color:#111}
+.psc-empty{font-family:Arial,sans-serif;font-weight:bold;color:#999;font-size:.9rem;text-align:center;padding:14px 0}
+
+/* --- Zona peligrosa / Reset --- */
+.psc-reset-section{margin-top:22px;padding-top:16px;border-top:1px solid rgba(220,60,60,.3)}
+.psc-reset-section .psc-h4{color:#ff7b7b;border-bottom-color:rgba(220,60,60,.25)}
+.psc-reset-btn{display:block;width:100%;margin-top:12px;padding:12px;background:linear-gradient(135deg,#3a1010,#1a0606);color:#ffb0b0;border:1.5px solid #b03030;border-radius:10px;font-family:Georgia,"Times New Roman",serif;font-size:1rem;font-weight:bold;cursor:pointer;transition:all .2s}
+.psc-reset-btn:hover{background:linear-gradient(135deg,#5a1818,#2a0808);color:#fff;border-color:#ff5555;box-shadow:0 0 15px rgba(200,50,50,.4)}
+.psc-reset-btn:focus-visible{outline:2px solid #ff8888;outline-offset:2px}
+
+/* --- Modal reset --- */
+.psc-reset-ov{position:fixed;inset:0;z-index:100005;background:rgba(0,0,0,.9);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;animation:pscFade .25s ease}
+.psc-reset-card{width:100%;max-width:480px;background:linear-gradient(180deg,#1a0808,#0a0303);border:2px solid #c0392b;border-radius:16px;padding:26px 24px 22px;color:#e8e8e8;box-shadow:0 20px 60px rgba(0,0,0,.9),0 0 30px rgba(192,57,43,.3)}
+.psc-reset-card h2{font-family:"Times New Roman",Times,serif;color:#ff8888;font-size:1.6rem;margin:0 0 14px;text-align:left}
+.psc-reset-card p{font-family:Arial,sans-serif;font-size:.88rem;line-height:1.55;color:#d4d4d4;margin:0 0 12px}
+.psc-reset-card p b{color:#ff8888}
+.psc-reset-cancel{display:block;width:100%;margin-top:18px;padding:12px;background:#2a2a2a;color:#fff;border:1px solid #555;border-radius:10px;font-family:Georgia,"Times New Roman",serif;font-size:.95rem;cursor:pointer}
+.psc-reset-cancel:hover{background:#3a3a3a}
+.psc-reset-confirm{display:block;width:100%;margin-top:8px;padding:12px;background:linear-gradient(135deg,#5a1818,#2a0808);color:#ffb0b0;border:1.5px solid #c0392b;border-radius:10px;font-family:Georgia,"Times New Roman",serif;font-size:.95rem;font-weight:bold;cursor:pointer}
+.psc-reset-confirm:hover{background:linear-gradient(135deg,#8a2020,#400c0c);color:#fff}
+.psc-reset-confirm:disabled{opacity:.5;cursor:wait}
+
+/* --- Cartel "¡Ganaste!" --- */
+.psc-t{position:fixed;top:14px;left:50%;z-index:2147483600;display:flex;align-items:center;gap:14px;width:max-content;max-width:min(480px,calc(100vw - 20px));box-sizing:border-box;padding:14px 22px 17px 14px;border-radius:16px;border:1.5px solid var(--gold);background:linear-gradient(160deg,#241b06,#0c0a03 70%);color:#fff;font-family:Verdana,"Open Sans",sans-serif;box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 34px rgba(212,175,55,.35);overflow:hidden;cursor:pointer;transform:translateX(-50%);animation:pscIn .8s cubic-bezier(.2,1.35,.35,1) both,pscGlow 2.2s ease-in-out .8s infinite;user-select:none;-webkit-user-select:none}
 .psc-t.out{animation:pscOut .45s ease forwards}
 .psc-t::before{content:"";position:absolute;top:0;bottom:0;width:55%;left:-80%;background:linear-gradient(100deg,transparent,rgba(241,217,138,.3),transparent);transform:skewX(-20deg);animation:pscShine 1.5s ease .55s 2}
-.psc-coin{flex:none;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 32% 28%,#fff6c9,#f1d98a 30%,#d4af37 62%,#8a6a10);border:2px solid #fff3b0;box-shadow:inset 0 -3px 6px rgba(0,0,0,.35),0 0 18px rgba(241,217,138,.6);font:bold 1.5rem "Times New Roman",serif;color:#5b4308;animation:pscFlip 1.8s ease-in-out infinite}
-.psc-t1{font:bold 1.15rem "Times New Roman",Times,serif;color:#f1d98a;line-height:1.25}
+.psc-coin{flex:none;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 32% 28%,#fff6c9,var(--gold2) 30%,var(--gold) 62%,#8a6a10);border:2px solid #fff3b0;box-shadow:inset 0 -3px 6px rgba(0,0,0,.35),0 0 18px rgba(241,217,138,.6);font:bold 1.5rem "Times New Roman",serif;color:#5b4308;animation:pscFlip 1.8s ease-in-out infinite}
+.psc-t1{font:bold 1.15rem "Times New Roman",Times,serif;color:var(--gold2);line-height:1.25}
 .psc-t1 b{color:#fff;text-shadow:0 0 12px rgba(241,217,138,.9)}
 .psc-t2{font-size:.8rem;color:#d0d0d0;margin-top:3px;line-height:1.4}
-.psc-bar{position:absolute;left:0;bottom:0;height:3px;width:100%;background:linear-gradient(90deg,#f1d98a,#d4af37);transform-origin:left;animation:pscBar ${DUR_CARTEL}ms linear forwards}
-.psc-sp{position:absolute;width:6px;height:6px;border-radius:50%;background:#f1d98a;box-shadow:0 0 8px #f1d98a;opacity:0;animation:pscSpark 1.6s ease-out infinite}
+.psc-bar{position:absolute;left:0;bottom:0;height:3px;width:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));transform-origin:left;animation:pscBar ${DUR_CARTEL}ms linear forwards}
+.psc-sp{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--gold2);box-shadow:0 0 8px var(--gold2);opacity:0;animation:pscSpark 1.6s ease-out infinite}
 .psc-sp:nth-of-type(1){left:70px;top:16px;animation-delay:.6s}
 .psc-sp:nth-of-type(2){left:34%;top:10px;animation-delay:.9s}
 .psc-sp:nth-of-type(3){right:30%;top:14px;animation-delay:1.2s}
@@ -172,8 +211,9 @@ p.psc-tx{margin:0 0 14px}
 @keyframes pscSpark{0%{opacity:0;transform:translateY(0) scale(0)}30%{opacity:1;transform:translateY(-8px) scale(1)}100%{opacity:0;transform:translateY(-26px) scale(.2)}}
 @media (prefers-reduced-motion:reduce){.psc-t,.psc-t::before,.psc-coin,.psc-sp{animation:none!important}.psc-t{transform:translateX(-50%)}.psc-bar{animation:pscBar ${DUR_CARTEL}ms linear forwards!important}}
 
-body.psc-own-marco_dorado #cuenta .av{box-shadow:0 0 0 3px #d4af37,0 0 14px rgba(212,175,55,.6)}
-body.psc-own-marco_animado #cuenta .avwrap::before{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(#f1d98a,#8a6a10,#fff6c9,#d4af37,#f1d98a);animation:pscSpin 3s linear infinite}
+/* --- Efectos de los ítems equipados --- */
+body.psc-own-marco_dorado #cuenta .av{box-shadow:0 0 0 3px var(--gold),0 0 14px rgba(212,175,55,.6)}
+body.psc-own-marco_animado #cuenta .avwrap::before{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(var(--gold2),#8a6a10,#fff6c9,var(--gold),var(--gold2));animation:pscSpin 3s linear infinite}
 body.psc-own-marco_animado #cuenta .av{position:relative;z-index:1}
 body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
 body.psc-own-marco_arcoiris #cuenta .avwrap::before{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(#ff0044,#ff8800,#ffee00,#00cc44,#0088ff,#7700ff,#ff0044);animation:pscSpin 3s linear infinite;filter:saturate(1.2)}
@@ -186,7 +226,28 @@ body.psc-own-cartel_esmeralda .psc-t1{color:#a9f5c6}
 body.psc-own-cartel_zafiro .psc-t{border-color:#3498db;background:linear-gradient(160deg,#0a1e2e,#020a12 70%);box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 34px rgba(52,152,219,.4)}
 body.psc-own-cartel_zafiro .psc-t1{color:#a8daf5}
 
-body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;font:italic .68rem Arial,sans-serif;color:#d4af37;margin-top:1px;letter-spacing:.5px}
+body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;font:italic .68rem Arial,sans-serif;color:var(--gold);margin-top:1px;letter-spacing:.5px}
+
+/* --- TEMAS --- */
+body.psc-own-tema_esmeralda { --gold:#2ecc71; --gold2:#a9f5c6; }
+body.psc-own-tema_esmeralda #pichisoft-topbar{border-color:rgba(46,204,113,.4)}
+body.psc-own-tema_esmeralda #pichisoft-topbar>*{color:#2ecc71!important}
+body.psc-own-tema_esmeralda #pichisoft-topbar>*:hover{color:#fff!important;text-shadow:0 0 8px rgba(169,245,198,.8)!important}
+body.psc-own-tema_esmeralda #psc-btn.cuenta{border-color:#2ecc71;color:#a9f5c6}
+
+body.psc-own-tema_zafiro { --gold:#3498db; --gold2:#a8daf5; }
+body.psc-own-tema_zafiro #pichisoft-topbar{border-color:rgba(52,152,219,.4)}
+body.psc-own-tema_zafiro #pichisoft-topbar>*{color:#3498db!important}
+body.psc-own-tema_zafiro #pichisoft-topbar>*:hover{color:#fff!important;text-shadow:0 0 8px rgba(168,218,245,.8)!important}
+body.psc-own-tema_zafiro #psc-btn.cuenta{border-color:#3498db;color:#a8daf5}
+
+body.psc-own-tema_rubi { --gold:#e74c3c; --gold2:#f5a8a0; }
+body.psc-own-tema_rubi #pichisoft-topbar{border-color:rgba(231,76,60,.4)}
+body.psc-own-tema_rubi #pichisoft-topbar>*{color:#e74c3c!important}
+body.psc-own-tema_rubi #pichisoft-topbar>*:hover{color:#fff!important;text-shadow:0 0 8px rgba(245,168,160,.8)!important}
+body.psc-own-tema_rubi #psc-btn.cuenta{border-color:#e74c3c;color:#f5a8a0}
+
+@media (max-width:600px){.psc-ov{padding:10px}.psc-card{max-height:92vh}.psc-hd h2{font-size:1.5rem}.psc-bd{padding:14px 12px 18px}}
 `;
 
     /* ============================= UTILIDADES ============================= */
@@ -211,21 +272,23 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
         return {
             earned: g.earned && typeof g.earned === 'object' ? g.earned : {},
             bought: g.bought && typeof g.bought === 'object' ? g.bought : {},
+            equipped: g.equipped && typeof g.equipped === 'object' ? g.equipped : {},
             rec: +g.rec || 0
         };
     }
     let S = leerGuest();
     let modo = 'invitado';
     let uid = null;
-    let pend = { earned: {}, bought: {}, rec: false };
+    let pend = { earned: {}, bought: {}, equipped: {}, rec: false };
     let dock = null, btn = null;
     let unsubSnap = null;
     const colaEventos = [];
     const abierto = {};
     const saldo = () => Math.max(0, suma(S.earned) - suma(S.bought));
 
-    function persistPend() { lsSet('psc_pend', { uid, earned: pend.earned, bought: pend.bought, rec: pend.rec }); }
+    function persistPend() { lsSet('psc_pend', { uid, earned: pend.earned, bought: pend.bought, equipped: pend.equipped, rec: pend.rec }); }
     function pendAdd(tipo, k, v) { if (modo === 'cuenta') pend[tipo][k] = v; }
+    function pendEq(slot, val) { if (modo === 'cuenta') pend.equipped[slot] = val; }
     function guardar() {
         if (modo === 'cuenta') { persistPend(); programarFlush(); }
         else lsSet('psc_guest', S);
@@ -235,15 +298,16 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
     function programarFlush(ms) { clearTimeout(tf); tf = setTimeout(flush, ms || 700); }
     async function flush() {
         if (modo !== 'cuenta' || !uid || flushing) return;
-        const e = { ...pend.earned }, b = { ...pend.bought }, r = pend.rec;
-        if (!Object.keys(e).length && !Object.keys(b).length && !r) return;
+        const e = { ...pend.earned }, b = { ...pend.bought }, eq = { ...pend.equipped }, r = pend.rec;
+        if (!Object.keys(e).length && !Object.keys(b).length && !Object.keys(eq).length && !r) return;
         flushing = true;
         const id = uid;
         try {
-            await setDoc(doc(db, 'pichicoins', id), { earned: e, bought: b, rec: S.rec }, { merge: true });
+            await setDoc(doc(db, 'pichicoins', id), { earned: e, bought: b, equipped: eq, rec: S.rec }, { merge: true });
             if (uid === id) {
                 Object.keys(e).forEach(k => delete pend.earned[k]);
                 Object.keys(b).forEach(k => delete pend.bought[k]);
+                Object.keys(eq).forEach(k => delete pend.equipped[k]);
                 if (r) pend.rec = false;
                 persistPend();
             }
@@ -255,7 +319,6 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
 
     function detenerSnap() { if (unsubSnap) { try { unsubSnap(); } catch (e) { } unsubSnap = null; } }
 
-    /* ---------------------- Cargar cuenta ---------------------- */
     async function cargarCuenta(id) {
         let remoto = null, fallo = false;
         try { const s = await getDoc(doc(db, 'pichicoins', id)); if (s.exists()) remoto = s.data(); }
@@ -263,17 +326,18 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
         if (uid !== id) return;
 
         if (fallo) {
-            modo = 'invitado';
-            uid = null; /* NUEVO: forzar reintento en el próximo evaluar */
-            cambio();
-            setTimeout(() => {
-                if (modo === 'invitado' && auth.currentUser && auth.currentUser.uid === id) evaluar();
-            }, 5000);
+            modo = 'invitado'; uid = null; cambio();
+            setTimeout(() => { if (modo === 'invitado' && auth.currentUser && auth.currentUser.uid === id) evaluar(); }, 5000);
             return;
         }
 
-        const A = { earned: { ...(remoto && remoto.earned) }, bought: { ...(remoto && remoto.bought) }, rec: +(remoto && remoto.rec) || 0 };
-        const nuevo = { earned: {}, bought: {} };
+        const A = {
+            earned: { ...(remoto && remoto.earned) },
+            bought: { ...(remoto && remoto.bought) },
+            equipped: { ...(remoto && remoto.equipped) },
+            rec: +(remoto && remoto.rec) || 0
+        };
+        const nuevo = { earned: {}, bought: {}, equipped: {} };
         const unir = src => {
             if (!src) return;
             ['earned', 'bought'].forEach(t => {
@@ -281,18 +345,33 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
                 for (const k in o) if (!(k in A[t])) { A[t][k] = o[k]; nuevo[t][k] = o[k]; }
             });
             if ((+src.rec || 0) > A.rec) A.rec = +src.rec;
+            if (src.equipped) {
+                for (const slot in src.equipped) {
+                    if (src.equipped[slot] && !A.equipped[slot]) {
+                        A.equipped[slot] = src.equipped[slot];
+                        nuevo.equipped[slot] = src.equipped[slot];
+                    }
+                }
+            }
         };
 
-        /* NUEVO: fusionar invitado SOLO si tiene saldo (una vez) y limpiarlo */
+        // Guest coins se fusionan una vez y se limpia
         const g = leerGuest();
         const gTotal = suma(g.earned) - suma(g.bought);
-        if (gTotal > 0) {
-            unir(g);
-            lsSet('psc_guest', { earned: {}, bought: {}, rec: 0 });
-        }
+        if (gTotal > 0) { unir(g); lsSet('psc_guest', { earned: {}, bought: {}, equipped: {}, rec: 0 }); }
         const p = lsGet('psc_pend', null); if (p && p.uid === id) unir(p);
 
-        /* NUEVO: bonus si falta el flag (aunque el doc ya exista con otros datos) */
+        // Migración: si el doc no tiene "equipped", auto-equipar un ítem por slot de los ya comprados
+        if (!remoto || !remoto.equipped) {
+            TIENDA.forEach(it => {
+                if (it.slot && A.bought[it.id] && !A.equipped[it.slot]) {
+                    A.equipped[it.slot] = it.id;
+                    nuevo.equipped[it.slot] = it.id;
+                }
+            });
+        }
+
+        // Bonus de cuenta (también se re-otorga después de un reset)
         let bono = false;
         if (!A.earned.cuenta_creada) {
             A.earned.cuenta_creada = MONTO_CUENTA;
@@ -301,13 +380,15 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
         }
 
         S = A; modo = 'cuenta';
-        pend = { earned: nuevo.earned, bought: nuevo.bought, rec: true };
+        pend = { earned: nuevo.earned, bought: nuevo.bought, equipped: nuevo.equipped, rec: true };
         persistPend(); programarFlush(100);
         cambio();
-        if (bono) cartel({ monto: MONTO_CUENTA, texto: 'crear tu cuenta de Pichisoft' });
+        if (bono) {
+            const texto = remoto ? 'volver a empezar en Pichisoft' : 'crear tu cuenta de Pichisoft';
+            cartel({ monto: MONTO_CUENTA, texto });
+        }
         revisarHitos();
 
-        /* NUEVO: onSnapshot = sincronización en tiempo real entre dispositivos */
         detenerSnap();
         unsubSnap = onSnapshot(doc(db, 'pichicoins', id), snap => {
             if (uid !== id || !snap.exists()) return;
@@ -317,24 +398,27 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
                 const o = d[t] || {};
                 for (const k in o) if (!(k in S[t])) { S[t][k] = o[k]; cambió = true; }
             }
+            if (d.equipped) {
+                for (const slot in d.equipped) {
+                    if (d.equipped[slot] && !S.equipped[slot]) { S.equipped[slot] = d.equipped[slot]; cambió = true; }
+                }
+            }
             if ((d.rec || 0) > S.rec) { S.rec = d.rec; cambió = true; }
             if (cambió) { persistPend(); cambio(); }
         }, err => console.warn('PichiCoins snapshot:', err));
 
-        /* NUEVO: procesar eventos que llegaron durante la carga */
         while (colaEventos.length) evento(colaEventos.shift());
     }
 
     function evaluar() {
         const u = auth.currentUser;
         const nuevo = (u && sesionValida() && (!window.Pichisoft || window.Pichisoft.user)) ? u.uid : null;
-        /* NUEVO: solo saltear si ya está en cuenta; si está en invitado con uid seteado → reintentar */
         if (nuevo === uid && modo === 'cuenta') { actualizarBoton(); return; }
         if (nuevo === uid && modo === 'cargando') return;
         uid = nuevo;
         if (!nuevo) {
             detenerSnap();
-            modo = 'invitado'; S = leerGuest(); pend = { earned: {}, bought: {}, rec: false };
+            modo = 'invitado'; S = leerGuest(); pend = { earned: {}, bought: {}, equipped: {}, rec: false };
             colaEventos.length = 0;
             cambio(); return;
         }
@@ -395,7 +479,8 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
     /* ================================ CARTEL ================================ */
     const cola = []; let mostrando = false;
     function sonidoMoneda() {
-        if (!S.bought.sonido_moneda && !S.bought.coleccion) return;
+        const s = S.equipped && S.equipped.sonido;
+        if (!s || !(s in S.bought)) return;
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const o = ctx.createOscillator(), g = ctx.createGain();
@@ -515,11 +600,69 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
         });
         return w;
     }
+
+    function bColeccion() {
+        const w = h('div');
+
+        // Agrupar por slot, solo los que ya compró
+        const slots = {};
+        TIENDA.forEach(it => {
+            if (!it.slot || !S.bought[it.id]) return;
+            if (!slots[it.slot]) slots[it.slot] = [];
+            slots[it.slot].push(it);
+        });
+
+        if (!Object.keys(slots).length) {
+            w.append(h('div', 'psc-empty', 'Todavía no tenés nada comprado. ¡Andá a la Tienda y comprá alguna decoración!'));
+        } else {
+            Object.keys(slots).forEach(slot => {
+                w.append(h('div', 'psc-h4', SLOT_NOMBRES[slot] || slot));
+                slots[slot].forEach(it => {
+                    const equipped = S.equipped[slot] === it.id;
+                    const row = h('div', 'psc-eq-item' + (equipped ? ' equipped' : ''));
+                    const info = h('div', 'psc-eq-info');
+                    info.append(
+                        h('div', 'psc-eq-name', it.nombre),
+                        h('div', 'psc-eq-desc', it.desc)
+                    );
+                    const b = h('button', 'psc-eq-btn'); b.type = 'button';
+                    if (equipped) {
+                        b.textContent = 'Desequipar';
+                        b.onclick = () => equipar(slot, '');
+                    } else {
+                        b.textContent = 'Equipar';
+                        b.onclick = () => equipar(slot, it.id);
+                    }
+                    row.append(info, b);
+                    w.append(row);
+                });
+            });
+        }
+
+        // Zona peligrosa
+        const rst = h('div', 'psc-reset-section');
+        rst.append(
+            h('div', 'psc-h4', 'Zona peligrosa'),
+            P('psc-tx', 'Restablecer PichiCoins borra TODOS tus PichiCoins: tu saldo, las decoraciones que compraste y los logros que conseguiste. Después podés volver a ganarlos haciendo las mismas cosas.')
+        );
+        const rb = h('button', 'psc-reset-btn'); rb.type = 'button';
+        rb.textContent = 'Restablecer mis PichiCoins';
+        rb.onclick = () => confirmarResetCoins();
+        rst.append(rb);
+        w.append(rst);
+
+        return w;
+    }
+
     function comprar(it) {
         if (S.bought[it.id] || saldo() < it.precio) return;
         if (it.soloCuenta && modo !== 'cuenta') return;
         S.bought[it.id] = it.precio; pendAdd('bought', it.id, it.precio);
-        /* NUEVO: la colección regala todo lo que no tengas */
+
+        // Auto-equipar si tiene slot (para que se vea el efecto al instante)
+        if (it.slot) { S.equipped[it.slot] = it.id; pendEq(it.slot, it.id); }
+
+        // La colección regala todo lo que no tengas (sin auto-equipar; el usuario elige)
         if (it.id === 'coleccion') {
             TIENDA.forEach(otro => {
                 if (otro.id !== 'coleccion' && !S.bought[otro.id]) {
@@ -530,6 +673,76 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
         guardar(); cambio();
         cartel({ titulo: '¡Compra realizada!', texto: '«' + it.nombre + '» · −' + fmt(it.precio) + ' PichiCoins' });
     }
+
+    function equipar(slot, itemId) {
+        if (itemId && !S.bought[itemId]) return;
+        S.equipped[slot] = itemId || '';
+        pendEq(slot, itemId || '');
+        guardar();
+        cambio();
+    }
+
+    function confirmarResetCoins() {
+        if (document.getElementById('psc-reset-ov')) return;
+        const ov = h('div', 'psc-reset-ov'); ov.id = 'psc-reset-ov';
+        ov.innerHTML = `
+            <div class="psc-reset-card" role="alertdialog" aria-modal="true" aria-labelledby="psc-reset-ttl">
+                <h2 id="psc-reset-ttl">¿Restablecer tus PichiCoins?</h2>
+                <p><b>Vas a perder TODOS tus PichiCoins, compras y logros.</b></p>
+                <p>Se van a borrar tu saldo actual, las decoraciones que compraste y todos los logros que conseguiste.</p>
+                <p>Pero no te preocupes: <b>podés volver a ganarlos</b> haciendo las mismas cosas que antes (entrar a una app por primera vez, leer un panel, mandar tu primer mensaje, configurar PichonApps, etc.). Incluso vas a recibir de nuevo el bono de bienvenida de +5.000 PichiCoins.</p>
+                <p>Esta acción no se puede deshacer.</p>
+                <button class="psc-reset-cancel" id="psc-reset-no" type="button">No, quiero conservar mis PichiCoins</button>
+                <button class="psc-reset-confirm" id="psc-reset-yes" type="button">Sí, restablecer todo</button>
+            </div>`;
+        document.body.append(ov);
+        const cerrar = () => ov.remove();
+        ov.onclick = e => { if (e.target === ov) cerrar(); };
+        ov.querySelector('#psc-reset-no').onclick = cerrar;
+        ov.querySelector('#psc-reset-yes').onclick = async () => {
+            const b = ov.querySelector('#psc-reset-yes');
+            b.disabled = true; b.textContent = 'Restableciendo…';
+            await resetCoins();
+            cerrar();
+        };
+    }
+
+    async function resetCoins() {
+        if (modo !== 'cuenta' || !uid) {
+            // Invitado
+            S = { earned: {}, bought: {}, equipped: {}, rec: 0 };
+            pend = { earned: {}, bought: {}, equipped: {}, rec: false };
+            lsSet('psc_guest', S);
+            cambio();
+            cartel({ titulo: '¡PichiCoins restablecidos!', texto: 'Tu progreso fue borrado. Vuelve a hacer las cosas para ganar de nuevo.' });
+            return;
+        }
+
+        const old = { earned: { ...S.earned }, bought: { ...S.bought }, equipped: { ...S.equipped }, rec: S.rec };
+        try {
+            // Overwrite completo (sin merge) para borrar todo
+            await setDoc(doc(db, 'pichicoins', uid), { earned: {}, bought: {}, equipped: {}, rec: 0 });
+            S = { earned: {}, bought: {}, equipped: {}, rec: 0 };
+            pend = { earned: {}, bought: {}, equipped: {}, rec: false };
+            persistPend();
+            cambio();
+            cartel({ titulo: '¡PichiCoins restablecidos!', texto: 'Tu progreso fue borrado. Vuelve a hacer las cosas para ganar de nuevo.' });
+
+            // Re-trigger cargarCuenta para re-otorgar el bono de +5000
+            setTimeout(() => {
+                if (auth.currentUser && auth.currentUser.uid === uid) {
+                    detenerSnap();
+                    cargarCuenta(uid);
+                }
+            }, 4200);
+        } catch (err) {
+            S.earned = old.earned; S.bought = old.bought; S.equipped = old.equipped; S.rec = old.rec;
+            cambio();
+            console.error('Reset error:', err);
+            alert('No se pudo restablecer. Intentá de nuevo más tarde.');
+        }
+    }
+
     function render() {
         const bd = document.getElementById('psc-bd'); if (!bd) return;
         const top = bd.scrollTop; bd.textContent = '';
@@ -537,7 +750,8 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
             acc('que', '¿Qué son los PichiCoins?', bQue()),
             acc('mis', 'Mis PichiCoins', bMis()),
             acc('ganar', '¿Cómo ganar PichiCoins?', bGanar()),
-            acc('tienda', 'Tienda', bTienda())
+            acc('tienda', 'Tienda', bTienda()),
+            acc('coleccion', 'Mi colección', bColeccion())
         );
         bd.scrollTop = top;
     }
@@ -560,7 +774,9 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
     function aplicarEfectos() {
         const b = document.body;
         [...b.classList].filter(c => c.startsWith('psc-own-')).forEach(c => b.classList.remove(c));
-        Object.keys(S.bought).forEach(id => b.classList.add('psc-own-' + id));
+        Object.values(S.equipped || {}).forEach(id => {
+            if (id && S.bought[id]) b.classList.add('psc-own-' + id);
+        });
     }
     function cambio() {
         actualizarBoton(); aplicarEfectos(); render();
@@ -605,7 +821,6 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
     }
 
     function escucharIndex() {
-        /* Clic en cualquier link a /pichonXXX.html */
         const enlace = e => {
             const a = e.target.closest && e.target.closest('a[href]'); if (!a) return;
             const m = /pichisoft\.cc\/([a-z0-9_-]+)(?:\.html)?(?:[?#]|$)/i.exec(a.href);
@@ -614,7 +829,6 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
         addEventListener('click', enlace, true);
         addEventListener('auxclick', enlace, true);
 
-        /* Leer un panel: award instantáneo la 1ª vez (antes era 6s y se reseteaba) */
         document.addEventListener('click', e => {
             const b = e.target.closest && e.target.closest('.pf-btn[data-pf],[data-pf-link]'); if (!b) return;
             const k = b.dataset.pf || b.dataset.pfLink; if (!PANELES[k]) return;
@@ -622,7 +836,6 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
             ganar('panel_' + k, MONTO_PANEL, 'leer el panel «' + PANELES[k] + '»');
         }, true);
 
-        /* Hook: profile changes → evento('perfil') */
         let ultimoPerfil = null;
         const rc = window.renderCuenta;
         window.renderCuenta = function () {
@@ -647,9 +860,7 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
         evento, abrir: abrirPanel,
         saldo: () => saldo(), modo: () => modo,
         tiene: id => !!S.bought[id],
-        /* NUEVO: para que otros scripts (premium, community, idiomas) puedan marcar
-           un hito retroactivamente (por ejemplo si ya habías configurado antes de
-           que existiera el sistema de coins). */
+        equipado: slot => (S.equipped && S.equipped[slot]) || null,
         marcarHecho: (nombre) => evento(nombre)
     };
     addEventListener('pagehide', () => { flush(); });
