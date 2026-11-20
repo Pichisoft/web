@@ -93,7 +93,7 @@ Ya disponible, PichonPass —Versión premium—.
     const DISPARADORES = [
         /* PichonApps: anuncio cada 8 clics (contador desde cero en cada visita).
            NUNCA en páginas de PichonPass (la regex excluye cualquier ruta con "pichonpass"). */
-        { nombre: 'apps-clics', activo: true, tipo: 'click', si: '#cuenta', pagina: '^(?!.*pichonpass)', selector: 'body', anuncios: ['premiumApps'], cada: 8 },
+        { nombre: 'apps-clics', activo: true, tipo: 'click', si: '#cuenta', pagina: '^(?!.*pichonpass)', selector: 'body', anuncios: ['premiumApps'], cada: 42 },
         /* PichonApps: SIN anuncio al entrar */
         { nombre: 'apps-entrada', activo: false, tipo: 'entrada', si: '#cuenta', anuncios: ['premiumApps'], retraso: 1500 },
         /* PichonPass Clásico: UN anuncio al entrar (al venir del botón "Usar versión clásica").
