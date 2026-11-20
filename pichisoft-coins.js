@@ -1,26 +1,17 @@
 /* =====================================================================
-   PICHISOFT COINS  ·  by Pichisoft
+   PICHISOFT COINS  ·  by Pichisoft  ·  v3 (2026-11-20)
    Se carga como MÓDULO, igual en PichonApps y en cada app:
        <script type="module" src="/pichisoft-coins.js"></script>
-   - Sin cuenta: guarda todo en localStorage.
-   - Con cuenta: guarda en Firestore (colección "pichicoins", doc = tu UID).
-   - Lo que se ganó sin cuenta se FUSIONA con la cuenta (nunca se cobra dos veces).
-   - PichiCoins se GASTAN en la tienda: saldo = ganado - gastado.
-   Para otros scripts:  window.PichiCoins.evento('mensaje' | 'calificar' | 'config' | 'traducir')
-                        window.PichiCoins.tiene('id_del_item')
    ===================================================================== */
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 (function () {
     'use strict';
     if (window.PichiCoins) return;
 
     /* ============================ CONFIGURACIÓN ============================ */
-
-    /* IMPORTANTE: tiene que ser IDÉNTICA a la de tus apps (con measurementId),
-       si no, Firebase tira "duplicate-app" en el script de sesión de las apps. */
     const FIREBASE_CFG = {
         apiKey: "AIzaSyCf_P8qp9nBUnsVe3qsTAtZJjZHOktKf-8",
         authDomain: "pichisoft.firebaseapp.com",
@@ -31,7 +22,6 @@ import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/fireb
         measurementId: "G-K7HRKR8BJ1"
     };
 
-    /* Apps actuales (slug = nombre del archivo sin .html). "Entrar a todas" = estas. */
     const APPS = {
         pichonalarm: 'PichonAlarm', pichonbirthday: 'PichonBirthday', pichoncalc: 'PichonCalc',
         pichoncalendar: 'PichonCalendar', pichonchess: 'PichonChess', pichoncode: 'PichonCode',
@@ -41,14 +31,9 @@ import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/fireb
         pichonrandom: 'PichonRandom', pichonsnake: 'PichonSnake', pichontraffic: 'PichonTraffic',
         pichonwatch: 'PichonWatch', pichonweather: 'PichonWeather'
     };
-    /* Apps NUEVAS (las que agregues de ahora en adelante). Van acá y NO en APPS.
-       Cada una da +25 la primera vez que se entra. Ej: { pichonopinion: 'PichonOpinion' } */
     const APPS_NUEVAS = {};
-    const MONTO_APP_NUEVA = 25;
+    const MONTO_APP_NUEVA = 100;
 
-    /* ----- Texto de "¿Qué son los PichiCoins?" -----
-       Se muestra con white-space: pre-wrap: los saltos de línea y espacios se respetan tal cual.
-       Es texto plano (no HTML). Reemplazá lo de adentro por el tuyo. */
     const TEXTO_QUE_SON = `Los PichiCoins son la moneda virtual de Pichisoft. No valen dinero real y no se pueden cambiar por dinero.
 
 Se ganan usando PichonApps y nuestras aplicaciones: entrando a las apps, pasando tiempo en ellas, leyendo nuestros paneles y más.
@@ -57,41 +42,48 @@ Se gastan en la Tienda para conseguir mejoras y detalles exclusivos.
 
 Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta, no pierdes nada de lo que ya juntaste.`;
 
-    /* ----- Tienda -----
-       id: único, sin espacios | precio: en PichiCoins | soloCuenta: true si requiere cuenta
-       Al comprar, el <body> recibe la clase "psc-own-<id>" (para hacer efectos con CSS)
-       y desde cualquier script podés preguntar PichiCoins.tiene('<id>'). */
+    /* Tienda (mantiene marcos previos + nuevos ítems que pediste). */
     const TIENDA = [
         { id: 'marco_dorado', nombre: 'Marco dorado', desc: 'Un borde dorado brillante alrededor de tu foto de perfil.', precio: 2000, soloCuenta: true },
-        { id: 'marco_animado', nombre: 'Marco animado', desc: 'Un anillo dorado que gira alrededor de tu foto de perfil.', precio: 6000, soloCuenta: true }
+        { id: 'marco_animado', nombre: 'Marco animado', desc: 'Un anillo dorado que gira alrededor de tu foto de perfil.', precio: 6000, soloCuenta: true },
+        { id: 'tema_esmeralda', nombre: 'Tema esmeralda', desc: 'Cambia el dorado de PichonApps por verde esmeralda.', precio: 900 },
+        { id: 'tema_zafiro', nombre: 'Tema zafiro', desc: 'Cambia el dorado de PichonApps por azul zafiro.', precio: 900 },
+        { id: 'tema_rubi', nombre: 'Tema rubí', desc: 'Cambia el dorado de PichonApps por rojo rubí.', precio: 900 },
+        { id: 'marco_arcoiris', nombre: 'Marco arcoíris', desc: 'Un borde arcoíris animado alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true },
+        { id: 'cartel_esmeralda', nombre: 'Cartel esmeralda', desc: 'El cartel de «¡Ganaste!» con estilo esmeralda.', precio: 700 },
+        { id: 'cartel_zafiro', nombre: 'Cartel zafiro', desc: 'El cartel de «¡Ganaste!» con estilo zafiro.', precio: 700 },
+        { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre (visible solo para ti).', precio: 1200, soloCuenta: true },
+        { id: 'sonido_moneda', nombre: 'Sonido de moneda', desc: 'Suena una moneda cada vez que ganás PichiCoins.', precio: 500 },
+        { id: 'coleccion', nombre: 'Colección completa', desc: 'Todos los ítems de la tienda en un solo paquete. ¡Ahorrás un montón!', precio: 12000, soloCuenta: true }
     ];
 
-    /* ----- Logros ----- (monto, texto en "Cómo ganar", texto del cartel "por ...") */
-    const HITOS = [  // N = cantidad de apps distintas (0 = todas)
-        [1, 10, 'Entrar a una app por primera vez', 'entrar a una de nuestras apps por primera vez'],
-        [3, 20, 'Entrar a 3 apps distintas', 'entrar a 3 apps distintas'],
-        [5, 30, 'Entrar a 5 apps distintas', 'entrar a 5 apps distintas'],
-        [10, 50, 'Entrar a 10 apps distintas', 'entrar a 10 apps distintas'],
-        [15, 75, 'Entrar a 15 apps distintas', 'entrar a 15 apps distintas'],
-        [0, 100, 'Entrar a todas nuestras apps', 'entrar a todas nuestras apps']
+    /* Logros: [N apps (0 = todas), monto, texto "Cómo ganar", texto "por..."] */
+    const HITOS = [
+        [1, 100, 'Entrar a una app por primera vez', 'entrar a una de nuestras apps por primera vez'],
+        [3, 200, 'Entrar a 3 apps distintas', 'entrar a 3 apps distintas'],
+        [5, 300, 'Entrar a 5 apps distintas', 'entrar a 5 apps distintas'],
+        [10, 500, 'Entrar a 10 apps distintas', 'entrar a 10 apps distintas'],
+        [15, 750, 'Entrar a 15 apps distintas', 'entrar a 15 apps distintas'],
+        [0, 1000, 'Entrar a todas nuestras apps', 'entrar a todas nuestras apps']
     ];
-    const TRAMOS = [  // segundos acumulados EN EL DÍA (pestaña visible y con actividad)
-        [600, 80, 'Permanecer 10 minutos en nuestras apps (en un mismo día)', 'permanecer 10 minutos en nuestras apps'],
-        [1800, 250, 'Permanecer 30 minutos en nuestras apps (en un mismo día)', 'permanecer 30 minutos en nuestras apps'],
-        [3600, 600, 'Permanecer 1 hora en nuestras apps (en un mismo día)', 'permanecer 1 hora en nuestras apps']
+    const TRAMOS = [
+        [600, 400, 'Permanecer 10 minutos en nuestras apps (en un mismo día)', 'permanecer 10 minutos en nuestras apps'],
+        [1800, 800, 'Permanecer 30 minutos en nuestras apps (en un mismo día)', 'permanecer 30 minutos en nuestras apps'],
+        [3600, 1500, 'Permanecer 1 hora en nuestras apps (en un mismo día)', 'permanecer 1 hora en nuestras apps']
     ];
-    const MONTO_RECORD = 120;
-    const MONTO_PANEL = 20;
+    const MONTO_RECORD = 200;
+    const MONTO_PANEL = 50;
     const PANELES = {
         sobre: 'Sobre nosotros', faq: 'Preguntas frecuentes', info: 'Información general',
         reglas: 'Nuestras reglas', privacidad: 'Privacidad', cookies: 'Cookies'
     };
     const MONTO_CUENTA = 5000;
-    const EVENTOS = {  // solo con cuenta
-        mensaje: [150, 'Enviar un mensaje por primera vez', 'enviar tu primer mensaje'],
-        calificar: [250, 'Calificar una app por primera vez', 'calificar una app por primera vez'],
-        config: [250, 'Configurar tu PichonApps (al menos un cambio)', 'configurar tu PichonApps por primera vez'],
-        traducir: [180, 'Traducir PichonApps a otro idioma por primera vez', 'traducir PichonApps a otro idioma por primera vez']
+    const EVENTOS = {
+        mensaje: [500, 'Enviar un mensaje por primera vez', 'enviar tu primer mensaje'],
+        calificar: [500, 'Calificar una app por primera vez', 'calificar una app por primera vez'],
+        config: [500, 'Configurar tu PichonApps (al menos un cambio)', 'configurar tu PichonApps por primera vez'],
+        traducir: [500, 'Traducir PichonApps a otro idioma por primera vez', 'traducir PichonApps a otro idioma por primera vez'],
+        perfil: [500, 'Editar tu perfil (al menos un cambio)', 'editar tu perfil por primera vez']
     };
     const DUR_CARTEL = 4600;
 
@@ -110,7 +102,6 @@ body:has(.ov) #psc-dock{display:none}
 #psc-btn.cuenta:hover{background:linear-gradient(135deg,#f1d98a,#c9a227 55%,#a67c10);color:#1a1405;transform:translateY(-1px);box-shadow:0 0 16px rgba(241,217,138,.45)}
 #psc-btn:focus-visible{outline:2px solid #f1d98a;outline-offset:2px}
 
-/* ---------- Panel ---------- */
 .psc-ov{position:fixed;inset:0;z-index:100002;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;animation:pscFade .25s ease}
 @keyframes pscFade{from{opacity:0}to{opacity:1}}
 .psc-card{background:linear-gradient(180deg,#141414,#0a0a0a);border:2px solid #d4af37;border-radius:16px;width:100%;max-width:720px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.9),0 0 30px rgba(212,175,55,.15);color:#d4d4d4;font-family:Verdana,"Open Sans",sans-serif}
@@ -157,7 +148,6 @@ p.psc-tx{margin:0 0 14px}
 .psc-buy.ok{background:linear-gradient(135deg,#f1d98a,#c9a227);color:#1a1405;border-color:#f1d98a}
 @media (max-width:600px){.psc-ov{padding:10px}.psc-card{max-height:92vh}.psc-hd h2{font-size:1.5rem}.psc-bd{padding:14px 12px 18px}}
 
-/* ---------- Cartel "¡Ganaste!" ---------- */
 .psc-t{position:fixed;top:14px;left:50%;z-index:2147483600;display:flex;align-items:center;gap:14px;width:max-content;max-width:min(480px,calc(100vw - 20px));box-sizing:border-box;padding:14px 22px 17px 14px;border-radius:16px;border:1.5px solid #d4af37;background:linear-gradient(160deg,#241b06,#0c0a03 70%);color:#fff;font-family:Verdana,"Open Sans",sans-serif;box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 34px rgba(212,175,55,.35);overflow:hidden;cursor:pointer;transform:translateX(-50%);animation:pscIn .8s cubic-bezier(.2,1.35,.35,1) both,pscGlow 2.2s ease-in-out .8s infinite;user-select:none;-webkit-user-select:none}
 .psc-t.out{animation:pscOut .45s ease forwards}
 .psc-t::before{content:"";position:absolute;top:0;bottom:0;width:55%;left:-80%;background:linear-gradient(100deg,transparent,rgba(241,217,138,.3),transparent);transform:skewX(-20deg);animation:pscShine 1.5s ease .55s 2}
@@ -182,12 +172,21 @@ p.psc-tx{margin:0 0 14px}
 @keyframes pscSpark{0%{opacity:0;transform:translateY(0) scale(0)}30%{opacity:1;transform:translateY(-8px) scale(1)}100%{opacity:0;transform:translateY(-26px) scale(.2)}}
 @media (prefers-reduced-motion:reduce){.psc-t,.psc-t::before,.psc-coin,.psc-sp{animation:none!important}.psc-t{transform:translateX(-50%)}.psc-bar{animation:pscBar ${DUR_CARTEL}ms linear forwards!important}}
 
-/* ---------- Efectos de la tienda ---------- */
 body.psc-own-marco_dorado #cuenta .av{box-shadow:0 0 0 3px #d4af37,0 0 14px rgba(212,175,55,.6)}
 body.psc-own-marco_animado #cuenta .avwrap::before{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(#f1d98a,#8a6a10,#fff6c9,#d4af37,#f1d98a);animation:pscSpin 3s linear infinite}
 body.psc-own-marco_animado #cuenta .av{position:relative;z-index:1}
 body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
+body.psc-own-marco_arcoiris #cuenta .avwrap::before{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(#ff0044,#ff8800,#ffee00,#00cc44,#0088ff,#7700ff,#ff0044);animation:pscSpin 3s linear infinite;filter:saturate(1.2)}
+body.psc-own-marco_arcoiris #cuenta .av{position:relative;z-index:1}
+body.psc-own-marco_arcoiris #cuenta .lapiz{z-index:2}
 @keyframes pscSpin{to{transform:rotate(360deg)}}
+
+body.psc-own-cartel_esmeralda .psc-t{border-color:#2ecc71;background:linear-gradient(160deg,#0b2418,#04120a 70%);box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 34px rgba(46,204,113,.4)}
+body.psc-own-cartel_esmeralda .psc-t1{color:#a9f5c6}
+body.psc-own-cartel_zafiro .psc-t{border-color:#3498db;background:linear-gradient(160deg,#0a1e2e,#020a12 70%);box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 34px rgba(52,152,219,.4)}
+body.psc-own-cartel_zafiro .psc-t1{color:#a8daf5}
+
+body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;font:italic .68rem Arial,sans-serif;color:#d4af37;margin-top:1px;letter-spacing:.5px}
 `;
 
     /* ============================= UTILIDADES ============================= */
@@ -215,11 +214,13 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
             rec: +g.rec || 0
         };
     }
-    let S = leerGuest();                 // ledger activo (invitado o cuenta)
-    let modo = 'invitado';               // 'invitado' | 'cargando' | 'cuenta'
+    let S = leerGuest();
+    let modo = 'invitado';
     let uid = null;
     let pend = { earned: {}, bought: {}, rec: false };
     let dock = null, btn = null;
+    let unsubSnap = null;
+    const colaEventos = [];
     const abierto = {};
     const saldo = () => Math.max(0, suma(S.earned) - suma(S.bought));
 
@@ -252,13 +253,24 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
         } finally { flushing = false; }
     }
 
-    /* ---------------------- Fusión invitado -> cuenta ---------------------- */
+    function detenerSnap() { if (unsubSnap) { try { unsubSnap(); } catch (e) { } unsubSnap = null; } }
+
+    /* ---------------------- Cargar cuenta ---------------------- */
     async function cargarCuenta(id) {
         let remoto = null, fallo = false;
         try { const s = await getDoc(doc(db, 'pichicoins', id)); if (s.exists()) remoto = s.data(); }
         catch (e) { console.warn('PichiCoins: no se pudo leer la cuenta.', e); fallo = true; }
         if (uid !== id) return;
-        if (fallo) { modo = 'invitado'; cambio(); return; }
+
+        if (fallo) {
+            modo = 'invitado';
+            uid = null; /* NUEVO: forzar reintento en el próximo evaluar */
+            cambio();
+            setTimeout(() => {
+                if (modo === 'invitado' && auth.currentUser && auth.currentUser.uid === id) evaluar();
+            }, 5000);
+            return;
+        }
 
         const A = { earned: { ...(remoto && remoto.earned) }, bought: { ...(remoto && remoto.bought) }, rec: +(remoto && remoto.rec) || 0 };
         const nuevo = { earned: {}, bought: {} };
@@ -270,11 +282,23 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
             });
             if ((+src.rec || 0) > A.rec) A.rec = +src.rec;
         };
-        unir(leerGuest());
+
+        /* NUEVO: fusionar invitado SOLO si tiene saldo (una vez) y limpiarlo */
+        const g = leerGuest();
+        const gTotal = suma(g.earned) - suma(g.bought);
+        if (gTotal > 0) {
+            unir(g);
+            lsSet('psc_guest', { earned: {}, bought: {}, rec: 0 });
+        }
         const p = lsGet('psc_pend', null); if (p && p.uid === id) unir(p);
 
+        /* NUEVO: bonus si falta el flag (aunque el doc ya exista con otros datos) */
         let bono = false;
-        if (!remoto) { A.earned.cuenta_creada = MONTO_CUENTA; nuevo.earned.cuenta_creada = MONTO_CUENTA; bono = true; }
+        if (!A.earned.cuenta_creada) {
+            A.earned.cuenta_creada = MONTO_CUENTA;
+            nuevo.earned.cuenta_creada = MONTO_CUENTA;
+            bono = true;
+        }
 
         S = A; modo = 'cuenta';
         pend = { earned: nuevo.earned, bought: nuevo.bought, rec: true };
@@ -282,14 +306,38 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
         cambio();
         if (bono) cartel({ monto: MONTO_CUENTA, texto: 'crear tu cuenta de Pichisoft' });
         revisarHitos();
+
+        /* NUEVO: onSnapshot = sincronización en tiempo real entre dispositivos */
+        detenerSnap();
+        unsubSnap = onSnapshot(doc(db, 'pichicoins', id), snap => {
+            if (uid !== id || !snap.exists()) return;
+            const d = snap.data();
+            let cambió = false;
+            for (const t of ['earned', 'bought']) {
+                const o = d[t] || {};
+                for (const k in o) if (!(k in S[t])) { S[t][k] = o[k]; cambió = true; }
+            }
+            if ((d.rec || 0) > S.rec) { S.rec = d.rec; cambió = true; }
+            if (cambió) { persistPend(); cambio(); }
+        }, err => console.warn('PichiCoins snapshot:', err));
+
+        /* NUEVO: procesar eventos que llegaron durante la carga */
+        while (colaEventos.length) evento(colaEventos.shift());
     }
 
     function evaluar() {
         const u = auth.currentUser;
-        const nuevo = (u && u.emailVerified && sesionValida() && (!window.Pichisoft || window.Pichisoft.user)) ? u.uid : null;
-        if (nuevo === uid) { actualizarBoton(); return; }
+        const nuevo = (u && sesionValida() && (!window.Pichisoft || window.Pichisoft.user)) ? u.uid : null;
+        /* NUEVO: solo saltear si ya está en cuenta; si está en invitado con uid seteado → reintentar */
+        if (nuevo === uid && modo === 'cuenta') { actualizarBoton(); return; }
+        if (nuevo === uid && modo === 'cargando') return;
         uid = nuevo;
-        if (!nuevo) { modo = 'invitado'; S = leerGuest(); pend = { earned: {}, bought: {}, rec: false }; cambio(); return; }
+        if (!nuevo) {
+            detenerSnap();
+            modo = 'invitado'; S = leerGuest(); pend = { earned: {}, bought: {}, rec: false };
+            colaEventos.length = 0;
+            cambio(); return;
+        }
         modo = 'cargando';
         cargarCuenta(nuevo);
     }
@@ -319,7 +367,9 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
     }
     function evento(n) {
         const e = EVENTOS[n];
-        if (e && modo === 'cuenta') ganar('ev_' + n, e[0], e[2]);
+        if (!e) return;
+        if (modo === 'cuenta') ganar('ev_' + n, e[0], e[2]);
+        else if (modo === 'cargando') colaEventos.push(n);
     }
 
     /* ---------------------- Tiempo de permanencia ---------------------- */
@@ -331,7 +381,6 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
         if (S.rec > 0 && s > S.rec) ganar('record_' + d, MONTO_RECORD, 'superar tu récord diario de tiempo en nuestras apps');
     }
     setInterval(() => {
-        // Solo cuenta con la pestaña visible, enfocada y con actividad en los últimos 2 minutos
         if (document.visibilityState !== 'visible' || !document.hasFocus() || Date.now() - ultAct > 120000) return;
         const d = hoy();
         let o = lsGet('psc_day', null);
@@ -345,6 +394,19 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
 
     /* ================================ CARTEL ================================ */
     const cola = []; let mostrando = false;
+    function sonidoMoneda() {
+        if (!S.bought.sonido_moneda && !S.bought.coleccion) return;
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const o = ctx.createOscillator(), g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = 'sine'; o.frequency.setValueAtTime(880, ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.08);
+            g.gain.setValueAtTime(0.15, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+            o.start(); o.stop(ctx.currentTime + 0.3);
+        } catch (e) { }
+    }
     function cartel(o) { cola.push(o); if (!mostrando) siguiente(); }
     function siguiente() {
         const o = cola.shift();
@@ -357,6 +419,7 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
         else { t1.append('¡Ganaste ', Object.assign(h('b'), { textContent: fmt(o.monto) }), ' PichiCoins!'); }
         t2.textContent = o.texto ? (o.titulo ? o.texto : 'por ' + o.texto) : '';
         document.body.append(t);
+        if (!o.titulo) sonidoMoneda();
         let fin = false;
         const cerrar = () => { if (fin) return; fin = true; t.classList.add('out'); setTimeout(() => { t.remove(); siguiente(); }, 450); };
         t.onclick = cerrar;
@@ -381,9 +444,7 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
         const c = h('div', 'psc-acc-b'); c.append(cont);
         a.append(b, c); return a;
     }
-
     function bQue() { const d = h('div', 'psc-tx'); d.textContent = TEXTO_QUE_SON; return d; }
-
     function bMis() {
         const w = h('div'), s = saldo();
         w.append(P('psc-big', 'Tienes ', s, ' PichiCoins'));
@@ -401,7 +462,6 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
         if (ya.length && prox) w.append(P('psc-tx', 'Ya puedes comprar: ' + ya.map(i => '«' + i.nombre + '»').join(', ') + '.'));
         return w;
     }
-
     function bGanar() {
         const w = h('div'), E = S.earned;
         if (modo !== 'cuenta') {
@@ -425,7 +485,6 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
         Object.keys(EVENTOS).forEach(k => w.append(fila(EVENTOS[k][1], EVENTOS[k][0], { done: ('ev_' + k) in E, lock: modo !== 'cuenta', nota: modo !== 'cuenta' ? 'Solo con cuenta' : '' })));
         return w;
     }
-
     function bTienda() {
         const w = h('div');
         w.append(P('psc-big', 'Tu saldo: ', saldo(), ' PichiCoins'));
@@ -456,15 +515,21 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
         });
         return w;
     }
-
     function comprar(it) {
         if (S.bought[it.id] || saldo() < it.precio) return;
         if (it.soloCuenta && modo !== 'cuenta') return;
-        S.bought[it.id] = it.precio; pendAdd('bought', it.id, it.precio); guardar();
-        cambio();
+        S.bought[it.id] = it.precio; pendAdd('bought', it.id, it.precio);
+        /* NUEVO: la colección regala todo lo que no tengas */
+        if (it.id === 'coleccion') {
+            TIENDA.forEach(otro => {
+                if (otro.id !== 'coleccion' && !S.bought[otro.id]) {
+                    S.bought[otro.id] = 0; pendAdd('bought', otro.id, 0);
+                }
+            });
+        }
+        guardar(); cambio();
         cartel({ titulo: '¡Compra realizada!', texto: '«' + it.nombre + '» · −' + fmt(it.precio) + ' PichiCoins' });
     }
-
     function render() {
         const bd = document.getElementById('psc-bd'); if (!bd) return;
         const top = bd.scrollTop; bd.textContent = '';
@@ -509,19 +574,38 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
         btn.innerHTML = '<i class="psc-mini"></i><span>PichiCoins</span>';
         btn.onclick = abrirPanel;
         dock.append(btn);
-        const sh = document.getElementById('pf-share-btn'); if (sh) dock.append(sh);   // Compartir queda debajo
+        const sh = document.getElementById('pf-share-btn'); if (sh) dock.append(sh);
         document.body.append(dock);
+
         const pos = () => {
-            const r = cuenta.getBoundingClientRect(), fijo = getComputedStyle(cuenta).position === 'fixed';
-            dock.style.top = Math.round(r.bottom + (fijo ? 0 : scrollY) + 10) + 'px';
+            const topbar = document.getElementById('pichisoft-topbar');
+            const rC = cuenta.getBoundingClientRect();
+            const fijoC = getComputedStyle(cuenta).position === 'fixed';
+            const bottomCuenta = rC.bottom + (fijoC ? 0 : scrollY);
+            let bottomTopbar = 0;
+            if (topbar && getComputedStyle(topbar).display !== 'none') {
+                const rT = topbar.getBoundingClientRect();
+                const fijoT = getComputedStyle(topbar).position === 'fixed';
+                bottomTopbar = rT.bottom + (fijoT ? 0 : scrollY);
+            }
+            const top = Math.max(bottomCuenta, bottomTopbar, 100) + 10;
+            dock.style.top = Math.round(top) + 'px';
         };
-        if (window.ResizeObserver) new ResizeObserver(pos).observe(cuenta);
-        addEventListener('resize', pos); addEventListener('load', pos);
+        if (window.ResizeObserver) {
+            new ResizeObserver(pos).observe(cuenta);
+            const tb = document.getElementById('pichisoft-topbar');
+            if (tb) new ResizeObserver(pos).observe(tb);
+        }
+        if (window.MutationObserver) {
+            new MutationObserver(pos).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        }
+        addEventListener('resize', pos); addEventListener('scroll', pos, { passive: true });
+        addEventListener('load', pos);
         pos(); setTimeout(pos, 600);
     }
 
     function escucharIndex() {
-        // Entrar a una app desde PichonApps (clic en cualquier link a /pichonXXX.html)
+        /* Clic en cualquier link a /pichonXXX.html */
         const enlace = e => {
             const a = e.target.closest && e.target.closest('a[href]'); if (!a) return;
             const m = /pichisoft\.cc\/([a-z0-9_-]+)(?:\.html)?(?:[?#]|$)/i.exec(a.href);
@@ -530,20 +614,30 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
         addEventListener('click', enlace, true);
         addEventListener('auxclick', enlace, true);
 
-        // Leer un panel inferior: tiene que quedar abierto 6 segundos
-        let tPanel = 0;
+        /* Leer un panel: award instantáneo la 1ª vez (antes era 6s y se reseteaba) */
         document.addEventListener('click', e => {
             const b = e.target.closest && e.target.closest('.pf-btn[data-pf],[data-pf-link]'); if (!b) return;
             const k = b.dataset.pf || b.dataset.pfLink; if (!PANELES[k]) return;
-            clearTimeout(tPanel);
-            tPanel = setTimeout(() => {
-                const m = document.getElementById('pf-modal');
-                if (m && m.classList.contains('open')) ganar('panel_' + k, MONTO_PANEL, 'leer el panel «' + PANELES[k] + '»');
-            }, 6000);
+            if (('panel_' + k) in S.earned) return;
+            ganar('panel_' + k, MONTO_PANEL, 'leer el panel «' + PANELES[k] + '»');
         }, true);
 
+        /* Hook: profile changes → evento('perfil') */
+        let ultimoPerfil = null;
         const rc = window.renderCuenta;
-        window.renderCuenta = function () { if (rc) rc.apply(this, arguments); evaluar(); };
+        window.renderCuenta = function () {
+            if (rc) rc.apply(this, arguments);
+            evaluar();
+            const u = window.Pichisoft && window.Pichisoft.user;
+            if (u) {
+                if (ultimoPerfil && (ultimoPerfil.name !== u.name || ultimoPerfil.photo !== u.photo || ultimoPerfil.email !== u.email)) {
+                    evento('perfil');
+                }
+                ultimoPerfil = { name: u.name, photo: u.photo, email: u.email };
+            } else {
+                ultimoPerfil = null;
+            }
+        };
     }
 
     /* ================================== INICIO ================================== */
@@ -552,7 +646,11 @@ body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
     window.PichiCoins = {
         evento, abrir: abrirPanel,
         saldo: () => saldo(), modo: () => modo,
-        tiene: id => !!S.bought[id]
+        tiene: id => !!S.bought[id],
+        /* NUEVO: para que otros scripts (premium, community, idiomas) puedan marcar
+           un hito retroactivamente (por ejemplo si ya habías configurado antes de
+           que existiera el sistema de coins). */
+        marcarHecho: (nombre) => evento(nombre)
     };
     addEventListener('pagehide', () => { flush(); });
     onAuthStateChanged(auth, () => evaluar());
