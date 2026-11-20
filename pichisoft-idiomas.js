@@ -290,6 +290,14 @@
         progress(); refreshUI();
     }
 
+    const tint = s => s
+        .replace(/#d4af37/gi, 'var(--gold,#d4af37)')
+        .replace(/#f1d98a/gi, 'var(--gold2,#f1d98a)')
+        .replace(/#(?:b38b27|a67c12|a67c10|caa016|b8901f|c9a227|8a6a10)\b/gi, 'var(--gold,#d4af37)')
+        .replace(/rgba\(\s*212\s*,\s*175\s*,\s*55\s*,/g, 'rgba(var(--gold-rgb,212,175,55),')
+        .replace(/#2b2107/gi, 'color-mix(in srgb,var(--gold,#d4af37) 22%,#000)')
+        .replace(/#100c02/gi, 'color-mix(in srgb,var(--gold,#d4af37) 7%,#000)');
+
     /* ------------------------------ UI ------------------------------ */
     const CSS = `
 #psi-btn{position:fixed!important;z-index:2147483647;display:inline-flex!important;align-items:center;justify-content:center;gap:0;padding:10px;width:auto!important;max-width:max-content!important;min-width:0;box-sizing:border-box;visibility:visible!important;opacity:1!important;pointer-events:auto!important;white-space:nowrap;border-radius:6px;border:1px solid #d4af37;background:linear-gradient(135deg,#f1d98a,#c9a227 55%,#a67c10);color:#1a1405;font:bold 14px/1.1 Verdana,"Open Sans","Helvetica Neue",sans-serif;letter-spacing:.02em;cursor:pointer;user-select:none;-webkit-user-select:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 12px rgba(0,0,0,.45);transition:padding .18s,filter .15s,transform .15s}
@@ -574,7 +582,7 @@
         if (!esPichonApps) return;
         const st = document.createElement('style');
         st.id = 'psi-style';
-        st.textContent = CSS;
+        st.textContent = tint(CSS);
         document.head.appendChild(st);
 
         btn = document.createElement('button');
