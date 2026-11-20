@@ -1559,6 +1559,24 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
     const getD = (k, d) => { try { const v = Pichisoft.getData('PichonApps', k, d); return v == null ? d : v; } catch { return d; } };
     const setD = (k, v) => { try { Pichisoft.setData('PichonApps', k, v); } catch (e) { console.error(e); } };
 
+
+
+    /* NUEVO: helpers de datos POR DISPOSITIVO (no se sincronizan entre celular/PC).
+       La primera vez que se abra con este código, migramos lo que hubiera en el
+       sistema sincronizado para no perder la config actual. A partir de ahí, cada
+       dispositivo guarda la suya. */
+    const getDev = (k, d) => {
+        try {
+            const raw = localStorage.getItem('dev:PichonApps:' + k);
+            if (raw !== null) { const v = JSON.parse(raw); return v == null ? d : v; }
+            const old = getD(k, null);
+            if (old != null) { localStorage.setItem('dev:PichonApps:' + k, JSON.stringify(old)); return old; }
+            return d;
+        } catch (e) { return d; }
+    };
+    const setDev = (k, v) => { try { localStorage.setItem('dev:PichonApps:' + k, JSON.stringify(v)); } catch (e) { console.error(e); } };
+
+
     function cargarLay() {
         const sv = getD('layout', {}), usadas = new Set(), cats = {};
         CATS.forEach(c => {
@@ -2048,7 +2066,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         o.querySelectorAll('.sw').forEach(s => {
             s.checked = !!cfg[s.dataset.k];
             s.onchange = () => {
-                cfg[s.dataset.k] = s.checked; setD('cfg', cfg);
+                cfg[s.dataset.k] = s.checked; setDev('cfg', cfg);
                 window.PichiCoins && window.PichiCoins.evento('config');
                 if (s.dataset.k === 'carteles' && s.checked) cerrados.clear(); /* al reactivar, vuelven todos */
                 render();
@@ -2058,7 +2076,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
             const on = b.dataset.v === cfg.vista; b.classList.toggle('on', on); b.setAttribute('aria-checked', on);
         });
         o.querySelectorAll('.pm-opt').forEach(b => {
-            b.onclick = () => { cfg.vista = b.dataset.v; setD('cfg', cfg); window.PichiCoins && window.PichiCoins.evento('config'); marcar(); render(); };
+            b.onclick = () => { cfg.vista = b.dataset.v; setDev('cfg', cfg); window.PichiCoins && window.PichiCoins.evento('config'); marcar(); render(); };
         });
         marcar();
 
@@ -2066,7 +2084,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         const marcarCols = () => o.querySelectorAll('.pm-col').forEach(b =>
             b.classList.toggle('on', +b.dataset.c === (+cfg.columnas || 0)));
         o.querySelectorAll('.pm-col').forEach(b => {
-            b.onclick = () => { cfg.columnas = +b.dataset.c; setD('cfg', cfg); window.PichiCoins && window.PichiCoins.evento('config'); marcarCols(); render(); };
+            b.onclick = () => { cfg.columnas = +b.dataset.c; setDev('cfg', cfg); window.PichiCoins && window.PichiCoins.evento('config'); marcarCols(); render(); };
         });
         marcarCols();
 
@@ -2112,6 +2130,10 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
                 if (snap.exists()) {
                     userRating = snap.data().score || 0;
                     paint(userRating);
+                    // NUEVO: retroactivo — si ya había calificado antes, acreditar el evento una vez
+                    if (window.PichiCoins && window.PichiCoins.marcarHecho) {
+                        try { window.PichiCoins.marcarHecho('calificar'); } catch (e) { }
+                    }
                 }
             } catch { }
         })();
@@ -2242,12 +2264,17 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         const u = Pichisoft.user;
         document.body.classList.toggle('prem', !!u);
         if (!u) { cerrarConfig(); aplicarVista(false); aplicarColumnas(); renderCarteles(); return; }
-        const sv = getD('cfg', {});
+        const sv = getDev('cfg', {});
         cfg = Object.assign({ orden: true, blank: true, buscador: true, carteles: true, ocultarBienvenida: false, columnas: 0, vista: 'tarjetas' }, sv);
         if (!sv.vista && sv.clasica) cfg.vista = 'clasica'; /* migra opciones anteriores */
         if (!sv.vista && sv.lista) cfg.vista = 'lista';
         delete cfg.clasica; delete cfg.lista;
         if (!['tarjetas', 'lista', 'clasica'].includes(cfg.vista)) cfg.vista = 'tarjetas';
+
+        // NUEVO: retroactivo — si ya tenía config guardada de antes, acreditar el evento 'config' una vez
+        if (sv && Object.keys(sv).length && window.PichiCoins && window.PichiCoins.marcarHecho) {
+            try { window.PichiCoins.marcarHecho('config'); } catch (e) { }
+        }
         cargarLay(); render();
     }
 
