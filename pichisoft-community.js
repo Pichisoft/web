@@ -335,6 +335,14 @@ position: relative;
 
 /* ------------------------------ UTILIDADES ------------------------------ */
 const $ = s => document.querySelector(s);
+const tint = s => s
+    .replace(/#d4af37/gi, 'var(--gold,#d4af37)')
+    .replace(/#f1d98a/gi, 'var(--gold2,#f1d98a)')
+    .replace(/#(?:b38b27|a67c12|a67c10|caa016|b8901f|c9a227|8a6a10)\b/gi, 'var(--gold,#d4af37)')
+    .replace(/rgba\(\s*212\s*,\s*175\s*,\s*55\s*,/g, 'rgba(var(--gold-rgb,212,175,55),')
+    .replace(/#2b2107/gi, 'color-mix(in srgb,var(--gold,#d4af37) 22%,#000)')
+    .replace(/#100c02/gi, 'color-mix(in srgb,var(--gold,#d4af37) 7%,#000)')
+    .replace(/#201b0b/gi, 'color-mix(in srgb,var(--gold,#d4af37) 14%,#000)');
 function h(t, c, x) { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
 const okFoto = f => (typeof f === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(f)) ? f : '';
 const tms = m => (m.ts && m.ts.toMillis) ? m.ts.toMillis() : Date.now();
@@ -489,7 +497,7 @@ function actualizarBadge() {
 /* ------------------------------ BOTÓN ------------------------------ */
 function crearBoton() {
     if (btn) return;
-    const st = h('style'); st.textContent = CSS; document.head.append(st);
+    const st = h('style'); st.textContent = tint(CSS); document.head.append(st);
     btn = h('button'); btn.type = 'button'; btn.setAttribute('aria-label', 'Mensajería');
     btn.innerHTML = 'Mensajería';
     btn.onclick = abrir;
@@ -775,7 +783,7 @@ function abrir() {
     panel = h('div', 'pcm-ov');
     panel.innerHTML = `<div class="pcm-card" role="dialog" aria-modal="true" aria-label="Mensajería">
  <div class="pcm-hd">
-   <button class="pcm-b" id="pcmDmBack" style="display:none; border:0; padding:0 10px 0 0; background:none; color:#f1d98a; font-size:1.5rem; cursor:pointer;" title="Volver">←</button>
+   <button class="pcm-b" id="pcmDmBack" style="display:none; border:0; padding:0 10px 0 0; background:none; color:var(--gold2); font-size:1.5rem; cursor:pointer;" title="Volver">←</button>
    <h2 id="pcmHdTitle">Mensajería</h2>
       <button class="pcm-hs" id="pcmStarBtn" type="button" title="Mensajes destacados" aria-label="Mensajes destacados"><i class="pcm-st"></i></button>
    <button class="pcm-x" type="button" aria-label="Cerrar" title="Cerrar"></button>
