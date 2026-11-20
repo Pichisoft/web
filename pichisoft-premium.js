@@ -9,6 +9,14 @@
 (function () {
     'use strict';
     const $ = s => document.querySelector(s);
+    const tint = s => s
+        .replace(/#d4af37/gi, 'var(--gold,#d4af37)')
+        .replace(/#f1d98a/gi, 'var(--gold2,#f1d98a)')
+        .replace(/#(?:b38b27|a67c12|a67c10|caa016|b8901f|c9a227|8a6a10)\b/gi, 'var(--gold,#d4af37)')
+        .replace(/rgba\(\s*212\s*,\s*175\s*,\s*55\s*,/g, 'rgba(var(--gold-rgb,212,175,55),')
+        .replace(/#2b2107/gi, 'color-mix(in srgb,var(--gold,#d4af37) 22%,#000)')
+        .replace(/#100c02/gi, 'color-mix(in srgb,var(--gold,#d4af37) 7%,#000)')
+        .replace(/(--gold2?\s*:\s*)var\(--gold2?,(#[0-9a-f]{6})\)/gi, '$1$2');   // no tocar las definiciones de :root
 
     /* ------------------------------ ESTILOS ------------------------------ */
     const CSS = `
@@ -1590,7 +1598,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
 
     /* ------------------------------ DOM ------------------------------ */
     function inyectar() {
-        const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
+        const st = document.createElement('style'); st.textContent = tint(CSS); document.head.appendChild(st);
         document.querySelector('h1.titulo').insertAdjacentHTML('beforeend', ' <span class="badge-prem">VERSIÓN PREMIUM</span>');
         const ul = document.querySelector('ul'); ul.id = 'dirClasico';
         ul.insertAdjacentHTML('afterend', `
@@ -2104,7 +2112,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
             let total = 0, count = 0;
             snap.forEach(d => { total += (d.data().score || 0); count++; });
             const prom = count ? (total / count).toFixed(1) : '0.0';
-            container.innerHTML = `<span style="color:#d4af37;">★</span> ${prom}`;
+            container.innerHTML = `<span style="color:var(--gold);">★</span> ${prom}`;
             container.title = count + ' votos';
         } catch (e) { console.error('cargarRating:', e); }
     }
@@ -2117,7 +2125,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         let userRating = 0;
         const paint = n => {
             [...cont.children].forEach((s, i) => {
-                s.style.color = (i + 1) <= n ? '#d4af37' : '#555';
+                s.style.color = (i + 1) <= n ? 'var(--gold)' : '#555';
             });
         };
 
@@ -2186,7 +2194,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         const o = document.createElement('div');
         o.id = 'ratingOv';
         o.className = 'ov sem';
-        o.innerHTML = `<div class="box" style="background:linear-gradient(180deg,#181818,#0b0b0b);border:2px solid #d4af37;border-radius:16px;padding:26px 24px 22px;max-width:480px;">
+        o.innerHTML = `<div class="box" style="background:linear-gradient(180deg,#181818,#0b0b0b);border:2px solid var(--gold);border-radius:16px;padding:26px 24px 22px;max-width:480px;">
         <h2 style="margin:0 0 6px;font:bold 1.5rem 'Times New Roman',serif;color:#fff;">Calificar ${appName}</h2>
         <p style="margin:0 0 16px;font-size:.8rem;color:#bdbdbd;">Tu opinión nos ayuda a mejorar.</p>
 
@@ -2197,7 +2205,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
 
         <div id="rErr" style="color:#ff7b7b;font-size:.8rem;min-height:1.2em;margin-top:10px;"></div>
 
-        <button id="rSend" style="display:block;width:100%;margin-top:8px;padding:12px;border-radius:10px;border:1px solid #f1d98a;background:linear-gradient(135deg,#2b2107,#100c02);color:#fff;font:bold 1rem Georgia,serif;cursor:pointer;">Enviar</button>
+        <button id="rSend" style="display:block;width:100%;margin-top:8px;padding:12px;border-radius:10px;border:1px solid var(--gold2);background:linear-gradient(135deg,#2b2107,#100c02);color:#fff;font:bold 1rem Georgia,serif;cursor:pointer;">Enviar</button>
         <button id="rCancel" style="display:block;width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px solid #333;background:none;color:#aaa;font:inherit;font-size:.85rem;cursor:pointer;">Cancelar</button>
     </div>`;
         document.body.appendChild(o);
@@ -2211,12 +2219,12 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
             const s = document.createElement('span');
             s.dataset.i = i;
             s.textContent = '★';
-            s.style.cssText = `cursor:pointer;transition:color .15s;color:${i <= curStars ? '#d4af37' : '#555'};`;
-            s.onmouseenter = () => { [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= i ? '#d4af37' : '#555'); };
-            s.onmouseleave = () => { [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= curStars ? '#d4af37' : '#555'); };
+            s.style.cssText = `cursor:pointer;transition:color .15s;color:${i <= curStars ? 'var(--gold)' : '#555'};`;
+            s.onmouseenter = () => { [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= i ? 'var(--gold)' : '#555'); };
+            s.onmouseleave = () => { [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= curStars ? 'var(--gold)' : '#555'); };
             s.onclick = () => {
                 curStars = i;
-                [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= curStars ? '#d4af37' : '#555');
+                [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= curStars ? 'var(--gold)' : '#555');
             };
             starsEl.appendChild(s);
         }
