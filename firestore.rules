@@ -610,36 +610,55 @@ service cloud.firestore {
       allow delete: if resource.data.status in ['waiting', 'done'];
     }
 
-    // ==========================================
+       // ==========================================
     // PICHICOINS
     // ==========================================
     match /pichicoins/{uid} {
       allow read: if (signedIn() && request.auth.uid == uid) || isAdmin();
 
       allow create: if signedIn() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['earned', 'bought', 'rec'])
-        && request.resource.data.earned is map && request.resource.data.earned.size() <= 10
+        && request.resource.data.keys().hasOnly(['earned', 'bought', 'rec', 'equipped', 'tituloTexto'])
+        && request.resource.data.earned is map && request.resource.data.earned.size() <= 150
         && request.resource.data.bought is map && request.resource.data.bought.size() <= 50
         && request.resource.data.rec is number
-        && request.resource.data.earned.get('cuenta_creada', 5000) == 5000;
+        && request.resource.data.get('equipped', {}) is map
+        && request.resource.data.get('equipped', {}).size() <= 10
+        && request.resource.data.earned.get('cuenta_creada', 5000) == 5000
+        && request.resource.data.get('tituloTexto', '') is string
+        && request.resource.data.get('tituloTexto', '').size() <= 30;
 
       allow update: if signedIn() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['earned', 'bought', 'rec'])
-        // los logros solo se pueden agregar: no borrar ni cambiar
-        && request.resource.data.earned.diff(resource.data.earned).removed().size() == 0
-        && request.resource.data.earned.diff(resource.data.earned).changed().size() == 0
-        && request.resource.data.earned.diff(resource.data.earned).added().size() <= 60
-        && request.resource.data.earned.size() <= 1500
-        // las compras tampoco se pueden borrar ni cambiar (no hay reembolso)
-        && request.resource.data.bought.diff(resource.data.bought).removed().size() == 0
-        && request.resource.data.bought.diff(resource.data.bought).changed().size() == 0
-        && request.resource.data.bought.diff(resource.data.bought).added().size() <= 5
-        && request.resource.data.bought.size() <= 50
-        // el récord diario solo sube
-        && request.resource.data.rec >= resource.data.get('rec', 0)
-        && request.resource.data.earned.get('cuenta_creada', 5000) == 5000;
+        && request.resource.data.keys().hasOnly(['earned', 'bought', 'rec', 'equipped', 'tituloTexto'])
+        && (
+          // (A) Update normal incremental
+          (
+            request.resource.data.earned.diff(resource.data.get('earned', {})).removed().size() == 0
+            && request.resource.data.earned.diff(resource.data.get('earned', {})).changed().size() == 0
+            && request.resource.data.earned.diff(resource.data.get('earned', {})).added().size() <= 60
+            && request.resource.data.earned.size() <= 1500
+            && request.resource.data.bought.diff(resource.data.get('bought', {})).removed().size() == 0
+            && request.resource.data.bought.diff(resource.data.get('bought', {})).changed().size() == 0
+            && request.resource.data.bought.diff(resource.data.get('bought', {})).added().size() <= 20
+            && request.resource.data.bought.size() <= 50
+            && request.resource.data.rec >= resource.data.get('rec', 0)
+            && request.resource.data.earned.get('cuenta_creada', 5000) == 5000
+            && request.resource.data.get('equipped', {}) is map
+            && request.resource.data.get('equipped', {}).size() <= 10
+            && request.resource.data.get('equipped', {}).keys().hasOnly(['marco', 'tema', 'cartel', 'titulo', 'sonido'])
+            && request.resource.data.get('tituloTexto', '') is string
+            && request.resource.data.get('tituloTexto', '').size() <= 30
+          )
+          ||
+          // (B) Reset completo (borra todo). Después el cliente puede re-otorgar el bono.
+          (
+            request.resource.data.earned.size() == 0
+            && request.resource.data.bought.size() == 0
+            && request.resource.data.rec == 0
+            && (!('equipped' in request.resource.data) || request.resource.data.equipped.size() == 0)
+          )
+        );
 
-          allow delete: if false;
+      allow delete: if false;
     }
   }
 }
