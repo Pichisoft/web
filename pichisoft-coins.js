@@ -48,15 +48,16 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
         { id: 'marco_arcoiris', nombre: 'Marco arcoíris', desc: 'Un borde arcoíris animado alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
 
         /* --- Temas de color --- */
-        { id: 'tema_esmeralda', nombre: 'Tema esmeralda', desc: 'Cambia el dorado de PichonApps por verde esmeralda.', precio: 900, slot: 'tema' },
+        { id: 'tema_esmeralda', nombre: 'Tema esmeralda', desc: 'Cambia el dorado de PichonApps por verde esmeralda brillante.', precio: 900, slot: 'tema' },
         { id: 'tema_zafiro', nombre: 'Tema zafiro', desc: 'Cambia el dorado de PichonApps por azul zafiro.', precio: 900, slot: 'tema' },
         { id: 'tema_rubi', nombre: 'Tema rubí', desc: 'Cambia el dorado de PichonApps por rojo rubí.', precio: 900, slot: 'tema' },
         { id: 'tema_amatista', nombre: 'Tema amatista', desc: 'Cambia el dorado de PichonApps por púrpura amatista.', precio: 900, slot: 'tema' },
         { id: 'tema_ambar', nombre: 'Tema ámbar', desc: 'Cambia el dorado de PichonApps por naranja ámbar.', precio: 900, slot: 'tema' },
-        { id: 'tema_turquesa', nombre: 'Tema turquesa', desc: 'Cambia el dorado de PichonApps por verde turquesa.', precio: 900, slot: 'tema' },
+        { id: 'tema_diamante', nombre: 'Tema diamante', desc: 'Cambia el dorado de PichonApps por azul hielo cristalino.', precio: 900, slot: 'tema' },
         { id: 'tema_magenta', nombre: 'Tema magenta', desc: 'Cambia el dorado de PichonApps por rosa magenta.', precio: 900, slot: 'tema' },
         { id: 'tema_coral', nombre: 'Tema coral', desc: 'Cambia el dorado de PichonApps por coral suave.', precio: 900, slot: 'tema' },
-        { id: 'tema_hielo', nombre: 'Tema hielo', desc: 'Cambia el dorado de PichonApps por celeste hielo.', precio: 900, slot: 'tema' },
+        { id: 'tema_fenix', nombre: 'Tema fénix', desc: 'Cambia el dorado de PichonApps por fuego naranja y rojo.', precio: 900, slot: 'tema' },
+        { id: 'tema_yuli', nombre: 'Tema Yuli', desc: 'Cambia el dorado de PichonApps por un elegante blanco y negro.', precio: 900, slot: 'tema' },
 
         /* --- Carteles de «¡Ganaste!» --- */
         { id: 'cartel_esmeralda', nombre: 'Cartel esmeralda', desc: 'El cartel de «¡Ganaste!» con estilo esmeralda.', precio: 700, slot: 'cartel' },
@@ -67,8 +68,8 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
         { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre (visible solo para ti).', precio: 1200, soloCuenta: true, slot: 'titulo' },
         { id: 'sonido_moneda', nombre: 'Sonido de moneda', desc: 'Suena una moneda cada vez que ganás PichiCoins.', precio: 500, slot: 'sonido' },
 
-        /* --- Bundle (todo junto, con descuento) --- */
-        { id: 'coleccion', nombre: 'Colección completa', desc: 'Todos los ítems de la tienda en un solo paquete. ¡Ahorrás un montón!', precio: 7000, soloCuenta: true }
+        /* --- Bundle --- */
+        { id: 'coleccion', nombre: 'Colección completa', desc: 'Todos los ítems de la tienda en un solo paquete. ¡Ahorrás un montón!', precio: 8500, soloCuenta: true }
     ];
 
     const SLOT_NOMBRES = {
@@ -226,7 +227,37 @@ p.psc-tx{margin:0 0 14px}
 @keyframes pscBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 @keyframes pscSpark{0%{opacity:0;transform:translateY(0) scale(0)}30%{opacity:1;transform:translateY(-8px) scale(1)}100%{opacity:0;transform:translateY(-26px) scale(.2)}}
 @media (prefers-reduced-motion:reduce){.psc-t,.psc-t::before,.psc-coin,.psc-sp{animation:none!important}.psc-t{transform:translateX(-50%)}.psc-bar{animation:pscBar ${DUR_CARTEL}ms linear forwards!important}}
-
+/* --- Vista previa --- */
+.psc-pv-ov{position:fixed;inset:0;z-index:100003;background:rgba(0,0,0,.9);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;animation:pscFade .25s ease}
+.psc-pv-card{width:100%;max-width:440px;background:linear-gradient(180deg,#141414,#0a0a0a);border:2px solid var(--gold);border-radius:16px;padding:22px 20px 18px;color:#e8e8e8;box-shadow:0 20px 60px rgba(0,0,0,.9),0 0 30px rgba(212,175,55,.15)}
+.psc-pv-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.psc-pv-hd h2{font-family:"Times New Roman",Times,serif;color:var(--gold2);font-size:1.4rem;margin:0}
+.psc-pv-x{position:relative;width:28px;height:28px;padding:0;border:1.5px solid var(--gold);border-radius:50%;background:transparent;cursor:pointer}
+.psc-pv-x::before,.psc-pv-x::after{content:"";position:absolute;left:50%;top:50%;width:10px;height:2px;margin:-1px 0 0 -5px;border-radius:2px;background:var(--gold2)}
+.psc-pv-x::before{transform:rotate(45deg)}.psc-pv-x::after{transform:rotate(-45deg)}
+.psc-pv-x:hover{background:var(--gold)}.psc-pv-x:hover::before,.psc-pv-x:hover::after{background:#111}
+.psc-pv-name{font-family:Arial,sans-serif;font-size:1rem;margin:0 0 6px;color:#fff}
+.psc-pv-desc{font-family:Arial,sans-serif;font-size:.85rem;color:#bdbdbd;margin:0 0 14px;line-height:1.5}
+.psc-pv-hint{font-family:Arial,sans-serif;font-size:.78rem;color:var(--gold2);margin:0 0 14px;padding:10px 12px;background:rgba(212,175,55,.08);border-left:3px solid var(--gold);border-radius:6px;line-height:1.4}
+.psc-pv-demo{background:#0a0a0a;border:1px dashed #2b2b2b;border-radius:12px;padding:20px;text-align:center;margin-bottom:14px;min-height:100px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px}
+.psc-pv-demo-marco{position:relative;display:inline-block}
+.psc-pv-demo-av{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2b2107,#100c02);color:var(--gold2);font:bold 1.6rem "Times New Roman",serif;display:flex;align-items:center;justify-content:center}
+.psc-pv-demo-tema{display:flex;flex-direction:column;gap:6px;align-items:center}
+.psc-pv-demo-btn{padding:6px 12px;background:transparent;border:1.5px solid var(--gold);border-radius:8px;color:var(--gold2);font:bold .82rem Georgia,serif;text-transform:uppercase;letter-spacing:.5px}
+.psc-pv-demo-cartel{display:flex;align-items:center;gap:12px;padding:12px 18px;border-radius:14px;border:1.5px solid var(--gold);background:linear-gradient(160deg,#241b06,#0c0a03 70%);box-shadow:0 8px 24px rgba(0,0,0,.6),0 0 24px rgba(212,175,55,.35);min-width:260px}
+.psc-pv-coin{flex:none;width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff6c9,var(--gold2) 30%,var(--gold) 62%,#8a6a10);border:2px solid #fff3b0;font:bold 1.1rem "Times New Roman",serif;color:#5b4308;display:flex;align-items:center;justify-content:center}
+.psc-pv-t1{font:bold .95rem "Times New Roman",Times,serif;color:var(--gold2);text-align:left;line-height:1.2}
+.psc-pv-t1 b{color:#fff}
+.psc-pv-t2{font-size:.72rem;color:#d0d0d0;margin-top:2px;text-align:left}
+.psc-pv-demo-titulo{display:flex;flex-direction:column;align-items:center;gap:4px}
+.psc-pv-demo-titulo b{color:#fff;font-size:1rem}
+.psc-pv-demo-titulo span{font-style:italic;font-size:.72rem;color:var(--gold);letter-spacing:.5px}
+.psc-pv-demo-sonido{padding:12px 20px;background:#1b1b1b;border:1px dashed var(--gold);border-radius:10px;color:var(--gold2);font:bold .85rem Arial,sans-serif;cursor:pointer}
+.psc-pv-demo-sonido:hover{background:#2b2107;color:#fff}
+.psc-pv-close{display:block;width:100%;padding:11px;background:#2a2a2a;color:#fff;border:1px solid #555;border-radius:10px;font-family:Georgia,"Times New Roman",serif;font-size:.9rem;cursor:pointer}
+.psc-pv-close:hover{background:#3a3a3a}
+.psc-pv{background:linear-gradient(135deg,#1b1b1b,#0d0d0d);border-color:#555;color:#ccc;margin-top:8px}
+.psc-pv:hover{background:linear-gradient(135deg,#333,#1a1a1a);color:#fff;border-color:var(--gold)}
 /* --- Efectos de los ítems equipados --- */
 body.psc-own-marco_dorado #cuenta .av{box-shadow:0 0 0 3px var(--gold),0 0 14px rgba(212,175,55,.6)}
 body.psc-own-marco_animado #cuenta .avwrap::before{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(var(--gold2),#8a6a10,#fff6c9,var(--gold),var(--gold2));animation:pscSpin 3s linear infinite}
@@ -248,15 +279,91 @@ body.psc-own-titulo #cuenta .nom::after{content:"· Explorador";display:block;fo
 
 /* --- TEMAS --- */
 /* --- TEMAS: variables --- */
-body.psc-own-tema_esmeralda { --gold:#2ecc71; --gold2:#a9f5c6; --line:rgba(46,204,113,.26); --line-s:rgba(46,204,113,.4); --glow:rgba(169,245,198,.8); --dark-glow:rgba(46,204,113,.25); }
+body.psc-own-tema_esmeralda { --gold:#22e07a; --gold2:#8dffb8; --line:rgba(34,224,122,.3); --line-s:rgba(34,224,122,.5); --glow:rgba(141,255,184,.9); --dark-glow:rgba(34,224,122,.35); }
 body.psc-own-tema_zafiro    { --gold:#3498db; --gold2:#a8daf5; --line:rgba(52,152,219,.26); --line-s:rgba(52,152,219,.4); --glow:rgba(168,218,245,.8); --dark-glow:rgba(52,152,219,.25); }
 body.psc-own-tema_rubi      { --gold:#e74c3c; --gold2:#f5a8a0; --line:rgba(231,76,60,.26); --line-s:rgba(231,76,60,.4); --glow:rgba(245,168,160,.8); --dark-glow:rgba(231,76,60,.25); }
 body.psc-own-tema_amatista  { --gold:#9b59b6; --gold2:#d7bde2; --line:rgba(155,89,182,.26); --line-s:rgba(155,89,182,.4); --glow:rgba(215,189,226,.8); --dark-glow:rgba(155,89,182,.25); }
 body.psc-own-tema_ambar     { --gold:#f39c12; --gold2:#fad7a0; --line:rgba(243,156,18,.26); --line-s:rgba(243,156,18,.4); --glow:rgba(250,215,160,.8); --dark-glow:rgba(243,156,18,.25); }
-body.psc-own-tema_turquesa  { --gold:#1abc9c; --gold2:#a3e4d7; --line:rgba(26,188,156,.26); --line-s:rgba(26,188,156,.4); --glow:rgba(163,228,215,.8); --dark-glow:rgba(26,188,156,.25); }
+body.psc-own-tema_diamante  { --gold:#7fc4e8; --gold2:#e8f6ff; --line:rgba(127,196,232,.3); --line-s:rgba(127,196,232,.5); --glow:rgba(232,246,255,.9); --dark-glow:rgba(127,196,232,.35); }
 body.psc-own-tema_magenta   { --gold:#e84393; --gold2:#f8b8d8; --line:rgba(232,67,147,.26); --line-s:rgba(232,67,147,.4); --glow:rgba(248,184,216,.8); --dark-glow:rgba(232,67,147,.25); }
 body.psc-own-tema_coral     { --gold:#ff6b6b; --gold2:#ffc9c9; --line:rgba(255,107,107,.26); --line-s:rgba(255,107,107,.4); --glow:rgba(255,201,201,.8); --dark-glow:rgba(255,107,107,.25); }
-body.psc-own-tema_hielo     { --gold:#74b9ff; --gold2:#cfe4ff; --line:rgba(116,185,255,.26); --line-s:rgba(116,185,255,.4); --glow:rgba(207,228,255,.8); --dark-glow:rgba(116,185,255,.25); }
+body.psc-own-tema_fenix     { --gold:#ff7a1a; --gold2:#ffd166; --line:rgba(255,122,26,.3); --line-s:rgba(255,122,26,.5); --glow:rgba(255,209,102,.9); --dark-glow:rgba(255,122,26,.35); }
+body.psc-own-tema_yuli      { --gold:#c8c8c8; --gold2:#f0f0f0; --line:rgba(200,200,200,.26); --line-s:rgba(200,200,200,.4); --glow:rgba(240,240,240,.8); --dark-glow:rgba(200,200,200,.25); }
+
+
+/* --- Badge "VERSIÓN PREMIUM" --- */
+body[class*="psc-own-tema_"] .badge-prem {
+    background: linear-gradient(135deg, var(--gold2), var(--gold) 55%, var(--gold));
+    color: #1a1405;
+    text-shadow: 0 1px 1px rgba(255,255,255,.4);
+}
+
+/* --- Estrellas de calificación (PichonApps apps) --- */
+body[class*="psc-own-tema_"] .estrellas span { transition: color .15s; }
+
+/* --- Mensajería (PichonCommunity) --- */
+body[class*="psc-own-tema_"] .pcm-fab { border-color: var(--gold); background: linear-gradient(135deg, #0d0a04, #050302); color: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-fab:hover { background: linear-gradient(135deg, var(--gold), var(--gold)); color: #111; }
+body[class*="psc-own-tema_"] .pcm-card { border-color: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-hd { border-bottom-color: var(--line-s); background: var(--dark-glow); }
+body[class*="psc-own-tema_"] .pcm-hd h2 { color: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-x { border-color: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-x::before, body[class*="psc-own-tema_"] .pcm-x::after { background: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-x:hover { background: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-tabs { border-bottom-color: var(--line); }
+body[class*="psc-own-tema_"] .pcm-tabs button.on { color: var(--gold2); border-color: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-msg.adm .pcm-mc { border-color: var(--line-s); background: linear-gradient(180deg, #0f0f0f, #0a0a0a); }
+body[class*="psc-own-tema_"] .pcm-msg.mine .pcm-mc { border-color: var(--line-s); }
+body[class*="psc-own-tema_"] .pcm-adm { background: linear-gradient(135deg, var(--gold2), var(--gold)); color: #111; }
+body[class*="psc-own-tema_"] .pcm-send { border-color: var(--gold2); background: linear-gradient(135deg, #0d0a04, #050302); }
+body[class*="psc-own-tema_"] .pcm-send:hover:not(:disabled) { background: linear-gradient(135deg, var(--gold), var(--gold)); color: #111; }
+body[class*="psc-own-tema_"] .pcm-clip { border-color: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-clip::before, body[class*="psc-own-tema_"] .pcm-clip::after { background: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-clip:hover { background: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-in:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--dark-glow); }
+body[class*="psc-own-tema_"] .pcm-dot { border-color: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-like.on { color: var(--gold2) !important; border-color: var(--gold) !important; background: var(--dark-glow) !important; }
+body[class*="psc-own-tema_"] .pcm-ac button:hover { border-color: var(--gold); color: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-tx b { color: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-tx code { background: var(--dark-glow); border-color: var(--line); color: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-tx a { color: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-ctx { border-color: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-ctx button:hover { background: var(--dark-glow); }
+body[class*="psc-own-tema_"] .pcm-fmt { border-color: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-fmt button { color: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-fmt button:hover { background: linear-gradient(135deg, var(--gold2), var(--gold)); }
+body[class*="psc-own-tema_"] .pcm-t { border-color: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-dlg { border-top-color: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-st { background: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-rep-box { background: var(--dark-glow); border-left-color: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-rep-box b { color: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-down { border-color: var(--gold); background: linear-gradient(135deg, #0d0a04, #050302); color: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-down:hover { background: var(--gold); color: #111; }
+body[class*="psc-own-tema_"] .pcm-sel-bar { border-color: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-sel-bar span { color: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-msg.seleccionado .pcm-mc { border-color: var(--gold) !important; background: var(--dark-glow) !important; box-shadow: 0 0 10px var(--dark-glow); }
+body[class*="psc-own-tema_"] .pcm-vid { border-color: var(--gold); color: var(--gold2); }
+body[class*="psc-own-tema_"] .pcm-vid:hover { background: var(--gold); color: #111; }
+body[class*="psc-own-tema_"] .pcm-hs { border-color: var(--gold); }
+body[class*="psc-own-tema_"] .pcm-hs:hover { background: var(--gold); }
+
+/* --- Traducir (PichisoftIdiomas) --- */
+body[class*="psc-own-tema_"] #psi-btn { border-color: var(--gold); background: linear-gradient(135deg, var(--gold2), var(--gold) 55%, var(--gold)); color: #111; }
+body[class*="psc-own-tema_"] #psi-btn:hover { filter: brightness(1.15); }
+body[class*="psc-own-tema_"] #psi-btn:focus-visible { outline-color: var(--gold2); }
+body[class*="psc-own-tema_"] .psi-card { border-top-color: var(--gold); }
+body[class*="psc-own-tema_"] .psi-x { border-color: var(--gold); }
+body[class*="psc-own-tema_"] .psi-x::before, body[class*="psc-own-tema_"] .psi-x::after { background: var(--gold2); }
+body[class*="psc-own-tema_"] .psi-x:hover { background: var(--gold); }
+body[class*="psc-own-tema_"] #psi-q:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--dark-glow); }
+body[class*="psc-own-tema_"] .psi-it:hover { border-color: var(--gold); }
+body[class*="psc-own-tema_"] .psi-it.on { border-color: var(--gold); background: var(--dark-glow); }
+body[class*="psc-own-tema_"] .psi-star { color: var(--gold); }
+body[class*="psc-own-tema_"] .psi-sw:checked { background: linear-gradient(135deg, var(--gold2), var(--gold)); }
+body[class*="psc-own-tema_"] #psi-st { color: var(--gold2); }
+body[class*="psc-own-tema_"] .psi-orig { border-color: var(--line); color: var(--gold2); }
+body[class*="psc-own-tema_"] .psi-orig:hover { background: var(--dark-glow); }
+body[class*="psc-own-tema_"] .psi-toast { border-color: var(--gold); }
 
 /* --- Overrides genéricos para cualquier tema activo --- */
 
@@ -427,10 +534,20 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
         };
 
         // Guest coins se fusionan una vez y se limpia
-        const g = leerGuest();
-        const gTotal = suma(g.earned) - suma(g.bought);
-        if (gTotal > 0) { unir(g); lsSet('psc_guest', { earned: {}, bought: {}, equipped: {}, rec: 0 }); }
-        const p = lsGet('psc_pend', null); if (p && p.uid === id) unir(p);
+        // FIX: solo fusionar guest si NUNCA se fusionó antes para este UID (flag en localStorage).
+        // Así no se duplican coins cada vez que se loguea.
+        const fusionKey = 'psc_merged_' + id;
+        const yaFusionado = lsGet(fusionKey, false);
+        if (!yaFusionado) {
+            const g = leerGuest();
+            const gTotal = suma(g.earned) - suma(g.bought);
+            if (gTotal > 0) {
+                unir(g);
+                lsSet('psc_guest', { earned: {}, bought: {}, equipped: {}, rec: 0 });
+            }
+            const p = lsGet('psc_pend', null); if (p && p.uid === id) unir(p);
+            lsSet(fusionKey, true);
+        }
 
         // Migración: si el doc no tiene "equipped", auto-equipar un ítem por slot de los ya comprados
         if (!remoto || !remoto.equipped) {
@@ -646,7 +763,7 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
         w.append(P('psc-big', 'Tu saldo: ', saldo(), ' PichiCoins'));
         if (!TIENDA.length) { w.append(P('psc-tx', 'Muy pronto habrá cosas para comprar.')); return w; }
         TIENDA.forEach(it => {
-            const own = !!S.bought[it.id], s = saldo();
+            const own = S.bought[it.id] !== undefined, s = saldo();
             const c = h('div', 'psc-item' + (own ? ' own' : ''));
             const t = h('div', 'psc-item-t'); t.append(h('span', '', it.nombre)); const pr = h('span'); pr.append(numEl(it.precio)); t.append(pr);
             const b = h('button', 'psc-buy'); b.type = 'button';
@@ -666,12 +783,19 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
                     clearTimeout(t0); comprar(it);
                 };
             }
-            c.append(t, h('p', '', it.desc), b);
+            // Botón "Vista previa" solo para ítems con slot (nunca para la colección)
+            if (it.slot) {
+                const pv = h('button', 'psc-buy psc-pv'); pv.type = 'button';
+                pv.textContent = 'Vista previa';
+                pv.onclick = () => mostrarPreview(it);
+                c.append(t, h('p', '', it.desc), b, pv);
+            } else {
+                c.append(t, h('p', '', it.desc), b);
+            }
             w.append(c);
         });
         return w;
     }
-
     function bColeccion() {
         const w = h('div');
 
@@ -726,27 +850,134 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
     }
 
     function comprar(it) {
-        if (S.bought[it.id] || saldo() < it.precio) return;
+        if (S.bought[it.id] !== undefined || saldo() < it.precio) return;
         if (it.soloCuenta && modo !== 'cuenta') return;
         S.bought[it.id] = it.precio; pendAdd('bought', it.id, it.precio);
 
-        // Auto-equipar si tiene slot (para que se vea el efecto al instante)
         if (it.slot) { S.equipped[it.slot] = it.id; pendEq(it.slot, it.id); }
 
-        // La colección regala todo lo que no tengas (sin auto-equipar; el usuario elige)
+        // Colección: agregar TODOS los ítems que no tenga (usa 1 como valor para que !!S.bought[id] sea true)
         if (it.id === 'coleccion') {
             TIENDA.forEach(otro => {
-                if (otro.id !== 'coleccion' && !S.bought[otro.id]) {
-                    S.bought[otro.id] = 0; pendAdd('bought', otro.id, 0);
+                if (otro.id !== 'coleccion' && S.bought[otro.id] === undefined) {
+                    S.bought[otro.id] = 1; pendAdd('bought', otro.id, 1);
                 }
             });
         }
         guardar(); cambio();
         cartel({ titulo: '¡Compra realizada!', texto: '«' + it.nombre + '» · −' + fmt(it.precio) + ' PichiCoins' });
     }
+    /* Vista previa de un ítem: aplica el efecto temporalmente para que el usuario vea cómo queda */
+    function mostrarPreview(it) {
+        if (document.getElementById('psc-pv-ov')) return;
 
+        // Guardar equipado actual para restaurar
+        const slot = it.slot;
+        const anterior = S.equipped[slot] || '';
+
+        // Aplicar el efecto temporalmente en el body
+        const clasesAntes = [...document.body.classList].filter(c => c.startsWith('psc-own-'));
+        clasesAntes.forEach(c => document.body.classList.remove(c));
+
+        // Aplicar el ítem nuevo (sin guardar)
+        S.equipped[slot] = it.id;
+        Object.values(S.equipped || {}).forEach(id => {
+            if (id && S.bought[id] !== undefined) document.body.classList.add('psc-own-' + id);
+        });
+        // Marcar el ítem en preview aunque no esté comprado
+        document.body.classList.add('psc-own-' + it.id);
+
+        const ov = h('div', 'psc-pv-ov'); ov.id = 'psc-pv-ov';
+        ov.innerHTML = `
+            <div class="psc-pv-card">
+                <div class="psc-pv-hd">
+                    <h2>Vista previa</h2>
+                    <button class="psc-pv-x" type="button" aria-label="Cerrar"></button>
+                </div>
+                <p class="psc-pv-name"><b>${it.nombre}</b></p>
+                <p class="psc-pv-desc">${it.desc}</p>
+                <p class="psc-pv-hint">Estás viendo una vista previa. Los cambios NO se guardan hasta que compres el ítem.</p>
+                <div class="psc-pv-demo">
+                    ${it.slot === 'marco' ? '<div class="psc-pv-demo-marco"><div class="psc-pv-demo-av">P</div></div>' : ''}
+                    ${it.slot === 'tema' ? '<div class="psc-pv-demo-tema"><span class="psc-pv-demo-btn">PichiCoins</span><span class="psc-pv-demo-btn">Mensajería</span><span class="psc-pv-demo-btn">Traducir</span></div>' : ''}
+                    ${it.slot === 'cartel' ? '<div class="psc-pv-demo-cartel"><div class="psc-pv-coin">P</div><div><div class="psc-pv-t1">¡Ganaste <b>500</b> PichiCoins!</div><div class="psc-pv-t2">por hacer algo genial</div></div></div>' : ''}
+                    ${it.slot === 'titulo' ? '<div class="psc-pv-demo-titulo"><b>PichisoftUser</b><span>· Explorador</span></div>' : ''}
+                    ${it.slot === 'sonido' ? '<div class="psc-pv-demo-sonido">🔊 Hacé clic para escuchar</div>' : ''}
+                </div>
+                <button class="psc-pv-close" type="button">Cerrar vista previa</button>
+            </div>`;
+        document.body.append(ov);
+
+        const cerrar = () => {
+            // Restaurar equipado anterior
+            S.equipped[slot] = anterior;
+            [...document.body.classList].filter(c => c.startsWith('psc-own-')).forEach(c => document.body.classList.remove(c));
+            Object.values(S.equipped || {}).forEach(id => {
+                if (id && S.bought[id] !== undefined) document.body.classList.add('psc-own-' + id);
+            });
+            ov.remove();
+        };
+
+        ov.querySelector('.psc-pv-x').onclick = cerrar;
+        ov.querySelector('.psc-pv-close').onclick = cerrar;
+        ov.onclick = e => { if (e.target === ov) cerrar(); };
+        document.addEventListener('keydown', function esc(e) {
+            if (e.key === 'Escape') { document.removeEventListener('keydown', esc, true); cerrar(); }
+        }, true);
+
+        // Sonido demo
+        const sd = ov.querySelector('.psc-pv-demo-sonido');
+        if (sd) {
+            sd.onclick = () => {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const o = ctx.createOscillator(), g = ctx.createGain();
+                    o.connect(g); g.connect(ctx.destination);
+                    o.type = 'sine'; o.frequency.setValueAtTime(880, ctx.currentTime);
+                    o.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.08);
+                    g.gain.setValueAtTime(0.15, ctx.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+                    o.start(); o.stop(ctx.currentTime + 0.3);
+                } catch (e) { }
+            };
+        }
+
+        // Marco animado: usar la clase psc-own ya puesta en el body (afecta al avatar real de #cuenta)
+        // Para el demo, replicar el estilo en el mini-avatar
+        if (it.slot === 'marco') {
+            const demo = ov.querySelector('.psc-pv-demo-marco');
+            if (demo) {
+                const av = demo.querySelector('.psc-pv-demo-av');
+                const style = document.createElement('style'); style.id = 'psc-pv-style';
+                style.textContent = `
+                    #psc-pv-ov .psc-pv-demo-av { position: relative; z-index: 1; }
+                    ${it.id === 'marco_dorado' ? `#psc-pv-ov .psc-pv-demo-marco { position: relative; } #psc-pv-ov .psc-pv-demo-marco::after { content:""; position:absolute; inset:-4px; border-radius:50%; box-shadow: 0 0 0 3px var(--gold, #d4af37), 0 0 14px rgba(212,175,55,.6); }` : ''}
+                    ${it.id === 'marco_animado' ? `#psc-pv-ov .psc-pv-demo-marco { position: relative; } #psc-pv-ov .psc-pv-demo-marco::after { content:""; position:absolute; inset:-4px; border-radius:50%; background: conic-gradient(var(--gold2, #f1d98a), #8a6a10, #fff6c9, var(--gold, #d4af37), var(--gold2, #f1d98a)); animation: pscSpin 3s linear infinite; }` : ''}
+                    ${it.id === 'marco_arcoiris' ? `#psc-pv-ov .psc-pv-demo-marco { position: relative; } #psc-pv-ov .psc-pv-demo-marco::after { content:""; position:absolute; inset:-4px; border-radius:50%; background: conic-gradient(#ff0044,#ff8800,#ffee00,#00cc44,#0088ff,#7700ff,#ff0044); animation: pscSpin 3s linear infinite; filter: saturate(1.2); }` : ''}
+                `;
+                ov.querySelector('.psc-pv-demo').append(style);
+            }
+        }
+        // Cartel: aplicar el estilo al demo
+        if (it.slot === 'cartel') {
+            const demo = ov.querySelector('.psc-pv-demo-cartel');
+            const colores = {
+                cartel_esmeralda: { border: '#2ecc71', bg: 'linear-gradient(160deg,#0b2418,#04120a 70%)', glow: 'rgba(46,204,113,.4)', color: '#a9f5c6' },
+                cartel_zafiro: { border: '#3498db', bg: 'linear-gradient(160deg,#0a1e2e,#020a12 70%)', glow: 'rgba(52,152,219,.4)', color: '#a8daf5' },
+                cartel_rubi: { border: '#e74c3c', bg: 'linear-gradient(160deg,#2a0c0c,#120202 70%)', glow: 'rgba(231,76,60,.4)', color: '#f5a8a0' }
+            };
+            const c = colores[it.id];
+            if (c && demo) {
+                demo.style.borderColor = c.border;
+                demo.style.background = c.bg;
+                demo.style.boxShadow = `0 8px 24px rgba(0,0,0,.6), 0 0 24px ${c.glow}`;
+                const t1 = demo.querySelector('.psc-pv-t1');
+                if (t1) t1.style.color = c.color;
+            }
+        }
+    }
     function equipar(slot, itemId) {
-        if (itemId && !S.bought[itemId]) return;
+        if (itemId && S.bought[itemId] === undefined) return;
         S.equipped[slot] = itemId || '';
         pendEq(slot, itemId || '');
         guardar();
@@ -799,12 +1030,22 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
             cambio();
             cartel({ titulo: '¡PichiCoins restablecidos!', texto: 'Tu progreso fue borrado. Vuelve a hacer las cosas para ganar de nuevo.' });
 
-            // Re-trigger cargarCuenta para re-otorgar el bono de +5000
-            setTimeout(() => {
-                if (auth.currentUser && auth.currentUser.uid === uid) {
-                    detenerSnap();
-                    cargarCuenta(uid);
-                }
+            // FIX: después del reset, marcar "todas las apps visitadas" con valor 0 para que
+            // revisarHitos NO dispare los carteles de +100, +200, etc. Y marcar el día actual
+            // como "ya ganado" para que los tramos de tiempo (t_600/t_1800/t_3600) no se disparen
+            // automáticamente después de un reset. El usuario tiene que volver a entrar a las apps
+            // y pasar tiempo de nuevo para ganarlos.
+            setTimeout(async () => {
+                if (!auth.currentUser || auth.currentUser.uid !== uid) return;
+                try {
+                    const marcas = {};
+                    Object.keys(APPS).forEach(slug => { marcas['v_' + slug] = 0; });
+                    marcas['cuenta_creada'] = MONTO_CUENTA;
+                    await setDoc(doc(db, 'pichicoins', uid), { earned: marcas, rec: 0 }, { merge: true });
+                } catch (e) { console.error('Post-reset:', e); }
+
+                detenerSnap();
+                cargarCuenta(uid);
             }, 4200);
         } catch (err) {
             S.earned = old.earned; S.bought = old.bought; S.equipped = old.equipped; S.rec = old.rec;
@@ -846,7 +1087,7 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
         const b = document.body;
         [...b.classList].filter(c => c.startsWith('psc-own-')).forEach(c => b.classList.remove(c));
         Object.values(S.equipped || {}).forEach(id => {
-            if (id && S.bought[id]) b.classList.add('psc-own-' + id);
+            if (id && S.bought[id] !== undefined) b.classList.add('psc-own-' + id);
         });
     }
     function cambio() {
