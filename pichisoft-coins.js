@@ -495,11 +495,11 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
 
     let flushing = false, tf = 0;
     function programarFlush(ms) { clearTimeout(tf); tf = setTimeout(flush, ms || 700); }
-    async function flush() {
+       async function flush() {
         if (modo !== 'cuenta' || !uid || flushing) return;
         // Solo enviar si hay algo pendiente
         if (!Object.keys(pend.earned).length && !Object.keys(pend.bought).length && !Object.keys(pend.equipped).length && !pend.rec) return;
-
+        
         flushing = true;
         const id = uid;
         try {
@@ -512,7 +512,7 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
                 rec: S.rec,
                 tituloTexto: S.tituloTexto || ''
             }, { merge: true });
-
+            
             if (uid === id) {
                 pend.earned = {};
                 pend.bought = {};
@@ -525,7 +525,6 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
             setTimeout(flush, 20000);
         } finally { flushing = false; }
     }
-
     function detenerSnap() { if (unsubSnap) { try { unsubSnap(); } catch (e) { } unsubSnap = null; } }
 
     async function cargarCuenta(id) {
