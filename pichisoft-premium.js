@@ -1705,7 +1705,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         // Agregar estrellas (solo si tiene URL, o sea, si no es "Próximamente")
         if (a.u) {
             const ratingBox = document.createElement('div');
-            ratingBox.style.cssText = 'margin-top:6px;font-size:0.7rem;color:#d4af37;text-align:center;';
+            ratingBox.style.cssText = 'margin-top:6px;font-size:0.7rem;color:var(--gold);text-align:center;';
 
             // Mostrar promedio
             const promBox = document.createElement('div');
@@ -2171,18 +2171,34 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
     }
 
     // --- MODAL DE CALIFICACIÓN ---
+       function cssRating() {
+        if (document.getElementById('rtCss')) return;
+        const s = document.createElement('style'); s.id = 'rtCss';
+        s.textContent = `
+.ov.sem .box.rt-box{max-width:480px;background:linear-gradient(180deg,#181818,#0b0b0b);border:2px solid var(--gold);border-radius:16px;padding:26px 24px 22px;box-shadow:0 20px 60px rgba(0,0,0,.8),0 0 30px rgba(var(--gold-rgb,212,175,55),.15)}
+.rt-box h2{margin:0 0 6px;font:bold 1.5rem 'Times New Roman',serif;color:#fff}
+.rt-box .rt-sub{margin:0 0 16px;font-size:.8rem;color:#bdbdbd}
+.rt-stars{display:flex;justify-content:center;gap:6px;font-size:32px;margin-bottom:16px}
+.rt-stars span{cursor:pointer;transition:color .15s}
+.rt-box label{display:block;margin:0 0 6px;font-size:.85rem}
+.rt-box textarea{width:100%;box-sizing:border-box;min-height:110px;background:#1c1c1c;border:1px solid #444;color:#fff;border-radius:8px;padding:10px;font:inherit;font-size:16px;resize:vertical;outline:0;-webkit-user-select:text;user-select:text}
+.rt-box textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--gold-rgb,212,175,55),.16)}
+.rt-err{color:#ff7b7b;font-size:.8rem;min-height:1.2em;margin-top:10px}
+.rt-send{display:block;width:100%;margin-top:8px;padding:12px;border-radius:10px;border:1px solid var(--gold2);background:linear-gradient(135deg,color-mix(in srgb,var(--gold) 22%,#000),color-mix(in srgb,var(--gold) 7%,#000));color:#fff;font:bold 1rem Georgia,serif;cursor:pointer;transition:background .2s,color .2s,box-shadow .2s}
+.rt-send:hover:not(:disabled){background:linear-gradient(135deg,var(--gold2),var(--gold));color:#111;box-shadow:0 0 14px rgba(var(--gold-rgb,212,175,55),.5)}
+.rt-send:disabled{opacity:.5;cursor:default}
+.rt-cancel{display:block;width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px solid #333;background:none;color:#aaa;font:inherit;font-size:.85rem;cursor:pointer;transition:all .2s}
+.rt-cancel:hover{border-color:var(--gold);color:var(--gold2)}`;
+        document.head.appendChild(s);
+    }
+
     async function abrirModalCalificar(appId, appName, onSaved) {
         if (document.getElementById('ratingOv')) return;
-
         const fb = window.PichisoftFirebase;
-        if (!fb || !fb.auth || !fb.auth.currentUser) {
-            alert('Iniciá sesión para calificar.');
-            return;
-        }
+        if (!fb || !fb.auth || !fb.auth.currentUser) { alert('Iniciá sesión para calificar.'); return; }
+        cssRating();
 
-        // Cargar datos previos del usuario
-        let curStars = 0;
-        let curText = '';
+        let curStars = 0, curText = '';
         const docId = appId + '_' + fb.auth.currentUser.uid;
         try {
             const rs = await fb.getDoc(fb.doc(fb.db, 'app_ratings', docId));
@@ -2192,42 +2208,36 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         } catch (e) { console.error(e); }
 
         const o = document.createElement('div');
-        o.id = 'ratingOv';
-        o.className = 'ov sem';
-        o.innerHTML = `<div class="box" style="background:linear-gradient(180deg,#181818,#0b0b0b);border:2px solid var(--gold);border-radius:16px;padding:26px 24px 22px;max-width:480px;">
-        <h2 style="margin:0 0 6px;font:bold 1.5rem 'Times New Roman',serif;color:#fff;">Calificar ${appName}</h2>
-        <p style="margin:0 0 16px;font-size:.8rem;color:#bdbdbd;">Tu opinión nos ayuda a mejorar.</p>
-
-        <div id="rStars" style="display:flex;justify-content:center;gap:6px;font-size:32px;margin-bottom:16px;"></div>
-
-        <label style="display:block;margin-bottom:6px;font-size:.85rem;">Cuéntanos más sobre tu opinión de ${appName}:</label>
-        <textarea id="rText" maxlength="800" style="width:100%;box-sizing:border-box;min-height:110px;background:#1c1c1c;border:1px solid #444;color:#fff;border-radius:8px;padding:10px;font:inherit;font-size:.85rem;resize:vertical;outline:0;"></textarea>
-
-        <div id="rErr" style="color:#ff7b7b;font-size:.8rem;min-height:1.2em;margin-top:10px;"></div>
-
-        <button id="rSend" style="display:block;width:100%;margin-top:8px;padding:12px;border-radius:10px;border:1px solid var(--gold2);background:linear-gradient(135deg,#2b2107,#100c02);color:#fff;font:bold 1rem Georgia,serif;cursor:pointer;">Enviar</button>
-        <button id="rCancel" style="display:block;width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px solid #333;background:none;color:#aaa;font:inherit;font-size:.85rem;cursor:pointer;">Cancelar</button>
+        o.id = 'ratingOv'; o.className = 'ov sem';
+        o.innerHTML = `<div class="box rt-box" role="dialog" aria-modal="true">
+        <h2></h2>
+        <p class="rt-sub">Tu opinión nos ayuda a mejorar.</p>
+        <div class="rt-stars" id="rStars"></div>
+        <label id="rLbl"></label>
+        <textarea id="rText" maxlength="800"></textarea>
+        <div class="rt-err" id="rErr" aria-live="polite"></div>
+        <button class="rt-send" id="rSend" type="button">Enviar</button>
+        <button class="rt-cancel" id="rCancel" type="button">Cancelar</button>
     </div>`;
         document.body.appendChild(o);
+        o.querySelector('h2').textContent = 'Calificar ' + appName;
+        o.querySelector('#rLbl').textContent = 'Cuéntanos más sobre tu opinión de ' + appName + ':';
 
         const starsEl = o.querySelector('#rStars');
         const textEl = o.querySelector('#rText');
         const errEl = o.querySelector('#rErr');
         textEl.value = curText;
 
+        const pintar = n => [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= n ? 'var(--gold)' : '#555');
         for (let i = 1; i <= 5; i++) {
             const s = document.createElement('span');
-            s.dataset.i = i;
             s.textContent = '★';
-            s.style.cssText = `cursor:pointer;transition:color .15s;color:${i <= curStars ? 'var(--gold)' : '#555'};`;
-            s.onmouseenter = () => { [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= i ? 'var(--gold)' : '#555'); };
-            s.onmouseleave = () => { [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= curStars ? 'var(--gold)' : '#555'); };
-            s.onclick = () => {
-                curStars = i;
-                [...starsEl.children].forEach((x, j) => x.style.color = (j + 1) <= curStars ? 'var(--gold)' : '#555');
-            };
+            s.onmouseenter = () => pintar(i);
+            s.onmouseleave = () => pintar(curStars);
+            s.onclick = () => { curStars = i; pintar(i); };
             starsEl.appendChild(s);
         }
+        pintar(curStars);
 
         const cerrar = () => o.remove();
         o.querySelector('#rCancel').onclick = cerrar;
@@ -2235,26 +2245,13 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
 
         o.querySelector('#rSend').onclick = async (e) => {
             if (curStars < 1) { errEl.textContent = 'Elegí al menos 1 estrella.'; return; }
-            e.target.disabled = true;
-            errEl.textContent = '';
+            e.target.disabled = true; errEl.textContent = '';
             try {
                 const uid = fb.auth.currentUser.uid;
                 const username = (window.Pichisoft.user && Pichisoft.user.name) || 'Anónimo';
-
-                // Guardar calificación (promedio)
-                await fb.setDoc(fb.doc(fb.db, 'app_ratings', docId), {
-                    appId, uid, score: curStars, ts: new Date()
-                });
-
-                // Guardar opinión completa
+                await fb.setDoc(fb.doc(fb.db, 'app_ratings', docId), { appId, uid, score: curStars, ts: new Date() });
                 await fb.setDoc(fb.doc(fb.db, 'app_reviews', docId), {
-                    appId,
-                    appName,
-                    uid,
-                    username,
-                    stars: curStars,
-                    text: textEl.value.trim(),
-                    ts: new Date()
+                    appId, appName, uid, username, stars: curStars, text: textEl.value.trim(), ts: new Date()
                 });
                 window.PichiCoins && window.PichiCoins.evento('calificar');
                 cerrar();
