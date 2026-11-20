@@ -73,7 +73,7 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
         { id: 'sonido_moneda', nombre: 'Sonido de moneda', desc: 'Suena una moneda cada vez que ganás PichiCoins.', precio: 500, slot: 'sonido' },
 
         /* --- Bundle --- */
-        { id: 'coleccion', nombre: 'Colección completa', desc: 'Todos los ítems de la tienda en un solo paquete. ¡Ahorrás un montón!', precio: 8500, soloCuenta: true }
+        { id: 'coleccion', nombre: 'Colección completa', desc: 'Todos los ítems de la tienda en un solo paquete. ¡Ahorrás un montón!', precio: 9500, soloCuenta: true }
     ];
 
     const SLOT_NOMBRES = {
