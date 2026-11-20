@@ -1577,41 +1577,57 @@ base-uri 'self'; form-action 'self'">
            Con sesión iniciada se guarda en la cuenta; sin cuenta, en localStorage normal. */
         window.Pichisoft = {
             get user() { const k = sesionK(); return k ? API.users()[k] : null; },
+            get uid() { const u = this.user; return u && u.firebaseUid ? u.firebaseUid : null; },
+
+            /* NUEVO: preferencias POR DISPOSITIVO (no se sincronizan entre celular/PC). */
+            getDeviceData(app, key, def) { return LS.get('dev:' + app + ':' + key, def); },
+            setDeviceData(app, key, val) { LS.set('dev:' + app + ':' + key, val); },
+
+            /* NUEVO: suscripción a cambios de sesión (sin polling). */
+            _authSubs: [],
+            onAuth(fn) {
+                this._authSubs.push(fn);
+                try { fn(this.user); } catch (e) { console.error(e); }
+                return () => { this._authSubs = this._authSubs.filter(x => x !== fn); };
+            },
+            _emitAuth() {
+                const u = this.user;
+                this._authSubs.forEach(fn => { try { fn(u); } catch (e) { console.error(e); } });
+            },
+
             getData(app, key, def) {
                 const k = sesionK();
                 if (k) { const v = API.users()[k].data[app + ':' + key]; return v === undefined ? def : v; }
-                return LS.get(app + ':' + key, def);
+                /* Invitado: leer del nuevo prefijo guest: y, si no existe, migrar desde el viejo path sin prefijo (una vez). */
+                const nuevo = LS.get('guest:' + app + ':' + key, undefined);
+                if (nuevo !== undefined) return nuevo;
+                const viejo = LS.get(app + ':' + key, undefined);
+                if (viejo !== undefined) { LS.set('guest:' + app + ':' + key, viejo); return viejo; }
+                return def;
             },
             setData(app, key, val) {
-
                 const k = sesionK();
-
                 if (k) {
                     const u = API.users();
-
                     u[k].data[app + ':' + key] = val;
                     LS.set('ps_users', u);
-
                     const usuario = u[k];
-
                     if (usuario.firebaseUid && window.PichisoftFirebase) {
                         const fb = window.PichisoftFirebase;
-
                         fb.setDoc(
                             fb.doc(fb.db, 'users', usuario.firebaseUid),
                             { data: usuario.data },
                             { merge: true }
-                        ).catch(error => {
-                            console.error('Error sincronizando datos con Firestore:', error);
-                        });
+                        ).catch(error => console.error('Error sincronizando datos con Firestore:', error));
                     }
-
                 } else {
-                    LS.set(app + ':' + key, val);
+                    /* Invitado: prefijo guest: para que nunca se mezcle con datos de cuenta. */
+                    LS.set('guest:' + app + ':' + key, val);
                 }
-
             }
         };
+
+
 
         /* ---------- Utilidades de UI ---------- */
         function modal(html, cls = '') {
@@ -2283,7 +2299,7 @@ base-uri 'self'; form-action 'self'">
                 const b = document.createElement('button');
                 b.className = 'btn'; b.style.margin = 0; b.textContent = 'Ingresar';
                 b.setAttribute('data-sin-anuncio', '');
-                b.onclick = pantallaBienvenida; box.appendChild(b); return;
+                b.onclick = pantallaBienvenida; box.appendChild(b); Pichisoft._emitAuth(); return;
             }
             const t = document.createElement('div');
             t.style.textAlign = 'right';
@@ -2315,6 +2331,7 @@ base-uri 'self'; form-action 'self'">
             l.onclick = () => elegirFoto(f => { API.setPhoto(sesionK(), f); renderCuenta(); }, 'Cambiar foto de perfil', u.photo);
             w.append(a, l);
             box.append(t, w);
+            Pichisoft._emitAuth();
         }
 
         /* ============== Inicio ============*/
@@ -2409,19 +2426,19 @@ base-uri 'self'; form-action 'self'">
                 clearInterval(checkFirebase);
 
                 initializeAppCheck(window.PichisoftFirebase.app, {
-                  provider: new ReCaptchaEnterpriseProvider('6LfrFRouAAAAAMRBX9ZCD88NSFlGb-wdHKMdoCaS'),
+                    provider: new ReCaptchaEnterpriseProvider('6LfrFRouAAAAAMRBX9ZCD88NSFlGb-wdHKMdoCaS'),
                     isTokenAutoRefreshEnabled: true
                 });
             }
         }, 100);
     </script>
-    <script src="pichisoft-premium.js?v=10112026"></script>
+    <script src="pichisoft-premium.js?v=20112026"></script>
 
-    <script type="module" src="pichisoft-community.js?v=19112026"></script>
-    <script type="module" src="pichisoft-messages.js?v=19112026"></script>
-    <script src="pichisoft-carteles.js?v=19112026"></script>
-    <script src="pichisoft-idiomas.js?v=19112026"></script>
-    <script type="module" src="pichisoft-coins.js?v=19112026"></script>
+    <script type="module" src="pichisoft-community.js?v=20112026"></script>
+    <script type="module" src="pichisoft-messages.js?v=20112026"></script>
+    <script src="pichisoft-carteles.js?v=20112026"></script>
+    <script src="pichisoft-idiomas.js?v=20112026"></script>
+    <script type="module" src="pichisoft-coins.js?v=20112026"></script>
     <!-- ============================================================ -->
     <!-- PIE DE PÁGINA Y MODALES INFORMATIVOS (ESTILO PREMIUM)        -->
     <!-- ============================================================ -->
