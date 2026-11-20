@@ -607,12 +607,10 @@ service cloud.firestore {
           && ((request.resource.data.sg < 5 && request.resource.data.status == 'play')
               || (request.resource.data.sg == 5 && request.resource.data.status == 'done'
                   && request.resource.data.winner == resource.data.guest)));
-
       allow delete: if resource.data.status in ['waiting', 'done'];
     }
 
-  }
-      // ==========================================
+    // ==========================================
     // PICHICOINS
     // ==========================================
     match /pichicoins/{uid} {
@@ -620,7 +618,7 @@ service cloud.firestore {
 
       allow create: if signedIn() && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['earned', 'bought', 'rec'])
-        && request.resource.data.earned is map && request.resource.data.earned.size() <= 150
+        && request.resource.data.earned is map && request.resource.data.earned.size() <= 10
         && request.resource.data.bought is map && request.resource.data.bought.size() <= 50
         && request.resource.data.rec is number
         && request.resource.data.earned.get('cuenta_creada', 5000) == 5000;
@@ -641,6 +639,7 @@ service cloud.firestore {
         && request.resource.data.rec >= resource.data.get('rec', 0)
         && request.resource.data.earned.get('cuenta_creada', 5000) == 5000;
 
-      allow delete: if false;
+          allow delete: if false;
     }
+  }
 }
