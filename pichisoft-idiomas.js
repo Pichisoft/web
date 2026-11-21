@@ -671,6 +671,6 @@
         const start = sess === '-' ? null : (sess || defaultLang);
         if (start) setLang(start, { noSession: true });
     }
-
+    window.PichisoftIdiomas = { abrir: openPanel };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
