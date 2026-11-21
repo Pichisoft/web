@@ -79,7 +79,9 @@
         const mod = e.ctrlKey || e.metaKey || e.altKey;
         if (!mod) return;
 
-        if (e.code === 'Slash') { e.preventDefault(); alternarConsola(); return; }
+        const esSlash = e.code === 'Slash' || e.code === 'NumpadDivide' ||
+            e.key === '/' || e.key === '÷';
+        if (esSlash) { e.preventDefault(); alternarConsola(); return; }
         if (editable(e.target) || hayModal()) return;
 
         const d = TECLAS[e.code];
