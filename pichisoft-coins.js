@@ -445,7 +445,7 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
 @media (max-width:600px){.psc-ov{padding:10px}.psc-card{max-height:92vh}.psc-hd h2{font-size:1.5rem}.psc-bd{padding:14px 12px 18px}}
 `;
 
-      /* ============================= UTILIDADES ============================= */
+    /* ============================= UTILIDADES ============================= */
     const app = getApps()[0] || initializeApp(FIREBASE_CFG);
     const auth = getAuth(app), db = getFirestore(app);
     const esIndex = (() => { const p = location.pathname.replace(/\/+$/, ''); return p === '' || p === '/index.html'; })();
@@ -470,7 +470,39 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
         return { '--gold': g, '--gold2': g2, '--gold-rgb': r, '--line': 'rgba(' + r + ',.3)', '--line-s': 'rgba(' + r + ',.5)', '--glow': 'rgba(' + r2 + ',.9)', '--dark-glow': 'rgba(' + r + ',.35)' };
     }
     const CUSTOM_KEYS = ['--gold', '--gold2', '--gold-rgb', '--line', '--line-s', '--glow', '--dark-glow', '--ctxt'];
+    const tint = s => s
+        .replace(/#d4af37/gi, 'var(--gold,#d4af37)')
+        .replace(/#f1d98a/gi, 'var(--gold2,#f1d98a)')
+        .replace(/#(?:b38b27|a67c12|a67c10|caa016|b8901f|c9a227|8a6a10)\b/gi, 'var(--gold,#d4af37)')
+        .replace(/rgba\(\s*212\s*,\s*175\s*,\s*55\s*,/g, 'rgba(var(--gold-rgb,212,175,55),')
+        .replace(/rgba\(\s*241\s*,\s*217\s*,\s*138\s*,\s*([\d.]+)\s*\)/g, (m, a) => 'color-mix(in srgb,var(--gold2,#f1d98a) ' + Math.round(a * 100) + '%,transparent)')
+        .replace(/#2b2107/gi, 'color-mix(in srgb,var(--gold,#d4af37) 22%,#000)')
+        .replace(/#100c02/gi, 'color-mix(in srgb,var(--gold,#d4af37) 7%,#000)')
+        .replace(/(--gold2?\s*:\s*)var\(--gold2?,(#[0-9a-f]{6})\)/gi, '$1$2');
+    const okStreak = s => (s && typeof s.last === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s.last) && Number.isFinite(+s.n)) ? { last: s.last, n: Math.max(0, Math.floor(+s.n)) } : { last: '', n: 0 };
+    const mejorStreak = (a, b) => (a.last > b.last || (a.last === b.last && a.n >= b.n)) ? a : b;
+    const diaDe = off => { const d = new Date(); d.setDate(d.getDate() + off); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
 
+    const CSS3 = `
+body:has(.psc-ov) #pichisoft-topbar,body:has(.psc-pv-ov) #pichisoft-topbar,body:has(.psc-reset-ov) #pichisoft-topbar,
+body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisoft-topbar,body:has(.pcm-ov) #pichisoft-topbar,body:has(.psi-ov) #pichisoft-topbar{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+#psc-racha{align-self:flex-end;text-align:center;line-height:1.1;user-select:none;-webkit-user-select:none;padding:2px 4px}
+#psc-racha b{display:block;font:bold 1.7rem "Times New Roman",serif;color:var(--gold2)}
+#psc-racha small{display:block;font:.7rem Verdana,sans-serif;color:#aaa}
+.psc-rk{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:14px;z-index:2147483600;display:flex;align-items:center;gap:12px;max-width:calc(100vw - 28px);box-sizing:border-box;padding:10px 18px 11px 12px;border-radius:14px;border:1.5px solid var(--gold);background:linear-gradient(160deg,color-mix(in srgb,var(--gold) 22%,#000),#050302 80%);box-shadow:0 12px 34px rgba(0,0,0,.7),0 0 26px var(--dark-glow);color:#fff;font-family:Verdana,sans-serif;overflow:hidden;cursor:pointer;animation:pskIn .6s cubic-bezier(.2,1.3,.35,1) both;user-select:none;-webkit-user-select:none}
+.psc-rk.out{animation:pskOut .4s ease forwards}
+.psc-rk::before{content:"";position:absolute;top:0;bottom:0;width:50%;left:-70%;background:linear-gradient(100deg,transparent,color-mix(in srgb,var(--gold2) 35%,transparent),transparent);transform:skewX(-20deg);animation:psc-shine2 1.4s ease .4s 2}
+@keyframes psc-shine2{to{left:130%}}
+.psc-fl{flex:none;position:relative;width:24px;height:32px;border-radius:50% 50% 50% 50%/65% 65% 35% 35%;background:linear-gradient(to top,var(--gold),var(--gold2));box-shadow:0 0 14px var(--glow,var(--gold));transform-origin:50% 100%;animation:pskFl .8s ease-in-out infinite alternate}
+.psc-fl::after{content:"";position:absolute;left:28%;right:28%;bottom:3px;height:50%;border-radius:inherit;background:#fff;opacity:.85}
+.psc-rk1{font:bold 1.05rem "Times New Roman",serif;color:var(--gold2);line-height:1.2}
+.psc-rk2{font-size:.76rem;color:#d0d0d0;margin-top:2px}
+.psc-rk2 b{color:#fff}
+@keyframes pskIn{from{opacity:0;transform:translateX(-40px) scale(.85)}to{opacity:1;transform:none}}
+@keyframes pskOut{to{opacity:0;transform:translateX(-40px) scale(.9)}}
+@keyframes pskFl{from{transform:scale(1,1) rotate(-4deg)}to{transform:scale(.92,1.1) rotate(4deg)}}
+@media(prefers-reduced-motion:reduce){.psc-rk,.psc-rk::before,.psc-fl{animation:none!important}}
+`;
     /* CSS extra: temas generados + arreglos responsive */
     const CSS2 = ':root{--gold-rgb:212,175,55;--dark-glow:rgba(212,175,55,.35)}\n' +
         THEMES.map(([k, , g, g2]) => 'body.psc-own-tema_' + k + '{' + Object.entries(varsDe(g, g2)).map(([a, b]) => a + ':' + b).join(';') + '}').join('\n') + `
@@ -497,14 +529,14 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
 `;
 
     /* ================================ ESTADO ================================ */
-    const vacioGuest = () => ({ earned: {}, bought: {}, equipped: {}, rec: 0, tituloTexto: '', custom: [], fromUid: '' });
+    const vacioGuest = () => ({ earned: {}, bought: {}, equipped: {}, rec: 0, tituloTexto: '', custom: [], streak: { last: '', n: 0 }, fromUid: '' });
     function leerGuest() {
         const g = lsGet('psc_guest', null) || {};
         return {
             earned: obj(g.earned), bought: obj(g.bought), equipped: obj(g.equipped), rec: +g.rec || 0,
             tituloTexto: typeof g.tituloTexto === 'string' ? g.tituloTexto.slice(0, 30) : '',
             custom: (Array.isArray(g.custom) ? g.custom : []).filter(okCustom).slice(0, MAX_CUSTOM),
-            fromUid: typeof g.fromUid === 'string' ? g.fromUid : ''
+            streak: okStreak(g.streak), fromUid: typeof g.fromUid === 'string' ? g.fromUid : ''
         };
     }
     const keyAcc = id => 'psc_acc_' + id;
@@ -515,7 +547,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     const colaAcc = [];
     const abierto = {};
     const saldo = () => Math.max(0, suma(S.earned) - suma(S.bought));
-    const snapshotLocal = () => ({ earned: S.earned, bought: S.bought, equipped: S.equipped, rec: S.rec, tituloTexto: S.tituloTexto || '', custom: S.custom });
+    const snapshotLocal = () => ({ streak: S.streak, earned: S.earned, bought: S.bought, equipped: S.equipped, rec: S.rec, tituloTexto: S.tituloTexto || '', custom: S.custom });
     function drenar() { while (colaAcc.length) { try { colaAcc.shift()(); } catch (e) { console.warn(e); } } }
 
     function guardar() {
@@ -550,16 +582,19 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
 
         const r = remoto || {};
         const A = {
+            streak: okStreak(r.streak),
             earned: { ...obj(r.earned) }, bought: { ...obj(r.bought) }, equipped: { ...obj(r.equipped) },
             rec: +r.rec || 0,
             tituloTexto: typeof r.tituloTexto === 'string' ? r.tituloTexto.slice(0, 30) : '',
             custom: (Array.isArray(r.custom) ? r.custom : []).filter(okCustom).slice(0, MAX_CUSTOM)
         };
+
         let hayCambio = false;
         const unir = src => {
             if (!src) return;
             ['earned', 'bought'].forEach(t => { const o = obj(src[t]); for (const k in o) if (!(k in A[t])) { A[t][k] = o[k]; hayCambio = true; } });
             if ((+src.rec || 0) > A.rec) { A.rec = +src.rec; hayCambio = true; }
+            if (src.streak) { const m = mejorStreak(A.streak, okStreak(src.streak)); if (m !== A.streak) { A.streak = m; hayCambio = true; } }
             const eq = obj(src.equipped);
             for (const slot in eq) if (eq[slot] && !A.equipped[slot]) { A.equipped[slot] = eq[slot]; hayCambio = true; }
             if (!A.tituloTexto && typeof src.tituloTexto === 'string' && src.tituloTexto) { A.tituloTexto = src.tituloTexto.slice(0, 30); hayCambio = true; }
@@ -577,6 +612,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
                 unir(g); lsSet('psc_guest', vacioGuest());
             }
         }
+        A.custom = A.custom.filter(x => !(('delc_' + x.id) in A.earned));
         if (!r.equipped) {
             TIENDA.forEach(it => { if (it.slot && A.bought[it.id] !== undefined && !A.equipped[it.slot]) { A.equipped[it.slot] = it.id; hayCambio = true; } });
         }
@@ -605,6 +641,10 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
                 if (i < 0) { if (S.custom.length < MAX_CUSTOM) { S.custom.push(cu); c = true; } }
                 else if ((cu.u || 0) > (S.custom[i].u || 0)) { S.custom[i] = cu; c = true; }
             });
+            if (d.streak) { const m = mejorStreak(S.streak, okStreak(d.streak)); if (m !== S.streak) { S.streak = m; c = true; } }
+            const antes = S.custom.length;
+            S.custom = S.custom.filter(x => !(('delc_' + x.id) in S.earned));
+            if (S.custom.length !== antes) c = true;
             if (c) { lsSet(keyAcc(id), snapshotLocal()); cambio(); }
         }, err => console.warn('PichiCoins snapshot:', err));
     }
@@ -835,9 +875,33 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         return w;
     }
     const itemsCustom = () => S.custom.flatMap(c => [
-        { id: 'ctema_' + c.id, nombre: 'Tema propio: ' + c.n, desc: 'Tu tema personalizado.', slot: 'tema', custom: c },
-        { id: 'ccartel_' + c.id, nombre: 'Cartel propio: ' + c.n, desc: 'El estilo de «¡Ganaste!» de tu tema.', slot: 'cartel' }
+        { id: 'ctema_' + c.id, nombre: 'Tema propio: ' + c.n, desc: 'Tu tema personalizado.', slot: 'tema', custom: c, cdel: c },
+        { id: 'ccartel_' + c.id, nombre: 'Cartel propio: ' + c.n, desc: 'El estilo de «¡Ganaste!» de tu tema.', slot: 'cartel', cdel: c }
     ]);
+    function borrarCustom(c) {
+        S.earned['delc_' + c.id] = 0;
+        S.custom = S.custom.filter(x => x.id !== c.id);
+        ['tema', 'cartel'].forEach(sl => { const v = S.equipped[sl]; if (v === 'ctema_' + c.id || v === 'ccartel_' + c.id) S.equipped[sl] = ''; });
+        guardar(); cambio();
+        cartel({ titulo: 'Tema eliminado', texto: '«' + c.n + '»' });
+    }
+    function confirmarBorrarCustom(c) {
+        if (document.getElementById('psc-del-ov')) return;
+        if (!document.getElementById('psc-del-css')) {
+            const s = document.createElement('style'); s.id = 'psc-del-css';
+            s.textContent = '.psc-del-no{display:block;width:100%;margin-top:8px;padding:12px;background:#2a2a2a;color:#fff;border:1px solid #555;border-radius:10px;font:.95rem Georgia,serif;cursor:pointer;transition:all .2s}.psc-del-no:hover{background:#fff;color:#000}.psc-del-yes{display:block;width:100%;margin-top:8px;padding:12px;background:linear-gradient(135deg,#3a1010,#1a0606);color:#ffb0b0;border:1.5px solid #b03030;border-radius:10px;font:bold .95rem Georgia,serif;cursor:pointer;transition:all .2s}.psc-del-yes:hover{background:linear-gradient(135deg,#8a2020,#400c0c);color:#fff;box-shadow:0 0 14px rgba(200,50,50,.4)}';
+            document.head.appendChild(s);
+        }
+        const ov = h('div', 'psc-pv-ov'); ov.id = 'psc-del-ov';
+        ov.innerHTML = '<div class="psc-pv-card" role="alertdialog" aria-modal="true"><div class="psc-pv-hd"><h2>¿Eliminar este tema?</h2><button class="psc-pv-x" type="button" aria-label="Cerrar"></button></div><p class="psc-pv-name"><b></b></p><p class="psc-pv-desc">Se eliminarán el tema y su cartel «¡Ganaste!». No se devuelven los PichiCoins y no se puede deshacer. Después podrás crear otro (ocupa un lugar de los ' + MAX_CUSTOM + ').</p><button class="psc-del-no" type="button">No, conservarlo</button><button class="psc-del-yes" type="button">Sí, eliminar</button></div>';
+        document.body.append(ov);
+        ov.querySelector('b').textContent = c.n;
+        const cerrar = () => ov.remove();
+        ov.querySelector('.psc-pv-x').onclick = cerrar;
+        ov.querySelector('.psc-del-no').onclick = cerrar;
+        ov.onclick = e => { if (e.target === ov) cerrar(); };
+        ov.querySelector('.psc-del-yes').onclick = () => { cerrar(); borrarCustom(c); };
+    }
     function bColeccion() {
         const w = h('div'), slots = {};
         TIENDA.concat(itemsCustom()).forEach(it => {
@@ -861,6 +925,10 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
                     if (it.custom) {
                         const ed = h('button', 'psc-eq-btn', 'Editar'); ed.type = 'button'; ed.style.marginLeft = '8px';
                         ed.onclick = () => abrirEditor(it.custom); row.append(ed);
+                    }
+                    if (it.cdel) {
+                        const dl = h('button', 'psc-eq-btn', 'Eliminar'); dl.type = 'button'; dl.style.marginLeft = '8px';
+                        dl.onclick = () => confirmarBorrarCustom(it.cdel); row.append(dl);
                     }
                     if (slot === 'titulo' && equipped) {
                         const edit = h('button', 'psc-eq-btn', 'Cambiar texto'); edit.type = 'button'; edit.style.marginLeft = '8px';
@@ -1033,7 +1101,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         };
     }
     async function resetCoins() {
-        const vacio = () => ({ earned: {}, bought: {}, equipped: {}, rec: 0, tituloTexto: '', custom: [], fromUid: '' });
+        const vacio = () => ({ earned: {}, bought: {}, equipped: {}, rec: 0, tituloTexto: '', custom: [], streak: { last: '', n: 0 }, fromUid: '' });
         const aviso = () => cartel({ titulo: '¡PichiCoins restablecidos!', texto: 'Tu progreso fue borrado. Vuelve a hacer las cosas para ganar de nuevo.' });
         if (modo !== 'cuenta' || !uid) {
             S = vacio(); lsSet('psc_guest', S); lsSet('psc_day', { d: hoy(), s: 0 });
@@ -1042,7 +1110,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         const old = { ...S }, id = uid;
         try {
             detenerSnap();
-            await setDoc(doc(db, 'pichicoins', id), { earned: {}, bought: {}, equipped: {}, rec: 0, tituloTexto: '', custom: [] });
+            await setDoc(doc(db, 'pichicoins', id), { earned: {}, bought: {}, equipped: {}, rec: 0, tituloTexto: '', custom: [], streak: { last: '', n: 0 }, });
             S = vacio(); sucio = false;
             lsSet(keyAcc(id), snapshotLocal()); lsSet('psc_guest', vacioGuest()); lsSet('psc_day', { d: hoy(), s: 0 });
             cambio(); aviso();
@@ -1174,10 +1242,11 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     }
 
     /* ================================== INICIO ================================== */
-    const st = document.createElement('style'); st.id = 'psc-style'; st.textContent = CSS; document.head.appendChild(st);
-    const st2 = document.createElement('style'); st2.id = 'psc-style2'; st2.textContent = CSS2; document.head.appendChild(st2);
+    const st = document.createElement('style'); st.id = 'psc-style'; st.textContent = tint(CSS); document.head.appendChild(st);
+    const st2 = document.createElement('style'); st2.id = 'psc-style2'; st2.textContent = CSS2 + CSS3; document.head.appendChild(st2);
     if (esIndex) { document.body.classList.add('psc-idx'); montarDock(); escucharIndex(); }
     window.PichiCoins = {
+        version: 5,
         evento, abrir: abrirPanel,
         saldo: () => saldo(), modo: () => modo,
         tiene: id => S.bought[id] !== undefined,
@@ -1189,5 +1258,6 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     setTimeout(() => { if (!authListo) { authListo = true; evaluar(); } }, 8000);
     evaluar();
     cambio();
+    revisarRacha();
     if (slugActual) visitar(slugActual);
 })();
