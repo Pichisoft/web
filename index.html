@@ -2248,6 +2248,7 @@ base-uri 'self'; form-action 'self'">
                         await API.guardarPerfil(k, nuevoNombre, nuevoEmail, passNueva, passActual);
                         m.close();
                         renderCuenta();
+                        if (nuevoNombre !== usuario.name || cambioEmail || passNueva) window.PichiCoins && window.PichiCoins.evento('perfil');
                         alert(cambioEmail
                             ? 'Perfil actualizado. Te enviamos un link al email nuevo: abrilo para verificar y poder usar todas las funciones.'
                             : 'Perfil actualizado correctamente.');
@@ -2328,7 +2329,7 @@ base-uri 'self'; form-action 'self'">
             if (okFoto(u.photo)) { const i = document.createElement('img'); i.src = u.photo; a.appendChild(i); }
             else a.textContent = u.name[0].toUpperCase();
             const l = document.createElement('button'); l.className = 'lapiz'; l.textContent = '✎'; l.title = 'Cambiar foto';
-            l.onclick = () => elegirFoto(f => { API.setPhoto(sesionK(), f); renderCuenta(); }, 'Cambiar foto de perfil', u.photo);
+            l.onclick = () => elegirFoto(f => { API.setPhoto(sesionK(), f); renderCuenta(); if (f !== (u.photo || '')) window.PichiCoins && window.PichiCoins.evento('perfil'); }, 'Cambiar foto de perfil', u.photo);
             w.append(a, l);
             box.append(t, w);
             Pichisoft._emitAuth();
@@ -2432,13 +2433,13 @@ base-uri 'self'; form-action 'self'">
             }
         }, 100);
     </script>
-    <script src="pichisoft-premium.js?v=27112026"></script>
+    <script src="pichisoft-premium.js?v=28112026"></script>
 
-    <script type="module" src="pichisoft-community.js?v=27112026"></script>
-    <script type="module" src="pichisoft-messages.js?v=27112026"></script>
-    <script src="pichisoft-carteles.js?v=27112026"></script>
-    <script src="pichisoft-idiomas.js?v=27112026"></script>
-    <script type="module" src="pichisoft-coins.js?v=27112026"></script>
+    <script type="module" src="pichisoft-community.js?v=28112026"></script>
+    <script type="module" src="pichisoft-messages.js?v=28112026"></script>
+    <script src="pichisoft-carteles.js?v=28112026"></script>
+    <script src="pichisoft-idiomas.js?v=28112026"></script>
+    <script type="module" src="pichisoft-coins.js?v=28112026"></script>
     <!-- ============================================================ -->
     <!-- PIE DE PÁGINA Y MODALES INFORMATIVOS (ESTILO PREMIUM)        -->
     <!-- ============================================================ -->
