@@ -1644,18 +1644,6 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         }
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') cerrarConfig();
-
-            // Si la barra de búsqueda está activa y visible en la configuración
-            if (cfg.buscador) {
-                const esCtrlK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k';
-                const esBarra = e.key === '/' && document.activeElement !== $('#pQ');
-
-                if (esCtrlK || esBarra) {
-                    e.preventDefault();
-                    $('#pQ').focus();
-                    $('#pQ').select(); // Opcional: selecciona el texto actual para sobrescribir rápido
-                }
-            }
         });
 
     }
