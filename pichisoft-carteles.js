@@ -262,9 +262,21 @@ Ya disponible, PichonPass —Versión premium—.
 @media (max-width:560px){.pcr-card{--px:16px;padding-top:16px;border-radius:16px}.pcr-head{grid-template-columns:1fr auto}.pcr-tit{grid-column:1/-1;grid-row:2;margin-top:12px}.pcr-pie{flex-direction:column}}
 @media (prefers-reduced-motion:reduce){.pcr-ov,.pcr-card,.pcr-d,.pcr-x,.pcr-op,.pcr-barra{transition:none!important;animation:none!important}.pcr-brillo{display:none}}
 `;
+    /* Solo PichonApps (la página con #cuenta) usa el tema. PichonPass queda dorado. */
+    const tint = s => s
+        .replace(/#d4af37/gi, 'var(--gold,#d4af37)')
+        .replace(/#f1d98a/gi, 'var(--gold2,#f1d98a)')
+        .replace(/#(?:b8901f|a67c12)\b/gi, 'var(--gold,#d4af37)')
+        .replace(/rgba\(\s*212\s*,\s*175\s*,\s*55\s*,/g, 'rgba(var(--gold-rgb,212,175,55),')
+        .replace(/rgba\(\s*241\s*,\s*217\s*,\s*138\s*,\s*([\d.]+)\s*\)/g, (m, a) => 'color-mix(in srgb,var(--gold2,#f1d98a) ' + Math.round(a * 100) + '%,transparent)')
+        .replace(/#2b2107/gi, 'color-mix(in srgb,var(--gold,#d4af37) 22%,#000)')
+        .replace(/#100c02/gi, 'color-mix(in srgb,var(--gold,#d4af37) 7%,#000)');
     function inyectarCSS() {
         if (document.getElementById('pcrCss')) return;
-        const st = document.createElement('style'); st.id = 'pcrCss'; st.textContent = CSS; document.head.appendChild(st);
+        const temable = !!document.querySelector('#cuenta');   // true solo en PichonApps
+        const st = document.createElement('style'); st.id = 'pcrCss';
+        st.textContent = temable ? tint(CSS) : CSS;
+        document.head.appendChild(st);
     }
 
     function continuar(d) {
