@@ -60,12 +60,23 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
         ['lavanda', 'lavanda', '#9b8bd6', '#e2dcff'],
         ['cobre', 'cobre', '#cd7f32', '#f0c9a0'],
         ['lima', 'lima', '#a4de02', '#e3ff9a'],
-        ['medianoche', 'medianoche', '#5c6bc0', '#c5cae9']
+        ['medianoche', 'medianoche', '#5c6bc0', '#c5cae9'],
+        ['nieve', 'nieve', '#ffffff', '#e8e8e8'],
+        ['obsidiana', 'obsidiana', '#6b7280', '#d1d5db'],
+        ['carbon', 'carbón', '#4b5563', '#9ca3af'],
+        ['vino', 'vino', '#7f1d1d', '#fca5a5'],
+        ['bosque', 'bosque', '#166534', '#86efac'],
+        ['oceano', 'océano profundo', '#1e3a8a', '#93c5fd'],
+        ['ciruela', 'ciruela', '#581c87', '#d8b4fe']
     ];
     const TIENDA = [
         { id: 'marco_dorado', nombre: 'Marco dorado', desc: 'Un borde dorado brillante alrededor de tu foto de perfil.', precio: 2000, soloCuenta: true, slot: 'marco' },
         { id: 'marco_animado', nombre: 'Marco animado', desc: 'Un anillo que gira alrededor de tu foto de perfil.', precio: 4000, soloCuenta: true, slot: 'marco' },
         { id: 'marco_arcoiris', nombre: 'Marco arcoíris', desc: 'Un borde arcoíris animado alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_neon', nombre: 'Marco neón', desc: 'Un borde de neón que pulsa alrededor de tu foto de perfil.', precio: 3000, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_fuego', nombre: 'Marco fuego', desc: 'Un anillo de llamas que arde alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_hielo', nombre: 'Marco hielo', desc: 'Un anillo helado y cristalino alrededor de tu foto de perfil.', precio: 3000, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_glitch', nombre: 'Marco glitch', desc: 'Un borde digital que se distorsiona como una señal con fallas.', precio: 4000, soloCuenta: true, slot: 'marco' },
         ...THEMES.map(([k, n]) => ({ id: 'tema_' + k, nombre: 'Tema ' + n, desc: 'Cambia el dorado de PichonApps por el estilo ' + n + '.', precio: 900, slot: 'tema' })),
         ...THEMES.map(([k, n]) => ({ id: 'cartel_' + k, nombre: 'Cartel ' + n, desc: 'El cartel de «¡Ganaste!» con el estilo ' + n + '.', precio: 700, slot: 'cartel' })),
         { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre. ¡Podés elegir el texto que quieras!', precio: 1200, soloCuenta: true, slot: 'titulo' },
@@ -521,6 +532,18 @@ body.psc-idx.psc-own-tema_custom a:hover{color:#111;background:var(--ctxt,whites
 .psc-pvm.marco_animado::before,.psc-pvm.marco_arcoiris::before{content:"";position:absolute;inset:-4px;border-radius:50%;animation:pscSpin 3s linear infinite}
 .psc-pvm.marco_animado::before{background:conic-gradient(var(--gold2),#8a6a10,#fff6c9,var(--gold),var(--gold2))}
 .psc-pvm.marco_arcoiris::before{background:conic-gradient(#ff0044,#ff8800,#ffee00,#00cc44,#0088ff,#7700ff,#ff0044)}
+body.psc-own-marco_neon #cuenta .av{box-shadow:0 0 0 2px #0ff,0 0 10px #0ff,0 0 22px #0ff;animation:pscNeon 1.6s ease-in-out infinite}
+.psc-pvm.marco_neon .psc-pv-demo-av{box-shadow:0 0 0 2px #0ff,0 0 10px #0ff,0 0 22px #0ff;animation:pscNeon 1.6s ease-in-out infinite}
+@keyframes pscNeon{0%,100%{box-shadow:0 0 0 2px #0ff,0 0 6px #0ff,0 0 12px #0ff}50%{box-shadow:0 0 0 2px #f0f,0 0 14px #f0f,0 0 30px #f0f}}
+body.psc-own-marco_fuego #cuenta .avwrap::before,body.psc-own-marco_hielo #cuenta .avwrap::before,body.psc-own-marco_glitch #cuenta .avwrap::before,
+.psc-pvm.marco_fuego::before,.psc-pvm.marco_hielo::before,.psc-pvm.marco_glitch::before{content:"";position:absolute;inset:-4px;border-radius:50%}
+body.psc-own-marco_fuego #cuenta .avwrap::before,.psc-pvm.marco_fuego::before{background:conic-gradient(#ff2a00,#ff9d00,#ffee00,#ff5a00,#c40000,#ff9d00,#ff2a00);animation:pscSpin 1.4s linear infinite;box-shadow:0 0 14px rgba(255,100,0,.8);filter:saturate(1.3)}
+body.psc-own-marco_hielo #cuenta .avwrap::before,.psc-pvm.marco_hielo::before{background:conic-gradient(#e8f6ff,#7fc4e8,#ffffff,#4aa3df,#cfefff,#e8f6ff);animation:pscSpin 6s linear infinite;box-shadow:0 0 14px rgba(127,196,232,.8)}
+body.psc-own-marco_glitch #cuenta .avwrap::before,.psc-pvm.marco_glitch::before{background:conic-gradient(#ff00c8,#00f0ff,#111,#ff00c8,#00f0ff,#ff00c8);animation:pscGlitch 1.1s steps(1,end) infinite}
+@keyframes pscGlitch{0%{transform:translate(0,0) rotate(0)}20%{transform:translate(-2px,1px) rotate(40deg)}40%{transform:translate(2px,-1px) rotate(-30deg)}60%{transform:translate(-1px,-2px) rotate(120deg)}80%{transform:translate(1px,2px) rotate(200deg)}100%{transform:translate(0,0) rotate(360deg)}}
+body.psc-own-marco_fuego #cuenta .av,body.psc-own-marco_hielo #cuenta .av,body.psc-own-marco_glitch #cuenta .av{position:relative;z-index:1}
+body.psc-own-marco_fuego #cuenta .lapiz,body.psc-own-marco_hielo #cuenta .lapiz,body.psc-own-marco_glitch #cuenta .lapiz{z-index:2}
+@media(prefers-reduced-motion:reduce){body[class*="psc-own-marco_"] #cuenta .av,body[class*="psc-own-marco_"] #cuenta .avwrap::before,.psc-pvm::before,.psc-pvm .psc-pv-demo-av{animation:none!important}}
 .psc-eq-item{flex-wrap:wrap}.psc-eq-info{min-width:140px}
 body[class*="psc-own-tema_"] #pf-share-box{border-color:var(--gold)}
 body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
