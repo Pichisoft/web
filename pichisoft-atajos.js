@@ -176,7 +176,7 @@
     function listar() {
         const l = ['Comandos disponibles:'];
         Object.keys(CMDS).filter(k => k !== 'pp').forEach(k => l.push(('/' + k).padEnd(18) + CMDS[k].d + (CMDS[k].cuenta ? '  [con cuenta]' : '')));
-        l.push('/app_<nombre>'.padEnd(18) + 'Abre una app. Nombres: ' + Object.keys(APPS).join(', '));
+        l.push('/app:<nombre>'.padEnd(18) + 'Abre una app. Nombres: ' + Object.keys(APPS).join(', '));
         l.push('', 'Atajos: Ctrl+/ abre esta consola. Mirá el panel Ayuda para el resto.');
         imprimir(l.join('\n'));
     }
@@ -186,7 +186,7 @@
         let c = txt.toLowerCase().trim();
         if (c[0] !== '/') c = '/' + c;
         c = c.slice(1);
-        if (c.startsWith('app_')) {
+        if (c.startsWith('app:')) {
             const n = c.slice(4);
             if (APPS[n]) return nuevaPestana(BASE + APPS[n] + '.html');
             if (PROXIMAS.includes(n)) return imprimir('Esa app todavía no está disponible (próximamente).');
