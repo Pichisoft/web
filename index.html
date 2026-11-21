@@ -2142,7 +2142,26 @@ base-uri 'self'; form-action 'self'">
             autocomplete="email"
             value="${usuario.email.replace(/"/g, '&quot;')}"
         >
+<div class="perfil-seccion">
 
+    <button class="perfil-password-toggle" id="ep-toggle-foto">
+        <span>Foto de perfil</span>
+        <span class="perfil-password-flecha" id="ep-flecha-foto">→</span>
+    </button>
+
+    <div class="perfil-password-panel" id="ep-foto-panel">
+
+        <div class="c">
+            <button class="circ" id="ep-foto-btn" type="button">+</button>
+        </div>
+
+        <div class="peq" style="margin-top:8px;text-align:center">
+            Tocá el círculo para cambiar, editar o quitar tu foto.
+        </div>
+
+    </div>
+
+</div>
         <div class="perfil-seccion">
 
             <button class="perfil-password-toggle" id="ep-toggle-pass">
@@ -2208,7 +2227,44 @@ base-uri 'self'; form-action 'self'">
             q(m, '#ep-cancelar').onclick = () => {
                 m.close();
             };
+            let fotoAbierta = false;
 
+            q(m, '#ep-toggle-foto').onclick = () => {
+                fotoAbierta = !fotoAbierta;
+                const panel = q(m, '#ep-foto-panel');
+                const flecha = q(m, '#ep-flecha-foto');
+                if (fotoAbierta) {
+                    panel.classList.add('abierto');
+                    flecha.textContent = '↓';
+                } else {
+                    panel.classList.remove('abierto');
+                    flecha.textContent = '→';
+                }
+            };
+
+            const fotoBtn = q(m, '#ep-foto-btn');
+            const mostrarFoto = () => {
+                const u = API.users()[sesionK()];
+                fotoBtn.innerHTML = '';
+                if (u && okFoto(u.photo)) {
+                    const i = document.createElement('img');
+                    i.src = u.photo;
+                    fotoBtn.appendChild(i);
+                } else {
+                    fotoBtn.textContent = '+';
+                }
+            };
+            mostrarFoto();
+
+            fotoBtn.onclick = () => {
+                const actual = API.users()[sesionK()]?.photo || '';
+                elegirFoto(f => {
+                    API.setPhoto(sesionK(), f);
+                    mostrarFoto();
+                    renderCuenta();
+                    if (f !== actual) window.PichiCoins && window.PichiCoins.evento('perfil');
+                }, 'Cambiar foto de perfil', actual);
+            };
             q(m, '#ep-guardar').onclick = async e => {
 
                 const boton = e.target;
@@ -2329,9 +2385,7 @@ base-uri 'self'; form-action 'self'">
             const a = document.createElement('div'); a.className = 'av';
             if (okFoto(u.photo)) { const i = document.createElement('img'); i.src = u.photo; a.appendChild(i); }
             else a.textContent = u.name[0].toUpperCase();
-            const l = document.createElement('button'); l.className = 'lapiz'; l.textContent = '✎'; l.title = 'Cambiar foto';
-            l.onclick = () => elegirFoto(f => { API.setPhoto(sesionK(), f); renderCuenta(); if (f !== (u.photo || '')) window.PichiCoins && window.PichiCoins.evento('perfil'); }, 'Cambiar foto de perfil', u.photo);
-            w.append(a, l);
+            w.append(a);
             box.append(t, w);
             Pichisoft._emitAuth();
         }
