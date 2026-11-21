@@ -67,7 +67,7 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
         ['vino', 'vino', '#7f1d1d', '#fca5a5'],
         ['bosque', 'bosque', '#166534', '#86efac'],
         ['oceano', 'océano profundo', '#1e3a8a', '#93c5fd'],
-        ['ciruela', 'ciruela', '#581c87', '#d8b4fe']
+        ['push', 'push', '#581c87', '#d8b4fe']
     ];
     const TIENDA = [
         { id: 'marco_dorado', nombre: 'Marco dorado', desc: 'Un borde dorado brillante alrededor de tu foto de perfil.', precio: 2000, soloCuenta: true, slot: 'marco' },
