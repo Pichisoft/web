@@ -109,7 +109,7 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
     const MONTO_PANEL = 50;
     const PANELES = {
         sobre: 'Sobre nosotros', faq: 'Preguntas frecuentes', info: 'Información general',
-        reglas: 'Nuestras reglas', privacidad: 'Privacidad', cookies: 'Cookies'
+        reglas: 'Nuestras reglas', privacidad: 'Privacidad', cookies: 'Cookies', ayuda: 'Ayuda'
     };
     const MONTO_CUENTA = 5000;
     const EVENTOS = {
