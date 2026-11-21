@@ -71,12 +71,12 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
     ];
     const TIENDA = [
         { id: 'marco_dorado', nombre: 'Marco dorado', desc: 'Un borde dorado brillante alrededor de tu foto de perfil.', precio: 2000, soloCuenta: true, slot: 'marco' },
-        { id: 'marco_animado', nombre: 'Marco animado', desc: 'Un anillo que gira alrededor de tu foto de perfil.', precio: 4000, soloCuenta: true, slot: 'marco' },
-        { id: 'marco_arcoiris', nombre: 'Marco arcoíris', desc: 'Un borde arcoíris animado alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
-        { id: 'marco_neon', nombre: 'Marco neón', desc: 'Un borde de neón que pulsa alrededor de tu foto de perfil.', precio: 3000, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_animado', nombre: 'Marco animado', desc: 'Un anillo que gira alrededor de tu foto de perfil.', precio: 2500, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_arcoiris', nombre: 'Marco arcoíris', desc: 'Un borde arcoíris animado alrededor de tu foto de perfil.', precio: 3200, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_neon', nombre: 'Pack Neón', desc: 'Un pack con 10 marcos de neón que pulsan alrededor de tu foto de perfil: cian, magenta, verde, naranja, amarillo, rosa, violeta, rojo, azul y uno que cambia de color. Elegís cuál usar desde Mi colección.', precio: 4000, soloCuenta: true, slot: 'marco' },
         { id: 'marco_fuego', nombre: 'Marco fuego', desc: 'Un anillo de llamas que arde alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
-        { id: 'marco_hielo', nombre: 'Marco hielo', desc: 'Un anillo helado y cristalino alrededor de tu foto de perfil.', precio: 3000, soloCuenta: true, slot: 'marco' },
-        { id: 'marco_glitch', nombre: 'Marco glitch', desc: 'Un borde digital que se distorsiona como una señal con fallas.', precio: 4000, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_hielo', nombre: 'Marco hielo', desc: 'Un anillo helado y cristalino alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_glitch', nombre: 'Marco glitch', desc: 'Un borde digital que se distorsiona como una señal con fallas.', precio: 3700, soloCuenta: true, slot: 'marco' },
         ...THEMES.map(([k, n]) => ({ id: 'tema_' + k, nombre: 'Tema ' + n, desc: 'Cambia el dorado de PichonApps por el estilo ' + n + '.', precio: 900, slot: 'tema' })),
         ...THEMES.map(([k, n]) => ({ id: 'cartel_' + k, nombre: 'Cartel ' + n, desc: 'El cartel de «¡Ganaste!» con el estilo ' + n + '.', precio: 700, slot: 'cartel' })),
         { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre. ¡Podés elegir el texto que quieras!', precio: 1200, soloCuenta: true, slot: 'titulo' },
@@ -493,7 +493,24 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
     const okStreak = s => (s && typeof s.last === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s.last) && Number.isFinite(+s.n)) ? { last: s.last, n: Math.max(0, Math.floor(+s.n)) } : { last: '', n: 0 };
     const mejorStreak = (a, b) => (a.last > b.last || (a.last === b.last && a.n >= b.n)) ? a : b;
     const diaDe = off => { const d = new Date(); d.setDate(d.getDate() + off); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
-
+    /* [id, nombre, color] */
+    const NEONES = [
+        ['cian', 'cian', '#00ffff'], ['magenta', 'magenta', '#ff00ff'], ['verde', 'verde lima', '#39ff14'],
+        ['naranja', 'naranja', '#ff6a00'], ['amarillo', 'amarillo', '#ffee00'], ['rosa', 'rosa', '#ff2d95'],
+        ['violeta', 'violeta', '#9d4dff'], ['rojo', 'rojo', '#ff1744'], ['azul', 'azul eléctrico', '#2979ff'],
+        ['dual', 'dual (cambia de color)', '#00ffff']
+    ];
+    const itemsNeon = () => NEONES.map(([k, n]) => ({ id: 'marco_neon_' + k, nombre: 'Neón ' + n, desc: 'Del Pack Neón.', slot: 'marco' }));
+    const CSS4 = NEONES.filter(n => n[0] !== 'dual').map(([k, , c]) =>
+        'body.psc-own-marco_neon_' + k + ' #cuenta .av,.psc-pvm.marco_neon_' + k + ' .psc-pv-demo-av{--nc:' + c + ';box-shadow:0 0 0 2px var(--nc),0 0 10px var(--nc),0 0 22px var(--nc);animation:pscNeonV 1.8s ease-in-out infinite}').join('\n') + `
+body.psc-own-marco_neon_dual #cuenta .av,.psc-pvm.marco_neon_dual .psc-pv-demo-av{animation:pscNeon 1.6s ease-in-out infinite}
+@keyframes pscNeonV{0%,100%{box-shadow:0 0 0 2px var(--nc),0 0 6px var(--nc),0 0 12px var(--nc)}50%{box-shadow:0 0 0 2px var(--nc),0 0 16px var(--nc),0 0 34px var(--nc)}}
+.psc-neon-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px 8px;width:100%}
+.psc-neon-grid>div{display:flex;flex-direction:column;align-items:center;gap:8px;font:.62rem Arial,sans-serif;color:#bbb}
+.psc-neon-grid .psc-pv-demo-av{width:40px;height:40px;font-size:1.1rem}
+@media(max-width:600px){.psc-neon-grid{grid-template-columns:repeat(3,1fr)}}
+`;
+    const posee = id => !id ? false : (id.startsWith('marco_neon_') ? S.bought.marco_neon !== undefined : S.bought[id] !== undefined);
     const CSS3 = `
 body:has(.psc-ov) #pichisoft-topbar,body:has(.psc-pv-ov) #pichisoft-topbar,body:has(.psc-reset-ov) #pichisoft-topbar,
 body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisoft-topbar,body:has(.pcm-ov) #pichisoft-topbar,body:has(.psi-ov) #pichisoft-topbar{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
@@ -964,8 +981,8 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     }
     function bColeccion() {
         const w = h('div'), slots = {};
-        TIENDA.concat(itemsCustom()).forEach(it => {
-            if (!it.slot || S.bought[it.id] === undefined) return;
+        TIENDA.flatMap(it => it.id === 'marco_neon' ? itemsNeon() : [it]).concat(itemsCustom()).forEach(it => {
+            if (!it.slot || !posee(it.id)) return;
             (slots[it.slot] = slots[it.slot] || []).push(it);
         });
         if (!Object.keys(slots).length) {
@@ -1012,6 +1029,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         if (it.soloCuenta && modo !== 'cuenta') return;
         S.bought[it.id] = it.precio;
         if (it.slot) S.equipped[it.slot] = it.id;
+        if (it.id === 'marco_neon') S.equipped.marco = 'marco_neon_cian';
         if (it.id === 'titulo') setTimeout(() => pedirTituloTexto(), 300);
         if (it.id === 'coleccion') TIENDA.forEach(o => { if (o.id !== 'coleccion' && S.bought[o.id] === undefined) S.bought[o.id] = 1; });
         guardar(); cambio();
@@ -1101,7 +1119,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
                 <p class="psc-pv-desc">${esc(it.desc)}</p>
                 <p class="psc-pv-hint">Estás viendo una vista previa. Los cambios NO se guardan hasta que compres el ítem.</p>
                 <div class="psc-pv-demo">
-                    ${it.slot === 'marco' ? '<div class="psc-pvm ' + it.id + '"><div class="psc-pv-demo-av">P</div></div>' : ''}
+                                    ${it.id === 'marco_neon' ? '<div class="psc-neon-grid">' + NEONES.map(([k, n]) => '<div><div class="psc-pvm marco_neon_' + k + '"><div class="psc-pv-demo-av">P</div></div>' + n + '</div>').join('') + '</div>' : (it.slot === 'marco' ? '<div class="psc-pvm ' + it.id + '"><div class="psc-pv-demo-av">P</div></div>' : '')}
                     ${it.slot === 'tema' ? '<div class="psc-pv-demo-tema"><span class="psc-pv-demo-btn">PichiCoins</span><span class="psc-pv-demo-btn">Mensajería</span><span class="psc-pv-demo-btn">Traducir</span></div>' : ''}
                     ${it.slot === 'cartel' ? '<div class="psc-pv-demo-cartel" id="psc-pv-c"><div class="psc-pv-coin">P</div><div><div class="psc-pv-t1">¡Ganaste <b>500</b> PichiCoins!</div><div class="psc-pv-t2">por hacer algo genial</div></div></div>' : ''}
                     ${it.slot === 'titulo' ? '<div class="psc-pv-demo-titulo"><b>PichisoftUser</b><span>· ' + esc(S.tituloTexto || 'Explorador') + '</span></div>' : ''}
@@ -1133,7 +1151,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         };
     }
     function equipar(slot, itemId) {
-        if (itemId && S.bought[itemId] === undefined) return;
+        if (itemId && !posee(itemId)) return;
         S.equipped[slot] = itemId || '';
         guardar(); cambio();
     }
@@ -1224,9 +1242,10 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         [...b.classList].filter(c => c.startsWith('psc-own-')).forEach(c => b.classList.remove(c));
         let cus = null;
         for (const slot in eq) {
-            const id = eq[slot];
+            let id = eq[slot];
+            if (id === 'marco_neon') id = 'marco_neon_cian';
             if (!id || slot === 'cartel') continue;
-            if (!(over && over.slot === slot) && S.bought[id] === undefined) continue;
+            if (!(over && over.slot === slot) && !posee(id)) continue;
             if (id.startsWith('ctema_')) { cus = S.custom.find(x => x.id === id.slice(6)) || null; if (cus) b.classList.add('psc-own-tema_custom'); continue; }
             b.classList.add('psc-own-' + id);
         }
@@ -1300,7 +1319,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
 
     /* ================================== INICIO ================================== */
     const st = document.createElement('style'); st.id = 'psc-style'; st.textContent = tint(CSS); document.head.appendChild(st);
-    const st2 = document.createElement('style'); st2.id = 'psc-style2'; st2.textContent = CSS2 + CSS3; document.head.appendChild(st2);
+    const st2 = document.createElement('style'); st2.id = 'psc-style2'; st2.textContent = CSS2 + CSS3 + CSS4; document.head.appendChild(st2);
     if (esIndex) { document.body.classList.add('psc-idx'); montarDock(); escucharIndex(); }
     window.PichiCoins = {
         version: 5,
