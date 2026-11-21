@@ -700,7 +700,39 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         if (modo === 'cargando') { colaAcc.push(() => evento(n)); return; }
         if (modo === 'cuenta') ganar('ev_' + n, e[0], e[2]);
     }
-
+    /* ---------------------- Racha diaria ---------------------- */
+    let rachaDia = '';
+    function rachaActual() {
+        const s = S.streak || {};
+        return (s.last && (s.last === hoy() || s.last === diaDe(-1))) ? s.n : 0;
+    }
+    function revisarRacha() {
+        if (modo === 'cargando') { colaAcc.push(revisarRacha); return; }
+        const t = hoy(); rachaDia = t;
+        const s = S.streak || (S.streak = { last: '', n: 0 });
+        if (s.last === t) return;
+        const n = s.last === diaDe(-1) ? s.n + 1 : 1;
+        S.streak = { last: t, n };
+        let monto = 0;
+        if (n === 1 && !('racha_primera' in S.earned)) { S.earned.racha_primera = 30; monto += 30; }
+        else { S.earned['rd_' + t] = 3; monto += 3; }
+        if (n % 7 === 0) { S.earned['rw_' + t] = 30; monto += 30; }
+        guardar(); cambio();
+        cartelRacha(n, monto);
+    }
+    function cartelRacha(n, monto) {
+        const t = h('div', 'psc-rk'); t.setAttribute('translate', 'no'); t.setAttribute('role', 'status');
+        t.innerHTML = '<div class="psc-fl"></div><div><div class="psc-rk1"></div><div class="psc-rk2"></div></div>';
+        const est = colorCartel(S.equipped && S.equipped.cartel);
+        if (est) estilarCartel(t, est);
+        t.querySelector('.psc-rk1').textContent = n === 1 ? '¡Empezó tu racha!' : '¡' + n + ' días de racha!';
+        const r2 = t.querySelector('.psc-rk2'); r2.append('+', Object.assign(h('b'), { textContent: fmt(monto) }), ' PichiCoins');
+        if (n > 0 && n % 7 === 0) r2.append(' · ¡semana completa!');
+        document.body.append(t);
+        let fin = false;
+        const cerrar = () => { if (fin) return; fin = true; t.classList.add('out'); setTimeout(() => t.remove(), 450); };
+        t.onclick = cerrar; setTimeout(cerrar, 4200);
+    }
     /* ---------------------- Tiempo de permanencia ---------------------- */
     let ultAct = Date.now();
     ['pointerdown', 'pointermove', 'keydown', 'touchstart', 'wheel', 'scroll'].forEach(ev =>
@@ -713,6 +745,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     setInterval(() => {
         if (modo === 'cargando') return;
         if (document.visibilityState !== 'visible' || !document.hasFocus() || Date.now() - ultAct > 120000) return;
+        if (rachaDia && rachaDia !== hoy()) revisarRacha();
         const d = hoy();
         let o = lsGet('psc_day', null);
         if (!o || o.d !== d) {
@@ -823,6 +856,10 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         TRAMOS.forEach(([sec, monto, texto]) => w.append(fila(texto, monto, { done: ('t_' + sec) in E })));
         w.append(fila('Superar tu récord de tiempo diario', MONTO_RECORD, { nota: 'Una vez por cada día en que superes tu récord' + (S.rec > 0 ? ' · Tu récord: ' + Math.floor(S.rec / 60) + ' min' : '') }));
         w.append(h('div', 'psc-h4', 'Leer nuestros paneles'));
+        w.append(h('div', 'psc-h4', 'Días de racha'));
+        w.append(fila('Tu primer día de racha', 30, { done: 'racha_primera' in E }));
+        w.append(fila('Cada día de racha después del primero', 3, { nota: 'Entrá a PichonApps todos los días. Si pasás un día sin entrar, la racha vuelve a 0' + (rachaActual() ? ' · Racha actual: ' + rachaActual() : '') }));
+        w.append(fila('Cada semana de racha (7, 14, 21… días)', 30));
         Object.keys(PANELES).forEach(k => w.append(fila('Leer «' + PANELES[k] + '»', MONTO_PANEL, { done: ('panel_' + k) in E })));
         w.append(h('div', 'psc-h4', 'Cuenta de Pichisoft'));
         w.append(fila('Crear tu cuenta de Pichisoft', MONTO_CUENTA, { done: 'cuenta_creada' in E }));
@@ -1179,6 +1216,8 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     }
     function cambio() {
         actualizarBoton(); aplicarEfectos(); render();
+        const rk = document.getElementById('psc-racha');
+        if (rk) { const n = rachaActual(); rk.textContent = ''; const b = h('b', 'notranslate', String(n)); b.setAttribute('translate', 'no'); rk.append(b, h('small', '', n === 1 ? 'día de racha' : 'días de racha')); }
         try { window.dispatchEvent(new CustomEvent('pichicoins:cambio', { detail: { saldo: saldo(), modo } })); } catch { }
     }
 
@@ -1190,6 +1229,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         btn.onclick = abrirPanel;
         dock.append(btn);
         const sh = document.getElementById('pf-share-btn'); if (sh) dock.append(sh);
+        const rk = h('div'); rk.id = 'psc-racha'; dock.append(rk);
         document.body.append(dock);
         const pos = () => {
             const topbar = document.getElementById('pichisoft-topbar');
@@ -1227,17 +1267,11 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
             if (('panel_' + k) in S.earned) return;
             ganar('panel_' + k, MONTO_PANEL, 'leer el panel «' + PANELES[k] + '»');
         }, true);
-        let ultimoPerfil = null;
         const rc = window.renderCuenta;
         window.renderCuenta = function () {
             if (rc) rc.apply(this, arguments);
             evaluar();
             setTimeout(() => aplicarEfectos(), 0);
-            const u = window.Pichisoft && window.Pichisoft.user;
-            if (u) {
-                if (ultimoPerfil && (ultimoPerfil.name !== u.name || ultimoPerfil.photo !== u.photo || ultimoPerfil.email !== u.email)) evento('perfil');
-                ultimoPerfil = { name: u.name, photo: u.photo, email: u.email };
-            } else ultimoPerfil = null;
         };
     }
 
