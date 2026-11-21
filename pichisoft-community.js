@@ -1736,6 +1736,14 @@ document.addEventListener('selectionchange', () => {
     clearTimeout(selDebounce);
     selDebounce = setTimeout(actualizarToolbar, 80);
 });
+window.PichisoftMensajeria = {
+    abrir(t) {
+        if (!activo() || !uid) return false;
+        abrir();
+        if (panel) setTab(t === 'amigos' ? 'amigos' : 'chat');
+        return true;
+    }
+};
 /* ------------------------------ INICIO ------------------------------ */
 onAuthStateChanged(auth, () => refresh());
 const rcPrev = window.renderCuenta;
