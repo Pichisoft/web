@@ -2135,13 +2135,9 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
             if (!fb || !fb.auth || !fb.auth.currentUser) return;
             try {
                 const snap = await fb.getDoc(fb.doc(fb.db, 'app_ratings', appId + '_' + fb.auth.currentUser.uid));
-                if (snap.exists()) {
-                    userRating = snap.data().score || 0;
-                    paint(userRating);
-                    // NUEVO: retroactivo — si ya había calificado antes, acreditar el evento una vez
-                    if (window.PichiCoins && window.PichiCoins.marcarHecho) {
-                        try { window.PichiCoins.marcarHecho('calificar'); } catch (e) { }
-                    }
+                // NUEVO: retroactivo — si ya había calificado antes, acreditar el evento una vez
+                if (window.PichiCoins && window.PichiCoins.marcarHecho) {
+                    try { window.PichiCoins.marcarHecho('calificar'); } catch (e) { }
                 }
             } catch { }
         })();
@@ -2171,7 +2167,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
     }
 
     // --- MODAL DE CALIFICACIÓN ---
-       function cssRating() {
+    function cssRating() {
         if (document.getElementById('rtCss')) return;
         const s = document.createElement('style'); s.id = 'rtCss';
         s.textContent = `
@@ -2276,10 +2272,6 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         delete cfg.clasica; delete cfg.lista;
         if (!['tarjetas', 'lista', 'clasica'].includes(cfg.vista)) cfg.vista = 'tarjetas';
 
-        // NUEVO: retroactivo — si ya tenía config guardada de antes, acreditar el evento 'config' una vez
-        if (sv && Object.keys(sv).length && window.PichiCoins && window.PichiCoins.marcarHecho) {
-            try { window.PichiCoins.marcarHecho('config'); } catch (e) { }
-        }
         cargarLay(); render();
     }
 
