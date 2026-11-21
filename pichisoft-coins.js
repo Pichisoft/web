@@ -880,9 +880,9 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         w.append(fila('Superar tu récord de tiempo diario', MONTO_RECORD, { nota: 'Una vez por cada día en que superes tu récord' + (S.rec > 0 ? ' · Tu récord: ' + Math.floor(S.rec / 60) + ' min' : '') }));
         w.append(h('div', 'psc-h4', 'Leer nuestros paneles'));
         w.append(h('div', 'psc-h4', 'Días de racha'));
-        w.append(fila('Tu primer día de racha', 30, { done: 'racha_primera' in E }));
-        w.append(fila('Cada día de racha después del primero', 3, { nota: 'Entrá a PichonApps todos los días. Si pasás un día sin entrar, la racha vuelve a 0' + (rachaActual() ? ' · Racha actual: ' + rachaActual() : '') }));
-        w.append(fila('Cada semana de racha (7, 14, 21… días)', 30));
+        w.append(fila('Tu primer día de racha', 100, { done: 'racha_primera' in E }));
+        w.append(fila('Cada día de racha después del primero', 30, { nota: 'Entrá a PichonApps todos los días. Si pasás un día sin entrar, la racha vuelve a 0' + (rachaActual() ? ' · Racha actual: ' + rachaActual() : '') }));
+        w.append(fila('Cada semana de racha (7, 14, 21… días)', 80));
         Object.keys(PANELES).forEach(k => w.append(fila('Leer «' + PANELES[k] + '»', MONTO_PANEL, { done: ('panel_' + k) in E })));
         w.append(h('div', 'psc-h4', 'Cuenta de Pichisoft'));
         w.append(fila('Crear tu cuenta de Pichisoft', MONTO_CUENTA, { done: 'cuenta_creada' in E }));
