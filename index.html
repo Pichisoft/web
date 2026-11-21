@@ -3035,6 +3035,8 @@ base-uri 'self'; form-action 'self'">
         <button class="pf-btn" data-pf="reglas">Nuestras reglas</button>
         <button class="pf-btn" data-pf="privacidad">Privacidad</button>
         <button class="pf-btn" data-pf="cookies">Cookies</button>
+        <button class="pf-btn" data-pf="ayuda">Ayuda</button>
+        <button class="pf-btn" id="pf-consola" type="button">Consola</button>
     </div>
     <div id="ps-cookie-banner" role="dialog" aria-modal="false" aria-label="Aviso de cookies">
         <div class="ps-cb-inner">
@@ -3305,6 +3307,35 @@ base-uri 'self'; form-action 'self'">
                         <p>Más información en nuestra <a href="#" data-pf-link="privacidad">Política de Privacidad</a>.</p>
                     `
                 }
+
+                ,
+                'ayuda': {
+                    title: 'Ayuda',
+                    html: `
+                        <h3>Atajos con cuenta</h3>
+                        <p><strong>Ctrl+K</strong> — Buscar apps</p>
+                        <p><strong>Ctrl+S</strong> — Configuración</p>
+                        <p><strong>Ctrl+T</strong> — Traducir (en el navegador usá Alt+T)</p>
+                        <p><strong>Ctrl+M</strong> — Mensajería (Chat)</p>
+                        <p><strong>Ctrl+M y luego F</strong> — Mensajería (Amigos)</p>
+                        <p><strong>Ctrl+P</strong> — Editar perfil</p>
+                        <h3>Atajos para todos</h3>
+                        <p><strong>Ctrl+S</strong> — Compartir (sin cuenta) · <strong>Ctrl+Shift+S</strong> — Compartir (con cuenta)</p>
+                        <p><strong>Ctrl+C</strong> — PichiCoins (sin texto seleccionado)</p>
+                        <p><strong>Ctrl+U</strong> — Sobre nosotros</p>
+                        <p><strong>Ctrl+A</strong> — Preguntas frecuentes (sin texto seleccionado)</p>
+                        <p><strong>Ctrl+I</strong> — Información general</p>
+                        <p><strong>Ctrl+R</strong> — Nuestras reglas</p>
+                        <p><strong>Ctrl+P y luego P</strong> — Política de Privacidad</p>
+                        <p><strong>Ctrl+P y luego C</strong> — Política de Cookies</p>
+                        <p><strong>Ctrl+H</strong> — Esta ayuda</p>
+                        <p><strong>Ctrl+/</strong> — Consola</p>
+                        <h3>Notas</h3>
+                        <p>En todos los atajos podés usar <strong>Alt</strong> en lugar de Ctrl (en Mac también Cmd). Algunos navegadores se reservan ciertos atajos (por ejemplo Ctrl+T); con Alt funcionan siempre. Los atajos no actúan mientras escribís en un campo o hay un panel abierto.</p>
+                        <p>Para más opciones abrí la <strong>Consola</strong> y escribí <strong>/commands</strong>.</p>
+                    `
+                }
+
             };
 
             const modal = document.getElementById('pf-modal');
@@ -3474,6 +3505,7 @@ base-uri 'self'; form-action 'self'">
             }
         });
     </script>
+    <script src="pichisoft-atajos.js?v=02112026"></script>
 </body>
 
 </html>
