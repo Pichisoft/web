@@ -273,28 +273,6 @@ p.psc-tx{margin:0 0 14px}
 .psc-pv{background:linear-gradient(135deg,#1b1b1b,#0d0d0d);border-color:#555;color:#ccc;margin-top:8px}
 .psc-pv:hover{background:linear-gradient(135deg,#333,#1a1a1a);color:#fff;border-color:var(--gold)}
 /* --- Efectos de los ítems equipados --- */
-body.psc-own-marco_dorado #cuenta .avwrap::before {
-    content: "";
-    position: absolute;
-    inset: -4px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #fff6c9, #f1d98a 30%, #d4af37 65%, #8a6a10);
-    box-shadow: 0 0 14px rgba(212, 175, 55, .85);
-}
-body.psc-own-marco_dorado #cuenta .av {
-    position: relative;
-    z-index: 1;
-    box-shadow: none !important;
-}
-body.psc-own-marco_dorado #cuenta .lapiz {
-    z-index: 2;
-}
-
-
-
-body.psc-own-marco_animado #cuenta .avwrap::before{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(var(--gold2),#8a6a10,#fff6c9,var(--gold),var(--gold2));animation:pscSpin 3s linear infinite}
-body.psc-own-marco_animado #cuenta .av{position:relative;z-index:1}
-body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
 body.psc-own-marco_arcoiris #cuenta .avwrap::before{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(#ff0044,#ff8800,#ffee00,#00cc44,#0088ff,#7700ff,#ff0044);animation:pscSpin 3s linear infinite;filter:saturate(1.2)}
 body.psc-own-marco_arcoiris #cuenta .av{position:relative;z-index:1}
 body.psc-own-marco_arcoiris #cuenta .lapiz{z-index:2}
@@ -596,6 +574,39 @@ body.psc-idx.psc-own-tema_custom a:hover{color:#111;background:var(--ctxt,whites
 .psc-pvm.marco_dorado .psc-pv-demo-av{box-shadow:0 0 0 3px #d4af37,0 0 14px rgba(212,175,55,.7)}
 
 .psc-pvm.marco_animado::before,.psc-pvm.marco_arcoiris::before{content:"";position:absolute;inset:-4px;border-radius:50%;animation:pscSpin 3s linear infinite}
+/* Marco dorado y Marco animado en CSS2 para que tint() no les cambie el color */
+body.psc-own-marco_dorado #cuenta .avwrap::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: -4px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #fff6c9, #f1d98a 30%, #d4af37 65%, #8a6a10) !important;
+    box-shadow: 0 0 14px rgba(212, 175, 55, .85) !important;
+    animation: none !important;
+    z-index: 0 !important;
+}
+body.psc-own-marco_animado #cuenta .avwrap::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: -4px !important;
+    border-radius: 50% !important;
+    background: conic-gradient(#f1d98a, #8a6a10, #fff6c9, #d4af37, #f1d98a) !important;
+    box-shadow: 0 0 14px rgba(212, 175, 55, .65) !important;
+    animation: pscSpin 3s linear infinite !important;
+    z-index: 0 !important;
+}
+body.psc-own-marco_dorado #cuenta .av,
+body.psc-own-marco_animado #cuenta .av {
+    position: relative !important;
+    z-index: 1 !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+body.psc-own-marco_dorado #cuenta .lapiz,
+body.psc-own-marco_animado #cuenta .lapiz {
+    z-index: 2 !important;
+}
+
 .psc-pvm.marco_animado::before{background:conic-gradient(var(--gold2),#8a6a10,#fff6c9,var(--gold),var(--gold2))}
 .psc-pvm.marco_arcoiris::before{background:conic-gradient(#ff0044,#ff8800,#ffee00,#00cc44,#0088ff,#7700ff,#ff0044)}
 body.psc-own-marco_neon #cuenta .av{box-shadow:0 0 0 2px #0ff,0 0 10px #0ff,0 0 22px #0ff;animation:pscNeon 1.6s ease-in-out infinite}
@@ -989,7 +1000,6 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         w.append(h('div', 'psc-h4', 'Tiempo en nuestras apps'));
         TRAMOS.forEach(([sec, monto, texto]) => w.append(fila(texto, monto, { done: ('t_' + sec) in E })));
         w.append(fila('Superar tu récord de tiempo diario', MONTO_RECORD, { nota: 'Una vez por cada día en que superes tu récord' + (S.rec > 0 ? ' · Tu récord: ' + Math.floor(S.rec / 60) + ' min' : '') }));
-        w.append(h('div', 'psc-h4', 'Leer nuestros paneles'));
         w.append(h('div', 'psc-h4', 'Leer nuestros paneles'));
         w.append(h('div', 'psc-h4', 'Días de racha'));
         w.append(fila('Tu primer día de racha', 100, { done: 'racha_primera_v2' in E }));
@@ -1696,11 +1706,6 @@ body.psc-preview-mode:has(.pf-modal.open) #psc-preview-bar {
     pointer-events: none !important;
 }
 
-/* En celular, la barra se ajusta */
-@media (max-width: 600px) {
-    #psc-preview-bar { top: 8px; padding: 8px 12px; gap: 8px; font-size: .82rem; }
-    #psc-preview-exit { padding: 6px 10px; font-size: .8rem; }
-}
 `;
     const st2 = document.createElement('style'); st2.id = 'psc-style2'; st2.textContent = CSS2 + CSS3 + CSS4 + CSS_PREVIEW; document.head.appendChild(st2);
     if (esIndex) {
