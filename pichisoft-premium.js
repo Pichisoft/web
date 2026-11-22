@@ -2123,9 +2123,13 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
             if (!fb || !fb.auth || !fb.auth.currentUser) return;
             try {
                 const snap = await fb.getDoc(fb.doc(fb.db, 'app_ratings', appId + '_' + fb.auth.currentUser.uid));
-                // NUEVO: retroactivo — si ya había calificado antes, acreditar el evento una vez
-                if (window.PichiCoins && window.PichiCoins.marcarHecho) {
-                    try { window.PichiCoins.marcarHecho('calificar'); } catch (e) { }
+                if (snap.exists()) {
+                    userRating = snap.data().score || 0;
+                    paint(userRating);
+                    // retroactivo: solo si de verdad ya había calificado
+                    if (window.PichiCoins && window.PichiCoins.marcarHecho) {
+                        try { window.PichiCoins.marcarHecho('calificar'); } catch (e) { }
+                    }
                 }
             } catch { }
         })();
