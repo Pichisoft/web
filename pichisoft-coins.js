@@ -29,7 +29,7 @@ import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstat
         pichonrandom: 'PichonRandom', pichonsnake: 'PichonSnake', pichontraffic: 'PichonTraffic',
         pichonwatch: 'PichonWatch', pichonweather: 'PichonWeather'
     };
-    const APPS_NUEVAS = {};
+    const APPS_NUEVAS = lsGet('psc_apps_nuevas', {});
     const MONTO_APP_NUEVA = 100;
 
     const TEXTO_QUE_SON = `Los PichiCoins son la moneda virtual de Pichisoft. No valen dinero real y no se pueden cambiar por dinero.
@@ -613,6 +613,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     function detenerSnap() { if (unsubSnap) { try { unsubSnap(); } catch (e) { } unsubSnap = null; } }
 
     async function cargarCuenta(id) {
+        if (modo !== 'cargando') return;
         let remoto = null, fallo = false;
         try { const s = await getDoc(doc(db, 'pichicoins', id)); if (s.exists()) remoto = s.data(); }
         catch (e) { console.warn('PichiCoins: no se pudo leer la cuenta.', e); fallo = true; }
@@ -727,11 +728,13 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     function visitar(slug) {
         slug = String(slug || '').toLowerCase();
         if (modo === 'cargando') { colaAcc.push(() => visitar(slug)); return; }
+
         if (APPS[slug]) {
             const k = 'v_' + slug;
             if (!(k in S.earned)) { S.earned[k] = 0; guardar(); }
             revisarHitos();
-        } else if (APPS_NUEVAS[slug]) {
+        }
+        if (APPS_NUEVAS[slug]) {
             ganar('app_nueva_' + slug, MONTO_APP_NUEVA, 'entrar a ' + APPS_NUEVAS[slug] + ', una app nueva');
         }
     }
@@ -754,11 +757,15 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         const n = s.last === diaDe(-1) ? s.n + 1 : 1;
         S.streak = { last: t, n };
         let monto = 0;
-        if (n === 1 && !('racha_primera' in S.earned)) { S.earned.racha_primera = 30; monto += 30; }
-        else { S.earned['rd_' + t] = 3; monto += 3; }
-        if (n % 7 === 0) { S.earned['rw_' + t] = 30; monto += 30; }
+        if (n === 1) {
+            if (!('racha_primera_v2' in S.earned)) { S.earned.racha_primera_v2 = 100; monto += 100; }
+            else { S.earned['rd_' + t] = 30; monto += 30; }  // ya cobró el primero antes
+        } else {
+            S.earned['rd_' + t] = 30; monto += 30;
+        }
+        if (n % 7 === 0) { S.earned['rw_' + t] = 80; monto += 80; }
         guardar(); cambio();
-        cartelRacha(n, monto);
+        if (monto > 0) cartelRacha(n, monto);
     }
     function cartelRacha(n, monto) {
         const t = h('div', 'psc-rk'); t.setAttribute('translate', 'no'); t.setAttribute('role', 'status');
@@ -785,7 +792,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     setInterval(() => {
         if (modo === 'cargando') return;
         if (document.visibilityState !== 'visible' || !document.hasFocus() || Date.now() - ultAct > 120000) return;
-        if (rachaDia && rachaDia !== hoy()) revisarRacha();
+        if (rachaDia !== hoy()) revisarRacha();
         const d = hoy();
         let o = lsGet('psc_day', null);
         if (!o || o.d !== d) {
@@ -899,7 +906,8 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         w.append(h('div', 'psc-h4', 'Días de racha'));
         w.append(fila('Tu primer día de racha', 100, { done: 'racha_primera' in E }));
         w.append(fila('Cada día de racha después del primero', 30, { nota: 'Entrá a PichonApps todos los días. Si pasás un día sin entrar, la racha vuelve a 0' + (rachaActual() ? ' · Racha actual: ' + rachaActual() : '') }));
-        w.append(fila('Cada semana de racha (7, 14, 21… días)', 80));
+        w.append(fila('Cada semana de racha (7, 14, 21… días)', 80,
+            { done: Object.keys(E).some(k => k.startsWith('rw_')) }));
         Object.keys(PANELES).forEach(k => w.append(fila('Leer «' + PANELES[k] + '»', MONTO_PANEL, { done: ('panel_' + k) in E })));
         w.append(h('div', 'psc-h4', 'Cuenta de Pichisoft'));
         w.append(fila('Crear tu cuenta de Pichisoft', MONTO_CUENTA, { done: 'cuenta_creada' in E }));
@@ -1316,7 +1324,29 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
             setTimeout(() => aplicarEfectos(), 0);
         };
     }
-
+    /* Auto-detección de apps nuevas: lee index.html y guarda los slugs en localStorage */
+    function escanearAppsNuevas() {
+        if (!esIndex) return;
+        const encontradas = {};
+        document.querySelectorAll('.nuevo[data-app], [data-app][data-nuevo], [data-nueva][data-app], [data-app].app-nueva')
+            .forEach(el => {
+                const slug = el.dataset.app;
+                if (!slug) return;
+                const nombre = el.dataset.nombre
+                    || APPS[slug]
+                    || (el.querySelector('h3,h2,.titulo,.name')?.textContent || '').trim()
+                    || slug;
+                encontradas[slug] = nombre;
+            });
+        if (!Object.keys(encontradas).length) return;
+        Object.assign(APPS_NUEVAS, encontradas);
+        lsSet('psc_apps_nuevas', APPS_NUEVAS);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', escanearAppsNuevas, { once: true });
+    } else {
+        escanearAppsNuevas();
+    }
     /* ================================== INICIO ================================== */
     const st = document.createElement('style'); st.id = 'psc-style'; st.textContent = tint(CSS); document.head.appendChild(st);
     const st2 = document.createElement('style'); st2.id = 'psc-style2'; st2.textContent = CSS2 + CSS3 + CSS4; document.head.appendChild(st2);
@@ -1332,6 +1362,26 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     addEventListener('pagehide', () => { flush(); });
     onAuthStateChanged(auth, () => { authListo = true; evaluar(); });
     setTimeout(() => { if (!authListo) { authListo = true; evaluar(); } }, 8000);
+    setTimeout(() => {
+        if (modo === 'cargando' && uid) {
+            console.warn('PichiCoins: cargarCuenta tardó demasiado, uso cache local');
+            const cache = lsGet(keyAcc(uid), null);
+            S = cache ? {
+                streak: okStreak(cache.streak),
+                earned: { ...obj(cache.earned) },
+                bought: { ...obj(cache.bought) },
+                equipped: { ...obj(cache.equipped) },
+                rec: +cache.rec || 0,
+                tituloTexto: cache.tituloTexto || '',
+                custom: (Array.isArray(cache.custom) ? cache.custom : []).filter(okCustom).slice(0, MAX_CUSTOM)
+            } : vacioGuest();
+            modo = 'cuenta';
+            sucio = false;
+            drenar();       // dispara revisarRacha/visitar encolados
+            revisarHitos();
+            cambio();
+        }
+    }, 12000);
     evaluar();
     cambio();
     revisarRacha();
