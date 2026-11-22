@@ -273,7 +273,9 @@ p.psc-tx{margin:0 0 14px}
 .psc-pv{background:linear-gradient(135deg,#1b1b1b,#0d0d0d);border-color:#555;color:#ccc;margin-top:8px}
 .psc-pv:hover{background:linear-gradient(135deg,#333,#1a1a1a);color:#fff;border-color:var(--gold)}
 /* --- Efectos de los ítems equipados --- */
-body.psc-own-marco_dorado #cuenta .av{box-shadow:0 0 0 3px var(--gold),0 0 14px rgba(212,175,55,.6)}
+body.psc-own-marco_dorado #cuenta .av{box-shadow:0 0 0 3px #d4af37,0 0 14px rgba(212,175,55,.7)}
+
+
 body.psc-own-marco_animado #cuenta .avwrap::before{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(var(--gold2),#8a6a10,#fff6c9,var(--gold),var(--gold2));animation:pscSpin 3s linear infinite}
 body.psc-own-marco_animado #cuenta .av{position:relative;z-index:1}
 body.psc-own-marco_animado #cuenta .lapiz{z-index:2}
@@ -575,7 +577,8 @@ body.psc-idx.psc-own-tema_custom a:hover{color:#111;background:var(--ctxt,whites
 #psc-ed-ov .psc-pv-card{max-height:92vh;overflow:auto;max-width:460px}
 .psc-pvm{position:relative;display:inline-block}
 .psc-pvm .psc-pv-demo-av{position:relative;z-index:1}
-.psc-pvm.marco_dorado .psc-pv-demo-av{box-shadow:0 0 0 3px var(--gold),0 0 14px rgba(var(--gold-rgb),.6)}
+.psc-pvm.marco_dorado .psc-pv-demo-av{box-shadow:0 0 0 3px #d4af37,0 0 14px rgba(212,175,55,.7)}
+
 .psc-pvm.marco_animado::before,.psc-pvm.marco_arcoiris::before{content:"";position:absolute;inset:-4px;border-radius:50%;animation:pscSpin 3s linear infinite}
 .psc-pvm.marco_animado::before{background:conic-gradient(var(--gold2),#8a6a10,#fff6c9,var(--gold),var(--gold2))}
 .psc-pvm.marco_arcoiris::before{background:conic-gradient(#ff0044,#ff8800,#ffee00,#00cc44,#0088ff,#7700ff,#ff0044)}
@@ -1217,8 +1220,43 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
             bar.append(s);
         }
         if (it.id === 'marco_neon') {
-            bar.append(h('span', 'psc-prev-note', 'Se muestra el marco cian (hay 10 en el pack)'));
+            const wrap = h('div', 'psc-prev-chips');
+            NEONES.forEach(([k, n, col], idx) => {
+                const chip = h('button', 'psc-prev-extra', n.split(' ')[0]);
+                chip.type = 'button';
+                chip.title = 'Neón ' + n;
+                chip.style.borderColor = col;
+                if (idx === 0) { chip.style.background = col; chip.style.color = '#111'; }
+                chip.onclick = () => {
+                    wrap.querySelectorAll('button').forEach(b => { b.style.background = 'rgba(212,175,55,.12)'; b.style.color = 'var(--gold2, #f1d98a)'; });
+                    chip.style.background = col; chip.style.color = '#111';
+                    aplicarEfectos({ slot: 'marco', id: 'marco_neon_' + k });
+                };
+                wrap.append(chip);
+            });
+            bar.append(wrap);
         }
+        if (it.id === 'tema_dia') {
+            const wrap = h('div', 'psc-prev-chips');
+            const actual = claveDia();
+            NOMBRES_DIA.forEach(([k, n, hrs]) => {
+                const pal = PALETAS_DIA[k];
+                const chip = h('button', 'psc-prev-extra', n);
+                chip.type = 'button';
+                chip.title = n + ' (' + hrs + ' hs)';
+                chip.style.borderColor = pal.g;
+                if (k === actual) { chip.style.background = pal.g; chip.style.color = '#111'; }
+                chip.onclick = () => {
+                    wrap.querySelectorAll('button').forEach(b => { b.style.background = 'rgba(212,175,55,.12)'; b.style.color = 'var(--gold2, #f1d98a)'; });
+                    chip.style.background = pal.g; chip.style.color = '#111';
+                    previewDia = k;
+                    aplicarEfectos({ slot: 'tema', id: 'tema_dia' });
+                };
+                wrap.append(chip);
+            });
+            bar.append(wrap);
+        }
+
         if (it.id === 'coleccion') {
             bar.append(h('span', 'psc-prev-note', 'La colección incluye TODOS los ítems de la tienda'));
         }
@@ -1230,6 +1268,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         bar.append(ex);
         document.body.append(bar);
     }
+
 
     function mostrarCartelDemo() {
         if (document.querySelector('.psc-preview-cartel-demo')) return;
@@ -1527,42 +1566,75 @@ body.psc-preview-mode #psc-preview-bar * {
 }
 
 /* Barra superior de preview */
+/* Barra lateral de vista previa (medio derecha) */
 #psc-preview-bar {
-    position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    position: fixed;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
     z-index: 2147483000;
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 14px 10px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: max-content;
+    max-width: 210px;
+    padding: 12px 14px;
     background: linear-gradient(160deg, #241b06, #0c0a03 70%);
     border: 1.5px solid var(--gold, #d4af37);
     border-radius: 14px;
     box-shadow: 0 18px 50px rgba(0,0,0,.7), 0 0 34px rgba(212,175,55,.35);
     color: #fff;
-    font: 500 .9rem Verdana, "Open Sans", sans-serif;
-    max-width: calc(100vw - 20px);
+    font: 500 .85rem Verdana, "Open Sans", sans-serif;
     box-sizing: border-box;
-    flex-wrap: wrap;
     animation: pscFade .25s ease;
     user-select: none;
     -webkit-user-select: none;
 }
-#psc-preview-bar .psc-prev-label { color: #d0d0d0; font-size: .82rem; }
-#psc-preview-bar .psc-prev-name { color: var(--gold2, #f1d98a); font-family: Georgia, serif; font-size: 1rem; }
-#psc-preview-bar .psc-prev-note { color: #bdbdbd; font-size: .74rem; font-style: italic; }
+#psc-preview-bar .psc-prev-label { color: #d0d0d0; font-size: .74rem; }
+#psc-preview-bar .psc-prev-name { color: var(--gold2, #f1d98a); font-family: Georgia, serif; font-size: .98rem; line-height: 1.2; }
+#psc-preview-bar .psc-prev-note { color: #bdbdbd; font-size: .72rem; font-style: italic; line-height: 1.35; }
+#psc-preview-bar .psc-prev-chips {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+    margin: 2px 0;
+}
 #psc-preview-bar .psc-prev-extra {
     background: rgba(212,175,55,.12); color: var(--gold2, #f1d98a);
     border: 1px solid var(--gold, #d4af37); border-radius: 6px;
-    padding: 4px 10px; font: bold .78rem Arial, sans-serif; cursor: pointer;
+    padding: 5px 6px; font: bold .72rem Arial, sans-serif; cursor: pointer;
+    text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 #psc-preview-bar .psc-prev-extra:hover { background: var(--gold, #d4af37); color: #111; }
 #psc-preview-exit {
     background: linear-gradient(135deg, #d4af37, #a67c10);
     color: #111; border: 0; border-radius: 8px;
-    padding: 8px 14px; font: bold .85rem Georgia, serif;
-    cursor: pointer; white-space: nowrap;
-    margin-left: auto;
+    padding: 8px 12px; font: bold .82rem Georgia, serif;
+    cursor: pointer; text-align: center;
+    margin-top: 2px;
     box-shadow: 0 4px 12px rgba(0,0,0,.4);
 }
 #psc-preview-exit:hover { background: linear-gradient(135deg, #f1d98a, #d4af37); }
+
+/* En celular se acomoda abajo para no tapar el contenido */
+@media (max-width: 600px) {
+    #psc-preview-bar {
+        top: auto;
+        bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100vw - 20px);
+        max-width: 420px;
+        padding: 10px 12px;
+        gap: 6px;
+    }
+    #psc-preview-bar .psc-prev-chips {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    #psc-preview-exit { padding: 7px 10px; font-size: .8rem; }
+}
 
 /* Subir z-index de modales para que se vean por encima del preview */
 body.psc-preview-mode #pCfg       { z-index: 2147483200 !important; }
