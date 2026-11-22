@@ -273,7 +273,23 @@ p.psc-tx{margin:0 0 14px}
 .psc-pv{background:linear-gradient(135deg,#1b1b1b,#0d0d0d);border-color:#555;color:#ccc;margin-top:8px}
 .psc-pv:hover{background:linear-gradient(135deg,#333,#1a1a1a);color:#fff;border-color:var(--gold)}
 /* --- Efectos de los ítems equipados --- */
-body.psc-own-marco_dorado #cuenta .av{box-shadow:0 0 0 3px #d4af37,0 0 14px rgba(212,175,55,.7)}
+body.psc-own-marco_dorado #cuenta .avwrap::before {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff6c9, #f1d98a 30%, #d4af37 65%, #8a6a10);
+    box-shadow: 0 0 14px rgba(212, 175, 55, .85);
+}
+body.psc-own-marco_dorado #cuenta .av {
+    position: relative;
+    z-index: 1;
+    box-shadow: none !important;
+}
+body.psc-own-marco_dorado #cuenta .lapiz {
+    z-index: 2;
+}
+
 
 
 body.psc-own-marco_animado #cuenta .avwrap::before{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(var(--gold2),#8a6a10,#fff6c9,var(--gold),var(--gold2));animation:pscSpin 3s linear infinite}
