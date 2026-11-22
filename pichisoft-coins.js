@@ -504,7 +504,7 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
         mediodia: { g: '#4fc3f7', g2: '#d2f1ff', bg: '#13232f', tx: '#f2fbff' },
         tarde: { g: '#ffa726', g2: '#ffe0b2', bg: '#2a1e10', tx: '#fff6e8' },
         tardecita: { g: '#f06292', g2: '#ffc1d6', bg: '#2a1229', tx: '#fff0f6' },
-        noche: { g: '#5f7bd9', g2: '#b4c3f5', bg: '#04050c', tx: '#e6ebfb' }
+        noche: { g: '#4d8dff', g2: '#b9d2ff', bg: '#0a1326', tx: '#eaf1ff' }
     };
     let previewDia = null;   // solo se usa dentro de la vista previa
     const NOMBRES_DIA = [
@@ -536,12 +536,6 @@ body.psc-own-marco_neon_dual #cuenta .av,.psc-pvm.marco_neon_dual .psc-pv-demo-a
     const posee = id => !id ? false : (id.startsWith('marco_neon_') ? S.bought.marco_neon !== undefined : S.bought[id] !== undefined);
     const CSS3 = `
     html{transition:background-color 1.5s ease,color 1.5s ease}
-    .psc-dia-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-top:6px}
-.psc-dia-chip{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;background:#161616;border:1px solid #2b2b2b;border-radius:10px;color:#fff;font:bold .78rem Arial,sans-serif;cursor:pointer;transition:border-color .15s,background .15s}
-.psc-dia-chip i{width:16px;height:16px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c)}
-.psc-dia-chip small{font:.62rem Arial,sans-serif;color:#999}
-.psc-dia-chip:hover{border-color:var(--c)}
-.psc-dia-chip.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,#000)}
 body:has(.psc-ov) #pichisoft-topbar,body:has(.psc-pv-ov) #pichisoft-topbar,body:has(.psc-reset-ov) #pichisoft-topbar,
 body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisoft-topbar,body:has(.pcm-ov) #pichisoft-topbar,body:has(.psi-ov) #pichisoft-topbar{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
 #psc-racha{align-self:flex-end;text-align:center;line-height:1.1;user-select:none;-webkit-user-select:none;padding:2px 4px}
