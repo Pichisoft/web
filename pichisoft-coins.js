@@ -79,7 +79,7 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
         { id: 'marco_hielo', nombre: 'Marco hielo', desc: 'Un anillo helado y cristalino alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
         { id: 'marco_glitch', nombre: 'Marco glitch', desc: 'Un borde digital que se distorsiona como una señal con fallas.', precio: 3700, soloCuenta: true, slot: 'marco' },
         ...THEMES.map(([k, n]) => ({ id: 'tema_' + k, nombre: 'Tema ' + n, desc: 'Cambia el dorado de PichonApps por el estilo ' + n + '.', precio: 900, slot: 'tema' })),
-        { id: 'tema_dia', nombre: 'Tema del día', desc: 'Tu PichonApps cambia de color solo a lo largo del día: amanecer, mediodía, tarde, tardecita, noche y madrugada.', precio: 1500, slot: 'tema' },
+        { id: 'tema_dia', nombre: 'Tema del día', desc: 'Tu PichonApps cambia de color solo a lo largo del día: amanecer, mediodía, tarde, tardecita, noche y madrugada.', precio: 1800, slot: 'tema' },
         ...THEMES.map(([k, n]) => ({ id: 'cartel_' + k, nombre: 'Cartel ' + n, desc: 'El cartel de «¡Ganaste!» con el estilo ' + n + '.', precio: 700, slot: 'cartel' })),
         { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre. ¡Podés elegir el texto que quieras!', precio: 1200, soloCuenta: true, slot: 'titulo' },
         { id: 'sonido_moneda', nombre: 'Sonido de moneda', desc: 'Suena una moneda cada vez que ganás PichiCoins.', precio: 500, slot: 'sonido' },
@@ -536,6 +536,12 @@ body.psc-own-marco_neon_dual #cuenta .av,.psc-pvm.marco_neon_dual .psc-pv-demo-a
     const posee = id => !id ? false : (id.startsWith('marco_neon_') ? S.bought.marco_neon !== undefined : S.bought[id] !== undefined);
     const CSS3 = `
     html{transition:background-color 1.5s ease,color 1.5s ease}
+    .psc-dia-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-top:6px}
+.psc-dia-chip{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;background:#161616;border:1px solid #2b2b2b;border-radius:10px;color:#fff;font:bold .78rem Arial,sans-serif;cursor:pointer;transition:border-color .15s,background .15s}
+.psc-dia-chip i{width:16px;height:16px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c)}
+.psc-dia-chip small{font:.62rem Arial,sans-serif;color:#999}
+.psc-dia-chip:hover{border-color:var(--c)}
+.psc-dia-chip.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,#000)}
 body:has(.psc-ov) #pichisoft-topbar,body:has(.psc-pv-ov) #pichisoft-topbar,body:has(.psc-reset-ov) #pichisoft-topbar,
 body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisoft-topbar,body:has(.pcm-ov) #pichisoft-topbar,body:has(.psi-ov) #pichisoft-topbar{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
 #psc-racha{align-self:flex-end;text-align:center;line-height:1.1;user-select:none;-webkit-user-select:none;padding:2px 4px}
@@ -1178,59 +1184,134 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     }
 
     /* ---------------- Vista previa de ítems de la tienda ---------------- */
+    const PREVIEW_PARAM = 'psc_preview';
+    let previewState = null;
+
+    function buscarItemPorId(id) {
+        if (!id) return null;
+        const all = TIENDA.concat(itemsNeon(), itemsCustom());
+        return all.find(x => x.id === id) || null;
+    }
+
     function mostrarPreview(it) {
-        if (document.getElementById('psc-pv-ov')) return;
-        aplicarEfectos({ slot: it.slot, id: it.id });
-        const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-        const ov = h('div', 'psc-pv-ov'); ov.id = 'psc-pv-ov';
-        ov.innerHTML = `
-            <div class="psc-pv-card">
-                <div class="psc-pv-hd"><h2>Vista previa</h2><button class="psc-pv-x" type="button" aria-label="Cerrar"></button></div>
-                <p class="psc-pv-name"><b>${esc(it.nombre)}</b></p>
-                <p class="psc-pv-desc">${esc(it.desc)}</p>
-                <p class="psc-pv-hint">Estás viendo una vista previa. Los cambios NO se guardan hasta que compres el ítem.</p>
-                <div class="psc-pv-demo">
-                                    ${it.id === 'marco_neon' ? '<div class="psc-neon-grid">' + NEONES.map(([k, n]) => '<div><div class="psc-pvm marco_neon_' + k + '"><div class="psc-pv-demo-av">P</div></div>' + n + '</div>').join('') + '</div>' : (it.slot === 'marco' ? '<div class="psc-pvm ' + it.id + '"><div class="psc-pv-demo-av">P</div></div>' : '')}
-                    ${it.slot === 'tema' ? '<div class="psc-pv-demo-tema"><span class="psc-pv-demo-btn">PichiCoins</span><span class="psc-pv-demo-btn">Mensajería</span><span class="psc-pv-demo-btn">Traducir</span></div>' : ''}
-                    ${it.slot === 'cartel' ? '<div class="psc-pv-demo-cartel" id="psc-pv-c"><div class="psc-pv-coin">P</div><div><div class="psc-pv-t1">¡Ganaste <b>500</b> PichiCoins!</div><div class="psc-pv-t2">por hacer algo genial</div></div></div>' : ''}
-                    ${it.slot === 'titulo' ? '<div class="psc-pv-demo-titulo"><b>PichisoftUser</b><span>· ' + esc(S.tituloTexto || 'Explorador') + '</span></div>' : ''}
-                    ${it.slot === 'sonido' ? '<div class="psc-pv-demo-sonido">🔊 Hacé clic para escuchar</div>' : ''}
-                </div>
-                <button class="psc-pv-close" type="button">Cerrar vista previa</button>
-            </div>`;
-        document.body.append(ov);
-        const cd = ov.querySelector('#psc-pv-c');
-        if (cd) { const e = estiloDe(it.id); if (e) estilarCartel(cd, e); }
-        if (it.id === 'tema_dia') {
-            const demo = ov.querySelector('.psc-pv-demo'), bar = h('div', 'psc-dia-bar'), chips = [];
-            const marcar = () => chips.forEach(([k, b]) => b.classList.toggle('on', k === (previewDia || claveDia())));
-            NOMBRES_DIA.forEach(([k, n, hr]) => {
-                const b = h('button', 'psc-dia-chip'); b.type = 'button';
-                b.style.setProperty('--c', PALETAS_DIA[k].g);
-                b.append(h('i'), n, h('small', '', hr));
-                b.onclick = () => { previewDia = k; marcar(); aplicarEfectos({ slot: 'tema', id: 'tema_dia' }); };
-                chips.push([k, b]); bar.append(b);
-            });
-            demo.append(bar); marcar();
+        if (!it) return;
+        if (previewState) return;
+        if (!esIndex) {
+            location.href = 'https://pichisoft.cc/?' + PREVIEW_PARAM + '=' + encodeURIComponent(it.id);
+            return;
         }
-        const escK = e => { if (e.key === 'Escape') { e.stopImmediatePropagation(); cerrar(); } };
-        document.addEventListener('keydown', escK, true);
-        ov.querySelector('.psc-pv-x').onclick = cerrar;
-        ov.querySelector('.psc-pv-close').onclick = cerrar;
-        ov.onclick = e => { if (e.target === ov) cerrar(); };
-        const sd = ov.querySelector('.psc-pv-demo-sonido');
-        if (sd) sd.onclick = () => {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const o = ctx.createOscillator(), g = ctx.createGain();
-                o.connect(g); g.connect(ctx.destination);
-                o.type = 'sine'; o.frequency.setValueAtTime(880, ctx.currentTime);
-                o.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.08);
-                g.gain.setValueAtTime(0.15, ctx.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-                o.start(); o.stop(ctx.currentTime + 0.3);
-            } catch (e) { }
+        activarPreview(it);
+    }
+
+    function crearBarraPreview(it) {
+        const bar = h('div'); bar.id = 'psc-preview-bar';
+        bar.setAttribute('translate', 'no');
+        bar.setAttribute('role', 'status');
+        const lbl = h('span', 'psc-prev-label', 'Vista previa:');
+        const nm = h('b', 'psc-prev-name', it.nombre || '');
+        bar.append(lbl, nm);
+
+        if (it.id === 'sonido_moneda') {
+            const s = h('button', 'psc-prev-extra', '🔊 Probar sonido'); s.type = 'button';
+            s.onclick = () => { sonidoMoneda(); mostrarCartelDemo(); };
+            bar.append(s);
+        }
+        if (it.id === 'marco_neon') {
+            bar.append(h('span', 'psc-prev-note', 'Se muestra el marco cian (hay 10 en el pack)'));
+        }
+        if (it.id === 'coleccion') {
+            bar.append(h('span', 'psc-prev-note', 'La colección incluye TODOS los ítems de la tienda'));
+        }
+
+        const ex = h('button'); ex.id = 'psc-preview-exit'; ex.type = 'button';
+        ex.setAttribute('translate', 'no');
+        ex.textContent = '✕ Salir de vista previa';
+        ex.onclick = salirPreview;
+        bar.append(ex);
+        document.body.append(bar);
+    }
+
+    function mostrarCartelDemo() {
+        if (document.querySelector('.psc-preview-cartel-demo')) return;
+        const t = h('div', 'psc-t psc-preview-cartel-demo');
+        t.setAttribute('translate', 'no');
+        t.setAttribute('role', 'status');
+        t.innerHTML = '<div class="psc-coin">P</div><div><div class="psc-t1">¡Ganaste <b>100</b> PichiCoins!</div><div class="psc-t2">por probar este ítem</div></div><div class="psc-bar"></div>' + '<i class="psc-sp"></i>'.repeat(6);
+        const est = previewState && previewState.item.slot === 'cartel'
+            ? estiloDe(previewState.item.id)
+            : colorCartel(S.equipped && S.equipped.cartel);
+        if (est) estilarCartel(t, est);
+        document.body.append(t);
+        setTimeout(() => { if (t.parentNode) t.remove(); }, 4600);
+    }
+
+    function activarPreview(it) {
+        const originalAbierto = { ...abierto };
+        const pscOv = document.getElementById('psc-ov');
+        if (pscOv) { const x = pscOv.querySelector('.psc-x'); if (x) x.click(); }
+        aplicarEfectos({ slot: it.slot, id: it.id });
+        document.body.classList.add('psc-preview-mode');
+        previewState = { item: it, originalAbierto, previewDiaSaved: previewDia };
+        crearBarraPreview(it);
+        if (it.id === 'sonido_moneda') { setTimeout(sonidoMoneda, 150); setTimeout(mostrarCartelDemo, 300); }
+        else if (it.slot === 'cartel') { setTimeout(mostrarCartelDemo, 300); }
+    }
+
+    function salirPreview() {
+        if (!previewState) return;
+        document.body.classList.remove('psc-preview-mode');
+        const bar = document.getElementById('psc-preview-bar'); if (bar) bar.remove();
+        document.querySelectorAll('.psc-preview-cartel-demo').forEach(t => t.remove());
+        previewDia = null;
+        aplicarEfectos();
+        previewState = null;
+        const params = new URLSearchParams(location.search);
+        if (params.has(PREVIEW_PARAM)) {
+            params.delete(PREVIEW_PARAM);
+            const qs = params.toString();
+            history.replaceState({}, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+        }
+        setTimeout(() => { abrirPanel(); document.documentElement.style.overflow = 'hidden'; }, 60);
+    }
+
+    function pscPreviewKeyGuard(e) {
+        if (!previewState) return;
+        if (e.key === 'Escape') return;
+        const t = e.target;
+        if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    addEventListener('keydown', pscPreviewKeyGuard, true);
+
+    function pscPreviewEscape(e) {
+        if (!previewState) return;
+        if (e.key !== 'Escape') return;
+        const hayModal = document.querySelector('.psi-ov, .pcm-ov, #pCfg, .pf-modal.open, #pf-share-ov.open, #psc-pv-ov, #psc-ed-ov, #psc-reset-ov, #psc-title-ov, #pcfOv, .psc-del-ov');
+        if (hayModal) return;
+        e.stopImmediatePropagation();
+        salirPreview();
+    }
+    addEventListener('keydown', pscPreviewEscape, true);
+
+    function checkPreviewFromURL() {
+        if (!esIndex) return;
+        const params = new URLSearchParams(location.search);
+        const id = params.get(PREVIEW_PARAM);
+        if (!id) return;
+        const it = buscarItemPorId(id);
+        if (!it) {
+            params.delete(PREVIEW_PARAM);
+            const qs = params.toString();
+            history.replaceState({}, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+            return;
+        }
+        let attempts = 40;
+        const tick = () => {
+            if (modo === 'cargando' && attempts-- > 0) { setTimeout(tick, 250); return; }
+            mostrarPreview(it);
         };
+        tick();
     }
     function equipar(slot, itemId) {
         if (itemId && !posee(itemId)) return;
@@ -1433,7 +1514,107 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     }
     /* ================================== INICIO ================================== */
     const st = document.createElement('style'); st.id = 'psc-style'; st.textContent = tint(CSS); document.head.appendChild(st);
-    const st2 = document.createElement('style'); st2.id = 'psc-style2'; st2.textContent = CSS2 + CSS3 + CSS4; document.head.appendChild(st2);
+    const CSS_PREVIEW = `
+/* ===================== MODO VISTA PREVIA ===================== */
+body.psc-preview-mode * { pointer-events: none !important; }
+
+/* Elementos que SÍ se pueden tocar en preview */
+body.psc-preview-mode #pichisoft-topbar > *,
+body.psc-preview-mode .pf-btn[data-pf],
+body.psc-preview-mode #psc-preview-bar,
+body.psc-preview-mode #psc-preview-bar * {
+    pointer-events: auto !important;
+}
+
+/* Barra superior de preview */
+#psc-preview-bar {
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    z-index: 2147483000;
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px 10px 16px;
+    background: linear-gradient(160deg, #241b06, #0c0a03 70%);
+    border: 1.5px solid var(--gold, #d4af37);
+    border-radius: 14px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.7), 0 0 34px rgba(212,175,55,.35);
+    color: #fff;
+    font: 500 .9rem Verdana, "Open Sans", sans-serif;
+    max-width: calc(100vw - 20px);
+    box-sizing: border-box;
+    flex-wrap: wrap;
+    animation: pscFade .25s ease;
+    user-select: none;
+    -webkit-user-select: none;
+}
+#psc-preview-bar .psc-prev-label { color: #d0d0d0; font-size: .82rem; }
+#psc-preview-bar .psc-prev-name { color: var(--gold2, #f1d98a); font-family: Georgia, serif; font-size: 1rem; }
+#psc-preview-bar .psc-prev-note { color: #bdbdbd; font-size: .74rem; font-style: italic; }
+#psc-preview-bar .psc-prev-extra {
+    background: rgba(212,175,55,.12); color: var(--gold2, #f1d98a);
+    border: 1px solid var(--gold, #d4af37); border-radius: 6px;
+    padding: 4px 10px; font: bold .78rem Arial, sans-serif; cursor: pointer;
+}
+#psc-preview-bar .psc-prev-extra:hover { background: var(--gold, #d4af37); color: #111; }
+#psc-preview-exit {
+    background: linear-gradient(135deg, #d4af37, #a67c10);
+    color: #111; border: 0; border-radius: 8px;
+    padding: 8px 14px; font: bold .85rem Georgia, serif;
+    cursor: pointer; white-space: nowrap;
+    margin-left: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,.4);
+}
+#psc-preview-exit:hover { background: linear-gradient(135deg, #f1d98a, #d4af37); }
+
+/* Subir z-index de modales para que se vean por encima del preview */
+body.psc-preview-mode #pCfg       { z-index: 2147483200 !important; }
+body.psc-preview-mode .pcm-ov     { z-index: 2147483200 !important; }
+body.psc-preview-mode .pf-modal.open { z-index: 2147483200 !important; }
+
+/* Modales: contenedores clickeables (para el "click en el fondo cierra") */
+body.psc-preview-mode #pCfg,
+body.psc-preview-mode .psi-ov,
+body.psc-preview-mode .pcm-ov,
+body.psc-preview-mode .pf-modal.open,
+body.psc-preview-mode #pCfg .pm-panel,
+body.psc-preview-mode .psi-ov .psi-card,
+body.psc-preview-mode .pcm-ov .pcm-card,
+body.psc-preview-mode .pf-modal.open .pf-card {
+    pointer-events: auto !important;
+}
+
+/* Solo los botones de cierre son clickeables dentro de los modales (Decisión A: opción 2) */
+body.psc-preview-mode .pm-back,
+body.psc-preview-mode .psi-x,
+body.psc-preview-mode .pcm-x,
+body.psc-preview-mode .pf-close {
+    pointer-events: auto !important;
+}
+
+/* Ocultar cosas del index que no van en preview */
+body.psc-preview-mode #psc-dock,
+body.psc-preview-mode #ps-cookie-banner,
+body.psc-preview-mode #pf-share-btn,
+body.psc-preview-mode .psc-t:not(.psc-preview-cartel-demo),
+body.psc-preview-mode .psc-rk,
+body.psc-preview-mode #pCart {
+    display: none !important;
+}
+
+/* Atenuar la barra de preview cuando hay un modal abierto */
+body.psc-preview-mode:has(#pCfg) #psc-preview-bar,
+body.psc-preview-mode:has(.psi-ov) #psc-preview-bar,
+body.psc-preview-mode:has(.pcm-ov) #psc-preview-bar,
+body.psc-preview-mode:has(.pf-modal.open) #psc-preview-bar {
+    opacity: .35;
+    pointer-events: none !important;
+}
+
+/* En celular, la barra se ajusta */
+@media (max-width: 600px) {
+    #psc-preview-bar { top: 8px; padding: 8px 12px; gap: 8px; font-size: .82rem; }
+    #psc-preview-exit { padding: 6px 10px; font-size: .8rem; }
+}
+`;
+    const st2 = document.createElement('style'); st2.id = 'psc-style2'; st2.textContent = CSS2 + CSS3 + CSS4 + CSS_PREVIEW; document.head.appendChild(st2);
     if (esIndex) {
         document.body.classList.add('psc-idx');
 
@@ -1486,4 +1667,5 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     cambio();
     revisarRacha();
     if (slugActual) visitar(slugActual);
+    setTimeout(checkPreviewFromURL, 200);
 })();
