@@ -12,11 +12,11 @@
     const APPS = {
         alarm: 'pichonalarm', birthday: 'pichonbirthday', calc: 'pichoncalc', calendar: 'pichoncalendar',
         chess: 'pichonchess', code: 'pichoncode', destiny: 'pichondestiny', docs: 'pichondocs', food: 'pichonfood',
-        list: 'pichonlist', man: 'pichman', morse: 'pichonmorse', paint: 'pichonpaint', pass: 'pichonpass',
+        list: 'pichonlist', man: 'pichman', morse: 'pichonmorse', opinion: 'pichonopinion', paint: 'pichonpaint', pass: 'pichonpass',
         push: 'pichonpush', random: 'pichonrandom', snake: 'pichonsnake', traffic: 'pichontraffic',
         watch: 'pichonwatch', weather: 'pichonweather'
     };
-    const PROXIMAS = ['olympus', 'opinion'];
+    const PROXIMAS = ['olympus'];
 
     const conCuenta = () => !!(window.Pichisoft && window.Pichisoft.user);
     const editable = t => !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
