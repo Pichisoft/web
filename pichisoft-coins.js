@@ -635,14 +635,16 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         };
 
         let hayCambio = false;
-        const unir = src => {
+        const unir = (src, sinConfig) => {
             if (!src) return;
             ['earned', 'bought'].forEach(t => { const o = obj(src[t]); for (const k in o) if (!(k in A[t])) { A[t][k] = o[k]; hayCambio = true; } });
             if ((+src.rec || 0) > A.rec) { A.rec = +src.rec; hayCambio = true; }
             if (src.streak) { const m = mejorStreak(A.streak, okStreak(src.streak)); if (m !== A.streak) { A.streak = m; hayCambio = true; } }
-            const eq = obj(src.equipped);
-            for (const slot in eq) if (eq[slot] && !A.equipped[slot]) { A.equipped[slot] = eq[slot]; hayCambio = true; }
-            if (!A.tituloTexto && typeof src.tituloTexto === 'string' && src.tituloTexto) { A.tituloTexto = src.tituloTexto.slice(0, 30); hayCambio = true; }
+            if (!sinConfig) {
+                const eq = obj(src.equipped);
+                for (const slot in eq) if (eq[slot] && !A.equipped[slot]) { A.equipped[slot] = eq[slot]; hayCambio = true; }
+                if (!A.tituloTexto && typeof src.tituloTexto === 'string' && src.tituloTexto) { A.tituloTexto = src.tituloTexto.slice(0, 30); hayCambio = true; }
+            }
             (Array.isArray(src.custom) ? src.custom : []).filter(okCustom).forEach(c => {
                 const i = A.custom.findIndex(x => x.id === c.id);
                 if (i < 0) { if (A.custom.length < MAX_CUSTOM) { A.custom.push(c); hayCambio = true; } }
@@ -650,7 +652,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
             });
         };
 
-        unir(cache);                                   // lo que quedó sin subir en este dispositivo
+        unir(cache, !!remoto);   // si Firebase respondió, la config equipada la manda Firebase, no el caché
         const g = leerGuest();                         // lo juntado como invitado
         if (!g.fromUid || g.fromUid === id) {
             if (Object.keys(g.earned).length || Object.keys(g.bought).length || g.custom.length || g.rec) {
@@ -678,8 +680,16 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
             if (uid !== id || !snap.exists() || modo !== 'cuenta') return;
             const d = snap.data(); let c = false;
             for (const t of ['earned', 'bought']) { const o = obj(d[t]); for (const k in o) if (!(k in S[t])) { S[t][k] = o[k]; c = true; } }
-            const eq = obj(d.equipped);
-            for (const slot in eq) if (eq[slot] && !S.equipped[slot]) { S.equipped[slot] = eq[slot]; c = true; }
+            /* Lo equipado y el texto del título se sincronizan entre dispositivos (gana el último que guardó) */
+            if (!sucio && !flushing && !snap.metadata.hasPendingWrites) {
+                const eq = obj(d.equipped);
+                for (const slot of ['marco', 'tema', 'cartel', 'titulo', 'sonido']) {
+                    const nuevo = eq[slot] || '';
+                    if ((S.equipped[slot] || '') !== nuevo) { S.equipped[slot] = nuevo; c = true; }
+                }
+                const tt = typeof d.tituloTexto === 'string' ? d.tituloTexto.slice(0, 30) : '';
+                if (tt !== (S.tituloTexto || '')) { S.tituloTexto = tt; c = true; }
+            }
             if ((d.rec || 0) > S.rec) { S.rec = d.rec; c = true; }
             (Array.isArray(d.custom) ? d.custom : []).filter(okCustom).forEach(cu => {
                 const i = S.custom.findIndex(x => x.id === cu.id);
@@ -732,6 +742,28 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         const n = Object.keys(S.earned).filter(k => k.startsWith('v_') && APPS[k.slice(2)]).length;
         HITOS.forEach(([N, monto, , motivo]) => { if (n >= (N || total)) ganar('apps_' + (N || 'todas'), monto, motivo); });
     }
+    /* Lee el index.html (li.nuevo) desde cualquier página, así no hace falta haber pasado por el index en este dispositivo */
+    let nuevasP = null;
+    function cargarNuevasRemoto() {
+        if (nuevasP) return nuevasP;
+        nuevasP = fetch('/index.html', { cache: 'no-store' })
+            .then(r => r.ok ? r.text() : Promise.reject())
+            .then(txt => {
+                const dom = new DOMParser().parseFromString(txt, 'text/html');
+                const enc = {};
+                dom.querySelectorAll('.nuevo a[href], a.nuevo[href]').forEach(a => {
+                    const m = /([a-z0-9_-]+)\.html(?:[?#]|$)/i.exec(a.getAttribute('href') || '');
+                    if (!m || m[1].toLowerCase() === 'index') return;
+                    const sl = m[1].toLowerCase();
+                    enc[sl] = APPS[sl] || a.textContent.trim() || sl;
+                });
+                Object.keys(APPS_NUEVAS).forEach(k => delete APPS_NUEVAS[k]);
+                Object.assign(APPS_NUEVAS, enc);
+                lsSet('psc_apps_nuevas', APPS_NUEVAS);
+            })
+            .catch(() => { });
+        return nuevasP;
+    }
     function visitar(slug) {
         slug = String(slug || '').toLowerCase();
         if (modo === 'cargando') { colaAcc.push(() => visitar(slug)); return; }
@@ -741,9 +773,11 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
             if (!(k in S.earned)) { S.earned[k] = 0; guardar(); }
             revisarHitos();
         }
-        if (APPS_NUEVAS[slug]) {
-            ganar('app_nueva_' + slug, MONTO_APP_NUEVA, 'entrar a ' + APPS_NUEVAS[slug] + ', una app nueva');
-        }
+        const premiarNueva = () => {
+            if (APPS_NUEVAS[slug]) ganar('app_nueva_' + slug, MONTO_APP_NUEVA, 'entrar a ' + APPS_NUEVAS[slug] + ', una app nueva');
+        };
+        if (esIndex) premiarNueva();
+        else cargarNuevasRemoto().then(premiarNueva);
     }
     function evento(n) {
         const e = EVENTOS[n]; if (!e) return;
