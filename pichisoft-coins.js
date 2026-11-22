@@ -726,6 +726,8 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     }
     function revisarHitos() {
         if (modo === 'cargando') return;
+        /* Red de seguridad: toda cuenta tiene que tener su bono de bienvenida */
+        if (modo === 'cuenta' && !S.earned.cuenta_creada) ganar('cuenta_creada', MONTO_CUENTA, 'crear tu cuenta de Pichisoft');
         const total = Object.keys(APPS).length;
         const n = Object.keys(S.earned).filter(k => k.startsWith('v_') && APPS[k.slice(2)]).length;
         HITOS.forEach(([N, monto, , motivo]) => { if (n >= (N || total)) ganar('apps_' + (N || 'todas'), monto, motivo); });
@@ -908,13 +910,13 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         TRAMOS.forEach(([sec, monto, texto]) => w.append(fila(texto, monto, { done: ('t_' + sec) in E })));
         w.append(fila('Superar tu récord de tiempo diario', MONTO_RECORD, { nota: 'Una vez por cada día en que superes tu récord' + (S.rec > 0 ? ' · Tu récord: ' + Math.floor(S.rec / 60) + ' min' : '') }));
         w.append(h('div', 'psc-h4', 'Leer nuestros paneles'));
+        w.append(h('div', 'psc-h4', 'Leer nuestros paneles'));
         w.append(h('div', 'psc-h4', 'Días de racha'));
         w.append(fila('Tu primer día de racha', 100, { done: 'racha_primera_v2' in E }));
         w.append(fila('Cada día de racha después del primero', 30, { done: ('rd_' + hoy()) in E, nota: 'Entrá a PichonApps todos los días. Si pasás un día sin entrar, la racha vuelve a 0' + (rachaActual() ? ' · Racha actual: ' + rachaActual() : '') }));
         w.append(fila('Cada semana de racha (7, 14, 21… días)', 80,
             { done: ('rw_' + hoy()) in E, nota: 'Se cobra automáticamente cada 7 días seguidos' }));
 
-        Object.keys(PANELES).forEach(k => w.append(fila('Leer «' + PANELES[k] + '»', MONTO_PANEL, { done: ('panel_' + k) in E })));
         w.append(h('div', 'psc-h4', 'Cuenta de Pichisoft'));
         w.append(fila('Crear tu cuenta de Pichisoft', MONTO_CUENTA, { done: 'cuenta_creada' in E }));
         Object.keys(EVENTOS).forEach(k => w.append(fila(EVENTOS[k][1], EVENTOS[k][0], { done: ('ev_' + k) in E, lock: modo !== 'cuenta', nota: modo !== 'cuenta' ? 'Solo con cuenta' : '' })));
@@ -1206,7 +1208,10 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
             S = vacio(); sucio = false;
             lsSet(keyAcc(id), snapshotLocal()); lsSet('psc_guest', vacioGuest()); lsSet('psc_day', { d: hoy(), s: 0 });
             cambio(); aviso();
-            setTimeout(() => { if (uid === id) cargarCuenta(id); }, 4200);
+            modo = 'cargando';
+            rachaDia = '';
+            revisarRacha();          // queda en cola y corre al terminar de cargar
+            cargarCuenta(id);        // da el bono de 5.000 y reactiva la sincronizacións
         } catch (err) {
             S = old; cambio(); console.error('Reset error:', err);
             alert('No se pudo restablecer. Intentá de nuevo más tarde.');
@@ -1334,16 +1339,18 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     function escanearAppsNuevas() {
         if (!esIndex) return;
         const encontradas = {};
-        document.querySelectorAll('.nuevo, .Nuevo, [data-nuevo], [data-nueva], .app-nueva').forEach(el => {
-            const a = el.matches('a[href]') ? el : (el.querySelector('a[href]') || el.closest('a[href]'));
-            let slug = (el.dataset && el.dataset.app) || (a && a.dataset && a.dataset.app) || '';
+        /* Detecta por clase "nuevo" en el index (li.nuevo) y por la etiqueta NUEVO de pichisoft-premium.js (t:['nuevo']) */
+        document.querySelectorAll('.nuevo, .Nuevo, [data-nuevo], [data-nueva], .app-nueva, .app .et-nuevo').forEach(el => {
+            const cont = el.classList.contains('et-nuevo') ? el.closest('.app') : el;
+            if (!cont) return;
+            const a = cont.matches('a[href]') ? cont : (cont.querySelector('a[href]') || cont.closest('a[href]'));
+            let slug = (cont.dataset && cont.dataset.app) || (a && a.dataset && a.dataset.app) || '';
             if (!slug && a) {
                 const m = /([a-z0-9_-]+)\.html(?:[?#]|$)/i.exec(a.getAttribute('href') || '');
                 if (m && m[1].toLowerCase() !== 'index') slug = m[1].toLowerCase();
             }
             if (!slug) return;
-            const nombre = APPS[slug] || (a ? a.textContent.trim() : '') || slug;
-            encontradas[slug] = nombre;
+            encontradas[slug] = APPS[slug] || (a ? a.textContent.trim() : '') || slug;
         });
         Object.keys(APPS_NUEVAS).forEach(k => delete APPS_NUEVAS[k]);
         Object.assign(APPS_NUEVAS, encontradas);
@@ -1386,9 +1393,10 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     setTimeout(() => { if (!authListo) { authListo = true; evaluar(); } }, 8000);
     setTimeout(() => {
         if (modo === 'cargando' && uid) {
-            console.warn('PichiCoins: cargarCuenta tardó demasiado, uso cache local');
             const cache = lsGet(keyAcc(uid), null);
-            S = cache ? {
+            if (!cache) return;   // sin caché NO se inventa un estado vacío: cargarCuenta sigue reintentando
+            console.warn('PichiCoins: cargarCuenta tardó demasiado, uso cache local');
+            S = {
                 streak: okStreak(cache.streak),
                 earned: { ...obj(cache.earned) },
                 bought: { ...obj(cache.bought) },
@@ -1396,10 +1404,10 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
                 rec: +cache.rec || 0,
                 tituloTexto: cache.tituloTexto || '',
                 custom: (Array.isArray(cache.custom) ? cache.custom : []).filter(okCustom).slice(0, MAX_CUSTOM)
-            } : vacioGuest();
+            };
             modo = 'cuenta';
             sucio = false;
-            drenar();       // dispara revisarRacha/visitar encolados
+            drenar();
             revisarHitos();
             cambio();
         }
