@@ -728,13 +728,11 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     function visitar(slug) {
         slug = String(slug || '').toLowerCase();
         if (modo === 'cargando') { colaAcc.push(() => visitar(slug)); return; }
-
         if (APPS[slug]) {
             const k = 'v_' + slug;
             if (!(k in S.earned)) { S.earned[k] = 0; guardar(); }
             revisarHitos();
-        }
-        if (APPS_NUEVAS[slug]) {
+        } else if (APPS_NUEVAS[slug]) {
             ganar('app_nueva_' + slug, MONTO_APP_NUEVA, 'entrar a ' + APPS_NUEVAS[slug] + ', una app nueva');
         }
     }
