@@ -79,7 +79,7 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
         { id: 'marco_hielo', nombre: 'Marco hielo', desc: 'Un anillo helado y cristalino alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
         { id: 'marco_glitch', nombre: 'Marco glitch', desc: 'Un borde digital que se distorsiona como una señal con fallas.', precio: 3700, soloCuenta: true, slot: 'marco' },
         ...THEMES.map(([k, n]) => ({ id: 'tema_' + k, nombre: 'Tema ' + n, desc: 'Cambia el dorado de PichonApps por el estilo ' + n + '.', precio: 900, slot: 'tema' })),
-        { id: 'tema_dia', nombre: 'Tema del día', desc: 'Tu PichonApps cambia de color solo a lo largo del día: amanecer, mediodía, tarde, tardecita, noche y madrugada.', precio: 3800, slot: 'tema' },
+        { id: 'tema_dia', nombre: 'Tema del día', desc: 'Tu PichonApps cambia de color solo a lo largo del día: amanecer, mediodía, tarde, tardecita, noche y madrugada.', precio: 1500, slot: 'tema' },
         ...THEMES.map(([k, n]) => ({ id: 'cartel_' + k, nombre: 'Cartel ' + n, desc: 'El cartel de «¡Ganaste!» con el estilo ' + n + '.', precio: 700, slot: 'cartel' })),
         { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre. ¡Podés elegir el texto que quieras!', precio: 1200, soloCuenta: true, slot: 'titulo' },
         { id: 'sonido_moneda', nombre: 'Sonido de moneda', desc: 'Suena una moneda cada vez que ganás PichiCoins.', precio: 500, slot: 'sonido' },
@@ -506,11 +506,16 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
         tardecita: { g: '#f06292', g2: '#ffc1d6', bg: '#2a1229', tx: '#fff0f6' },
         noche: { g: '#4d8dff', g2: '#b9d2ff', bg: '#0a1326', tx: '#eaf1ff' }
     };
-    function paletaDia() {
+    let previewDia = null;   // solo se usa dentro de la vista previa
+    const NOMBRES_DIA = [
+        ['madrugada', 'Madrugada', '00-06'], ['amanecer', 'Amanecer', '06-10'], ['mediodia', 'Mediodía', '10-15'],
+        ['tarde', 'Tarde', '15-18'], ['tardecita', 'Tardecita', '18-21'], ['noche', 'Noche', '21-00']
+    ];
+    function claveDia() {
         const h = new Date().getHours();
-        const k = h < 6 ? 'madrugada' : h < 10 ? 'amanecer' : h < 15 ? 'mediodia' : h < 18 ? 'tarde' : h < 21 ? 'tardecita' : 'noche';
-        return PALETAS_DIA[k];
+        return h < 6 ? 'madrugada' : h < 10 ? 'amanecer' : h < 15 ? 'mediodia' : h < 18 ? 'tarde' : h < 21 ? 'tardecita' : 'noche';
     }
+    function paletaDia() { return PALETAS_DIA[previewDia || claveDia()]; }
     /* [id, nombre, color] */
     const NEONES = [
         ['cian', 'cian', '#00ffff'], ['magenta', 'magenta', '#ff00ff'], ['verde', 'verde lima', '#39ff14'],
@@ -531,6 +536,12 @@ body.psc-own-marco_neon_dual #cuenta .av,.psc-pvm.marco_neon_dual .psc-pv-demo-a
     const posee = id => !id ? false : (id.startsWith('marco_neon_') ? S.bought.marco_neon !== undefined : S.bought[id] !== undefined);
     const CSS3 = `
     html{transition:background-color 1.5s ease,color 1.5s ease}
+    .psc-dia-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-top:6px}
+.psc-dia-chip{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;background:#161616;border:1px solid #2b2b2b;border-radius:10px;color:#fff;font:bold .78rem Arial,sans-serif;cursor:pointer;transition:border-color .15s,background .15s}
+.psc-dia-chip i{width:16px;height:16px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c)}
+.psc-dia-chip small{font:.62rem Arial,sans-serif;color:#999}
+.psc-dia-chip:hover{border-color:var(--c)}
+.psc-dia-chip.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,#000)}
 body:has(.psc-ov) #pichisoft-topbar,body:has(.psc-pv-ov) #pichisoft-topbar,body:has(.psc-reset-ov) #pichisoft-topbar,
 body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisoft-topbar,body:has(.pcm-ov) #pichisoft-topbar,body:has(.psi-ov) #pichisoft-topbar{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
 #psc-racha{align-self:flex-end;text-align:center;line-height:1.1;user-select:none;-webkit-user-select:none;padding:2px 4px}
@@ -1196,7 +1207,18 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         document.body.append(ov);
         const cd = ov.querySelector('#psc-pv-c');
         if (cd) { const e = estiloDe(it.id); if (e) estilarCartel(cd, e); }
-        const cerrar = () => { document.removeEventListener('keydown', escK, true); ov.remove(); aplicarEfectos(); };
+        if (it.id === 'tema_dia') {
+            const demo = ov.querySelector('.psc-pv-demo'), bar = h('div', 'psc-dia-bar'), chips = [];
+            const marcar = () => chips.forEach(([k, b]) => b.classList.toggle('on', k === (previewDia || claveDia())));
+            NOMBRES_DIA.forEach(([k, n, hr]) => {
+                const b = h('button', 'psc-dia-chip'); b.type = 'button';
+                b.style.setProperty('--c', PALETAS_DIA[k].g);
+                b.append(h('i'), n, h('small', '', hr));
+                b.onclick = () => { previewDia = k; marcar(); aplicarEfectos({ slot: 'tema', id: 'tema_dia' }); };
+                chips.push([k, b]); bar.append(b);
+            });
+            demo.append(bar); marcar();
+        }
         const escK = e => { if (e.key === 'Escape') { e.stopImmediatePropagation(); cerrar(); } };
         document.addEventListener('keydown', escK, true);
         ov.querySelector('.psc-pv-x').onclick = cerrar;
