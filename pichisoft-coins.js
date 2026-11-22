@@ -24,7 +24,7 @@ import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstat
         pichonalarm: 'PichonAlarm', pichonbirthday: 'PichonBirthday', pichoncalc: 'PichonCalc',
         pichoncalendar: 'PichonCalendar', pichonchess: 'PichonChess', pichoncode: 'PichonCode',
         pichondestiny: 'PichonDestiny', pichondocs: 'PichonDocs', pichonfood: 'PichonFood',
-        pichonlist: 'PichonList', pichman: 'PichonMan', pichonmorse: 'PichonMorse',
+        pichonlist: 'PichonList', pichman: 'PichonMan', pichonmorse: 'PichonMorse', pichonopinion: 'PichonOpinion',
         pichonpaint: 'PichonPaint', pichonpass: 'PichonPass', pichonpush: 'PichonPush',
         pichonrandom: 'PichonRandom', pichonsnake: 'PichonSnake', pichontraffic: 'PichonTraffic',
         pichonwatch: 'PichonWatch', pichonweather: 'PichonWeather'
