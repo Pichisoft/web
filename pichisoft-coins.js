@@ -507,7 +507,6 @@ body[class*="psc-own-tema_"] .pml-card { border-top-color: var(--gold); }
         noche: { g: '#5f7bd9', g2: '#b4c3f5', bg: '#04050c', tx: '#e6ebfb' }
     };
     let previewDia = null;   // solo se usa dentro de la vista previa
-    let vpOver = null, vpRoot = null, vpScroll = 0;
     const NOMBRES_DIA = [
         ['madrugada', 'Madrugada', '00-06'], ['amanecer', 'Amanecer', '06-10'], ['mediodia', 'Mediodía', '10-15'],
         ['tarde', 'Tarde', '15-18'], ['tardecita', 'Tardecita', '18-21'], ['noche', 'Noche', '21-00']
@@ -536,30 +535,7 @@ body.psc-own-marco_neon_dual #cuenta .av,.psc-pvm.marco_neon_dual .psc-pv-demo-a
 `;
     const posee = id => !id ? false : (id.startsWith('marco_neon_') ? S.bought.marco_neon !== undefined : S.bought[id] !== undefined);
     const CSS3 = `
-   @property --gold{syntax:'<color>';inherits:true;initial-value:#d4af37}
-@property --gold2{syntax:'<color>';inherits:true;initial-value:#f1d98a}
-@property --gold-rgb{syntax:'<number>#';inherits:true;initial-value:212,175,55}
-@property --line{syntax:'<color>';inherits:true;initial-value:rgba(212,175,55,.3)}
-@property --line-s{syntax:'<color>';inherits:true;initial-value:rgba(212,175,55,.5)}
-@property --glow{syntax:'<color>';inherits:true;initial-value:rgba(241,217,138,.9)}
-@property --dark-glow{syntax:'<color>';inherits:true;initial-value:rgba(212,175,55,.35)}
-@property --ctxt{syntax:'<color>';inherits:true;initial-value:#f5f5f5}
-html{transition:background-color 1.5s ease,color 1.5s ease}
-html:has(body.psc-dia-t){transition:background-color 4s ease,color 4s ease}
-html:has(body.psc-preview.psc-dia-t){transition:background-color 1s ease,color 1s ease}
-body.psc-dia-t{transition:${trans('4s')}}
-body.psc-preview.psc-dia-t{transition:${trans('1s')}}
-.psc-pvtop{position:fixed;top:0;left:0;right:0;height:46px;z-index:2147483646;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px;box-sizing:border-box;background:rgba(10,10,10,.93);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1.5px solid var(--gold);font:.8rem Verdana,sans-serif;color:#ddd}
-.psc-pvtop span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.psc-pvtop b{color:var(--gold2)}
-.psc-pvexit{flex:none;padding:8px 14px;border-radius:8px;border:1.5px solid var(--gold);background:linear-gradient(135deg,var(--gold2),var(--gold));color:#111;font:bold .85rem Georgia,serif;cursor:pointer}
-.psc-pvchips{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:2147483646;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;width:max-content;max-width:min(580px,calc(100vw - 20px));box-sizing:border-box;padding:8px;background:rgba(10,10,10,.94);border:1.5px solid var(--gold);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.7)}
-.psc-pvchips .psc-dia-chip{flex:1 1 84px}
-html:has(body.psc-preview){padding-top:46px}
-body.psc-preview .app{pointer-events:none}
-@media(min-width:601px){body.psc-preview #cuenta{top:60px}}
-@media(max-width:600px){body.psc-preview #cuenta{top:54px}}
-@media(min-width:901px){body.psc-preview #pichisoft-topbar{top:51px}}
+    html{transition:background-color 1.5s ease,color 1.5s ease}
     .psc-dia-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-top:6px}
 .psc-dia-chip{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;background:#161616;border:1px solid #2b2b2b;border-radius:10px;color:#fff;font:bold .78rem Arial,sans-serif;cursor:pointer;transition:border-color .15s,background .15s}
 .psc-dia-chip i{width:16px;height:16px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c)}
@@ -1045,7 +1021,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
             }
             if (it.slot) {
                 const pv = h('button', 'psc-buy psc-pv'); pv.type = 'button'; pv.textContent = 'Vista previa';
-                pv.onclick = () => vistaPrevia(it);
+                pv.onclick = () => mostrarPreview(it);
                 c.append(t, h('p', '', it.desc), b, pv);
             } else c.append(t, h('p', '', it.desc), b);
             w.append(c);
@@ -1262,113 +1238,10 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
             } catch (e) { }
         };
     }
-    /* ---------------- Vista previa en la pantalla real ---------------- */
-    const VP_EVT = ['click', 'dblclick', 'auxclick', 'contextmenu', 'keydown', 'submit'];
-    const VP_CERRAR = '.pm-back,.pf-close,.pcm-x,.psi-x,#psi-close';
-    function vpPermitido(t) {
-        if (!t || !t.closest) return true;
-        if (t.closest('#psc-pvroot')) return true;                    // barra de vista previa
-        if (t.closest('#pichisoft-topbar')) return true;              // Configuración, Traducir, Mensajería
-        if (t.closest('.pf-footer .pf-btn[data-pf]')) return true;    // paneles de abajo
-        if (t.closest(VP_CERRAR)) return true;                        // cerrar lo que se abra
-        if (t.matches('.pm-ov,.pf-modal,.pcm-ov,.psi-ov')) return true; // clic en el fondo oscuro
-        return false;
-    }
-    function vpBloquear(e) {
-        if (e.type === 'keydown') {
-            if (e.key === 'Escape') {
-                if (!document.querySelector('.pm-ov,.pf-modal.open,.pcm-ov,.psi-ov,#pf-share-ov.open,.pcm-dov')) { e.stopImmediatePropagation(); salirVistaPrevia(); }
-                return;
-            }
-            if (e.key === 'Tab') return;
-            const t = e.target;
-            if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) { e.preventDefault(); e.stopImmediatePropagation(); return; }
-            if (e.ctrlKey || e.metaKey || e.altKey) e.stopImmediatePropagation();   // sin atajos de la página
-            return;
-        }
-        if (vpPermitido(e.target)) return;
-        e.preventDefault(); e.stopImmediatePropagation();
-    }
-    function beep() {
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const o = ctx.createOscillator(), g = ctx.createGain();
-            o.connect(g); g.connect(ctx.destination);
-            o.type = 'sine'; o.frequency.setValueAtTime(880, ctx.currentTime);
-            o.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.08);
-            g.gain.setValueAtTime(0.15, ctx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-            o.start(); o.stop(ctx.currentTime + 0.3);
-        } catch (e) { }
-    }
-    function cartelDemo(it) {
-        const e = estiloDe(it.id);
-        const t = h('div', 'psc-t'); t.setAttribute('translate', 'no');
-        t.innerHTML = '<div class="psc-coin">P</div><div><div class="psc-t1"></div><div class="psc-t2"></div></div><div class="psc-bar"></div>' + '<i class="psc-sp"></i>'.repeat(6);
-        if (e) estilarCartel(t, e);
-        t.querySelector('.psc-t1').append('¡Ganaste ', Object.assign(h('b'), { textContent: '500' }), ' PichiCoins!');
-        t.querySelector('.psc-t2').textContent = 'por ver una vista previa';
-        document.body.append(t);
-        setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 450); }, DUR_CARTEL);
-    }
-    function vistaPrevia(it) {
-        if (document.getElementById('psc-pvroot')) return;
-        const necesitaAv = it.slot === 'marco' || it.slot === 'titulo';
-        /* Si la pantalla real no puede mostrarlo (otra página, o sin cuenta), se usa la vista previa chica de siempre */
-        if (!esIndex || (necesitaAv && !document.querySelector('#cuenta .av'))) return mostrarPreview(it);
-
-        const bd = document.getElementById('psc-bd'); vpScroll = bd ? bd.scrollTop : 0;
-        const x = document.querySelector('#psc-ov .psc-x'); if (x) x.click();   // cierra el panel de PichiCoins
-
-        vpOver = { slot: it.slot, id: it.id };
-        previewDia = null;
-        document.body.classList.add('psc-preview');
-        vpRoot = h('div'); vpRoot.id = 'psc-pvroot';
-
-        const top = h('div', 'psc-pvtop'), sp = h('span');
-        sp.append('Vista previa: ', Object.assign(h('b'), { textContent: it.nombre }), ' · no se guarda nada');
-        const ex = h('button', 'psc-pvexit', 'Salir de vista previa'); ex.type = 'button'; ex.onclick = salirVistaPrevia;
-        top.append(sp, ex); vpRoot.append(top);
-
-        const chips = h('div', 'psc-pvchips'), lista = [];
-        const sel = k => lista.forEach(([kk, b]) => b.classList.toggle('on', kk === k));
-        const chip = (k, txt, sub, color, fn) => {
-            const b = h('button', 'psc-dia-chip'); b.type = 'button';
-            if (color) { b.style.setProperty('--c', color); b.append(h('i')); }
-            b.append(txt); if (sub) b.append(h('small', '', sub));
-            b.onclick = () => { fn(); sel(k); };
-            lista.push([k, b]); chips.append(b);
-        };
-        if (it.id === 'tema_dia') {
-            NOMBRES_DIA.forEach(([k, n, hr]) => chip(k, n, hr, PALETAS_DIA[k].g, () => { previewDia = k; aplicarEfectos(); }));
-            sel(claveDia());
-        } else if (it.id === 'marco_neon') {
-            NEONES.forEach(([k, n, c]) => chip(k, n, '', c, () => { vpOver = { slot: 'marco', id: 'marco_neon_' + k }; aplicarEfectos(); }));
-            sel('cian');
-        } else if (it.slot === 'cartel') {
-            chip('c', 'Ver el cartel otra vez', '', null, () => cartelDemo(it));
-            setTimeout(() => cartelDemo(it), 600);
-        } else if (it.slot === 'sonido') {
-            chip('s', 'Escuchar sonido', '', null, beep);
-        }
-        if (lista.length) vpRoot.append(chips);
-
-        document.body.append(vpRoot);
-        VP_EVT.forEach(t => window.addEventListener(t, vpBloquear, true));
-        aplicarEfectos();
-        window.scrollTo(0, 0);
-    }
-    function salirVistaPrevia() {
-        if (!vpRoot) return;
-        VP_EVT.forEach(t => window.removeEventListener(t, vpBloquear, true));
-        vpRoot.remove(); vpRoot = null;
-        document.querySelectorAll('.psc-t').forEach(t => t.remove());
-        document.querySelectorAll(VP_CERRAR).forEach(b => { try { b.click(); } catch (e) { } });   // cierra lo que haya quedado abierto
-        document.body.classList.remove('psc-preview');
-        vpOver = null; previewDia = null;
-        aplicarEfectos();
-        abrirPanel();
-        const bd = document.getElementById('psc-bd'); if (bd) bd.scrollTop = vpScroll;
+    function equipar(slot, itemId) {
+        if (itemId && !posee(itemId)) return;
+        S.equipped[slot] = itemId || '';
+        guardar(); cambio();
     }
 
     function confirmarResetCoins() {
@@ -1455,24 +1328,19 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         if (esIndex) { b.style.setProperty('--ctxt', c.tx); r.style.backgroundColor = c.bg; r.style.color = c.tx; }
     }
     function aplicarEfectos(over) {
-        over = over || vpOver;
         const b = document.body, eq = Object.assign({}, S.equipped || {});
         if (over) eq[over.slot] = over.id;
         [...b.classList].filter(c => c.startsWith('psc-own-')).forEach(c => b.classList.remove(c));
-        let cus = null, dia = false;
+        let cus = null;
         for (const slot in eq) {
             let id = eq[slot];
             if (id === 'marco_neon') id = 'marco_neon_cian';
             if (!id || slot === 'cartel') continue;
             if (!(over && over.slot === slot) && !posee(id)) continue;
-            if (id === 'tema_dia') { cus = paletaDia(); dia = true; b.classList.add('psc-own-tema_custom'); continue; }
+            if (id === 'tema_dia') { cus = paletaDia(); b.classList.add('psc-own-tema_custom'); continue; }
             if (id.startsWith('ctema_')) { cus = S.custom.find(x => x.id === id.slice(6)) || null; if (cus) b.classList.add('psc-own-tema_custom'); continue; }
             b.classList.add('psc-own-' + id);
         }
-        /* La transición se activa recién después de la primera aplicación, así no hay "salto" al cargar */
-        b.classList.toggle('psc-dia', dia);
-        if (!dia) b.classList.remove('psc-dia-t');
-        else if (!b.classList.contains('psc-dia-t')) setTimeout(() => { if (b.classList.contains('psc-dia')) b.classList.add('psc-dia-t'); }, 300);
         aplicarTema(cus);
         const nomEl = document.querySelector('#cuenta .nom');
         if (nomEl) {
