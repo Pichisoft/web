@@ -896,7 +896,8 @@ body.psc-neon-global .pcm-fab:hover {
             /* Lo equipado y el texto del título se sincronizan entre dispositivos (gana el último que guardó) */
             if (!sucio && !flushing && !snap.metadata.hasPendingWrites) {
                 const eq = obj(d.equipped);
-                for (const slot of ['marco', 'tema', 'cartel', 'titulo', 'sonido']) {
+                for (const slot of ['marco', 'tema', 'cartel', 'titulo', 'sonido', 'interfaz']) {
+
                     const nuevo = eq[slot] || '';
                     if ((S.equipped[slot] || '') !== nuevo) { S.equipped[slot] = nuevo; c = true; }
                 }
@@ -1653,8 +1654,11 @@ body.psc-neon-global .pcm-fab:hover {
     function equipar(slot, itemId) {
         if (itemId && slot !== 'interfaz' && !posee(itemId)) return;
         S.equipped[slot] = itemId || '';
-        guardar(); cambio();
+        guardar();
+        flush(); // Fuerza el guardado inmediato en Firebase sin esperar 700ms
+        cambio();
     }
+
 
     function confirmarResetCoins() {
         if (document.getElementById('psc-reset-ov')) return;
@@ -2037,6 +2041,10 @@ body.psc-preview-mode:has(.pf-modal.open) #psc-preview-bar {
         marcarHecho: (nombre) => evento(nombre)
     };
     addEventListener('pagehide', () => { flush(); });
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') flush();
+    });
+
     onAuthStateChanged(auth, () => { authListo = true; evaluar(); });
     setTimeout(() => { if (!authListo) { authListo = true; evaluar(); } }, 8000);
     setTimeout(() => {
