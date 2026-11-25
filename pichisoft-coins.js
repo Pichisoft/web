@@ -75,7 +75,7 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
         { id: 'marco_dorado', nombre: 'Marco dorado', desc: 'Un borde dorado brillante alrededor de tu foto de perfil.', precio: 2000, soloCuenta: true, slot: 'marco' },
         { id: 'marco_animado', nombre: 'Marco animado', desc: 'Un anillo que gira alrededor de tu foto de perfil.', precio: 2500, soloCuenta: true, slot: 'marco' },
         { id: 'marco_arcoiris', nombre: 'Marco arcoíris', desc: 'Un borde arcoíris animado alrededor de tu foto de perfil.', precio: 3200, soloCuenta: true, slot: 'marco' },
-        { id: 'marco_neon', nombre: 'Pack Neón', desc: 'Un pack con 10 marcos de neón que pulsan alrededor de tu foto de perfil: cian, magenta, verde, naranja, amarillo, rosa, violeta, rojo, azul y uno que cambia de color. Elegís cuál usar desde Mi colección.', precio: 4000, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_neon', nombre: 'Pack Neón', desc: 'Un pack con 10 marcos de neón que pulsan alrededor de tu foto de perfil. ¡Y un Modo Neón Global! Toda PichonApps brilla con el color de tu marco, o con el de tu tema equipado. Elegís cuál usar desde Mi colección.', precio: 4000, soloCuenta: true, slot: 'marco' },
         { id: 'marco_fuego', nombre: 'Marco fuego', desc: 'Un anillo de llamas que arde alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
         { id: 'marco_hielo', nombre: 'Marco hielo', desc: 'Un anillo helado y cristalino alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
         { id: 'marco_glitch', nombre: 'Marco glitch', desc: 'Un borde digital que se distorsiona como una señal con fallas.', precio: 3700, soloCuenta: true, slot: 'marco' },
@@ -634,6 +634,152 @@ body[class*="psc-own-tema_"] #pf-share-box{border-color:var(--gold)}
 body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
 @supports(height:100dvh){.psc-card{max-height:88dvh}#psc-ed-ov .psc-pv-card{max-height:92dvh}}
 @media(max-width:600px){#cuenta{top:calc(8px + env(safe-area-inset-top,0px))}}
+/* ===== MODO NEÓN GLOBAL (Con pulso, pero optimizado y no cegador) ===== */
+body.psc-neon-global {
+    background-image: radial-gradient(circle at 50% 0%, var(--dark-glow), transparent 60%) !important;
+    background-color: #050505 !important;
+}
+
+/* Contenedores y tarjetas: animación de borde y brillo suave */
+body.psc-neon-global .app,
+body.psc-neon-global .acc,
+body.psc-neon-global .flat,
+body.psc-neon-global .p-search,
+body.psc-neon-global .pm-opt,
+body.psc-neon-global .pm-col,
+body.psc-neon-global #ps-obar,
+body.psc-neon-global .pm-panel,
+body.psc-neon-global .pml-card {
+    background: #0a0a0a !important;
+    will-change: box-shadow, border-color; /* Optimiza el rendimiento */
+    animation: pscNeonBorderPulse 2.5s ease-in-out infinite !important;
+}
+
+/* Textos e íconos: pulso en el resplandor */
+body.psc-neon-global h1.titulo,
+body.psc-neon-global .nm small, 
+body.psc-neon-global .bienvenida, 
+body.psc-neon-global .cat-h,
+body.psc-neon-global .p-pre,
+body.psc-neon-global .acc-h,
+body.psc-neon-global .pm-panel h2,
+body.psc-neon-global .ps-ob-b i {
+    color: var(--gold2) !important;
+    will-change: text-shadow;
+    animation: pscNeonTextGlow 2.5s ease-in-out infinite !important;
+}
+body.psc-neon-global h1.titulo {
+    animation: pscNeonTitleGlow 2.5s ease-in-out infinite !important;
+}
+
+/* Hovers mantienen el neón */
+body.psc-neon-global .app:hover,
+body.psc-neon-global .pm-opt:hover,
+body.psc-neon-global .pm-col:hover,
+body.psc-neon-global .ps-ob-b:hover {
+    border-color: var(--gold2) !important;
+    box-shadow: 0 0 15px var(--line-s) !important;
+    transform: translateY(-3px);
+}
+
+/* Detalles y botones específicos para que no queden grises */
+body.psc-neon-global .sw:checked {
+    background: var(--gold) !important;
+    box-shadow: 0 0 8px var(--dark-glow) !important;
+}
+body.psc-neon-global .pm-opt.on,
+body.psc-neon-global .pm-col.on {
+    border-color: var(--gold) !important;
+    background: var(--dark-glow) !important;
+}
+body.psc-neon-global .pm-opt.on .rd {
+    border-color: var(--gold) !important;
+    background: radial-gradient(circle, var(--gold) 3.5px, transparent 4px) !important;
+}
+body.psc-neon-global .badge-prem {
+    background: var(--gold) !important;
+    color: #111 !important;
+    box-shadow: 0 0 10px var(--dark-glow) !important;
+}
+body.psc-neon-global .ico {
+    border: 1px solid var(--line-s) !important;
+}
+/* ===== ARREGLO: Botones de barra superior, paneles y traductor en Modo Neón ===== */
+body.psc-neon-global #pichisoft-topbar > * { 
+    color: var(--gold) !important; 
+}
+body.psc-neon-global #pichisoft-topbar > *:hover { 
+    color: #fff !important; 
+    text-shadow: 0 0 8px var(--glow) !important; 
+}
+
+/* Botón PichiCoins */
+body.psc-neon-global #psc-btn.cuenta { 
+    border-color: var(--gold) !important; 
+    color: var(--gold2) !important; 
+    background: linear-gradient(135deg, #0d0a04, #050302) !important;
+}
+body.psc-neon-global #psc-btn.cuenta:hover { 
+    background: linear-gradient(135deg, var(--gold2), var(--gold) 55%, var(--gold)) !important; 
+    box-shadow: 0 0 16px var(--dark-glow) !important; 
+}
+
+/* Paneles del pie de página (Sobre nosotros, FAQ, etc.) */
+body.psc-neon-global .pf-footer { 
+    border-color: var(--line-s) !important; 
+}
+body.psc-neon-global .pf-btn { 
+    color: var(--gold) !important; 
+}
+body.psc-neon-global .pf-btn::after { 
+    background-color: var(--gold2) !important; 
+    box-shadow: 0 0 8px var(--gold2) !important; 
+}
+body.psc-neon-global .pf-btn:hover { 
+    text-shadow: 0 0 12px var(--glow) !important; 
+}
+
+/* Botón Traducir */
+body.psc-neon-global #psi-btn { 
+    border-color: var(--gold) !important; 
+    background: linear-gradient(135deg, var(--gold2), var(--gold) 55%, var(--gold)) !important; 
+    color: #111 !important; 
+}
+
+/* Mensajería (por si acaso) */
+body.psc-neon-global .pcm-fab { 
+    border-color: var(--gold) !important; 
+    color: var(--gold2) !important; 
+}
+body.psc-neon-global .pcm-fab:hover { 
+    background: linear-gradient(135deg, var(--gold2), var(--gold)) !important; 
+    color: #111 !important; 
+}
+/* --- ANIMACIONES OPTIMIZADAS (Pulso sutil) --- */
+@keyframes pscNeonBorderPulse {
+    0%, 100% { 
+        border-color: var(--gold) !important; 
+        box-shadow: 0 0 4px var(--dark-glow) !important; 
+    }
+    50% { 
+        border-color: var(--gold2) !important; 
+        box-shadow: 0 0 12px var(--line-s) !important; 
+    }
+}
+
+@keyframes pscNeonTextGlow {
+    0%, 100% { text-shadow: 0 0 2px var(--dark-glow); }
+    50% { text-shadow: 0 0 8px var(--glow), 0 0 12px var(--gold2); }
+}
+
+@keyframes pscNeonTitleGlow {
+    0%, 100% { text-shadow: 0 0 6px var(--gold); }
+    50% { text-shadow: 0 0 15px var(--gold2), 0 0 25px var(--glow); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.psc-neon-global * { animation: none !important; }
+}
 `;
 
     /* ================================ ESTADO ================================ */
@@ -1095,6 +1241,27 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     }
     function bColeccion() {
         const w = h('div'), slots = {};
+
+        // NUEVO: Opciones de Interfaz Neón Global
+        if (posee('marco_neon')) {
+            w.append(h('div', 'psc-h4', 'Efectos Globales (Modo Neón)'));
+
+            const createNeonRow = (modo, titulo, desc) => {
+                const eq = S.equipped.interfaz === modo;
+                const row = h('div', 'psc-eq-item' + (eq ? ' equipped' : ''));
+                const info = h('div', 'psc-eq-info');
+                info.append(h('div', 'psc-eq-name', titulo), h('div', 'psc-eq-desc', desc));
+                const btn = h('button', 'psc-eq-btn', eq ? 'Desequipar' : 'Equipar');
+                btn.type = 'button';
+                btn.onclick = () => equipar('interfaz', eq ? '' : modo);
+                row.append(info, btn);
+                return row;
+            };
+
+            w.append(createNeonRow('neon_marco', 'Neón según Marco', 'Toda la app brilla con el color de tu marco de perfil neón.'));
+            w.append(createNeonRow('neon_tema', 'Neón según Tema', 'Toda la app brilla con el color de tu tema actual (ej. Coral, Esmeralda).'));
+        }
+        // FIN DEL NUEVO BLOQUE
         TIENDA.flatMap(it => it.id === 'marco_neon' ? itemsNeon() : [it]).concat(itemsCustom()).forEach(it => {
             if (!it.slot || !posee(it.id)) return;
             (slots[it.slot] = slots[it.slot] || []).push(it);
@@ -1254,21 +1421,115 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
             bar.append(s);
         }
         if (it.id === 'marco_neon') {
-            const wrap = h('div', 'psc-prev-chips');
-            NEONES.forEach(([k, n, col], idx) => {
-                const chip = h('button', 'psc-prev-extra', n.split(' ')[0]);
-                chip.type = 'button';
-                chip.title = 'Neón ' + n;
+            // 1. Contenedor de botones de modo (1 columna para que no se corten)
+            const globalWrap = h('div', 'psc-prev-chips');
+            globalWrap.style.gridTemplateColumns = '1fr';
+
+            const btnNone = h('button', 'psc-prev-extra', 'Sin Global (solo marco)');
+            const btnMarco = h('button', 'psc-prev-extra', 'Neón Según Marco');
+            const btnTema = h('button', 'psc-prev-extra', 'Neón Según Tema');
+
+            // 2. Contenedores de opciones
+            const marcoWrap = h('div', 'psc-prev-chips');
+            const temaWrap = h('div', 'psc-prev-chips');
+            marcoWrap.style.display = 'none';
+            temaWrap.style.display = 'none';
+
+            let currentMode = 'marco';
+            let currentMarcoColor = '#00ffff';
+            let currentMarcoId = 'marco_neon_cian';
+            let currentTemaData = { g: '#e74c3c', g2: '#f5a8a0' };
+
+            const updatePreview = () => {
+                // Limpiamos variables y clases de temas/marcos equipados previamente
+                document.body.classList.remove('psc-neon-global');
+                ['--gold', '--gold2', '--line', '--line-s', '--glow', '--dark-glow'].forEach(k => document.body.style.removeProperty(k));
+                [...document.body.classList].filter(c => c.startsWith('psc-own-tema_') || c.startsWith('psc-own-marco_neon_')).forEach(c => document.body.classList.remove(c));
+
+                // Aplicamos el marco elegido al avatar para que pulse
+                document.body.classList.add('psc-own-' + currentMarcoId);
+
+                // Aplicamos el fondo neón si el modo no es "Sin Global"
+                if (currentMode === 'marco') {
+                    const v = varsDe(currentMarcoColor, currentMarcoColor);
+                    for (const k in v) document.body.style.setProperty(k, v[k]);
+                    document.body.classList.add('psc-neon-global');
+                } else if (currentMode === 'tema') {
+                    const v = varsDe(currentTemaData.g, currentTemaData.g2);
+                    for (const k in v) document.body.style.setProperty(k, v[k]);
+                    document.body.classList.add('psc-neon-global');
+                }
+            };
+
+            const setActive = (btn, active) => {
+                btn.style.background = active ? 'var(--gold, #d4af37)' : 'rgba(212,175,55,.12)';
+                btn.style.color = active ? '#111' : 'var(--gold2, #f1d98a)';
+            };
+
+            // Eventos de los modos principales
+            btnNone.onclick = () => {
+                currentMode = 'none';
+                marcoWrap.style.display = 'grid'; // Mostramos TODOS los marcos
+                temaWrap.style.display = 'none';
+                setActive(btnNone, true); setActive(btnMarco, false); setActive(btnTema, false);
+                updatePreview();
+            };
+            btnMarco.onclick = () => {
+                currentMode = 'marco';
+                marcoWrap.style.display = 'grid';
+                temaWrap.style.display = 'none';
+                setActive(btnNone, false); setActive(btnMarco, true); setActive(btnTema, false);
+                updatePreview();
+            };
+            btnTema.onclick = () => {
+                currentMode = 'tema';
+                marcoWrap.style.display = 'none';
+                temaWrap.style.display = 'grid';
+                setActive(btnNone, false); setActive(btnMarco, false); setActive(btnTema, true);
+                updatePreview();
+            };
+
+            globalWrap.append(btnNone, btnMarco, btnTema);
+
+            // TODOS los marcos neón del pack
+            NEONES.forEach((n) => {
+                const k = n[0];
+                const col = n[2];
+                const label = k === 'dual' ? 'Dual' : k.charAt(0).toUpperCase() + k.slice(1);
+                const chip = h('button', 'psc-prev-extra', label);
                 chip.style.borderColor = col;
-                if (idx === 0) { chip.style.background = col; chip.style.color = '#111'; }
+                if (k === 'cian') setActive(chip, true);
                 chip.onclick = () => {
-                    wrap.querySelectorAll('button').forEach(b => { b.style.background = 'rgba(212,175,55,.12)'; b.style.color = 'var(--gold2, #f1d98a)'; });
-                    chip.style.background = col; chip.style.color = '#111';
-                    aplicarEfectos({ slot: 'marco', id: 'marco_neon_' + k });
+                    marcoWrap.querySelectorAll('button').forEach(b => setActive(b, false));
+                    setActive(chip, true);
+                    currentMarcoColor = col;
+                    currentMarcoId = 'marco_neon_' + k;
+                    updatePreview();
                 };
-                wrap.append(chip);
+                marcoWrap.append(chip);
             });
-            bar.append(wrap);
+
+            // Opciones de Tema
+            ['coral', 'esmeralda', 'hacker'].forEach((k, i) => {
+                const t = THEMES.find(x => x[0] === k);
+                const chip = h('button', 'psc-prev-extra', t[1]);
+                chip.style.borderColor = t[2];
+                if (i === 0) setActive(chip, true);
+                chip.onclick = () => {
+                    temaWrap.querySelectorAll('button').forEach(b => setActive(b, false));
+                    setActive(chip, true);
+                    currentTemaData = { g: t[2], g2: t[3] };
+                    updatePreview();
+                };
+                temaWrap.append(chip);
+            });
+
+            bar.append(globalWrap, marcoWrap, temaWrap);
+
+            // Inicializamos en Modo Marco
+            setActive(btnNone, false); setActive(btnMarco, true); setActive(btnTema, false);
+            marcoWrap.style.display = 'grid';
+            setTimeout(updatePreview, 50);
         }
         if (it.id === 'tema_dia') {
             const wrap = h('div', 'psc-prev-chips');
@@ -1387,7 +1648,7 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
         tick();
     }
     function equipar(slot, itemId) {
-        if (itemId && !posee(itemId)) return;
+        if (itemId && slot !== 'interfaz' && !posee(itemId)) return;
         S.equipped[slot] = itemId || '';
         guardar(); cambio();
     }
@@ -1478,18 +1739,48 @@ body[class*="psc-own-tema_"] #pf-share-box h2{color:var(--gold2)}
     function aplicarEfectos(over) {
         const b = document.body, eq = Object.assign({}, S.equipped || {});
         if (over) eq[over.slot] = over.id;
-        [...b.classList].filter(c => c.startsWith('psc-own-')).forEach(c => b.classList.remove(c));
+        [...b.classList].filter(c => c.startsWith('psc-own-') || c === 'psc-neon-global').forEach(c => b.classList.remove(c));
         let cus = null;
+
+        // --- NUEVO: Lógica del Modo Neón Global ---
+        let globalNeonApplied = false;
+        if (eq.interfaz === 'neon_marco' || eq.interfaz === 'neon_tema') {
+            let hex = '#00ffff', hex2 = '#ff00ff';
+            if (eq.interfaz === 'neon_marco') {
+                const marcoId = eq.marco || 'marco_neon_cian';
+                const colorData = NEONES.find(n => 'marco_neon_' + n[0] === marcoId);
+                if (colorData) { hex = colorData[2]; hex2 = colorData[2]; }
+            } else {
+                const temaId = eq.tema || 'tema_esmeralda';
+                if (temaId === 'tema_dia') { const p = paletaDia(); hex = p.g; hex2 = p.g2; }
+                else if (temaId.startsWith('ctema_')) { const c = S.custom.find(x => x.id === temaId.slice(6)); if (c) { hex = c.g; hex2 = c.g2; } }
+                else { const t = THEMES.find(x => 'tema_' + x[0] === temaId); if (t) { hex = t[2]; hex2 = t[3]; } }
+            }
+            const v = varsDe(hex, hex2); for (const k in v) b.style.setProperty(k, v[k]);
+            b.classList.add('psc-neon-global');
+            globalNeonApplied = true;
+        }
+        if (!globalNeonApplied) {
+            ['--gold', '--gold2', '--line', '--line-s', '--glow', '--dark-glow'].forEach(k => b.style.removeProperty(k));
+        }
+        // ------------------------------------------
+
         for (const slot in eq) {
+            if (slot === 'interfaz') continue;
+            if (globalNeonApplied && (slot === 'tema' || slot === 'cartel')) continue; // <--- EVITA LA MEZCLA CON EL TEMA
+
             let id = eq[slot];
             if (id === 'marco_neon') id = 'marco_neon_cian';
             if (!id || slot === 'cartel') continue;
             if (!(over && over.slot === slot) && !posee(id)) continue;
+
             if (id === 'tema_dia') { cus = paletaDia(); b.classList.add('psc-own-tema_custom'); continue; }
             if (id.startsWith('ctema_')) { cus = S.custom.find(x => x.id === id.slice(6)) || null; if (cus) b.classList.add('psc-own-tema_custom'); continue; }
             b.classList.add('psc-own-' + id);
         }
-        aplicarTema(cus);
+
+        if (!globalNeonApplied) aplicarTema(cus);
+
         const nomEl = document.querySelector('#cuenta .nom');
         if (nomEl) {
             if (eq.titulo && (over || S.bought.titulo !== undefined)) nomEl.setAttribute('data-titulo', S.tituloTexto || 'Explorador');
