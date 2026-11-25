@@ -1475,6 +1475,123 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
     body.cols-denso .nm small { font-size: .5rem; }
     body.cols-denso .tags .etiqueta { font-size: .42rem; padding: 2px 3px; }
 }
+   /* ===== INTERFAZ OPTIMIZADA ===== */
+/* Se ocultan los controles originales (siguen existiendo: la barra nueva les hace click) */
+body.vista-optimizada #pichisoft-topbar,
+body.vista-optimizada .pf-footer,
+body.vista-optimizada #psc-btn,
+body.vista-optimizada #pf-share-btn { display: none !important; }
+
+/* Barra de íconos */
+#ps-obar { display: none; }
+body.vista-optimizada #ps-obar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 2px;
+    width: fit-content; max-width: calc(100% - 190px);
+    margin: 0 0 8px; padding: 4px;
+    background: linear-gradient(180deg, rgba(30,30,30,.96), rgba(14,14,14,.96));
+    border: 1px solid var(--line, rgba(212,175,55,.35)); border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+    position: relative; z-index: 40; user-select: none; -webkit-user-select: none;
+}
+.ps-ob-b {
+    position: relative; width: 34px; height: 34px; padding: 0; margin: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: transparent; border: 0; border-radius: 9px; cursor: pointer;
+    transition: background .15s, transform .15s;
+}
+.ps-ob-b i {
+    width: 19px; height: 19px; display: block;
+    background: var(--gold2, #f1d98a);
+    -webkit-mask: var(--ic) center / contain no-repeat; mask: var(--ic) center / contain no-repeat;
+    transition: background .15s, filter .15s;
+}
+.ps-ob-b:hover { background: rgba(255,255,255,.08); background: color-mix(in srgb, var(--gold, #d4af37) 18%, transparent); transform: translateY(-1px); }
+.ps-ob-b:hover i { background: #fff; filter: drop-shadow(0 0 4px var(--gold, #d4af37)); }
+.ps-ob-b:focus-visible { outline: 2px solid var(--gold2, #f1d98a); outline-offset: 1px; }
+.ps-ob-b::after {
+    content: attr(data-tip); position: absolute; top: calc(100% + 8px); left: 50%;
+    transform: translate(-50%, -3px); background: #111; color: var(--gold2, #f1d98a);
+    border: 1px solid var(--gold, #d4af37); border-radius: 6px; padding: 4px 9px;
+    font: bold .68rem Verdana, sans-serif; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s;
+    box-shadow: 0 8px 20px rgba(0,0,0,.6); z-index: 60;
+}
+.ps-ob-b:hover::after, .ps-ob-b:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
+.ps-ob-s {
+    width: 1px; height: 20px; margin: 0 5px;
+    background: linear-gradient(transparent, var(--line-s, rgba(212,175,55,.55)), transparent);
+}
+
+/* Título: centrado, brillo premium con los colores del tema equipado */
+body.vista-optimizada h1.titulo {
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    margin: 6px 0 4px; font-size: 2.6rem; line-height: 1.1; letter-spacing: 2px;
+    background: linear-gradient(100deg, var(--gold, #d4af37) 0%, var(--gold2, #f1d98a) 22%, #fff 38%, var(--gold2, #f1d98a) 52%, var(--gold, #d4af37) 74%, var(--gold2, #f1d98a) 100%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 2px 0 rgba(0,0,0,.6)) drop-shadow(0 0 14px color-mix(in srgb, var(--gold, #d4af37) 45%, transparent));
+    animation: ps-brillo 7s linear infinite;
+}
+@keyframes ps-brillo { 0% { background-position: 120% 0; } 100% { background-position: -100% 0; } }
+@media (prefers-reduced-motion: reduce) { body.vista-optimizada h1.titulo { animation: none; } }
+body.vista-optimizada h1.titulo .by { display: none; }
+/* VERSIÓN PREMIUM debajo del título */
+body.vista-optimizada h1.titulo .badge-prem {
+    display: inline-block; margin: 8px 0 0; padding: 3px 11px;
+    font-size: .62rem; letter-spacing: .1em; color: #1a1405;
+    background: linear-gradient(135deg, var(--gold2, #f1d98a), var(--gold, #d4af37) 60%, var(--gold, #d4af37));
+    box-shadow: 0 2px 10px color-mix(in srgb, var(--gold, #d4af37) 40%, transparent);
+}
+
+/* ·BY PICHISOFT a la izquierda + descripción a la derecha, en monoespaciada */
+body.vista-optimizada #pPremium > .bienvenida {
+    display: flex; flex-wrap: wrap; align-items: baseline; justify-content: flex-start;
+    gap: 4px 16px; max-width: none; margin: 6px 0 16px; padding: 0 4px;
+    font: .76rem/1.5 ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, "Courier New", monospace;
+    color: #b8b8b8; text-align: left;
+}
+body.vista-optimizada #pPremium > .bienvenida::before {
+    content: "·BY PICHISOFT";
+    font: bold .78rem ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, "Courier New", monospace;
+    letter-spacing: .16em; color: #6b6b6b; white-space: nowrap; flex: none;
+}
+/* Si se oculta la bienvenida, desaparece solo la descripción; "·BY PICHISOFT" queda */
+body.vista-optimizada #pPremium > .bienvenida[hidden] { font-size: 0; line-height: 0; gap: 0; }
+
+/* Tarjetas: cuadrados premium más grandes */
+@media (min-width: 601px) {
+    body.vista-optimizada:not(.cols-custom) .lista,
+    body.vista-optimizada:not(.cols-custom) .lista-p {
+        grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: 12px;
+    }
+    body.vista-optimizada .ico { width: 62px; height: 62px; border-radius: 18px; }
+}
+body.vista-optimizada .app {
+    min-height: 160px; padding: 20px 10px 12px; gap: 8px; border-radius: 18px; overflow: hidden;
+    background:
+        radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--gold, #d4af37) 11%, transparent), transparent 60%),
+        linear-gradient(180deg, #252525, #151515);
+    border: 1px solid #2f2f2f;
+    box-shadow: 0 4px 14px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
+}
+body.vista-optimizada .app::before {
+    content: ""; position: absolute; left: 18%; right: 18%; top: 0; height: 2px; pointer-events: none;
+    background: linear-gradient(90deg, transparent, var(--gold, #d4af37), transparent); opacity: .55;
+}
+body.vista-optimizada .app:hover {
+    border-color: var(--gold, #d4af37);
+    box-shadow: 0 12px 26px rgba(0,0,0,.5), 0 0 18px color-mix(in srgb, var(--gold, #d4af37) 28%, transparent);
+}
+body.vista-optimizada .grip { top: 9px; left: 9px; }
+body.vista-optimizada .nm { font-size: .86rem; }
+body.vista-optimizada .nm small { font-size: .6rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold, #d4af37); opacity: .85; }
+/* Etiquetas: entre el nombre y las estrellas, centradas */
+body.vista-optimizada .app > .tags { align-self: center; justify-content: center; max-width: 100%; }
+.ps-ob-b:first-child::after { left: 0; transform: translate(0, -3px); }
+.ps-ob-b:first-child:hover::after, .ps-ob-b:first-child:focus-visible::after { transform: translate(0, 0); }
+
+@media (max-width: 900px) { body.vista-optimizada #ps-obar { max-width: 100%; } }
+@media (max-width: 600px) { .ps-ob-b { width: 32px; height: 32px; } .ps-ob-b i { width: 17px; height: 17px; } }
 `;
 
     /* ------------------------------ DATOS ------------------------------ */
@@ -1618,7 +1735,9 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         const pGear = document.createElement('button');
         pGear.id = 'pGear';
         pGear.setAttribute('aria-label', 'Configuración');
-        pGear.textContent = 'Configuración'; // Solo texto
+        // Nota: Quitamos el setAttribute('title', ...) para que no aparezca el cartel nativo.
+        pGear.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;gap:8px;background:transparent;border:none;padding:8px 12px;cursor:pointer;font:inherit;color:inherit;margin:0;';
+        pGear.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> <span>Configuración</span>';
         pGear.onclick = abrirConfig;
 
         const topbar = document.getElementById('pichisoft-topbar');
@@ -1626,7 +1745,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
             topbar.appendChild(pGear);
         } else {
             pGear.className = 'p-gear';
-            pGear.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+            pGear.innerHTML = '<svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
             document.body.appendChild(pGear);
         }
         $('#pQ').oninput = e => {
@@ -1743,9 +1862,73 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
 
     /* Vistas: 'tarjetas' (grilla), 'lista' (categorías en filas, sin grilla) y 'clasica' (la lista simple de
        index.html). Sin cuenta solo existe la clásica; con cuenta se elige en Configuración. */
+    /* ---- Barra de íconos de la Interfaz optimizada (cada botón hace click en el original) ---- */
+    const OB_ICONS = {
+        gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+        lang: '<path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/>',
+        chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+        share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/>',
+        coin: '<circle cx="12" cy="12" r="9"/><path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.6 0-2.7.9-2.7 2s1 1.7 2.7 2 2.7.9 2.7 2-1.1 2-2.7 2c-1.1 0-2-.4-2.5-1.2M12 6v2M12 16v2"/>',
+        users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+        faq: '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+        info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+        rules: '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/>',
+        lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+        cookie: '<path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01M16 15.5v.01M12 12v.01M11 17v.01M7 14v.01"/>',
+        kbd: '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/>',
+        term: '<path d="m4 17 6-6-6-6"/><path d="M12 19h8"/>'
+    };
+    const OB = [
+        ['gear', 'Configuración', '#pGear', abrirConfig],
+        ['lang', 'Traducir', '#psi-btn', () => { if (window.PichisoftIdiomas) window.PichisoftIdiomas.abrir(); }],
+        ['chat', 'Mensajería', '#pichisoft-topbar button[aria-label="Mensajería"]'],
+        null,
+        ['share', 'Compartir', '#pf-share-btn'],
+        ['coin', 'PichiCoins', '#psc-btn'],
+        null,
+        ['users', 'Sobre nosotros', '.pf-btn[data-pf="sobre"]'],
+        ['faq', 'Preguntas frecuentes', '.pf-btn[data-pf="faq"]'],
+        ['info', 'Información general', '.pf-btn[data-pf="info"]'],
+        ['rules', 'Nuestras reglas', '.pf-btn[data-pf="reglas"]'],
+        null,
+        ['lock', 'Privacidad', '.pf-btn[data-pf="privacidad"]'],
+        ['cookie', 'Cookies', '.pf-btn[data-pf="cookies"]'],
+        ['kbd', 'Ayuda', '.pf-btn[data-pf="ayuda"]'],
+        ['term', 'Consola', '#pf-consola']
+    ];
+    function montarBarraOpt() {
+        if (document.getElementById('ps-obar')) return;
+        const h1 = document.querySelector('h1.titulo'); if (!h1) return;
+        const bar = document.createElement('div'); bar.id = 'ps-obar'; bar.setAttribute('translate', 'no');
+        OB.forEach(o => {
+            if (!o) { const s = document.createElement('span'); s.className = 'ps-ob-s'; bar.append(s); return; }
+            const b = document.createElement('button'); b.type = 'button'; b.className = 'ps-ob-b';
+            b.setAttribute('aria-label', o[1]); b.dataset.tip = o[1];
+            const i = document.createElement('i'); i.setAttribute('aria-hidden', 'true');
+            const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + OB_ICONS[o[0]] + '</svg>';
+            i.style.setProperty('--ic', 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")');
+            b.append(i);
+            b.onclick = () => { if (o[3]) { o[3](); return; } const t = document.querySelector(o[2]); if (t) t.click(); };
+            bar.append(b);
+        });
+        h1.before(bar);
+    }
+
+    /* Vistas: 'tarjetas' (grilla), 'lista' (categorías en filas, sin grilla) y 'clasica' (la lista simple de
+       index.html). Sin cuenta solo existe la clásica; con cuenta se elige en Configuración. */
     function aplicarVista(prem) {
         document.body.classList.toggle('vista-orig', !!prem && cfg.vista === 'clasica');
         document.body.classList.toggle('vista-lista', !!prem && cfg.vista === 'lista');
+        document.body.classList.toggle('vista-optimizada', !!prem && cfg.vista === 'optimizada');
+
+        // Limpiar restos de la barra de íconos si no estamos en la interfaz optimizada
+        if (prem && cfg.vista === 'optimizada') {
+            montarBarraOpt();
+        } else {
+            const bar = document.getElementById('ps-obar');
+            if (bar) bar.remove();
+        }
+
         document.querySelectorAll('#dirClasico a').forEach(a => {
             if (!prem || cfg.blank) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
             else { a.removeAttribute('target'); a.removeAttribute('rel'); }
@@ -1756,7 +1939,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
 
     function aplicarColumnas() {
         const b = document.body, n = +cfg.columnas || 0;
-        const on = n > 0 && cfg.vista === 'tarjetas' && !!Pichisoft.user;
+        const on = n > 0 && (cfg.vista === 'tarjetas' || cfg.vista === 'optimizada') && !!Pichisoft.user;
         b.classList.toggle('cols-custom', on);
         if (!on) {
             b.classList.remove('cols-denso', 'cols-muydenso');
@@ -2039,6 +2222,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         <button type="button" class="pm-opt" role="radio" data-v="clasica"><span class="rd"></span><span><b>Vista original</b><small>La de siempre: la lista simple que ven los usuarios sin cuenta.</small></span></button>
         <button type="button" class="pm-opt" role="radio" data-v="lista"><span class="rd"></span><span><b>Vista de versión premium</b><small>Apps ordenadas por categorías, en filas y sin grilla.</small></span></button>
         <button type="button" class="pm-opt" role="radio" data-v="tarjetas"><span class="rd"></span><span><b>Vista nueva para versión premium</b><small>Grilla de tarjetas con íconos, como el launcher de un celular.</small></span></button>
+                <button type="button" class="pm-opt" role="radio" data-v="optimizada"><span class="rd"></span><span><b>Interfaz optimizada</b><small>Ocupa menos espacio: controles en íconos (con ayuda al pasar el mouse), título centrado, tarjetas más grandes y un diseño más usable.</small></span></button>
       </div>
       ${fila('orden', 'Ordenar apps', 'Agrupa las apps por categoría. Si lo desactivás, se muestran todas juntas.')}
       ${fila('blank', 'Abrir las apps en una pestaña nueva', 'Si lo desactivás, se abren en esta misma pestaña.')}
@@ -2086,12 +2270,13 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
 
         o.querySelector('#cfgReset').onclick = confirmarReset;
     }
+
     // --- SISTEMA DE RATINGS ---
-    // --- SISTEMA DE RATINGS ---
+    const RATING_CACHE = {};
     async function cargarRating(appId, container, retries = 10) {
-        const fb = window.PichisoftFirebase;
-        if (!fb || !fb.getDocs) {
-            if (retries > 0) setTimeout(() => cargarRating(appId, container, retries - 1), 300);
+        if (RATING_CACHE[appId] && RATING_CACHE[appId].prom !== undefined) {
+            container.innerHTML = `<span style="color:var(--gold);">★</span> ${RATING_CACHE[appId].prom}`;
+            container.title = RATING_CACHE[appId].count + ' votos';
             return;
         }
         try {
@@ -2100,9 +2285,12 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
             let total = 0, count = 0;
             snap.forEach(d => { total += (d.data().score || 0); count++; });
             const prom = count ? (total / count).toFixed(1) : '0.0';
+            RATING_CACHE[appId] = RATING_CACHE[appId] || {};
+            RATING_CACHE[appId].prom = prom;
+            RATING_CACHE[appId].count = count;
             container.innerHTML = `<span style="color:var(--gold);">★</span> ${prom}`;
             container.title = count + ' votos';
-        } catch (e) { console.error('cargarRating:', e); }
+        } catch (e) { console.error('cargarRating:', e); } s
     }
 
     function crearEstrellas(appId, appName) {
@@ -2110,7 +2298,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         cont.className = 'estrellas';
         cont.style.cssText = 'display:flex;justify-content:center;gap:2px;margin-top:5px;cursor:pointer;font-size:16px;';
 
-        let userRating = 0;
+        let userRating = (RATING_CACHE[appId] && RATING_CACHE[appId].userScore) || 0;
         const paint = n => {
             [...cont.children].forEach((s, i) => {
                 s.style.color = (i + 1) <= n ? 'var(--gold)' : '#555';
@@ -2118,21 +2306,27 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         };
 
         // Cargar la calificación previa del usuario (si tiene cuenta)
-        (async () => {
-            const fb = window.PichisoftFirebase;
-            if (!fb || !fb.auth || !fb.auth.currentUser) return;
-            try {
-                const snap = await fb.getDoc(fb.doc(fb.db, 'app_ratings', appId + '_' + fb.auth.currentUser.uid));
-                if (snap.exists()) {
-                    userRating = snap.data().score || 0;
-                    paint(userRating);
-                    // retroactivo: solo si de verdad ya había calificado
-                    if (window.PichiCoins && window.PichiCoins.marcarHecho) {
-                        try { window.PichiCoins.marcarHecho('calificar'); } catch (e) { }
+        if (RATING_CACHE[appId] && RATING_CACHE[appId].userChecked) {
+            paint(userRating);
+        } else {
+            (async () => {
+                const fb = window.PichisoftFirebase;
+                if (!fb || !fb.auth || !fb.auth.currentUser) return;
+                try {
+                    const snap = await fb.getDoc(fb.doc(fb.db, 'app_ratings', appId + '_' + fb.auth.currentUser.uid));
+                    if (snap.exists()) {
+                        userRating = snap.data().score || 0;
+                        paint(userRating);
+                        if (window.PichiCoins && window.PichiCoins.marcarHecho) {
+                            try { window.PichiCoins.marcarHecho('calificar'); } catch (e) { }
+                        }
                     }
-                }
-            } catch { }
-        })();
+                    RATING_CACHE[appId] = RATING_CACHE[appId] || {};
+                    RATING_CACHE[appId].userScore = userRating;
+                    RATING_CACHE[appId].userChecked = true;
+                } catch { }
+            })();
+        }
 
         for (let i = 1; i <= 5; i++) {
             const star = document.createElement('span');
@@ -2151,6 +2345,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
                 abrirModalCalificar(appId, appName, () => {
                     userRating = i;
                     paint(userRating);
+                    if (RATING_CACHE[appId]) { RATING_CACHE[appId].userScore = i; delete RATING_CACHE[appId].prom; }
                 });
             };
             cont.appendChild(star);
@@ -2262,7 +2457,7 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
         if (!sv.vista && sv.clasica) cfg.vista = 'clasica'; /* migra opciones anteriores */
         if (!sv.vista && sv.lista) cfg.vista = 'lista';
         delete cfg.clasica; delete cfg.lista;
-        if (!['tarjetas', 'lista', 'clasica'].includes(cfg.vista)) cfg.vista = 'tarjetas';
+        if (!['tarjetas', 'lista', 'clasica', 'optimizada'].includes(cfg.vista)) cfg.vista = 'tarjetas';
 
         cargarLay(); render();
     }
