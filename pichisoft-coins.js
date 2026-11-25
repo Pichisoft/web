@@ -1155,6 +1155,9 @@ body.psc-neon-global .pcm-fab:hover {
         TRAMOS.forEach(([sec, monto, texto]) => w.append(fila(texto, monto, { done: ('t_' + sec) in E })));
         w.append(fila('Superar tu récord de tiempo diario', MONTO_RECORD, { nota: 'Una vez por cada día en que superes tu récord' + (S.rec > 0 ? ' · Tu récord: ' + Math.floor(S.rec / 60) + ' min' : '') }));
         w.append(h('div', 'psc-h4', 'Leer nuestros paneles'));
+        Object.keys(PANELES).forEach(k => {
+            w.append(fila('Leer el panel «' + PANELES[k] + '»', MONTO_PANEL, { done: ('panel_' + k) in E }));
+        });
         w.append(h('div', 'psc-h4', 'Días de racha'));
         w.append(fila('Tu primer día de racha', 100, { done: 'racha_primera_v2' in E }));
         w.append(fila('Cada día de racha después del primero', 30, { done: ('rd_' + hoy()) in E, nota: 'Entrá a PichonApps todos los días. Si pasás un día sin entrar, la racha vuelve a 0' + (rachaActual() ? ' · Racha actual: ' + rachaActual() : '') }));
@@ -1719,7 +1722,12 @@ body.psc-neon-global .pcm-fab:hover {
         document.body.append(ov);
         document.documentElement.style.overflow = 'hidden';
         const esc = e => { if (e.key === 'Escape' && !document.getElementById('psc-pv-ov') && !document.getElementById('psc-ed-ov')) { e.stopImmediatePropagation(); cerrar(); } };
-        const cerrar = () => { document.removeEventListener('keydown', esc, true); ov.remove(); document.documentElement.style.overflow = ''; };
+        const cerrar = () => {
+            document.removeEventListener('keydown', esc, true);
+            ov.remove();
+            document.documentElement.style.overflow = '';
+            Object.keys(abierto).forEach(k => delete abierto[k]); // <-- NUEVO: Limpia los paneles abiertos
+        };
         document.addEventListener('keydown', esc, true);
         ov.onclick = e => { if (e.target === ov) cerrar(); };
         ov.querySelector('.psc-x').onclick = cerrar;
