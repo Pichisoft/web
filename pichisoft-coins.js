@@ -68,7 +68,8 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
         ['vino', 'vino', '#7f1d1d', '#fca5a5'],
         ['bosque', 'bosque', '#166534', '#86efac'],
         ['oceano', 'océano profundo', '#1e3a8a', '#93c5fd'],
-        ['push', 'push', '#581c87', '#d8b4fe']
+        ['push', 'push', '#581c87', '#d8b4fe'],
+        ['hacker', 'Hacker', '#00ff41', '#39ff14']
     ];
     const TIENDA = [
         { id: 'marco_dorado', nombre: 'Marco dorado', desc: 'Un borde dorado brillante alrededor de tu foto de perfil.', precio: 2000, soloCuenta: true, slot: 'marco' },
@@ -78,7 +79,8 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
         { id: 'marco_fuego', nombre: 'Marco fuego', desc: 'Un anillo de llamas que arde alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
         { id: 'marco_hielo', nombre: 'Marco hielo', desc: 'Un anillo helado y cristalino alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
         { id: 'marco_glitch', nombre: 'Marco glitch', desc: 'Un borde digital que se distorsiona como una señal con fallas.', precio: 3700, soloCuenta: true, slot: 'marco' },
-        ...THEMES.map(([k, n]) => ({ id: 'tema_' + k, nombre: 'Tema ' + n, desc: 'Cambia el dorado de PichonApps por el estilo ' + n + '.', precio: 900, slot: 'tema' })),
+        ...THEMES.filter(([k]) => k !== 'hacker').map(([k, n]) => ({ id: 'tema_' + k, nombre: 'Tema ' + n, desc: 'Cambia el dorado de PichonApps por el estilo ' + n + '.', precio: 900, slot: 'tema' })),
+        { id: 'tema_hacker', nombre: 'Tema Hacker', desc: 'Verde terminal clásico. Estilo matrix / hacker puro.', precio: 1000, slot: 'tema' },
         { id: 'tema_dia', nombre: 'Tema del día', desc: 'Tu PichonApps cambia de color solo a lo largo del día: amanecer, mediodía, tarde, tardecita, noche y madrugada.', precio: 1800, slot: 'tema' },
         ...THEMES.map(([k, n]) => ({ id: 'cartel_' + k, nombre: 'Cartel ' + n, desc: 'El cartel de «¡Ganaste!» con el estilo ' + n + '.', precio: 700, slot: 'cartel' })),
         { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre. ¡Podés elegir el texto que quieras!', precio: 1200, soloCuenta: true, slot: 'titulo' },
@@ -315,7 +317,7 @@ body.psc-own-tema_magenta   { --gold:#e84393; --gold2:#f8b8d8; --line:rgba(232,6
 body.psc-own-tema_coral     { --gold:#ff6b6b; --gold2:#ffc9c9; --line:rgba(255,107,107,.26); --line-s:rgba(255,107,107,.4); --glow:rgba(255,201,201,.8); --dark-glow:rgba(255,107,107,.25); }
 body.psc-own-tema_fenix     { --gold:#ff7a1a; --gold2:#ffd166; --line:rgba(255,122,26,.3); --line-s:rgba(255,122,26,.5); --glow:rgba(255,209,102,.9); --dark-glow:rgba(255,122,26,.35); }
 body.psc-own-tema_yuli      { --gold:#c8c8c8; --gold2:#f0f0f0; --line:rgba(200,200,200,.26); --line-s:rgba(200,200,200,.4); --glow:rgba(240,240,240,.8); --dark-glow:rgba(200,200,200,.25); }
-
+body.psc-own-tema_hacker    { --gold:#00ff41; --gold2:#39ff14; --line:rgba(0,255,65,.35); --line-s:rgba(0,255,65,.55); --glow:rgba(57,255,20,.9); --dark-glow:rgba(0,255,65,.3); }
 
 /* --- Badge "VERSIÓN PREMIUM" --- */
 body[class*="psc-own-tema_"] .badge-prem {
