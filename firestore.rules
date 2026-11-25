@@ -3,6 +3,50 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    match /po_posts/{id} {
+  allow read: if true;
+  allow create, update: if isAdmin()
+    && request.resource.data.img is string && request.resource.data.img.size() <= 900000
+    && request.resource.data.title is string && request.resource.data.title.size() <= 120
+    && request.resource.data.sub is string && request.resource.data.sub.size() <= 300
+    && request.resource.data.type in ['Películas y series','Libros','Juegos','Videojuegos','Otros'];
+  allow delete: if isAdmin();
+}
+
+// Nombre y foto chiquita pública (public_profiles solo lo leen los logueados)
+match /po_avatars/{uid} {
+  allow read: if true;
+  allow create, update: if signedIn() && request.auth.uid == uid
+    && request.resource.data.keys().hasOnly(['n','photo'])
+    && request.resource.data.photo is string && request.resource.data.photo.size() <= 20000
+    && request.resource.data.n == get(/databases/$(database)/documents/public_profiles/$(request.auth.uid)).data.username;
+}
+
+match /po_reviews/{rid} {
+  allow read: if true;
+  allow create: if signedIn() && notDisabled()
+    && request.resource.data.keys().hasOnly(['post','uid','stars','text','ts','likes','parent'])
+    && request.resource.data.uid == request.auth.uid
+    && request.resource.data.post is string && request.resource.data.parent is string
+    && request.resource.data.text is string
+    && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 800
+    && request.resource.data.stars is int && request.resource.data.stars >= 0 && request.resource.data.stars <= 5
+    && request.resource.data.ts == request.time
+    && request.resource.data.likes.size() == 0
+    && (request.resource.data.parent != ''
+        || (request.resource.data.stars >= 1 && rid == request.resource.data.post + '_' + request.auth.uid));
+  allow update: if signedIn() && (
+    (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
+      && request.resource.data.likes.diff(resource.data.likes).affectedKeys().hasOnly([request.auth.uid]))
+    ||
+    ((resource.data.uid == request.auth.uid || isAdmin())
+      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text','stars','edited'])
+      && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 800
+      && request.resource.data.stars >= 0 && request.resource.data.stars <= 5)
+  );
+  allow delete: if signedIn() && (isAdmin() || resource.data.uid == request.auth.uid);
+}
+
     function isAdmin() {
       return request.auth != null && request.auth.uid in ['XIY1FfjUDodaSBSGema6NgixKRs1', 'n0XOUeFku1SxKWbrPWsA0V86kfc2'];
     }
@@ -610,55 +654,62 @@ service cloud.firestore {
       allow delete: if resource.data.status in ['waiting', 'done'];
     }
 
-       // ==========================================
+        // ==========================================
     // PICHICOINS
     // ==========================================
     match /pichicoins/{uid} {
       allow read: if (signedIn() && request.auth.uid == uid) || isAdmin();
-
       allow create: if signedIn() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['earned', 'bought', 'rec', 'equipped', 'tituloTexto'])
+        && request.resource.data.keys().hasOnly(['earned', 'bought', 'rec', 'equipped', 'tituloTexto', 'custom', 'streak'])
         && request.resource.data.earned is map && request.resource.data.earned.size() <= 150
-        && request.resource.data.bought is map && request.resource.data.bought.size() <= 50
+        && request.resource.data.bought is map && request.resource.data.bought.size() <= 250
         && request.resource.data.rec is number
         && request.resource.data.get('equipped', {}) is map
         && request.resource.data.get('equipped', {}).size() <= 10
-        && request.resource.data.earned.get('cuenta_creada', 5000) == 5000
+        && request.resource.data.get('equipped', {}).keys().hasOnly(['marco', 'tema', 'cartel', 'titulo', 'sonido', 'interfaz'])
+        && request.resource.data.earned.get('cuenta_creada', 50) in [50, 5000]
         && request.resource.data.get('tituloTexto', '') is string
-        && request.resource.data.get('tituloTexto', '').size() <= 30;
+        && request.resource.data.get('tituloTexto', '').size() <= 30
+        && request.resource.data.get('custom', []) is list
+        && request.resource.data.get('custom', []).size() <= 3
+        && request.resource.data.get('streak', {}) is map;
 
       allow update: if signedIn() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['earned', 'bought', 'rec', 'equipped', 'tituloTexto'])
+        && request.resource.data.keys().hasOnly(['earned', 'bought', 'rec', 'equipped', 'tituloTexto', 'custom', 'streak'])
         && (
-          // (A) Update normal incremental
+          // (A) Update normal: no se pierden claves viejas, crecimiento acotado
           (
-            request.resource.data.earned.diff(resource.data.get('earned', {})).removed().size() == 0
-            && request.resource.data.earned.diff(resource.data.get('earned', {})).changed().size() == 0
-            && request.resource.data.earned.diff(resource.data.get('earned', {})).added().size() <= 60
-            && request.resource.data.earned.size() <= 1500
-            && request.resource.data.bought.diff(resource.data.get('bought', {})).removed().size() == 0
-            && request.resource.data.bought.diff(resource.data.get('bought', {})).changed().size() == 0
-            && request.resource.data.bought.diff(resource.data.get('bought', {})).added().size() <= 20
-            && request.resource.data.bought.size() <= 50
+            request.resource.data.earned is map && request.resource.data.bought is map
+            && request.resource.data.earned.keys().hasAll(resource.data.get('earned', {}).keys())
+            && request.resource.data.earned.size() <= resource.data.get('earned', {}).size() + 80
+            && request.resource.data.earned.size() <= 5000
+            && request.resource.data.bought.keys().hasAll(resource.data.get('bought', {}).keys())
+            && request.resource.data.bought.size() <= resource.data.get('bought', {}).size() + 200
+            && request.resource.data.bought.size() <= 250
+            && request.resource.data.rec is number
             && request.resource.data.rec >= resource.data.get('rec', 0)
-            && request.resource.data.earned.get('cuenta_creada', 5000) == 5000
+            && request.resource.data.earned.get('cuenta_creada', 50) in [50, 5000]
             && request.resource.data.get('equipped', {}) is map
             && request.resource.data.get('equipped', {}).size() <= 10
-            && request.resource.data.get('equipped', {}).keys().hasOnly(['marco', 'tema', 'cartel', 'titulo', 'sonido'])
+            && request.resource.data.get('equipped', {}).keys().hasOnly(['marco', 'tema', 'cartel', 'titulo', 'sonido', 'interfaz'])
             && request.resource.data.get('tituloTexto', '') is string
             && request.resource.data.get('tituloTexto', '').size() <= 30
+            && request.resource.data.get('custom', []) is list
+            && request.resource.data.get('custom', []).size() <= 3
+            && request.resource.data.get('streak', {}) is map
           )
           ||
-          // (B) Reset completo (borra todo). Después el cliente puede re-otorgar el bono.
+          // (B) Reset completo
           (
             request.resource.data.earned.size() == 0
             && request.resource.data.bought.size() == 0
             && request.resource.data.rec == 0
-            && (!('equipped' in request.resource.data) || request.resource.data.equipped.size() == 0)
+            && request.resource.data.get('custom', []).size() == 0
+            && request.resource.data.get('equipped', {}).size() == 0
           )
         );
-
       allow delete: if false;
     }
+
   }
 }
