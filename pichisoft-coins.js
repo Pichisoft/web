@@ -31,7 +31,8 @@ import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstat
     };
     let APPS_NUEVAS = {};
 
-    const MONTO_APP_NUEVA = 100;
+    const MONTO_APP_NUEVA = 1;
+
 
     const TEXTO_QUE_SON = `Los PichiCoins son la moneda virtual de Pichisoft. No valen dinero real y no se pueden cambiar por dinero.
 
@@ -42,7 +43,7 @@ Se gastan en la Tienda para conseguir mejoras y detalles exclusivos.
 Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta, no pierdes nada de lo que ya juntaste.`;
 
     /* Tienda. "slot" agrupa decoraciones que compiten entre sí: solo una equipada por slot. */
-    const MAX_CUSTOM = 3, PRECIO_CUSTOM = 1000;
+    const MAX_CUSTOM = 3, PRECIO_CUSTOM = 15;
     /* [id, nombre, color principal, color claro] */
     const THEMES = [
         ['esmeralda', 'esmeralda', '#22e07a', '#8dffb8'],
@@ -72,20 +73,20 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
         ['hacker', 'Hacker', '#00ff41', '#39ff14']
     ];
     const TIENDA = [
-        { id: 'marco_dorado', nombre: 'Marco dorado', desc: 'Un borde dorado brillante alrededor de tu foto de perfil.', precio: 2000, soloCuenta: true, slot: 'marco' },
-        { id: 'marco_animado', nombre: 'Marco animado', desc: 'Un anillo que gira alrededor de tu foto de perfil.', precio: 2500, soloCuenta: true, slot: 'marco' },
-        { id: 'marco_arcoiris', nombre: 'Marco arcoíris', desc: 'Un borde arcoíris animado alrededor de tu foto de perfil.', precio: 3200, soloCuenta: true, slot: 'marco' },
-        { id: 'marco_neon', nombre: 'Pack Neón', desc: 'Un pack con 10 marcos de neón que pulsan alrededor de tu foto de perfil. ¡Y un Modo Neón Global! Toda PichonApps brilla con el color de tu marco, o con el de tu tema equipado. Elegís cuál usar desde Mi colección.', precio: 4000, soloCuenta: true, slot: 'marco' },
-        { id: 'marco_fuego', nombre: 'Marco fuego', desc: 'Un anillo de llamas que arde alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
-        { id: 'marco_hielo', nombre: 'Marco hielo', desc: 'Un anillo helado y cristalino alrededor de tu foto de perfil.', precio: 3500, soloCuenta: true, slot: 'marco' },
-        { id: 'marco_glitch', nombre: 'Marco glitch', desc: 'Un borde digital que se distorsiona como una señal con fallas.', precio: 3700, soloCuenta: true, slot: 'marco' },
-        ...THEMES.filter(([k]) => k !== 'hacker').map(([k, n]) => ({ id: 'tema_' + k, nombre: 'Tema ' + n, desc: 'Cambia el dorado de PichonApps por el estilo ' + n + '.', precio: 900, slot: 'tema' })),
-        { id: 'tema_hacker', nombre: 'Tema Hacker', desc: 'Verde terminal clásico. Estilo matrix / hacker puro.', precio: 1000, slot: 'tema' },
-        { id: 'tema_dia', nombre: 'Tema del día', desc: 'Tu PichonApps cambia de color solo a lo largo del día: amanecer, mediodía, tarde, tardecita, noche y madrugada.', precio: 1800, slot: 'tema' },
-        ...THEMES.map(([k, n]) => ({ id: 'cartel_' + k, nombre: 'Cartel ' + n, desc: 'El cartel de «¡Ganaste!» con el estilo ' + n + '.', precio: 700, slot: 'cartel' })),
-        { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre. ¡Podés elegir el texto que quieras!', precio: 1200, soloCuenta: true, slot: 'titulo' },
-        { id: 'sonido_moneda', nombre: 'Sonido de moneda', desc: 'Suena una moneda cada vez que ganás PichiCoins.', precio: 500, slot: 'sonido' },
-        { id: 'coleccion', nombre: 'Colección completa', desc: 'Todos los ítems de la tienda en un solo paquete.', precio: 15000, soloCuenta: true }
+        { id: 'marco_dorado', nombre: 'Marco dorado', desc: 'Un borde dorado brillante alrededor de tu foto de perfil.', precio: 20, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_animado', nombre: 'Marco animado', desc: 'Un anillo que gira alrededor de tu foto de perfil.', precio: 25, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_arcoiris', nombre: 'Marco arcoíris', desc: 'Un borde arcoíris animado alrededor de tu foto de perfil.', precio: 32, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_neon', nombre: 'Pack Neón', desc: 'Un pack con 10 marcos de neón que pulsan alrededor de tu foto de perfil. ¡Y un Modo Neón Global! Toda PichonApps brilla con el color de tu marco, o con el de tu tema equipado. Elegís cuál usar desde Mi colección.', precio: 40, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_fuego', nombre: 'Marco fuego', desc: 'Un anillo de llamas que arde alrededor de tu foto de perfil.', precio: 35, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_hielo', nombre: 'Marco hielo', desc: 'Un anillo helado y cristalino alrededor de tu foto de perfil.', precio: 35, soloCuenta: true, slot: 'marco' },
+        { id: 'marco_glitch', nombre: 'Marco glitch', desc: 'Un borde digital que se distorsiona como una señal con fallas.', precio: 37, soloCuenta: true, slot: 'marco' },
+        ...THEMES.filter(([k]) => k !== 'hacker').map(([k, n]) => ({ id: 'tema_' + k, nombre: 'Tema ' + n, desc: 'Cambia el dorado de PichonApps por el estilo ' + n + '.', precio: 15, slot: 'tema' })),
+        { id: 'tema_hacker', nombre: 'Tema Hacker', desc: 'Verde terminal clásico. Estilo matrix / hacker puro.', precio: 20, slot: 'tema' },
+        { id: 'tema_dia', nombre: 'Tema del día', desc: 'Tu PichonApps cambia de color solo a lo largo del día: amanecer, mediodía, tarde, tardecita, noche y madrugada.', precio: 25, slot: 'tema' },
+        ...THEMES.map(([k, n]) => ({ id: 'cartel_' + n, nombre: 'Cartel ' + n, desc: 'El cartel de «¡Ganaste!» con el estilo ' + n + '.', precio: 10, slot: 'cartel' })),
+        { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre. ¡Podés elegir el texto que quieras!', precio: 15, soloCuenta: true, slot: 'titulo' },
+        { id: 'sonido_moneda', nombre: 'Sonido de moneda', desc: 'Suena una moneda cada vez que ganás PichiCoins.', precio: 8, slot: 'sonido' },
+        { id: 'coleccion', nombre: 'Colección completa', desc: 'Todos los ítems de la tienda en un solo paquete.', precio: 150, soloCuenta: true }
     ];
 
     const SLOT_NOMBRES = {
@@ -97,31 +98,32 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
     };
 
     const HITOS = [
-        [1, 100, 'Entrar a una app por primera vez', 'entrar a una de nuestras apps por primera vez'],
-        [3, 200, 'Entrar a 3 apps distintas', 'entrar a 3 apps distintas'],
-        [5, 300, 'Entrar a 5 apps distintas', 'entrar a 5 apps distintas'],
-        [10, 500, 'Entrar a 10 apps distintas', 'entrar a 10 apps distintas'],
-        [15, 750, 'Entrar a 15 apps distintas', 'entrar a 15 apps distintas'],
-        [0, 1000, 'Entrar a todas nuestras apps', 'entrar a todas nuestras apps']
+        [1, 1, 'Entrar a una app por primera vez', 'entrar a una de nuestras apps por primera vez'],
+        [3, 2, 'Entrar a 3 apps distintas', 'entrar a 3 apps distintas'],
+        [5, 3, 'Entrar a 5 apps distintas', 'entrar a 5 apps distintas'],
+        [10, 5, 'Entrar a 10 apps distintas', 'entrar a 10 apps distintas'],
+        [15, 7, 'Entrar a 15 apps distintas', 'entrar a 15 apps distintas'],
+        [0, 10, 'Entrar a todas nuestras apps', 'entrar a todas nuestras apps']
     ];
     const TRAMOS = [
-        [600, 400, 'Permanecer 10 minutos en nuestras apps (en un mismo día)', 'permanecer 10 minutos en nuestras apps'],
-        [1800, 800, 'Permanecer 30 minutos en nuestras apps (en un mismo día)', 'permanecer 30 minutos en nuestras apps'],
-        [3600, 1500, 'Permanecer 1 hora en nuestras apps (en un mismo día)', 'permanecer 1 hora en nuestras apps']
+        [600, 4, 'Permanecer 10 minutos en nuestras apps (en un mismo día)', 'permanecer 10 minutos en nuestras apps'],
+        [1800, 8, 'Permanecer 30 minutos en nuestras apps (en un mismo día)', 'permanecer 30 minutos en nuestras apps'],
+        [3600, 15, 'Permanecer 1 hora en nuestras apps (en un mismo día)', 'permanecer 1 hora en nuestras apps']
     ];
-    const MONTO_RECORD = 200;
-    const MONTO_PANEL = 50;
+    const MONTO_RECORD = 2;
+    const MONTO_PANEL = 5;
     const PANELES = {
         sobre: 'Sobre nosotros', faq: 'Preguntas frecuentes', info: 'Información general',
-        reglas: 'Nuestras reglas', privacidad: 'Privacidad', cookies: 'Cookies'
+        reglas: 'Nuestras reglas', privacidad: 'Privacidad', cookies: 'Cookies',
+        ayuda: 'Ayuda' // <-- NUEVO
     };
-    const MONTO_CUENTA = 5000;
+    const MONTO_CUENTA = 50;
     const EVENTOS = {
-        mensaje: [500, 'Enviar un mensaje por primera vez', 'enviar tu primer mensaje'],
-        calificar: [500, 'Calificar una app por primera vez', 'calificar una app por primera vez'],
-        config: [500, 'Configurar tu PichonApps (al menos un cambio)', 'configurar tu PichonApps por primera vez'],
-        traducir: [500, 'Traducir PichonApps a otro idioma por primera vez', 'traducir PichonApps a otro idioma por primera vez'],
-        perfil: [500, 'Editar tu perfil (al menos un cambio)', 'editar tu perfil por primera vez']
+        mensaje: [5, 'Enviar un mensaje por primera vez', 'enviar tu primer mensaje'],
+        calificar: [5, 'Calificar una app por primera vez', 'calificar una app por primera vez'],
+        config: [5, 'Configurar tu PichonApps (al menos un cambio)', 'configurar tu PichonApps por primera vez'],
+        traducir: [5, 'Traducir PichonApps a otro idioma por primera vez', 'traducir PichonApps a otro idioma por primera vez'],
+        perfil: [5, 'Editar tu perfil (al menos un cambio)', 'editar tu perfil por primera vez']
     };
     const DUR_CARTEL = 4600;
 
@@ -1010,14 +1012,12 @@ body.psc-neon-global .pcm-fab:hover {
         S.streak = { last: t, n };
         let monto = 0;
         if (n === 1) {
-            if (!('racha_primera_v2' in S.earned)) { S.earned.racha_primera_v2 = 100; monto += 100; }
-            else { S.earned['rd_' + t] = 30; monto += 30; }  // ya cobró el primero antes
+            if (!('racha_primera_v2' in S.earned)) { S.earned.racha_primera_v2 = 5; monto += 5; } // Antes 100
+            else { S.earned['rd_' + t] = 1; monto += 1; }  // Antes 30
         } else {
-            S.earned['rd_' + t] = 30; monto += 30;
+            S.earned['rd_' + t] = 1; monto += 1; // Antes 30
         }
-        if (n % 7 === 0) { S.earned['rw_' + t] = 80; monto += 80; }
-        guardar(); cambio();
-        if (monto > 0) cartelRacha(n, monto);
+        if (n % 7 === 0) { S.earned['rw_' + t] = 5; monto += 5; } // Antes 80
     }
     function cartelRacha(n, monto) {
         const t = h('div', 'psc-rk'); t.setAttribute('translate', 'no'); t.setAttribute('role', 'status');
@@ -1159,9 +1159,9 @@ body.psc-neon-global .pcm-fab:hover {
             w.append(fila('Leer el panel «' + PANELES[k] + '»', MONTO_PANEL, { done: ('panel_' + k) in E }));
         });
         w.append(h('div', 'psc-h4', 'Días de racha'));
-        w.append(fila('Tu primer día de racha', 100, { done: 'racha_primera_v2' in E }));
-        w.append(fila('Cada día de racha después del primero', 30, { done: ('rd_' + hoy()) in E, nota: 'Entrá a PichonApps todos los días. Si pasás un día sin entrar, la racha vuelve a 0' + (rachaActual() ? ' · Racha actual: ' + rachaActual() : '') }));
-        w.append(fila('Cada semana de racha (7, 14, 21… días)', 80,
+        w.append(fila('Tu primer día de racha', 5, { done: 'racha_primera_v2' in E }));
+        w.append(fila('Cada día de racha después del primero', 1, { done: ('rd_' + hoy()) in E, nota: 'Entrá a PichonApps todos los días. Si pasás un día sin entrar, la racha vuelve a 0' + (rachaActual() ? ' · Racha actual: ' + rachaActual() : '') }));
+        w.append(fila('Cada semana de racha (7, 14, 21… días)', 5,
             { done: ('rw_' + hoy()) in E, nota: 'Se cobra automáticamente cada 7 días seguidos' }));
 
         w.append(h('div', 'psc-h4', 'Cuenta de Pichisoft'));
