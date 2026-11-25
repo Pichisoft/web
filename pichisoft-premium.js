@@ -1475,12 +1475,12 @@ body.cols-muydenso .estrellas { font-size: 12px !important; gap: 0 !important; }
     body.cols-denso .nm small { font-size: .5rem; }
     body.cols-denso .tags .etiqueta { font-size: .42rem; padding: 2px 3px; }
 }
-   /* ===== INTERFAZ OPTIMIZADA ===== */
-/* Se ocultan los controles originales (siguen existiendo: la barra nueva les hace click) */
+ /* ===== INTERFAZ OPTIMIZADA ===== */
 body.vista-optimizada #pichisoft-topbar,
 body.vista-optimizada .pf-footer,
 body.vista-optimizada #psc-btn,
-body.vista-optimizada #pf-share-btn { display: none !important; }
+body.vista-optimizada #pf-share-btn,
+body.vista-optimizada .p-gear { display: none !important; }
 
 /* Barra de íconos */
 #ps-obar { display: none; }
@@ -1491,7 +1491,7 @@ body.vista-optimizada #ps-obar {
     background: linear-gradient(180deg, rgba(30,30,30,.96), rgba(14,14,14,.96));
     border: 1px solid var(--line, rgba(212,175,55,.35)); border-radius: 12px;
     box-shadow: 0 6px 18px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
-    position: relative; z-index: 40; user-select: none; -webkit-user-select: none;
+    position: relative; z-index: 75; user-select: none; -webkit-user-select: none;
 }
 .ps-ob-b {
     position: relative; width: 34px; height: 34px; padding: 0; margin: 0;
@@ -1499,13 +1499,14 @@ body.vista-optimizada #ps-obar {
     background: transparent; border: 0; border-radius: 9px; cursor: pointer;
     transition: background .15s, transform .15s;
 }
+.ps-ob-b:hover, .ps-ob-b:focus-visible { z-index: 10; }
 .ps-ob-b i {
     width: 19px; height: 19px; display: block;
     background: var(--gold2, #f1d98a);
     -webkit-mask: var(--ic) center / contain no-repeat; mask: var(--ic) center / contain no-repeat;
     transition: background .15s, filter .15s;
 }
-.ps-ob-b:hover { background: rgba(255,255,255,.08); background: color-mix(in srgb, var(--gold, #d4af37) 18%, transparent); transform: translateY(-1px); }
+.ps-ob-b:hover { background: color-mix(in srgb, var(--gold, #d4af37) 18%, transparent); transform: translateY(-1px); }
 .ps-ob-b:hover i { background: #fff; filter: drop-shadow(0 0 4px var(--gold, #d4af37)); }
 .ps-ob-b:focus-visible { outline: 2px solid var(--gold2, #f1d98a); outline-offset: 1px; }
 .ps-ob-b::after {
@@ -1514,18 +1515,21 @@ body.vista-optimizada #ps-obar {
     border: 1px solid var(--gold, #d4af37); border-radius: 6px; padding: 4px 9px;
     font: bold .68rem Verdana, sans-serif; white-space: nowrap;
     opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s;
-    box-shadow: 0 8px 20px rgba(0,0,0,.6); z-index: 60;
+    box-shadow: 0 8px 20px rgba(0,0,0,.65); z-index: 85;
 }
 .ps-ob-b:hover::after, .ps-ob-b:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
+.ps-ob-b:first-child::after { left: 0; transform: translate(0, -3px); }
+.ps-ob-b:first-child:hover::after, .ps-ob-b:first-child:focus-visible::after { transform: translate(0, 0); }
 .ps-ob-s {
     width: 1px; height: 20px; margin: 0 5px;
     background: linear-gradient(transparent, var(--line-s, rgba(212,175,55,.55)), transparent);
 }
 
-/* Título: centrado, brillo premium con los colores del tema equipado */
+/* Título centrado con brillo */
 body.vista-optimizada h1.titulo {
     display: flex; flex-direction: column; align-items: center; text-align: center;
-    margin: 6px 0 4px; font-size: 2.6rem; line-height: 1.1; letter-spacing: 2px;
+    padding-right: 0 !important;
+    margin: 6px 0 4px; font-size: clamp(1.65rem, 7.5vw, 2.6rem); line-height: 1.1; letter-spacing: 1.5px;
     background: linear-gradient(100deg, var(--gold, #d4af37) 0%, var(--gold2, #f1d98a) 22%, #fff 38%, var(--gold2, #f1d98a) 52%, var(--gold, #d4af37) 74%, var(--gold2, #f1d98a) 100%);
     background-size: 220% 100%;
     -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -1535,6 +1539,7 @@ body.vista-optimizada h1.titulo {
 @keyframes ps-brillo { 0% { background-position: 120% 0; } 100% { background-position: -100% 0; } }
 @media (prefers-reduced-motion: reduce) { body.vista-optimizada h1.titulo { animation: none; } }
 body.vista-optimizada h1.titulo .by { display: none; }
+
 /* VERSIÓN PREMIUM debajo del título */
 body.vista-optimizada h1.titulo .badge-prem {
     display: inline-block; margin: 8px 0 0; padding: 3px 11px;
@@ -1543,22 +1548,25 @@ body.vista-optimizada h1.titulo .badge-prem {
     box-shadow: 0 2px 10px color-mix(in srgb, var(--gold, #d4af37) 40%, transparent);
 }
 
-/* ·BY PICHISOFT a la izquierda + descripción a la derecha, en monoespaciada */
+/* ·BY PICHISOFT + descripción */
 body.vista-optimizada #pPremium > .bienvenida {
-    display: flex; flex-wrap: wrap; align-items: baseline; justify-content: flex-start;
-    gap: 4px 16px; max-width: none; margin: 6px 0 16px; padding: 0 4px;
+    display: flex !important; flex-wrap: wrap; align-items: baseline; justify-content: flex-start;
+    gap: 4px 16px; max-width: none; margin: 8px 0 16px; padding: 0 4px !important;
+    position: relative; z-index: 2;
     font: .76rem/1.5 ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, "Courier New", monospace;
     color: #b8b8b8; text-align: left;
 }
 body.vista-optimizada #pPremium > .bienvenida::before {
     content: "·BY PICHISOFT";
+    display: inline-block;
     font: bold .78rem ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, "Courier New", monospace;
-    letter-spacing: .16em; color: #6b6b6b; white-space: nowrap; flex: none;
+    letter-spacing: .16em; color: #8c8c8c; white-space: nowrap; flex: none;
 }
-/* Si se oculta la bienvenida, desaparece solo la descripción; "·BY PICHISOFT" queda */
-body.vista-optimizada #pPremium > .bienvenida[hidden] { font-size: 0; line-height: 0; gap: 0; }
+body.vista-optimizada #pPremium > .bienvenida[hidden] {
+    font-size: 0; line-height: 0; gap: 0; margin: 6px 0 12px;
+}
 
-/* Tarjetas: cuadrados premium más grandes */
+/* Tarjetas */
 @media (min-width: 601px) {
     body.vista-optimizada:not(.cols-custom) .lista,
     body.vista-optimizada:not(.cols-custom) .lista-p {
@@ -1585,13 +1593,35 @@ body.vista-optimizada .app:hover {
 body.vista-optimizada .grip { top: 9px; left: 9px; }
 body.vista-optimizada .nm { font-size: .86rem; }
 body.vista-optimizada .nm small { font-size: .6rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold, #d4af37); opacity: .85; }
-/* Etiquetas: entre el nombre y las estrellas, centradas */
 body.vista-optimizada .app > .tags { align-self: center; justify-content: center; max-width: 100%; }
-.ps-ob-b:first-child::after { left: 0; transform: translate(0, -3px); }
-.ps-ob-b:first-child:hover::after, .ps-ob-b:first-child:focus-visible::after { transform: translate(0, 0); }
 
-@media (max-width: 900px) { body.vista-optimizada #ps-obar { max-width: 100%; } }
-@media (max-width: 600px) { .ps-ob-b { width: 32px; height: 32px; } .ps-ob-b i { width: 17px; height: 17px; } }
+/* Ajustes específicos para tablets y celulares */
+@media (max-width: 900px) {
+    body.vista-optimizada #ps-obar { max-width: 100%; }
+}
+@media (max-width: 600px) {
+    body.vista-optimizada #ps-obar {
+        width: 100%; justify-content: center; box-sizing: border-box;
+    }
+    .ps-ob-b { width: 32px; height: 32px; }
+    .ps-ob-b i { width: 17px; height: 17px; }
+    /* Evita que los tooltips de los bordes se salgan de la pantalla en celular */
+    .ps-ob-b:nth-child(-n+4)::after { left: 0; transform: translate(0, -3px); }
+    .ps-ob-b:nth-child(-n+4):hover::after,
+    .ps-ob-b:nth-child(-n+4):focus-visible::after { transform: translate(0, 0); }
+    .ps-ob-b:nth-last-child(-n+4)::after { left: auto; right: 0; transform: translate(0, -3px); }
+    .ps-ob-b:nth-last-child(-n+4):hover::after,
+    .ps-ob-b:nth-last-child(-n+4):focus-visible::after { transform: translate(0, 0); }
+
+    body.vista-optimizada #pPremium > .bienvenida {
+        flex-direction: column; align-items: center; text-align: center; gap: 4px;
+    }
+    body.vista-optimizada .app {
+        min-height: 126px; padding: 15px 4px 10px; gap: 6px; border-radius: 14px;
+    }
+    body.vista-optimizada .nm { font-size: .72rem; }
+}
+
 `;
 
     /* ------------------------------ DATOS ------------------------------ */
@@ -2290,7 +2320,8 @@ body.vista-optimizada .app > .tags { align-self: center; justify-content: center
             RATING_CACHE[appId].count = count;
             container.innerHTML = `<span style="color:var(--gold);">★</span> ${prom}`;
             container.title = count + ' votos';
-        } catch (e) { console.error('cargarRating:', e); } s
+        } catch (e) { console.error('cargarRating:', e); }
+
     }
 
     function crearEstrellas(appId, appName) {
