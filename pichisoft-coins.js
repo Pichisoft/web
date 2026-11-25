@@ -86,7 +86,7 @@ Puedes juntarlos con o sin cuenta de Pichisoft. Si después te creas una cuenta,
         ...THEMES.map(([k, n]) => ({ id: 'cartel_' + n, nombre: 'Cartel ' + n, desc: 'El cartel de «¡Ganaste!» con el estilo ' + n + '.', precio: 10, slot: 'cartel' })),
         { id: 'titulo', nombre: 'Título personalizado', desc: 'Muestra un título debajo de tu nombre. ¡Podés elegir el texto que quieras!', precio: 15, soloCuenta: true, slot: 'titulo' },
         { id: 'sonido_moneda', nombre: 'Sonido de moneda', desc: 'Suena una moneda cada vez que ganás PichiCoins.', precio: 8, slot: 'sonido' },
-        { id: 'coleccion', nombre: 'Colección completa', desc: 'Todos los ítems de la tienda en un solo paquete.', precio: 150, soloCuenta: true }
+        { id: 'coleccion', nombre: 'Colección completa', desc: 'Todos los ítems de la tienda en un solo paquete.', precio: 170, soloCuenta: true }
     ];
 
     const SLOT_NOMBRES = {
