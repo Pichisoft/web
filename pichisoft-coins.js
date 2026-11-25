@@ -318,7 +318,13 @@ body.psc-own-tema_coral     { --gold:#ff6b6b; --gold2:#ffc9c9; --line:rgba(255,1
 body.psc-own-tema_fenix     { --gold:#ff7a1a; --gold2:#ffd166; --line:rgba(255,122,26,.3); --line-s:rgba(255,122,26,.5); --glow:rgba(255,209,102,.9); --dark-glow:rgba(255,122,26,.35); }
 body.psc-own-tema_yuli      { --gold:#c8c8c8; --gold2:#f0f0f0; --line:rgba(200,200,200,.26); --line-s:rgba(200,200,200,.4); --glow:rgba(240,240,240,.8); --dark-glow:rgba(200,200,200,.25); }
 body.psc-own-tema_hacker    { --gold:#00ff41; --gold2:#39ff14; --line:rgba(0,255,65,.35); --line-s:rgba(0,255,65,.55); --glow:rgba(57,255,20,.9); --dark-glow:rgba(0,255,65,.3); }
-
+body.psc-own-tema_hacker { background-image: repeating-linear-gradient(0deg, rgba(0,255,65,.05) 0 1px, transparent 1px 3px), radial-gradient(ellipse 80% 40% at 50% 0, rgba(0,255,65,.14), transparent 70%); background-attachment: fixed; }
+body.psc-own-tema_hacker h1.titulo { font-family: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace !important; letter-spacing: 3px !important; animation: ps-brillo 7s linear infinite, ps-hk-flick 5s infinite; }
+@keyframes ps-hk-flick { 0%, 94%, 100% { opacity: 1; } 95% { opacity: .78; } 96% { opacity: 1; } 97% { opacity: .6; } 98% { opacity: 1; } }
+body.psc-own-tema_hacker .nm, body.psc-own-tema_hacker .nm small, body.psc-own-tema_hacker .bienvenida, body.psc-own-tema_hacker .p-search input { font-family: ui-monospace, Consolas, "Courier New", monospace !important; }
+body.psc-own-tema_hacker .app { background: linear-gradient(180deg, #07130a, #020703) !important; border-color: rgba(0,255,65,.28) !important; }
+body.psc-own-tema_hacker .app:hover { box-shadow: 0 0 22px rgba(0,255,65,.35), inset 0 0 14px rgba(0,255,65,.08) !important; }
+@media (prefers-reduced-motion: reduce) { body.psc-own-tema_hacker h1.titulo { animation: none; } }
 /* --- Badge "VERSIÓN PREMIUM" --- */
 body[class*="psc-own-tema_"] .badge-prem {
     background: linear-gradient(135deg, var(--gold2), var(--gold) 55%, var(--gold));
