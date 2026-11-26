@@ -560,17 +560,17 @@ body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisof
 #psc-racha{align-self:flex-end;text-align:center;line-height:1.1;user-select:none;-webkit-user-select:none;padding:2px 4px}
 @media (max-width: 600px) {
     #psc-racha {
-        position: fixed !important;
-        top: calc(6px + env(safe-area-inset-top, 0px)) !important;
-        left: 10px !important;
+        position: absolute !important;
+        top: 12px !important;
+        left: 12px !important;
         right: auto !important;
-        z-index: 40 !important;          /* lower than most things */
-        background: rgba(0, 0, 0, 0.55);
-        padding: 4px 8px !important;
+        z-index: 50 !important;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 4px 9px !important;
         border-radius: 8px;
-        font-size: 0.85em;
-        opacity: 0.85;
-        pointer-events: none;            /* so it never blocks clicks */
+        text-align: left !important;
+        white-space: nowrap;
+        pointer-events: none;
     }
 }
 #psc-racha b{display:block;font:bold 1.7rem "Times New Roman",serif;color:var(--gold2)}
@@ -2346,4 +2346,11 @@ body.psc-preview-mode:has(.pf-modal.open) #psc-preview-bar {
     revisarRacha();
     if (slugActual) visitar(slugActual);
     setTimeout(checkPreviewFromURL, 200);
+    // Only on mobile: move the streak badge out of the dock so it scrolls with the page
+    if (window.matchMedia('(max-width: 600px)').matches) {
+        const racha = document.getElementById('psc-racha');
+        if (racha) {
+            document.body.appendChild(racha);
+        }
+    }
 })();
