@@ -560,14 +560,17 @@ body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisof
 #psc-racha{align-self:flex-end;text-align:center;line-height:1.1;user-select:none;-webkit-user-select:none;padding:2px 4px}
 @media (max-width: 600px) {
     #psc-racha {
-        position: absolute !important;
-        top: -100px !important; /* Un poco más abajo para que no se corte */
-        left: calc(-100vw + 140px) !important; /* Lo clava a 80px del borde izquierdo */
+        position: fixed !important;
+        top: calc(8px + env(safe-area-inset-top, 0px)) !important;
+        left: 12px !important;
+        right: auto !important;
         z-index: 9999 !important;
-        background: rgba(0, 0, 0, 0.6);
-        padding: 4px 8px !important;
+        background: rgba(0, 0, 0, 0.65);
+        padding: 5px 10px !important;
         border-radius: 8px;
         text-align: left !important;
+        /* evita que se corte */
+        max-width: calc(100vw - 24px);
     }
 }
 #psc-racha b{display:block;font:bold 1.7rem "Times New Roman",serif;color:var(--gold2)}
