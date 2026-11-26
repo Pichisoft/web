@@ -559,13 +559,12 @@ body:has(.psc-ov) #pichisoft-topbar,body:has(.psc-pv-ov) #pichisoft-topbar,body:
 body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisoft-topbar,body:has(.pcm-ov) #pichisoft-topbar,body:has(.psi-ov) #pichisoft-topbar{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
 #psc-racha{align-self:flex-end;text-align:center;line-height:1.1;user-select:none;-webkit-user-select:none;padding:2px 4px}
 @media (max-width: 600px) {
-   @media (max-width: 600px) {
     #psc-racha {
-        position: absolute !important;
-        top: -90px !important; /* Lo sube por encima del botón de PichiCoins */
-        right: 100px !important; /* Lo tira hacia la izquierda de todo */
+        position: relative !important;
+        top: 2px !important;
+        left: 2px !important;
         z-index: 9999 !important;
-        background: rgba(0, 0, 0, 0.6); /* Fondo para que se lea bien */
+        background: rgba(0, 0, 0, 0.4); /* Un fondito sutil para que se lea bien si pasa por encima de algo */
         padding: 4px 8px !important;
         border-radius: 8px;
     }
