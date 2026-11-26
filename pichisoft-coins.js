@@ -558,6 +558,18 @@ body.psc-own-marco_neon_dual #cuenta .av,
 body:has(.psc-ov) #pichisoft-topbar,body:has(.psc-pv-ov) #pichisoft-topbar,body:has(.psc-reset-ov) #pichisoft-topbar,
 body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisoft-topbar,body:has(.pcm-ov) #pichisoft-topbar,body:has(.psi-ov) #pichisoft-topbar{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
 #psc-racha{align-self:flex-end;text-align:center;line-height:1.1;user-select:none;-webkit-user-select:none;padding:2px 4px}
+@media (max-width: 600px) {
+    #psc-racha {
+        position: fixed !important;
+        top: 2px !important;
+        left: 2px !important;
+        right: auto !important;
+        z-index: 9999 !important;
+        background: rgba(0, 0, 0, 0.4); /* Un fondito sutil para que se lea bien si pasa por encima de algo */
+        padding: 4px 8px !important;
+        border-radius: 8px;
+    }
+}
 #psc-racha b{display:block;font:bold 1.7rem "Times New Roman",serif;color:var(--gold2)}
 #psc-racha small{display:block;font:.7rem Verdana,sans-serif;color:#aaa}
 .psc-rk{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:14px;z-index:2147483600;display:flex;align-items:center;gap:12px;max-width:calc(100vw - 28px);box-sizing:border-box;padding:10px 18px 11px 12px;border-radius:14px;border:1.5px solid var(--gold);background:linear-gradient(160deg,color-mix(in srgb,var(--gold) 22%,#000),#050302 80%);box-shadow:0 12px 34px rgba(0,0,0,.7),0 0 26px var(--dark-glow);color:#fff;font-family:Verdana,sans-serif;overflow:hidden;cursor:pointer;animation:pskIn .6s cubic-bezier(.2,1.3,.35,1) both;user-select:none;-webkit-user-select:none}
