@@ -563,6 +563,7 @@ body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisof
         position: relative !important;
         top: 2px !important;
         left: 2px !important;
+        right: auto !important;
         z-index: 9999 !important;
         background: rgba(0, 0, 0, 0.4); /* Un fondito sutil para que se lea bien si pasa por encima de algo */
         padding: 4px 8px !important;
