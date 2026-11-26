@@ -561,8 +561,8 @@ body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisof
 @media (max-width: 600px) {
     #psc-racha {
         position: absolute !important;
-        top: -80px !important; /* Un poco más abajo para que no se corte */
-        left: calc(-100vw + 100px) !important; /* Lo clava a 80px del borde izquierdo */
+        top: -100px !important; /* Un poco más abajo para que no se corte */
+        left: calc(-100vw + 140px) !important; /* Lo clava a 80px del borde izquierdo */
         right: auto !important; /* Anulamos el right para que no pelee */
         z-index: 9999 !important;
         background: rgba(0, 0, 0, 0.6);
