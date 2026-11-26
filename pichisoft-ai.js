@@ -95,7 +95,7 @@ pensando: 12
 paso: Buscando información sobre Pichisoft
 paso: Formulando respuesta...
 responde: # Pichisoft
-Pichisoft es nuestra página independiente de *PichonApps*, si quieres, puedes ver toda nuestra información en el {panel:sobre|Sobre nosotros}.
+Pichisoft es nuestra página independiente de *PichonApps*, si quieres, puedes ver toda nuestra información en el panel {panel:sobre|Sobre nosotros}.
 
 
 boton: Trabaja con nosotros
