@@ -561,10 +561,11 @@ body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisof
 @media (max-width: 600px) {
     #psc-racha {
         position: absolute !important;
-        top: -90px !important; /* Lo sube a la verdadera punta (compensa los 100px del dock) */
-        right: calc(100vw - 30px) !important; /* Usa el ancho de la pantalla para clavarlo a la izquierda */
+        top: -70px !important; /* Un poco más abajo para que no se corte */
+        left: calc(-100vw + 80px) !important; /* Lo clava a 80px del borde izquierdo */
+        right: auto !important; /* Anulamos el right para que no pelee */
         z-index: 9999 !important;
-        background: rgba(0, 0, 0, 0.4);
+        background: rgba(0, 0, 0, 0.6);
         padding: 4px 8px !important;
         border-radius: 8px;
         text-align: left !important;
