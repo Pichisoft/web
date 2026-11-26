@@ -560,7 +560,7 @@ body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisof
 #psc-racha{align-self:flex-end;text-align:center;line-height:1.1;user-select:none;-webkit-user-select:none;padding:2px 4px}
 @media (max-width: 600px) {
     #psc-racha {
-        position: relative !important;
+        position: absolute !important;
         top: 2px !important;
         left: 2px !important;
         right: auto !important;
