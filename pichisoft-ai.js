@@ -126,6 +126,55 @@ paso: Compartiendo email
 paso: Formulando respuesta...
 responde: ¡Hola! Por supuesto, comunícate aquí: **[contacto@pichisoft.cc](gmail)**.
 ¿Quieres que te ayude a redactar el mensaje? (Escribe "sí" para continuar).
+
+boton: Sobre Pichisoft
+dice: Quiero saber acerca de Pichisoft.
+pensando: 14
+paso: El usuario quiere saber más acerca de Pichisoft. Debería ofrecerme para más ayuda, quizás ofreciendole que lea nuestros paneles aquí mismo.
+paso: Buscando información sobre Pichisoft
+paso: Formulando respuesta...
+responde: ¡Por supuesto! Aquí tienes información sobre Pichisoft:
+---
+# Pichisoft
+---
+Pichisoft es la página independiente que administra **todo** PichonApps y sus aplicaciones y juegos. Fue creada el 10 de mayo de 2026.
+¿Quieres que [te pase los links a sus paneles]?
+
+atajo: te pase los links a sus paneles
+dice: Sí, por favor. Quiero que me pases los links para ver sus paneles.
+pensando: 16
+paso: Recopilando información sobre cada panel
+paso: Creando links para los paneles
+paso: Formulando respuesta...
+responde: ¡Por supuesto! Aquí tienes los links a los paneles de Pichisoft.
+---
+**Sobre nosotros:** {panel:sobre}
+
+**Preguntas frecuentes:** {panel:faq}
+
+**Información general:** {panel:info}
+
+**Nuestras reglas:** {panel:reglas}
+
+**Política de Privacidad:** {panel:privacidad}
+
+**Política de Cookies:** {panel:cookies}
+
+**Ayuda:** {panel:ayuda}
+
+**Consola:** {panel:consola}
+
+**PichiCoins:** {panel:coins}
+
+**Configuración:** {panel:config}
+
+**Traducir:** {panel:traducir}
+
+**Mensajería:** {panel:mensajeria}
+
+**Compartir:** {panel:compartir}
+
+
 `;
 
     /* =====================================================================
@@ -582,7 +631,7 @@ dice: Me caracterizo por la solución de problemas.
 opcion: Una mezcla de todo eso
 dice: Me caracterizo por una mezcla de todo eso.
 
-pregunta: ¿Aproximadamente, desde hace cuánto tiempo usas Pichisoft?
+pregunta: Aproximadamente, ¿desde hace cuánto tiempo usas Pichisoft?
 opcion: Menos de 1 mes
 dice: Desde hace menos de 1 mes.
 rechazo: Lo siento, no puedes ser admin de Pichisoft con una experiencia de menos de 1 mes.
@@ -658,8 +707,6 @@ dice: Sí, acepto.
 opcion: No acepto
 dice: No acepto.
 rechazo: Para formar parte del equipo es obligatorio aceptar las reglas y la confidencialidad.
-
-
 `;
 
     /* ============ 5) PANELES (lo que abren los botones {panel:...}) ============ */
