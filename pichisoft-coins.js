@@ -561,15 +561,16 @@ body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisof
 @media (max-width: 600px) {
     #psc-racha {
         position: absolute !important;
-        top: -90px !important;          /* lo más arriba posible sin cortarse */
-        left: auto !important;
-        right: 0 !important;            /* se queda alineado al dock */
+        top: calc(8px + env(safe-area-inset-top, 0px)) !important;
+        left: 12px !important;
+        right: auto !important;
         z-index: 9999 !important;
         background: rgba(0, 0, 0, 0.65);
         padding: 5px 10px !important;
         border-radius: 8px;
         text-align: left !important;
-        white-space: nowrap;
+        /* evita que se corte */
+        max-width: calc(100vw - 24px);
     }
 }
 #psc-racha b{display:block;font:bold 1.7rem "Times New Roman",serif;color:var(--gold2)}
