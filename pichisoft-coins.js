@@ -562,8 +562,7 @@ body:has(.pf-modal.open) #pichisoft-topbar,body:has(#pf-share-ov.open) #pichisof
     #psc-racha {
         position: absolute !important;
         top: 2px !important;
-        left: 2px !important;
-        right: auto !important;
+        right: 700px !important;
         z-index: 9999 !important;
         background: rgba(0, 0, 0, 0.4); /* Un fondito sutil para que se lea bien si pasa por encima de algo */
         padding: 4px 8px !important;
