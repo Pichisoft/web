@@ -1,5 +1,5 @@
 /* =====================================================================
-   PICHISOFT AI · PichonAI (chatbot limitado, 100% local, sin servidor)
+   PICHISOFT AI · La rAI. (chatbot limitado, 100% local, sin servidor)
    <script src="pichisoft-ai.js"></script> al final del <body>
 
    Solo se editan las 3 cajas de texto de abajo (ACCIONES_RAPIDAS, REGLAS y
@@ -62,7 +62,7 @@
 
     /* ============ 1) CONFIGURACIÓN GENERAL ============ */
     const CFG = {
-        nombre: 'PichonAI',
+        nombre: 'rAI',
         descripcion: '¿Necesitas ayuda con algo que tenga que ver con Pichisoft? Habla con la rAI.',
         tooltip: 'Chat con la RAI',
         placeholder: 'Escribe tu mensaje…',
