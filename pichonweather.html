@@ -6,6 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>PichonWeather</title>
     <style>
+        :root {
+            --fg: #fff;
+            --fg2: rgba(255, 255, 255, .7);
+            --bar: rgba(255, 255, 255, .25);
+            --chip: rgba(0, 0, 0, .18);
+            --ts: 0 2px 14px rgba(0, 0, 0, .3)
+        }
+
+        :root.day {
+            --fg: #000;
+            --fg2: rgba(0, 0, 0, .65);
+            --bar: rgba(0, 0, 0, .18);
+            --chip: rgba(255, 255, 255, .4);
+            --ts: none
+        }
+
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent
@@ -20,7 +36,7 @@
             margin: 0;
             min-height: 100%;
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-            color: #fff
+            color: var(--fg)
         }
 
         body {
@@ -69,7 +85,7 @@
         .logo {
             flex: 1;
             font: bold 1.7rem Georgia, "Times New Roman", serif;
-            text-shadow: 0 2px 12px rgba(0, 0, 0, .35)
+            text-shadow: var(--ts)
         }
 
         .logo small {
@@ -135,7 +151,7 @@
         .sb input,
         .sb select {
             font: inherit;
-            color: #fff;
+            color: var(--fg);
             background: rgba(255, 255, 255, .16);
             border: 1px solid rgba(255, 255, 255, .28);
             border-radius: 16px;
@@ -151,7 +167,7 @@
         }
 
         .sb input::placeholder {
-            color: rgba(255, 255, 255, .7)
+            color: var(--fg2)
         }
 
         .sb select {
@@ -164,7 +180,7 @@
 
         .sb input:focus,
         .sb select:focus {
-            border-color: #fff
+            border-color: var(--fg)
         }
 
         #res {
@@ -230,7 +246,7 @@
             border: 0;
             background: transparent;
             cursor: pointer;
-            color: #fff;
+            color: var(--fg);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -368,7 +384,7 @@
         .hero {
             text-align: center;
             padding: 10px 0 18px;
-            text-shadow: 0 2px 14px rgba(0, 0, 0, .25)
+            text-shadow: var(--ts)
         }
 
         .hero .big {
@@ -399,7 +415,7 @@
             margin-top: 12px;
             padding: 8px 16px;
             border-radius: 20px;
-            background: rgba(0, 0, 0, .18);
+            background: var(--chip);
             font-size: .9rem
         }
 
@@ -429,7 +445,7 @@
 
         .dc.on {
             background: rgba(255, 255, 255, .34);
-            border-color: #fff
+            border-color: var(--fg)
         }
 
         .dc b {
@@ -476,7 +492,7 @@
         }
 
         .hc small {
-            color: #bfe3ff
+            color: var(--fg2)
         }
 
         .tiles {
@@ -518,7 +534,7 @@
             top: 12px;
             width: 40px;
             height: 40px;
-            border: 2px solid rgba(255, 255, 255, .4);
+            border: 2px solid var(--fg2);
             border-radius: 50%
         }
 
@@ -530,14 +546,14 @@
             height: 0;
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
-            border-bottom: 16px solid #fff;
+            border-bottom: 16px solid var(--fg);
             transition: transform .6s
         }
 
         .bar {
             height: 6px;
             border-radius: 4px;
-            background: rgba(255, 255, 255, .25);
+            background: var(--bar);
             overflow: hidden;
             margin-top: 4px
         }
@@ -545,7 +561,7 @@
         .bar i {
             display: block;
             height: 100%;
-            background: #fff
+            background: var(--fg);
         }
 
         .upd {
@@ -990,6 +1006,12 @@
             }
         }
 
+        .dlg,
+        #res,
+        #toast {
+            color: #fff
+        }
+
         /* ==========================================
        PICHISOFT - ESTADO DE SESIÓN
        ========================================== */
@@ -1269,9 +1291,10 @@
         function scene(code, day, cover) {
             const k = kind(code);
             if (cover != null && !k.rain && !k.snow && !k.fog && !k.thunder) { k.cc = cover < 10 ? 0 : cover < 30 ? 2 : cover < 55 ? 4 : cover < 80 ? 7 : 10; k.dk = cover >= 80 ? 1 : 0 }
-            const p = k.thunder ? ["#171b2c", "#3c3f5a"] : k.rain ? ["#2c3a4a", "#566a7e"] : k.snow ? ["#8b9fb2", "#d3dde6"] : k.fog ? ["#868e95", "#bcc1c5"] : k.cc >= 7 ? ["#5d7285", "#a2b1bf"] : ["#2a62b0", "#69aae8"];
+            const p = k.thunder ? ["#171b2c", "#3c3f5a"] : k.rain ? ["#8fa0b2", "#c4d0db"] : k.snow ? ["#8b9fb2", "#d3dde6"] : k.fog ? ["#868e95", "#bcc1c5"] : k.cc >= 7 ? ["#8497aa", "#bccad6"] : ["#4f8bd6", "#a6cdf3"];
             const c = day ? p : (k.rain || k.snow || k.fog || k.cc >= 7) ? [sh(p[0], .45), sh(p[1], .5)] : ["#070d22", "#1b2a58"];
             document.body.style.background = `linear-gradient(180deg,${c[0]},${c[1]}) fixed`;
+            document.documentElement.classList.toggle("day", !!day && !k.thunder);
             clouds(k.cc, k.dk, !day); $("fog").style.opacity = k.fog ? 1 : 0;
             const dry = !k.rain && !k.snow && !k.fog;
             setFx({ rain: k.rain, snow: k.snow, hail: k.hail, thunder: k.thunder, stars: !day && dry && k.cc < 8, sun: day && dry && k.cc <= 4 });
@@ -1426,7 +1449,7 @@
             /* horas del día, de 00:00 a 23:00, con curva de temperatura */
             const tv = h.temperature_2m.slice(i0, i0 + 24), mn = Math.min(...tv), mx = Math.max(...tv), sp = mx - mn || 1;
             const pts = tv.map((v, i) => [(i + .5) * 64, 50 - (v - mn) / sp * 38]);
-            const curve = `<svg width="1536" height="64" viewBox="0 0 1536 64" aria-hidden="true"><path d="M${pts.map(p => p.join(",")).join("L")}L1504,64L32,64Z" fill="rgba(255,255,255,.14)"/><polyline points="${pts.map(p => p.join(",")).join(" ")}" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>${pts.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#fff"/>`).join("")}</svg>`;
+            const curve = `<svg width="1536" height="64" viewBox="0 0 1536 64" aria-hidden="true" style="color:var(--fg)"><path d="M${pts.map(p => p.join(",")).join("L")}L1504,64L32,64Z" fill="currentColor" fill-opacity=".14"/><polyline points="${pts.map(p => p.join(",")).join(" ")}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>${pts.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="currentColor"/>`).join("")}</svg>`;
             let hrs = ""; for (let j = i0; j < i0 + 24; j++) { const now = !sel && j === hi; hrs += `<div class="hc ${now ? "now" : ""}"><span>${now ? "Ahora" : h.time[j].slice(11, 16)}</span>${wi(h.weather_code[j], h.is_day[j], 30)}<b>${T(h.temperature_2m[j])}</b><small>${h.precipitation_probability[j] || 0}%</small></div>` }
             /* métricas */
             const sr = dl.sunrise[sel].slice(11, 16), ss = dl.sunset[sel].slice(11, 16), dur = dl.daylight_duration[sel], T2 = [];
@@ -1888,6 +1911,7 @@ Puede sugerir mejoras para esta app <a href="https://mail.google.com/mail/?view=
             href="https://pichisoft.cc" target="_blank" style="color:#4db8ff; text-decoration: underline;">Pichisoft</a>
     </p>
     <script src="/pichisoft-idiomas.js"></script>
-<script type="module" src="/pichisoft-coins.js"></script></body>
+    <script type="module" src="/pichisoft-coins.js"></script>
+</body>
 
 </html>
