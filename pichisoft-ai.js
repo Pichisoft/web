@@ -583,7 +583,7 @@ responde: ¡Por supuesto! Aquí tienes el email ya redactado para que se lo mand
 
 Hola, Equipo Pichisoft. Espero que se encuentren muy bien.
 Quiero comunicarles que, necesito ayuda sobre mi cuenta: (TU-DUDA).
-Esta email fue redactado por la rAI.
+Este email fue redactado por la rAI.
 Saludos cordiales,
 (TU-NOMBRE-DE-USUARIO-EXACTO).
 
